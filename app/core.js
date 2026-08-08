@@ -12,6 +12,9 @@
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  /* Spoken forms, for aria-label only: VoiceOver reads "NE" as "nee". */
+  var POINT_NAMES = ['north', 'north-east', 'east', 'south-east',
+                     'south', 'south-west', 'west', 'north-west'];
 
   /* Great-circle distance in statute miles. */
   function haversineMi(aLat, aLng, bLat, bLng) {
@@ -137,7 +140,8 @@
     return out;
   }
 
-  return { ARROWS: ARROWS, POINTS: POINTS, haversineMi: haversineMi, bearingDeg: bearingDeg,
+  return { ARROWS: ARROWS, POINTS: POINTS, POINT_NAMES: POINT_NAMES,
+           haversineMi: haversineMi, bearingDeg: bearingDeg,
            compassIdx: compassIdx, pad2: pad2, hhmmToMins: hhmmToMins, sunsetAt: sunsetAt,
            openState: openState, navUrl: navUrl, rank: rank };
 }));

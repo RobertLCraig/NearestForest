@@ -71,10 +71,14 @@ button { font:inherit; color:inherit; }
 .row__sub { margin-top:3px; font-size:14px; color:var(--dim); display:flex; gap:8px; flex-wrap:wrap; }
 .row__badge { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); }
 .row__closed { color:var(--warn); font-weight:600; }
-.row__dist { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 4px; min-width:74px; }
+.row__dist { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 4px; min-width:84px; }
 .row__mi { font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; }
 .row__unit { font-size:11px; color:var(--dim); margin-top:-2px; }
-.row__arrow { font-size:19px; color:var(--accent); line-height:1; margin-top:3px; }
+.row__arrow { display:flex; align-items:center; gap:3px; color:var(--accent); line-height:1; margin-top:3px; }
+.row__glyph { font-size:19px; }
+/* The cardinal letters carry the meaning, so they must survive a sunlit
+   windscreen: same weight as the mileage, never dimmed. */
+.row__point { font-size:14px; font-weight:700; letter-spacing:.01em; }
 .row__go {
   width:60px; flex:0 0 60px; border:0; border-left:1px solid var(--line);
   background:var(--accent); color:var(--accent-ink); font-size:24px; font-weight:700; cursor:pointer;

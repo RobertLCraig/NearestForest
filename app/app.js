@@ -47,9 +47,16 @@ function render() {
       dist = '<div class="row__unit">no fix</div>';
     } else {
       var idx = NF.compassIdx(s._bear);
+      // The letters are not decoration. An arrow on its own reads as "straight
+      // ahead" to someone in a moving car, but this is a compass bearing from
+      // where you are standing: a northward arrow means north whichever way the
+      // car happens to be pointing.
       dist = '<div class="row__mi">' + (s._mi < 10 ? s._mi.toFixed(1) : Math.round(s._mi)) + '</div>' +
              '<div class="row__unit">miles</div>' +
-             '<div class="row__arrow" title="' + NF.POINTS[idx] + '">' + NF.ARROWS[idx] + '</div>';
+             '<div class="row__arrow" aria-label="' + esc(NF.POINT_NAMES[idx]) + ' of you">' +
+               '<span class="row__glyph" aria-hidden="true">' + NF.ARROWS[idx] + '</span>' +
+               '<span class="row__point">' + NF.POINTS[idx] + '</span>' +
+             '</div>';
     }
 
     return '<li class="row' + (nearest ? ' row--nearest' : '') + '">' +
@@ -85,7 +92,7 @@ function openSheet(site) {
 
   var sub = [];
   if (site._mi !== null && site._mi !== undefined) {
-    sub.push(site._mi.toFixed(1) + ' miles ' + NF.POINTS[NF.compassIdx(site._bear)]);
+    sub.push(site._mi.toFixed(1) + ' miles ' + NF.POINTS[NF.compassIdx(site._bear)] + ' of you');
   }
   if (POS && POS.stale) sub.push('from last known position');
   $('#sheet-sub').textContent = sub.join(' · ');

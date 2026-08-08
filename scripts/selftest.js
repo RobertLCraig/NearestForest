@@ -38,6 +38,18 @@ near('bearing due east is ~90deg', NF.bearingDeg(51, -1, 51, 0), 90, 0.5);
 ok('compass index maps 0deg to N', NF.POINTS[NF.compassIdx(0)] === 'N');
 ok('compass index maps 180deg to S', NF.POINTS[NF.compassIdx(180)] === 'S');
 ok('compass index maps 270deg to W', NF.POINTS[NF.compassIdx(270)] === 'W');
+ok('compass index maps 90deg to E', NF.POINTS[NF.compassIdx(90)] === 'E');
+// The row shows the letters and screen readers get the spoken form, so a
+// mismatch between the two arrays would say "west" beside an E.
+ok('spoken point names align with the abbreviations',
+   NF.POINT_NAMES.length === NF.POINTS.length &&
+   NF.POINTS.every((p, i) =>
+     p.toLowerCase() === NF.POINT_NAMES[i].split('-').map(w => w[0]).join('')));
+ok('every compass index has an arrow and a name',
+   [0, 45, 90, 135, 180, 225, 270, 315, 359].every(d => {
+     const i = NF.compassIdx(d);
+     return NF.ARROWS[i] && NF.POINTS[i] && NF.POINT_NAMES[i];
+   }));
 
 console.log('\n--- sunset (vs api.sunrise-sunset.org, checked 2026-08-08) ---');
 function londonHHMM(d) {
