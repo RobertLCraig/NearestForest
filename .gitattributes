@@ -1,0 +1,15 @@
+# The server clones this repo and runs scripts/deploy.sh directly. A CRLF
+# checkout would fail with "bad interpreter: /usr/bin/env bash^M", so anything
+# the Linux host executes or parses is pinned to LF regardless of the platform
+# it was committed from.
+* text=auto
+
+*.sh        text eol=lf
+*.php       text eol=lf
+.htaccess   text eol=lf
+
+# Generated build output. Diffing 904 records helps nobody and it is never
+# hand-edited; regenerate with scripts/parse.py instead.
+app/data/sites.json linguist-generated=true
+
+*.png binary
