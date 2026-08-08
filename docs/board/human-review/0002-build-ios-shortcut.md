@@ -1,7 +1,3 @@
----
-needs: 0005
-waiting_on: card 0005 to deploy the endpoint - recheck 2026-08-22
----
 # Build the iOS Shortcut
 
 ## What I need from you
@@ -10,7 +6,11 @@ PWA for a couple of weeks and say which you actually reach for. A `.shortcut` fi
 format that cannot be generated off-device, so this is a five-minute build by hand rather than
 something I can hand you.
 
-Blocked until card 0005 has deployed, because step 3 of the recipe calls the live endpoint.
+No longer blocked: card 0005 deployed the endpoint on 2026-08-08. Step 3 of the recipe should call
+
+    https://forestlocator.enhanceify.co.uk/api/nearest.php?lat=<lat>&lng=<lng>&n=5
+
+which is live now and returns Friston Forest first from Brighton.
 
 The comparison is the point of building both. The two things worth noticing:
 1. Does Siri triggering actually get used while driving, or does the phone stay in the cradle?
@@ -40,3 +40,8 @@ current iOS Shortcuts app, note it here and move to `todo/` so the doc gets fixe
 - [ ] Add the three-way map app menu, or decide one app is enough and note which
 - [ ] Cross-check its top result against the PWA from the same spot
 - [ ] Use both for two weeks, then record the verdict under `## Direction`
+
+## Direction
+**2026-08-08** The endpoint this recipe depends on is deployed and verified. Substitute
+`forestlocator.enhanceify.co.uk` wherever `docs/build/IOS-SHORTCUT.md` leaves the host as a
+placeholder.

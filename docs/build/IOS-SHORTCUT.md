@@ -16,7 +16,7 @@ The app must be deployed and `api/nearest.php` reachable over HTTPS. Check it fi
 the phone, before building anything:
 
 ```
-https://<your-domain>/api/nearest.php?lat=50.8168&lng=-0.0894&n=3
+https://forestlocator.enhanceify.co.uk/api/nearest.php?lat=50.8168&lng=-0.0894&n=3
 ```
 
 A pass looks like JSON starting `{"ok":true,` and listing Friston Forest first. Anything else, stop
@@ -30,7 +30,7 @@ say it out loud once to check it dictates cleanly).
 | # | Action | Settings |
 |---|--------|----------|
 | 1 | **Get Current Location** | no settings |
-| 2 | **Text** | `https://<your-domain>/api/nearest.php?lat=` then insert the **Latitude** magic variable from step 1, then `&lng=`, then the **Longitude** magic variable, then `&n=5` |
+| 2 | **Text** | `https://forestlocator.enhanceify.co.uk/api/nearest.php?lat=` then insert the **Latitude** magic variable from step 1, then `&lng=`, then the **Longitude** magic variable, then `&n=5` |
 | 3 | **Get Contents of URL** | URL = the **Text** output of step 2. Method GET. |
 | 4 | **Get Dictionary Value** | Get **Value** for key `results` in the output of step 3 |
 | 5 | **Choose from List** | Input = step 4. Turn **Select Multiple** off. Set **Prompt** to `Nearest forest` |

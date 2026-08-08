@@ -102,7 +102,9 @@ In priority order.
 - [ ] Straight-line vs road distance: decided as straight-line (see DECISIONS 2026-08-08). From Brighton
       the nearest by air is usually the nearest by road, but the South Downs and the coast can make that
       wrong. Confirm this is acceptable in real use before adding complexity.
-- [ ] Which subdomain on enhanceify.co.uk to deploy to. Suggest `forest.enhanceify.co.uk`.
+- [x] Which subdomain on enhanceify.co.uk to deploy to. **Answered 2026-08-08:**
+      `forestlocator.enhanceify.co.uk`, chosen over the shorter `forest` because the name is never
+      typed by hand. Deployed and live (see DECISIONS 2026-08-08).
 - [ ] How often to re-run the pipeline. The car park data updates annually; the website changes ad hoc.
 - [ ] Whether the Car parks tab should hide the 170 features named "Unknown" or show them with a
       derived label such as "Car park near <nearest forest>".

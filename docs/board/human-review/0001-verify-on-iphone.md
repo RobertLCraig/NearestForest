@@ -1,17 +1,14 @@
----
-needs: 0005
-waiting_on: card 0005 to deploy the app - recheck 2026-08-22
----
 # Verify the deployed app on the iPhone
 
 ## What I need from you
-Run these five checks on the phone once card 0005 has deployed. Only you can: they need a physical
+Run these five checks on the phone. **The app is deployed and waiting for you at
+https://forestlocator.enhanceify.co.uk/** (card 0005, done 2026-08-08). Only you can: they need a physical
 iPhone, a real GPS fix, and the network genuinely taken away. Nothing here can be established from a
 desk, and until it is, none of the PRD success criteria are evidenced.
 
 Each check names its own pass, so a failure points at one cause rather than at the whole card:
 
-1. Open `https://<subdomain>/` in Safari. *Pass:* padlock, no certificate warning.
+1. Open **https://forestlocator.enhanceify.co.uk/** in Safari. *Pass:* padlock, no certificate warning.
    *Fail:* SSL is not issued, and GPS will silently never work.
 2. Share → Add to Home Screen, then launch **from the icon, not from Safari**.
    *Pass:* full screen, no address bar. *Fail:* the manifest was not read.
@@ -56,6 +53,11 @@ and move this card to `todo/` so an agent picks up the fix, rather than fixing i
 - [ ] Tick the matching lines in `HUMAN_ACTIONS.md`
 
 ## Direction
+**2026-08-08** Deployed and verified from a desk: HTTPS with a valid certificate, the manifest
+served as `application/manifest+json`, and `api/nearest.php` returning Friston Forest first. So
+checks 1 and 2 have a desk-side half already passing; what is left is genuinely phone-only, and
+check 5 (offline from a cold launch) remains the one that matters.
+
 **2026-08-08** Rob connected Cloudflare and Hostinger MCP servers so the deploy could be done from a
 session rather than by hand. The infrastructure half of this card was split out to 0005 as a result;
 this card kept only what needs a physical phone.

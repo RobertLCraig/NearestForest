@@ -3,6 +3,33 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-08 — Deploy by git pull, with the docroot symlinked into the checkout
+**Decision:** The app is served from `forestlocator.enhanceify.co.uk`, deployed by pushing to a
+public GitHub repo (`RobertLCraig/NearestForest`) and running `git pull` on the Hostinger host. The
+vhost docroot is a symlink: `public_html -> repo/app`. DNS is a single unproxied A record at
+Cloudflare; the vhost, certificate and PHP version are Hostinger's.
+**Why:** This is the pattern already running for `regenesis`, `timeline` and `r.craig.ooo` on the
+same account, which use `public_html -> laravel/public` over a checkout in the same directory. An
+scp upload was tried first and worked, but it leaves no record of what is deployed and diverges
+from every other site on the box for no gain. Symlinking to `app/` rather than the repo root is
+what keeps `docs/`, `scripts/` and the gitignored 142MB scrape cache out of the web root, and it
+means the deploy copies nothing: a fast-forward pull *is* the deploy. Rob chose the longer
+`forestlocator` over `forest` deliberately, since the name is never typed by hand.
+**Trade-off accepted:** Apache serves a live git working tree, so a pull changes files under it
+mid-request. For a personal static app on a fast-forward-only pull that window is milliseconds and
+the alternative (build to a separate directory, swap a symlink) buys nothing here. The repo is
+public, which is safe because it holds no secrets and the app itself is public anyway.
+**Status:** active
+
+## 2026-08-08 — Pin the vhost PHP version rather than inheriting it
+**Decision:** `forestlocator.enhanceify.co.uk` is pinned to PHP 8.4, set via the Hostinger MCP.
+**Why:** The new vhost came up on PHP 8.3.30 for the web SAPI while the account's CLI is 8.4.19.
+Testing a script over SSH and getting different behaviour over HTTP is a genuinely confusing way
+to lose an hour, and the mismatch is invisible unless looked for. `api/nearest.php` happens to be
+undemanding (no date/time calls at all, and nothing newer than typed parameters), so nothing was
+broken; the pin is to stop a future change meeting a version nobody chose.
+**Status:** active
+
 ## 2026-08-08 — Model access as a mode, and compute dusk on the device
 **Decision:** `opening_summary.access` is one of `always` / `dusk` / `hours` / `unknown`, rather
 than modelling opening times as clock times alone. For `dusk` sites the app computes sunset from
