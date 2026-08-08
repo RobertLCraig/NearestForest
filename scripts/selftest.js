@@ -180,8 +180,18 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
     .execSync('git ls-files', { cwd: ROOT }).toString().trim().split('\n');
   const leaked = tracked.filter(f => {
     if (/\.(png|json)$/.test(f)) return false;
-    const t = fs.readFileSync(path.join(ROOT, f), 'utf8');
-    return /apikey=[0-9a-f]{16,}/i.test(t) || /\b[0-9a-f]{32}\b/.test(t) && /thunderforest/i.test(t);
+    // git ls-files still reports a path that has been moved but not yet
+    // staged, so a run mid-rename must not crash the whole suite.
+    const abs = path.join(ROOT, f);
+    if (!fs.existsSync(abs)) return false;
+    const t = fs.readFileSync(abs, 'utf8');
+    // Line-scoped on purpose. Matching a 32-hex token anywhere in a file that
+    // also says "thunderforest" somewhere else flagged HUMAN_ACTIONS.md, which
+    // legitimately carries a Cloudflare DNS record id. A guard that cries wolf
+    // gets muted, and this one has to stay trustworthy.
+    return t.split('\n').some(line =>
+      /apikey=[0-9a-f]{16,}/i.test(line) ||
+      (/\b[0-9a-f]{32}\b/.test(line) && /thunderforest|apikey|tiles\.key/i.test(line)));
   });
   ok('no provider key is committed anywhere', leaked.length === 0, leaked.join(', '));
 }

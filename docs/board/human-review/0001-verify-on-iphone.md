@@ -67,3 +67,10 @@ to 4 are provisionally passing on a real device. **Check 5 is still outstanding 
 matters**: aeroplane mode, relaunched from the Home Screen icon. Offline has still only ever been
 verified by serving locally, so the app's central claim remains unevidenced. The same test also
 produced card 0006 (the bearing arrow read as "straight ahead") and card 0007 (the map request).
+
+**2026-08-08** Rob: home screen icon added, footer confirmed as `build v4`, map now loads. So
+checks 1, 2 and 3 pass on the device. **Check 5 is the only one left, and it is the one the app
+exists for.** It now covers more than it did: with the tile layer shipped, the offline test should
+be run twice, once with Tiles off and once with Tiles left **on**, because the second is the case
+where a network layer could take the map down with it. Expected with tiles on and no signal: the
+bundled coastline still draws, markers still draw, no grey holes, no error page.

@@ -39,16 +39,38 @@ Do not commit a key.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN the tile toggle is off, THE APP SHALL make zero network requests, as it does today.
-- [ ] #2 WHEN the tile toggle is on and a connection exists, THE APP SHALL draw tiles beneath the
+- [x] #1 WHEN the tile toggle is off, THE APP SHALL make zero network requests, as it does today.
+- [x] #2 WHEN the tile toggle is on and a connection exists, THE APP SHALL draw tiles beneath the
       site markers and above the bundled outline.
-- [ ] #3 IF a tile request fails or times out, THEN THE APP SHALL keep the bundled outline visible
+- [x] #3 IF a tile request fails or times out, THEN THE APP SHALL keep the bundled outline visible
       and SHALL NOT leave blank or grey areas.
-- [ ] #4 WHEN the repository is inspected, THE APP SHALL contain no provider key.
+- [x] #4 WHEN the repository is inspected, THE APP SHALL contain no provider key.
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Record the chosen provider and key handling in DECISIONS
-- [ ] Tile fetch with a timeout, an in-memory cache, and cancellation on pan
-- [ ] Toggle control, defaulting to off, remembering the last choice locally
-- [ ] Verify acceptance #1 with the network panel: toggle off must be silent
+- [x] Record the chosen provider and key handling in DECISIONS
+- [x] Tile fetch with a timeout, an in-memory cache, and cancellation on pan
+- [x] Toggle control, defaulting to off, remembering the last choice locally
+- [x] Verify acceptance #1 with the network panel: toggle off must be silent
+
+## Direction
+**2026-08-08** Rob installed the key; layer built and verified live.
+
+Verified by curl against the deployed endpoint, not just by reading the code:
+
+- a Brighton tile at z11 returns a real 256x256 PNG in ~340ms, `image/png`,
+  `Cache-Control: public, max-age=604800, immutable`
+- `z=99`, an out-of-range `x`, and a traversal attempt in `s=` are all rejected 400 with a
+  message naming the valid range
+- a request carrying a foreign `Referer` is refused 403, so the endpoint is not a free tile
+  server on our quota
+- `/tiles.key`, `/../tiles.key` and `/api/../../tiles.key` all 404: the key is not reachable
+  over the web
+
+**One thing outstanding and it is Rob's:** the key was pasted into the chat transcript, so it
+should be regenerated in the Thunderforest dashboard and the server file replaced. Nothing is
+broken and nothing leaked into the repo (a test greps every tracked file for one), but a key that
+has been in a transcript is no longer private. See HUMAN_ACTIONS.
+
+**Not verified:** how the layer behaves on a phone with no signal and the toggle left on. The
+outline should show through and no grey holes should appear; that is part of card 0001 check 5.

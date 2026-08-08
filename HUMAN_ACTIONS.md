@@ -49,6 +49,19 @@ The four remaining phone checks are board cards [0001](docs/board/human-review/0
 and [0002](docs/board/human-review/0002-build-ios-shortcut.md); the real-world one is
 [0003](docs/board/human-review/0003-straight-line-distance-in-practice.md).
 
+## Created 2026-08-08 (tile layer)
+
+- [ ] **Regenerate the Thunderforest API key.** It was pasted into a chat transcript, so it is no
+      longer private. Nothing leaked into the repo (a self-test greps every tracked file for a key,
+      and `.gitignore` refuses `*.key`), and the server copy is `-rw-------` above the web root, so
+      this is hygiene rather than an incident. Regenerate at
+      <https://www.thunderforest.com/dashboard/>, then replace the file:
+
+      ssh hostinger "printf '%s' 'NEW_KEY' > ~/domains/forestlocator.enhanceify.co.uk/tiles.key && chmod 600 ~/domains/forestlocator.enhanceify.co.uk/tiles.key"
+
+      *Pass:* the map's Tiles toggle still draws tiles afterwards. No redeploy is needed; the proxy
+      reads the file on every request, which is why it was built this way.
+
 ## Recurring
 
 - [ ] **Re-run the data pipeline** when Forestry England redesign their site or the annual open-data

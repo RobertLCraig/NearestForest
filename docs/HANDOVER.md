@@ -145,10 +145,11 @@ whose basemap is a bundled outline always, with tiles only ever an optional extr
   worker, generated icons, dark and light themes. `api/nearest.php` is live and its error paths are
   tested. 34 self-tests pass, covering geometry, sunset against an external reference, deep-link
   URLs, dataset integrity and the rule that the app never claims a gate is open on a guess.
-- **In progress:** nothing. The offline map (card 0008) is built and shipped: a 32KB bundled Great
-  Britain outline, 904 markers, pan/pinch/tap into the existing detail sheet, drawn on canvas with
-  zero network requests. The tile layer that sits over it (card 0009) is not built and is waiting
-  on Rob to pick a provider.
+- **In progress:** nothing. The map is complete: a 32KB bundled Great Britain outline with 904
+  markers drawn on canvas with zero network requests (card 0008), plus an optional Thunderforest
+  Outdoors tile layer over the top (card 0009), off by default and proxied through `api/tiles.php`
+  so the key never reaches the browser. Tiles draw *over* the outline, so a failure or an offline
+  device reveals the coastline rather than a grey hole.
 - **Known bugs / broken:** none open. Two deploy-script bugs were found by running it rather than
   reading it, and both are fixed: a fixed-length smoke-test compare that failed a working endpoint,
   and `deploy.sh` executing a splice of its old and new selves because the `git pull` it had just
@@ -165,8 +166,8 @@ The queue is [docs/board/](board/), one card per file. At the head:
 2. **0005 / 0006 / 0008** (`ai-review/`) — the deploy, the compass point and the offline map, all
    built and awaiting an adversarial pass. 0008 is the one worth the most scepticism: the gestures
    have only ever run against a stubbed canvas, never a real finger.
-3. **0001 / 0002 / 0009** (`human-review/`) — waiting on Rob. 0009 needs a tile provider chosen
-   before the map's online layer can be built.
+3. **0001** (`human-review/`) — check 5, offline from a cold launch, run twice: tiles off and
+   tiles on. It is the last unevidenced PRD criterion and the app's whole premise.
 
 ## Blockers / open questions
 
