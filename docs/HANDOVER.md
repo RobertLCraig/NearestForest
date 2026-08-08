@@ -3,8 +3,8 @@
 > An offline iPhone app that finds the closest Forestry England site and hands it to a map app in one tap. Built and tested locally; never yet run on a phone.
 
 **Stage:** active
-**Status:** Initial build complete, 34 self-tests green, 904 sites generated. Nothing deployed, so no success criterion is evidenced on-device yet. Everything remaining is Rob's to do.
-_Last updated: 2026-08-08 (initial build)_
+**Status:** Initial build complete, 34 self-tests green, 904 sites generated. Nothing deployed. Next session should have Cloudflare and Hostinger MCP servers and can run the deploy itself: start at board card **0005**.
+_Last updated: 2026-08-08 (MCP deploy route opened; board 0001 split)_
 
 ## Goal & success criteria
 
@@ -32,6 +32,29 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
   field, because most sites publish no clock time at all. Measured: 94 always, 104 dusk, 43 hours,
   27 unknown. `dusk` deliberately stores no closing time; the app computes sunset per site at render.
 - **Null means "not known" and the UI says so.** Empty string never appears.
+
+## Deployment target
+
+Established live over public DNS on 2026-08-08. A fresh session should not re-derive these:
+
+- `enhanceify.co.uk` runs on **Cloudflare nameservers** (`rachel` / `yahir.ns.cloudflare.com`), so
+  **DNS is at Cloudflare and not at Hostinger.** hPanel creates the vhost and the certificate only.
+- Apex A record and `regenesis.enhanceify.co.uk` both point to **141.136.33.219** (Hostinger), and
+  both return that address rather than a Cloudflare one, so existing subdomains are
+  **DNS-only (grey cloud), not proxied**.
+- `forest.enhanceify.co.uk` has **no record yet**, and the name is a suggestion Rob has not yet
+  confirmed. A DNS record is outward-facing, so confirm before creating it.
+- The record needed is one line: `forest.enhanceify.co.uk  A  141.136.33.219  DNS only`.
+
+**HTTPS is not cosmetic here.** iOS grants `navigator.geolocation` only to secure origins, so on
+plain HTTP the app loads and silently never locates you. That is also why a self-contained HTML file
+opened from the Files app was rejected as an option.
+
+Cloudflare and Hostinger MCP servers were connected on 2026-08-08 but were **not visible in the
+session that recorded this**, checked via tool search, `ListMcpResourcesTool`, and the absence of any
+`mcpServers` config on disk. Claude Code loads MCP servers at session start, so confirm with `/mcp`
+before relying on them. Their actual capabilities are unverified: the Hostinger API is largely
+domains, VPS and billing, so file upload for shared hosting may not be exposed.
 
 ## Architecture / stack
 
@@ -96,17 +119,20 @@ two front ends over one dataset; named forests as the default tab.
 
 The queue is [docs/board/](board/), one card per file. At the head:
 
-1. **0001** deploy and verify on the iPhone (`human-review/`) — blocks everything else
-2. **0002** build the iOS Shortcut (`human-review/`, needs 0001)
-3. **0004** derive names for the 170 unnamed car parks (`todo/`) — the only agent-ready work
+1. **0005** deploy via the Cloudflare and Hostinger MCPs (`todo/`) — **start here**, and confirm the
+   subdomain name with Rob before creating any DNS record
+2. **0004** derive names for the 170 unnamed car parks (`todo/`) — agent-ready, needs no deploy
+3. **0001** verify on the iPhone (`human-review/`, needs 0005) — five checks only Rob can run
 
 ## Blockers / open questions
 
-Everything currently open is in [docs/board/human-review/](board/human-review/) and needs Rob, not
-an agent. Genuinely blocking right now:
+See [docs/board/human-review/](board/human-review/). Genuinely blocking right now:
 
-- **0001** — nothing can be evidenced until it is deployed to an HTTPS subdomain. Suggested
-  `forest.enhanceify.co.uk`. HTTPS is not cosmetic: iOS grants GPS only to secure origins.
+- **The subdomain name is unconfirmed.** `forest.enhanceify.co.uk` is a suggestion. One word from
+  Rob unblocks card 0005, and creating a DNS record without it would be an outward-facing action
+  taken on an assumption.
+- **0001** — no PRD success criterion is evidenced until the app runs on a real phone, and offline
+  in particular has only ever been verified by serving locally.
 - **0003** — whether straight-line distance is good enough needs real trips, not analysis.
 
 ## How to pick up
@@ -133,6 +159,8 @@ After changing anything under `app/`, bump `CACHE` in `app/sw.js` before uploadi
 - `/checkpoint` — after any work, to update the docs and commit in one step.
 - `/code-review` — worth running over `scripts/parse.py` before trusting a re-scrape, since it is
   the one file that silently depends on someone else's HTML staying the same shape.
+- `/mcp` — first thing next session, to confirm the Cloudflare and Hostinger servers actually loaded
+  before card 0005 assumes they did.
 
 ## Sibling docs
 
@@ -147,7 +175,7 @@ After changing anything under `app/`, bump `CACHE` in `app/sw.js` before uploadi
 
 ## Branch status
 
-`master`, initial commit. No remote configured, no PR. Nothing deployed.
+`master`. No remote configured, no PR, nothing pushed. Nothing deployed.
 
 ## Session log
 

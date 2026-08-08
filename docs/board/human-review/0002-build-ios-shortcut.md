@@ -1,6 +1,6 @@
 ---
-needs: 0001
-waiting_on: card 0001 to deploy the endpoint - recheck 2026-08-22
+needs: 0005
+waiting_on: card 0005 to deploy the endpoint - recheck 2026-08-22
 ---
 # Build the iOS Shortcut
 
@@ -10,7 +10,7 @@ PWA for a couple of weeks and say which you actually reach for. A `.shortcut` fi
 format that cannot be generated off-device, so this is a five-minute build by hand rather than
 something I can hand you.
 
-Blocked until card 0001 is deployed, because step 3 of the recipe calls the live endpoint.
+Blocked until card 0005 has deployed, because step 3 of the recipe calls the live endpoint.
 
 The comparison is the point of building both. The two things worth noticing:
 1. Does Siri triggering actually get used while driving, or does the phone stay in the cradle?

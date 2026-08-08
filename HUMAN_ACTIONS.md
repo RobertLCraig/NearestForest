@@ -5,9 +5,21 @@ Tick them off as they are done; do not delete the history.
 
 ## Created 2026-08-08 (initial build)
 
+> **Much of this block may now be automatable.** Rob connected Cloudflare and Hostinger MCP servers
+> on 2026-08-08. Board card 0005 covers doing the deploy from a session instead of by hand. Check
+> `/mcp` first; treat the steps below as the fallback, and as the checklist the automated path must
+> still satisfy.
+
 - [ ] **Pick the subdomain.** Suggested `forest.enhanceify.co.uk`. Nothing below can happen first.
+- [ ] **Create the DNS record at Cloudflare**, not at Hostinger. `enhanceify.co.uk` runs on
+      Cloudflare nameservers, so hPanel does not serve its DNS. One record, matching the pattern
+      already working for `regenesis.enhanceify.co.uk`:
+      `forest.enhanceify.co.uk  A  141.136.33.219  DNS only (grey cloud)`.
+      Leave it unproxied: Hostinger issues its own Let's Encrypt certificate and proxying would only
+      put Cloudflare in front of that validation.
 - [ ] **Create the subdomain in Hostinger hPanel** and point its document root at the uploaded
       `app/` directory contents (not at the repo root, which would expose `docs/` and `data/raw/`).
+      This creates the vhost and the certificate; it does **not** create the DNS record above.
 - [ ] **Issue the free SSL certificate** for that subdomain in hPanel.
       *Pass:* `https://<subdomain>/` loads with a padlock and no warning.
       *This is not optional:* iOS grants GPS only to HTTPS origins, so on plain HTTP the app loads
