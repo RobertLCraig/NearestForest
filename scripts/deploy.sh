@@ -78,14 +78,18 @@ else
     FAILED=1
 fi
 
-API="$(curl -s "https://$SITE/api/nearest.php?lat=50.8168&lng=-0.0894&n=1" | head -c 12)"
-if [ "$API" = '{"ok":true,' ]; then
-    echo "  OK  api/nearest.php             executes"
-else
-    echo "  FAIL api/nearest.php returned '${API}...', expected {\"ok\":true,"
-    echo "       Raw PHP source means PHP is not enabled for this vhost."
-    FAILED=1
-fi
+API="$(curl -s "https://$SITE/api/nearest.php?lat=50.8168&lng=-0.0894&n=1" | head -c 80)"
+# Prefix match, not a fixed-length compare: the byte after the comma belongs to
+# the next key and changes whenever the payload does.
+case "$API" in
+    '{"ok":true,'*)
+        echo "  OK  api/nearest.php             executes" ;;
+    *)
+        echo "  FAIL api/nearest.php returned: ${API}"
+        echo "       Expected a body starting {\"ok\":true,"
+        echo "       Raw PHP source means PHP is not enabled for this vhost."
+        FAILED=1 ;;
+esac
 
 echo ""
 echo "=================================================="
