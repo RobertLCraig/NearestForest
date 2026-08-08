@@ -30,6 +30,16 @@ var NFMap = (function () {
   var pinchStart = null;
   var lastTap = 0;
 
+  /* Optional Thunderforest layer (board cards 0007 and 0009). Off by default and
+     off after a fresh install: the app must make zero network requests unless
+     asked, because it exists for places with no signal. */
+  var LS_TILES = 'nf.tiles';
+  var tilesOn = false;
+  var tiles = {};
+  var tileCount = 0;
+  var MAX_TILES = 300;
+  var ATTRIB = 'Maps © Thunderforest, Data © OpenStreetMap contributors';
+
   /* ---------- theme ---------- */
   /* Read from the stylesheet rather than duplicated here, so the map follows
      the same dark/light switch as everything else and cannot drift from it. */
@@ -144,6 +154,76 @@ var NFMap = (function () {
     clampView();
   }
 
+  /* ---------- tiles ---------- */
+  function pruneTiles() {
+    /* Cheapest possible eviction: drop everything and let the visible tiles
+       reload from the browser cache, which holds them for a week. Tracking a
+       real LRU would cost more code than it saves for a few hundred images. */
+    tiles = {};
+    tileCount = 0;
+  }
+
+  function getTile(z, x, y) {
+    var k = z + '/' + x + '/' + y;
+    if (tiles[k]) return tiles[k];
+    if (tileCount >= MAX_TILES) pruneTiles();
+
+    var t = { img: new Image(), ok: false, failed: false };
+    tiles[k] = t;
+    tileCount++;
+    t.img.onload = function () { t.ok = true; schedule(); };
+    /* A failed tile is not an error state for the app: the bundled outline is
+       already underneath it, so the map stays readable and simply stays plain. */
+    t.img.onerror = function () { t.failed = true; };
+    t.img.src = 'api/tiles.php?z=' + z + '&x=' + x + '&y=' + y;
+    return t;
+  }
+
+  function drawTiles() {
+    /* Slippy-map zoom whose tiles are closest to 1:1 with the current scale.
+       view.scale is pixels per world unit and a tile is 256px, so the world is
+       256 * 2^z pixels wide at zoom z. */
+    var z = Math.round(Math.log(view.scale / 256) / Math.LN2);
+    z = Math.max(0, Math.min(18, z));
+    var n = Math.pow(2, z);
+    var tilePx = view.scale / n;
+    if (!isFinite(tilePx) || tilePx < 1) return;
+
+    var wx0 = view.cx - (W / 2) / view.scale, wx1 = view.cx + (W / 2) / view.scale;
+    var wy0 = view.cy - (H / 2) / view.scale, wy1 = view.cy + (H / 2) / view.scale;
+    var x0 = Math.floor(wx0 * n), x1 = Math.floor(wx1 * n);
+    var y0 = Math.max(0, Math.floor(wy0 * n)), y1 = Math.min(n - 1, Math.floor(wy1 * n));
+
+    /* A pathological view must not queue thousands of requests against a
+       metered quota; the outline still covers the gap. */
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > MAX_TILES) return;
+
+    for (var x = x0; x <= x1; x++) {
+      for (var y = y0; y <= y1; y++) {
+        var wrapped = ((x % n) + n) % n;
+        var t = getTile(z, wrapped, y);
+        if (!t.ok) continue;
+        /* +1 closes the hairline seams that rounding leaves between tiles. */
+        ctx.drawImage(t.img, sx(x / n), sy(y / n), tilePx + 1, tilePx + 1);
+      }
+    }
+  }
+
+  function setTiles(on) {
+    tilesOn = !!on;
+    try { localStorage.setItem(LS_TILES, tilesOn ? '1' : '0'); } catch (e) { /* private mode */ }
+    var btn = document.getElementById('map-tiles');
+    if (btn) {
+      btn.textContent = tilesOn ? 'Tiles on' : 'Tiles';
+      btn.setAttribute('aria-pressed', tilesOn ? 'true' : 'false');
+    }
+    var hint = document.getElementById('map-hint');
+    if (hint) {
+      hint.textContent = tilesOn ? ATTRIB : 'Tap a marker for details. Pinch to zoom.';
+    }
+    schedule();
+  }
+
   /* ---------- drawing ---------- */
   function draw() {
     if (!ctx) return;
@@ -181,6 +261,11 @@ var NFMap = (function () {
     ctx.strokeStyle = c.coast;
     ctx.lineWidth = 1;
     ctx.stroke();
+
+    /* Tiles go OVER the outline, never instead of it. A tile that fails, times
+       out or is unavailable offline simply reveals the coastline underneath
+       rather than leaving a grey hole. */
+    if (tilesOn) drawTiles();
 
     /* Markers. Rebuilt every frame because the hit test must agree with what
        is on screen; a cached list is how a tap starts landing on the wrong
@@ -362,6 +447,11 @@ var NFMap = (function () {
       var xy = localXY(e);
       zoomAbout(e.deltaY < 0 ? 1.15 : 1 / 1.15, xy.x, xy.y);
     }, { passive: false });
+
+    var tbtn = document.getElementById('map-tiles');
+    if (tbtn) tbtn.addEventListener('click', function () { setTiles(!tilesOn); });
+    try { tilesOn = localStorage.getItem(LS_TILES) === '1'; } catch (e) { tilesOn = false; }
+    setTiles(tilesOn);
 
     document.getElementById('map-fit').addEventListener('click', function () {
       fitToInterest(); schedule();

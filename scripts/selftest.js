@@ -155,6 +155,37 @@ ok('sites with no opening_summary are unknown',
 
 console.log('');
 console.log('');
+console.log('');
+console.log('--- tile layer (optional, must never be load-bearing) ---');
+{
+  const map = fs.readFileSync(path.join(ROOT, 'app', 'map.js'), 'utf8');
+  const php = fs.readFileSync(path.join(ROOT, 'app', 'api', 'tiles.php'), 'utf8');
+
+  ok('tile layer defaults to off', /var tilesOn = false/.test(map));
+  ok('tiles are only fetched when the layer is on', /if \(tilesOn\) drawTiles\(\)/.test(map));
+  // Tiles draw after the outline is filled and stroked, so a failed or offline
+  // tile reveals the coastline rather than a grey hole.
+  ok('tiles draw over the bundled outline, not instead of it',
+     map.indexOf('ctx.fill();') < map.indexOf('if (tilesOn) drawTiles()'));
+  ok('provider attribution is present', /Thunderforest.*OpenStreetMap/.test(map));
+
+  ok('the proxy whitelists styles rather than passing them through', /in_array\(\$style, STYLES/.test(php));
+  ok('the proxy validates z, x and y', /FILTER_VALIDATE_INT/.test(php) && /MAX_ZOOM/.test(php));
+  // curl_error() embeds the request URL, and the URL carries the key.
+  ok('the proxy never echoes curl_error', !/echo\s+\$err|curl_error\(\$ch\)\s*\)/.test(php.replace(/\$err\s*=\s*curl_error\(\$ch\);/, '')));
+  ok('the key is read from outside the web root', /tiles\.key/.test(php) && /\.\.\/\.\.\/\.\./.test(php));
+
+  // The repository is public. A committed key would be readable by anyone.
+  const tracked = require('child_process')
+    .execSync('git ls-files', { cwd: ROOT }).toString().trim().split('\n');
+  const leaked = tracked.filter(f => {
+    if (/\.(png|json)$/.test(f)) return false;
+    const t = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    return /apikey=[0-9a-f]{16,}/i.test(t) || /\b[0-9a-f]{32}\b/.test(t) && /thunderforest/i.test(t);
+  });
+  ok('no provider key is committed anywhere', leaked.length === 0, leaked.join(', '));
+}
+
 console.log('--- update path ---');
 {
   const sw = fs.readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');

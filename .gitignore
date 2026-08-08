@@ -8,3 +8,8 @@ data/raw/
 .DS_Store
 Thumbs.db
 *.log
+
+# Tile provider API key. It lives above the web root on the server and must never
+# be committed: this repository is public.
+tiles.key
+*.key
