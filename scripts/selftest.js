@@ -89,6 +89,23 @@ ok('fitBounds keeps the box inside the viewport',
    })());
 
 
+console.log('\n--- sheet drag (the grip has to actually dismiss) ---');
+// A 600px panel: 28% of it is 168px.
+ok('a short drag springs back', NF.sheetShouldClose(40, 0.1, 600) === false);
+ok('a long drag closes', NF.sheetShouldClose(200, 0.1, 600) === true);
+ok('the threshold scales with panel height',
+   NF.sheetShouldClose(100, 0.1, 600) === false && NF.sheetShouldClose(100, 0.1, 300) === true);
+ok('a fast flick closes without dragging far', NF.sheetShouldClose(30, 1.2, 600) === true);
+ok('a twitchy tap on the grip does not close', NF.sheetShouldClose(4, 1.2, 600) === false);
+ok('dragging upward never closes', NF.sheetShouldClose(-300, 0.1, 600) === false);
+ok('a flick upward never closes', NF.sheetShouldClose(-300, -2, 600) === false);
+ok('no movement never closes', NF.sheetShouldClose(0, 0, 600) === false);
+ok('a zero-height panel does not close on distance alone',
+   NF.sheetShouldClose(500, 0, 0) === false);
+ok('downward drag tracks the finger 1:1', NF.sheetOffset(120) === 120);
+ok('upward drag resists', NF.sheetOffset(-30) > -30 && NF.sheetOffset(-30) < 0);
+ok('upward drag is capped', NF.sheetOffset(-5000) >= -32);
+
 console.log('\n--- sunset (vs api.sunrise-sunset.org, checked 2026-08-08) ---');
 function londonHHMM(d) {
   return d.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' });

@@ -3,6 +3,23 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-08 — The sheet grip drags to dismiss, and only the grip
+**Decision:** The bottom sheets close by dragging their grip down: past 28% of the panel
+height, or any fast downward flick, closes; anything less springs back. The drag zone is
+the grip alone (with an invisibly enlarged hit area), not the panel body. The threshold
+rule lives in `core.js` as `sheetShouldClose` / `sheetOffset`; only the pointer plumbing
+is in `app.js`.
+**Why:** The grip is a standard iOS affordance, so it promised a gesture the app did not
+have, and the fallback was scrolling a long panel to reach Close — the opposite of the
+one-tap-while-driving goal. Restricting the drag to the grip is what keeps it unambiguous:
+the panel body scrolls, so a drag starting there competes with a scroll, which is the usual
+source of a janky sheet. Putting the threshold in `core.js` means the rule is tested in node
+rather than judged by feel on a phone.
+**Trade-off accepted:** You cannot fling the sheet away from anywhere on it, which iOS
+itself allows when the body is already scrolled to the top. Tracking scroll position to
+decide that was more machinery than the gesture is worth here.
+**Status:** active
+
 ## 2026-08-08 — UI icons come from the Mo~oM pack, inlined as SVG
 **Decision:** Interface icons are taken from the Mo~oM 2.2 icon pack (`C:\Dev\Mo~oM 2.2`,
 `Icons-SVG`, the outline style) and pasted into the markup as inline `<svg>`, with the pack's

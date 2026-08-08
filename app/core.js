@@ -13,7 +13,7 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v6-2026-08-08';
+  var BUILD = 'v7-2026-08-08';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -78,6 +78,32 @@
       if (d2 <= bestD2) { bestD2 = d2; best = pts[i]; }
     }
     return best;
+  }
+
+  /* ---- Bottom-sheet drag ------------------------------------------------
+     The sheet has a grip that looks draggable, so it has to be draggable.
+     Kept here rather than in app.js because "did that gesture mean close?" is
+     a rule worth testing, not something to eyeball on a phone. */
+  var SHEET_CLOSE_FRAC = 0.28;   // dragged past this much of the panel -> close
+  var SHEET_FLING_V = 0.5;       // px/ms downward at release -> close regardless
+  var SHEET_FLING_MIN = 24;      // ...but only after this much travel, so a
+                                 // twitchy tap on the grip is not a fling
+  var SHEET_LIFT_MAX = 32;       // how far it rubber-bands upward
+
+  /* How far the panel should actually be offset for a finger that has moved dy.
+     Downward tracks 1:1; upward resists and caps, because the sheet is already
+     as far up as it goes and a dead handle feels broken. */
+  function sheetOffset(dy) {
+    if (dy >= 0) return dy;
+    return Math.max(dy / 3, -SHEET_LIFT_MAX);
+  }
+
+  /* Should releasing here close the sheet? dy is total travel (px, down is
+     positive), v is the release speed in px/ms, height is the panel height. */
+  function sheetShouldClose(dy, v, height) {
+    if (!(dy > 0)) return false;                              // up or nowhere: never
+    if (v >= SHEET_FLING_V && dy >= SHEET_FLING_MIN) return true;   // flicked away
+    return height > 0 && dy >= height * SHEET_CLOSE_FRAC;     // dragged far enough
   }
 
   function compassIdx(deg) { return Math.round(deg / 45) % 8; }
@@ -189,6 +215,7 @@
   return { BUILD: BUILD, ARROWS: ARROWS, POINTS: POINTS, POINT_NAMES: POINT_NAMES,
            projX: projX, projY: projY, unprojX: unprojX, unprojY: unprojY,
            fitBounds: fitBounds, pickNearest: pickNearest,
+           sheetOffset: sheetOffset, sheetShouldClose: sheetShouldClose,
            haversineMi: haversineMi, bearingDeg: bearingDeg,
            compassIdx: compassIdx, pad2: pad2, hhmmToMins: hhmmToMins, sunsetAt: sunsetAt,
            openState: openState, navUrl: navUrl, rank: rank };

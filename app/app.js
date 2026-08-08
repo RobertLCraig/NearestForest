@@ -71,6 +71,69 @@ function render() {
   }).join('');
 }
 
+/* ---------- sheets ---------- */
+/* Every close goes through here: a sheet dragged part-way down carries an inline
+   transform, and reopening without clearing it would show an off-screen panel. */
+function closeSheet(el) {
+  var panel = el.querySelector('.sheet__panel');
+  if (panel) { panel.style.transform = ''; panel.style.transition = ''; panel.style.animation = ''; }
+  el.hidden = true;
+}
+function closeSheets() { closeSheet($('#sheet')); closeSheet($('#chooser')); }
+function showSheet(el) {
+  var panel = el.querySelector('.sheet__panel');
+  if (panel) { panel.style.transform = ''; panel.style.transition = ''; panel.style.animation = ''; }
+  el.hidden = false;
+}
+
+/* Drag-to-dismiss from the grip. The grip is the only drag zone: the panel body
+   scrolls, and a drag started there would be ambiguous with a scroll. */
+function dragSheet(el) {
+  var panel = el.querySelector('.sheet__panel');
+  var grip = el.querySelector('.sheet__grip');
+  if (!panel || !grip) return;
+  var startY = 0, lastY = 0, lastT = 0, v = 0, dragging = false;
+
+  grip.addEventListener('pointerdown', function (e) {
+    dragging = true;
+    startY = lastY = e.clientY;
+    lastT = e.timeStamp;
+    v = 0;
+    panel.style.transition = 'none';
+    panel.style.animation = 'none';        // the open animation would fight the drag
+    try { grip.setPointerCapture(e.pointerId); } catch (err) { /* drag still works while the finger stays put */ }
+  });
+
+  grip.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    var dt = e.timeStamp - lastT;
+    if (dt > 0) v = (e.clientY - lastY) / dt;
+    lastY = e.clientY; lastT = e.timeStamp;
+    panel.style.transform = 'translateY(' + NF.sheetOffset(e.clientY - startY) + 'px)';
+  });
+
+  function release(e) {
+    if (!dragging) return;
+    dragging = false;
+    var dy = e.clientY - startY;
+    panel.style.transition = 'transform .2s ease-out';
+    if (NF.sheetShouldClose(dy, v, panel.offsetHeight)) {
+      panel.style.transform = 'translateY(100%)';
+      // Hide only once it is actually off-screen, so the close is seen rather
+      // than the panel blinking out from under the finger. If something reopened
+      // the sheet inside that window, showSheet cleared the transform and this
+      // timer must not steal it away again.
+      setTimeout(function () {
+        if (panel.style.transform === 'translateY(100%)') closeSheet(el);
+      }, 200);
+    } else {
+      panel.style.transform = '';
+    }
+  }
+  grip.addEventListener('pointerup', release);
+  grip.addEventListener('pointercancel', release);
+}
+
 /* ---------- detail sheet ---------- */
 /* Prefer the rendered copy: it carries _mi/_bear. rank() no longer annotates the
    originals, so DATA.sites is only the fallback for an id not currently on screen. */
@@ -120,13 +183,13 @@ function openSheet(site) {
   }
   h += field('Data checked', site.scraped_at);
   $('#sheet-body').innerHTML = h;
-  $('#sheet').hidden = false;
+  showSheet($('#sheet'));
 }
 
 function openChooser(site) {
   TARGET = site;
   $('#chooser-sub').textContent = site.name + (site.postcode_satnav ? ' · ' + site.postcode_satnav : '');
-  $('#chooser').hidden = false;
+  showSheet($('#chooser'));
 }
 
 /* ---------- geolocation ---------- */
@@ -186,7 +249,7 @@ document.addEventListener('click', function (e) {
   var main = t.closest('[data-id]');
   if (main) { var s2 = siteById(main.getAttribute('data-id')); if (s2) openSheet(s2); return; }
 
-  if (t.closest('[data-close]')) { $('#sheet').hidden = true; $('#chooser').hidden = true; return; }
+  if (t.closest('[data-close]')) { closeSheets(); return; }
 
   var tab = t.closest('.tab');
   if (tab) {
@@ -204,13 +267,13 @@ document.addEventListener('click', function (e) {
   var map = t.closest('[data-app]');
   if (map && TARGET) {
     var url = NF.navUrl(map.getAttribute('data-app'), TARGET);
-    $('#chooser').hidden = true;
+    closeSheet($('#chooser'));
     if (url) window.location.href = url;
   }
 });
 $('#btn-locate').addEventListener('click', function () { locate(true); });
 $('#sheet-nav').addEventListener('click', function () {
-  $('#sheet').hidden = true;
+  closeSheet($('#sheet'));
   if (TARGET) openChooser(TARGET);
 });
 $('#filter').addEventListener('input', function (e) { FILTER = e.target.value.trim(); render(); });
@@ -228,8 +291,13 @@ $('#btn-map').addEventListener('click', function () {
 });
 $('#map-close').addEventListener('click', function () { NFMap.hide(); });
 document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape' && NFMap.isOpen()) NFMap.hide();
+  if (e.key !== 'Escape') return;
+  if (!$('#chooser').hidden) { closeSheet($('#chooser')); return; }
+  if (!$('#sheet').hidden) { closeSheet($('#sheet')); return; }
+  if (NFMap.isOpen()) NFMap.hide();
 });
+dragSheet($('#sheet'));
+dragSheet($('#chooser'));
 
 /* ---------- boot ---------- */
 fetch('data/sites.json').then(function (r) {

@@ -117,7 +117,14 @@ body.is-mapping { overflow:hidden; }
   animation:rise .18s ease-out;
 }
 @keyframes rise { from { transform:translateY(14px); } }
-.sheet__grip { width:38px; height:4px; border-radius:2px; background:var(--line); margin:4px auto 12px; }
+.sheet__grip {
+  width:38px; height:4px; border-radius:2px; background:var(--line); margin:4px auto 12px;
+  position:relative; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none;
+}
+.sheet__grip:active { cursor:grabbing; }
+/* The pill is 4px tall; the thing you can actually grab is not. Extending the hit
+   area rather than the pill keeps the look and makes it hittable at arm's length. */
+.sheet__grip::before { content:''; position:absolute; inset:-16px -80px; }
 .sheet__name { margin:0; font-size:22px; line-height:1.2; }
 .sheet__sub { margin:4px 0 12px; color:var(--dim); font-size:14px; }
 .sheet__actions { display:flex; gap:8px; margin-top:14px; }

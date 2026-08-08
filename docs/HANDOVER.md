@@ -8,7 +8,7 @@
 (bundled outline plus optional tiles). One agent-ready card, **0004**; four cards awaiting an
 adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5.
 _Last updated: 2026-08-08 (map shipped with the optional tile layer; PWA update path fixed;
-header map icon replaced from the Mo~oM pack)_
+header map icon replaced from the Mo~oM pack; sheets now drag to dismiss)_
 
 ## Goal & success criteria
 
@@ -105,7 +105,9 @@ on-device. That split is deliberate and is the thing the two-method comparison i
 - `app/core.js` — all pure logic (distance, bearing, sunset, opening state, deep links, ranking).
   Loaded as `window.NF` in the browser and `require()`d by the tests, so the tests exercise the
   shipped code rather than a copy. **Put new logic here, not in `app.js`.**
-- `app/app.js` — DOM and events only.
+- `app/app.js` — DOM and events only. **All sheet opening and closing goes through
+  `showSheet` / `closeSheet`.** A part-dragged sheet carries an inline `transform`, so a path
+  that sets `hidden` directly will eventually reopen a panel that is off-screen.
 - **UI icons are inline `<svg>` pasted from the Mo~oM 2.2 pack** (`C:\Dev\Mo~oM 2.2/Icons-SVG`,
   outline style), with `stroke="#11181C"` swapped for `currentColor` and a comment naming the source
   `Section/Vector-N`. Do not add an icon as a linked file: inline is what keeps the offline rule and
@@ -160,8 +162,8 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   forest pages fetched with zero failures, 630 car parks from the OGL dataset, both normalised into
   one committed 515 KB JSON. The PWA is complete: two tabs, distance and compass bearing per row,
   filter, detail sheet with opening times and facilities, three-way map chooser, offline service
-  worker, generated icons, dark and light themes. `api/nearest.php` is live and its error paths are
-  tested. `node scripts/selftest.js` passes, covering geometry, sunset against an external reference,
+  worker, generated icons, dark and light themes, and sheets that drag to dismiss from the grip.
+  `api/nearest.php` is live and its error paths are tested. `node scripts/selftest.js` passes, covering geometry, sunset against an external reference,
   deep-link URLs, dataset integrity and the rule that the app never claims a gate is open on a guess.
 - **In progress:** nothing.
 - **Known bugs / broken:** none open. Four were found while shipping the map, all by running things
