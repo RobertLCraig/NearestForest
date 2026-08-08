@@ -3,6 +3,26 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-08 — The offline cache holds ASSETS and nothing else
+**Decision:** The service worker caches exactly the precache list. It writes nothing at
+runtime, and it bails out of `/api/` requests before it can touch them. Tiles stay in the
+browser's HTTP cache, where their 7-day `max-age` already puts them. The page also reloads
+once on `controllerchange`, so a deploy lands on the first online launch rather than the
+second.
+**Why:** `api/tiles.php` is same-origin, so the old "cache any same-origin GET" rule was
+writing every map tile into the app's offline cache: measured at 300 tiles / 6MB from one
+simulated pan. iOS evicts a Cache Storage that outgrows its quota *wholesale*, so the
+optional tile layer could take the mandatory offline copy of the app with it — the app
+would work fine on wifi and be dead in the car park it exists for. This is the tile layer
+becoming load-bearing by the back door, which the 2026-08-08 map decision forbids.
+The reload half is the same bug seen from the other end: a page loaded under the old
+worker keeps running old code, so offline the app could never move off a stale version.
+**Trade-off accepted:** Tiles are no longer available offline beyond whatever the HTTP
+cache happens to hold, and there is one extra reload on the launch after a deploy. Both
+are cheap next to losing the offline dataset. A size-capped tile cache is possible later,
+but it must be a *separate* cache so it can never evict the app.
+**Status:** active
+
 ## 2026-08-08 — The sheet grip drags to dismiss, and only the grip
 **Decision:** The bottom sheets close by dragging their grip down: past 28% of the panel
 height, or any fast downward flick, closes; anything less springs back. The drag zone is

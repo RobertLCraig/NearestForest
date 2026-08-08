@@ -235,6 +235,28 @@ console.log('--- update path ---');
   const ht = fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8');
   ok('the app shell is not HTTP-cached', /\(html\|css\|js\|json\|webmanifest\)/.test(ht) &&
      /Cache-Control "no-cache"/.test(ht));
+
+  // The offline cache must stay exactly as big as ASSETS. api/tiles.php is
+  // same-origin, so a handler that caches same-origin misses quietly fills the
+  // app's offline cache with map tiles until iOS evicts the lot.
+  ok('the service worker never caches api/ responses',
+     /\/api\//.test(sw) && /pathname\.indexOf\('\/api\/'\)/.test(sw),
+     'fetch handler must bail out on api/ before it can cache anything');
+  ok('the service worker writes nothing at runtime',
+     !/c\.put\(req/.test(sw) && (sw.match(/\.put\(/g) || []).length === 1,
+     'the only put() belongs to install; a runtime put grows the cache without bound');
+  ok('cache lookups are scoped to the current cache name',
+     !/caches\.match\((req|'\.\/index\.html')\)/.test(sw) &&
+     /cacheName:\s*CACHE/.test(sw),
+     'an unscoped caches.match() lets a stale cache answer mid-update');
+
+  const appjs = fs.readFileSync(path.join(ROOT, 'app', 'app.js'), 'utf8');
+  // Without this a deploy takes two online launches to show up, and offline it
+  // never shows up at all -- which is how drag-to-dismiss appeared to be broken.
+  ok('the page reloads when a new worker takes over',
+     /controllerchange/.test(appjs) && /location\.reload/.test(appjs));
+  ok('the update reload cannot loop or fire on a first visit',
+     /hadController/.test(appjs) && /reloadingForUpdate/.test(appjs));
 }
 
 console.log('--- offline precache ---');

@@ -316,6 +316,18 @@ fetch('data/sites.json').then(function (r) {
 });
 
 if ('serviceWorker' in navigator) {
+  /* A page loaded under the old worker keeps running the old code even after the new
+     one has installed and taken over, so a deploy needed TWO online launches to appear
+     and never appeared at all while offline. Reload once when control changes hands.
+     Guarded on there having been a controller to begin with: on a first-ever visit
+     clients.claim() also fires this, and there is nothing stale to replace. */
+  var hadController = !!navigator.serviceWorker.controller;
+  var reloadingForUpdate = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (!hadController || reloadingForUpdate) return;
+    reloadingForUpdate = true;
+    window.location.reload();
+  });
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('sw.js').catch(function (e) {
       console.warn('Service worker registration failed, so offline use is unavailable:', e);

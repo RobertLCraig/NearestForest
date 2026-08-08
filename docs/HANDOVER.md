@@ -7,8 +7,8 @@
 **Status:** Deployed, installed to the Home Screen, and working on the device. Map complete
 (bundled outline plus optional tiles). One agent-ready card, **0004**; four cards awaiting an
 adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5.
-_Last updated: 2026-08-08 (map shipped with the optional tile layer; PWA update path fixed;
-header map icon replaced from the Mo~oM pack; sheets now drag to dismiss)_
+_Last updated: 2026-08-08 (map shipped; header map icon replaced from the Mo~oM pack; sheets
+drag to dismiss; **the offline cache no longer swallows map tiles** — see Known bugs)_
 
 ## Goal & success criteria
 
@@ -122,6 +122,9 @@ on-device. That split is deliberate and is the thing the two-method comparison i
   through the browser HTTP cache, so without it a fresh cache name gets filled with stale bytes and
   no amount of bumping helps. That is exactly what made the map render on desktop and not on the
   phone on 2026-08-08.
+  **The fetch handler must never write to the cache and must skip `/api/`.** `api/tiles.php` is
+  same-origin, so a "cache any same-origin GET" rule quietly fills the offline cache with map
+  tiles until iOS evicts the whole thing, app included. Self-tests enforce both. See DECISIONS.
 - `app/.htaccess` — **the shell is deliberately `Cache-Control: no-cache`.** The service worker
   cache name already versions it, so HTTP-caching code and data buys nothing and breaks updates for
   the reason above. Only images carry a long max-age. Do not "optimise" this back.
@@ -166,7 +169,19 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   `api/nearest.php` is live and its error paths are tested. `node scripts/selftest.js` passes, covering geometry, sunset against an external reference,
   deep-link URLs, dataset integrity and the rule that the app never claims a gate is open on a guess.
 - **In progress:** nothing.
-- **Known bugs / broken:** none open. Four were found while shipping the map, all by running things
+- **Known bugs / broken:** none open, but the most serious one yet was found and fixed this
+  session, by Rob running the offline check rather than by anyone reading the code.
+  **The service worker was caching every map tile into the app's offline cache** (`api/tiles.php`
+  is same-origin), 6MB per pan session and unbounded. On iOS an over-quota Cache Storage is
+  evicted wholesale, so the *optional* tile layer could destroy the *mandatory* offline copy.
+  It presented as "drag-to-dismiss does not work in aeroplane mode, works once I go online,
+  breaks again next launch", i.e. the app silently running an old build. Fixed by holding only
+  ASSETS in the cache, skipping `/api/`, and reloading once on `controllerchange` so an update
+  lands on the first online launch instead of the second.
+  **The lesson is the one 0001 check 5 exists for: the offline path is not testable by
+  inspection, and both real offline bugs so far were invisible until someone ran it.**
+
+  Four earlier bugs were found while shipping the map, all by running things
   rather than reading them, and all fixed: a fixed-length smoke-test compare that failed a working
   endpoint; `deploy.sh` executing a splice of its old and new selves because the `git pull` it had
   just run rewrote the file bash was reading; the service worker precaching stale bytes (below);
@@ -202,6 +217,10 @@ immediately. Four cards need Rob, and they fit in one conversation:
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. Checks 1 to 4 now pass on the device. This is the last unevidenced PRD criterion
   and the reason the app exists rather than using Forestry England's own finder.
+  **Partly run on 2026-08-08 and it failed**, which is how the tile-eviction bug above was found.
+  It must be re-run from a cold launch on v8 or later, and it is worth deleting the app from the
+  Home Screen and re-adding it first, so the check starts from a clean cache rather than one this
+  bug already filled.
 - **0010** — rotate the Thunderforest key, which reached a chat transcript. Hygiene, not an
   incident: nothing leaked into the repo and the server copy is 600 above the web root.
 - **0002** — build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
