@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Nearest Forest</title>
+<meta name="description" content="Closest Forestry England site, one tap to navigate.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Forest">
+<meta name="theme-color" content="#0f1a12">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar__row">
+    <h1 class="bar__title">Nearest Forest</h1>
+    <button id="btn-locate" class="iconbtn" aria-label="Refresh my location" title="Refresh location">
+      <span class="iconbtn__glyph" aria-hidden="true">&#10227;</span>
+    </button>
+  </div>
+  <p id="status" class="status status--wait" role="status" aria-live="polite">Getting your location&hellip;</p>
+  <nav class="tabs" role="tablist">
+    <button class="tab is-active" role="tab" aria-selected="true"  data-tab="forest">Forests</button>
+    <button class="tab"           role="tab" aria-selected="false" data-tab="carpark">Car parks</button>
+  </nav>
+  <input id="filter" class="filter" type="search" placeholder="Filter by name&hellip;"
+         autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Filter by name">
+</header>
+
+<main>
+  <ol id="list" class="list" aria-label="Sites sorted by distance"></ol>
+  <p id="empty" class="empty" hidden>No sites match that filter.</p>
+  <footer class="foot">
+    <p id="meta"></p>
+    <p>Contains public sector information licensed under the Open Government Licence v3.0.
+       Forest details from Forestry England. Personal use; not affiliated with Forestry England.</p>
+  </footer>
+</main>
+
+<!-- Detail sheet -->
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet__scrim" data-close></div>
+  <section class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="sheet-name">
+    <div class="sheet__grip"></div>
+    <h2 id="sheet-name" class="sheet__name"></h2>
+    <p id="sheet-sub" class="sheet__sub"></p>
+    <dl id="sheet-body" class="kv"></dl>
+    <div class="sheet__actions">
+      <button id="sheet-nav" class="btn btn--go">Navigate</button>
+      <button class="btn btn--ghost" data-close>Close</button>
+    </div>
+  </section>
+</div>
+
+<!-- Map app chooser -->
+<div id="chooser" class="sheet" hidden>
+  <div class="sheet__scrim" data-close></div>
+  <section class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="chooser-title">
+    <div class="sheet__grip"></div>
+    <h2 id="chooser-title" class="sheet__name">Open in</h2>
+    <p id="chooser-sub" class="sheet__sub"></p>
+    <div class="chooser">
+      <button class="btn btn--map" data-app="apple">Apple Maps</button>
+      <button class="btn btn--map" data-app="google">Google Maps</button>
+      <button class="btn btn--map" data-app="waze">Waze</button>
+      <button class="btn btn--ghost" data-close>Cancel</button>
+    </div>
+  </section>
+</div>
+
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

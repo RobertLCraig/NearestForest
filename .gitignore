@@ -1,0 +1,10 @@
+# Regenerable scrape cache: 142 MB of raw Forestry England HTML.
+# Rebuild with `python scripts/fetch.py` (resumable, skips anything already cached).
+data/raw/
+
+# The generated dataset IS committed on purpose: it is what the app ships and what makes
+# the repo a working app rather than a build recipe. Regenerate with scripts/parse.py.
+
+.DS_Store
+Thumbs.db
+*.log
