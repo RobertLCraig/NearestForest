@@ -25,14 +25,27 @@ BRANCH="${BRANCH:-main}"
 
 cd "$REPO_DIR" || { echo "FAIL: cannot find $REPO_DIR"; exit 1; }
 
-echo ""
-echo "=================================================="
-echo " $SITE - Deploy  $(date '+%Y-%m-%d %H:%M %Z')"
-echo "=================================================="
+# This script is itself part of what the pull updates. Bash reads a script
+# incrementally from disk rather than loading it whole, so carrying straight on
+# after `git pull` runs a splice of the old and new file, from whatever byte
+# offset the reader had reached. That is how a passing endpoint first reported
+# itself broken here. So stage 1 does nothing but pull, then re-execs the
+# freshly pulled copy, and everything that inspects the deploy runs in stage 2.
+if [ "${NF_DEPLOY_STAGE:-1}" = "1" ]; then
+    echo ""
+    echo "=================================================="
+    echo " $SITE - Deploy  $(date '+%Y-%m-%d %H:%M %Z')"
+    echo "=================================================="
 
-echo ""
-echo "[1/4] Pulling latest code from $BRANCH..."
-git pull --ff-only origin "$BRANCH"
+    echo ""
+    echo "[1/4] Pulling latest code from $BRANCH..."
+    git pull --ff-only origin "$BRANCH"
+
+    export NF_DEPLOY_STAGE=2 SITE REPO_DIR DOCROOT BRANCH
+    exec bash "$REPO_DIR/scripts/deploy.sh"
+fi
+
+# ---- stage 2: runs from the just-pulled copy of this file -------------------
 
 echo ""
 echo "[2/4] Checking the docroot symlink..."
