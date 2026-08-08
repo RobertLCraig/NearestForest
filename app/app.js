@@ -31,6 +31,7 @@ function render() {
   var sites = NF.rank(DATA.sites, TAB, POS, FILTER);
   RENDERED = sites;
   emptyEl.hidden = sites.length > 0;
+  if (typeof NFMap !== 'undefined') NFMap.refresh();
 
   listEl.innerHTML = sites.map(function (s, i) {
     var st = NF.openState(s);
@@ -213,6 +214,22 @@ $('#sheet-nav').addEventListener('click', function () {
   if (TARGET) openChooser(TARGET);
 });
 $('#filter').addEventListener('input', function (e) { FILTER = e.target.value.trim(); render(); });
+
+/* ---------- map ---------- */
+/* The map reads the same ranked list the rows are built from, so the two can
+   never disagree about which sites are shown or which one is nearest. */
+NFMap.init({
+  getSites: function () { return RENDERED; },
+  getPos: function () { return POS; },
+  onPick: function (site) { openSheet(site); }
+});
+$('#btn-map').addEventListener('click', function () {
+  if (NFMap.isOpen()) NFMap.hide(); else NFMap.show();
+});
+$('#map-close').addEventListener('click', function () { NFMap.hide(); });
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && NFMap.isOpen()) NFMap.hide();
+});
 
 /* ---------- boot ---------- */
 fetch('data/sites.json').then(function (r) {

@@ -88,6 +88,24 @@ button { font:inherit; color:inherit; }
 .foot p { margin:0 0 6px; }
 
 /* ---------- sheets ---------- */
+/* ---------- map ----------
+   z-index 30 sits above the sticky header (20) and below the detail sheet (50),
+   so tapping a marker opens the sheet over the map rather than behind it. */
+.map { position:fixed; inset:0; z-index:30; background:var(--bg); }
+.map__canvas { display:block; width:100%; height:100%; touch-action:none; }
+.map__bar {
+  position:absolute; left:0; right:0; top:calc(var(--safe-t) + 8px);
+  display:flex; gap:8px; justify-content:center; padding:0 var(--pad);
+}
+.map__btn { padding:8px 14px; font-size:15px; backdrop-filter:blur(6px); background:var(--bg2); opacity:.94; }
+.map__hint {
+  position:absolute; left:0; right:0; bottom:calc(var(--safe-b) + 10px);
+  margin:0; text-align:center; font-size:13px; color:var(--dim);
+  text-shadow:0 1px 3px var(--bg);
+}
+/* The list underneath must not scroll while the map has the screen. */
+body.is-mapping { overflow:hidden; }
+
 .sheet { position:fixed; inset:0; z-index:50; display:flex; align-items:flex-end; }
 .sheet[hidden] { display:none; }
 .sheet__scrim { position:absolute; inset:0; background:rgba(0,0,0,.55); }

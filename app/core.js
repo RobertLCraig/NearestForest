@@ -34,6 +34,47 @@
     return (Math.atan2(y, x) / r + 360) % 360;
   }
 
+  /* ---- Web Mercator, for the map view ----------------------------------
+     Normalised so the whole world is a 1x1 square with (0,0) at the top left,
+     which keeps every map calculation independent of pixel size and zoom. It
+     is the same projection the tile layer will want later (card 0009), so the
+     two cannot disagree about where a marker goes. */
+  function projX(lng) { return (lng + 180) / 360; }
+  function projY(lat) {
+    /* Clamped just short of the poles: the projection is infinite there and a
+       NaN would silently drop a marker rather than misplace it visibly. */
+    var s = Math.sin(Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180);
+    return 0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI);
+  }
+  function unprojX(x) { return x * 360 - 180; }
+  function unprojY(y) {
+    var n = Math.PI * (1 - 2 * y);
+    return Math.atan(Math.sinh(n)) * 180 / Math.PI;
+  }
+
+  /* Scale and centre that fit a lng/lat bbox into w x h pixels. Returned as
+     world units so the caller can clamp or animate it before drawing. */
+  function fitBounds(bbox, w, h, padPx) {
+    var pad = padPx || 0;
+    var x0 = projX(bbox[0]), x1 = projX(bbox[2]);
+    var y0 = projY(bbox[3]), y1 = projY(bbox[1]);   /* north is the smaller y */
+    var dx = Math.max(1e-9, x1 - x0), dy = Math.max(1e-9, y1 - y0);
+    var scale = Math.min((w - pad * 2) / dx, (h - pad * 2) / dy);
+    return { scale: scale, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
+  }
+
+  /* Nearest of a set of screen-space points within maxPx, or null. Pure, so
+     the tap-target size is covered by the self-tests rather than by poking at
+     a phone: a marker you cannot reliably hit is the map's main failure mode. */
+  function pickNearest(pts, x, y, maxPx) {
+    var best = null, bestD2 = maxPx * maxPx, i, dx, dy, d2;
+    for (i = 0; i < pts.length; i++) {
+      dx = pts[i].x - x; dy = pts[i].y - y; d2 = dx * dx + dy * dy;
+      if (d2 <= bestD2) { bestD2 = d2; best = pts[i]; }
+    }
+    return best;
+  }
+
   function compassIdx(deg) { return Math.round(deg / 45) % 8; }
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
@@ -141,6 +182,8 @@
   }
 
   return { ARROWS: ARROWS, POINTS: POINTS, POINT_NAMES: POINT_NAMES,
+           projX: projX, projY: projY, unprojX: unprojX, unprojY: unprojY,
+           fitBounds: fitBounds, pickNearest: pickNearest,
            haversineMi: haversineMi, bearingDeg: bearingDeg,
            compassIdx: compassIdx, pad2: pad2, hhmmToMins: hhmmToMins, sunsetAt: sunsetAt,
            openState: openState, navUrl: navUrl, rank: rank };

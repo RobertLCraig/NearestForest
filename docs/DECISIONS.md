@@ -3,6 +3,25 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-08 — A map with a bundled outline always, and tiles only as a bonus
+**Decision:** Add a map view for picking a site. Its basemap is a simplified England/GB outline
+bundled with the app and drawn offline; real raster tiles are layered over it only when a
+connection exists, behind a toggle. This creates the single permitted exception to "no external
+requests at runtime": the tile layer. With tiles off, the app must still make zero requests, and
+nothing the app needs may ever depend on the network.
+**Why:** Rob asked for "a visible map (same as forestry england already provides)", which is a tile
+map, and the founding constraint is the opposite because forest car parks have no signal. Both were
+achievable: the spatial job (see what is over that way, tap it) needs only a coastline, your dot and
+904 site dots, and that fits in the bundle. Tiles then buy familiarity and road context when signal
+allows, without ever being load-bearing. A tiles-only map would be dead in exactly the car park the
+app exists for; an outline-only map answers the question but looks schematic.
+**Trade-off accepted:** More work than either half alone, and the tile layer brings a provider key
+and sends the viewport to a third party whenever it is switched on. That is why it is off by
+default and why the outline is never removed from underneath it.
+**Supersedes:** the absolute reading of "no external requests at runtime" in CLAUDE.md, which is
+updated rather than left to be discovered as a contradiction.
+**Status:** active
+
 ## 2026-08-08 — Deploy by git pull, with the docroot symlinked into the checkout
 **Decision:** The app is served from `forestlocator.enhanceify.co.uk`, deployed by pushing to a
 public GitHub repo (`RobertLCraig/NearestForest`) and running `git pull` on the Hostinger host. The

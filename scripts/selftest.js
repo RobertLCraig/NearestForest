@@ -51,6 +51,44 @@ ok('every compass index has an arrow and a name',
      return NF.ARROWS[i] && NF.POINTS[i] && NF.POINT_NAMES[i];
    }));
 
+console.log('');
+console.log('--- web mercator projection (map view) ---');
+ok('equator projects to the vertical middle', Math.abs(NF.projY(0) - 0.5) < 1e-12);
+ok('greenwich projects to the horizontal middle', Math.abs(NF.projX(0) - 0.5) < 1e-12);
+ok('north is a smaller y than south', NF.projY(55) < NF.projY(50));
+ok('east is a larger x than west', NF.projX(1) > NF.projX(-1));
+// Round-tripping is what stops a marker drifting from where a tap lands.
+ok('lng round-trips', Math.abs(NF.unprojX(NF.projX(-0.0894)) - -0.0894) < 1e-9);
+ok('lat round-trips', Math.abs(NF.unprojY(NF.projY(50.8168)) - 50.8168) < 1e-9);
+ok('lat round-trips at the top of Scotland', Math.abs(NF.unprojY(NF.projY(60.8)) - 60.8) < 1e-9);
+// A pole would be infinity in Mercator; a NaN there would drop markers silently.
+ok('poles are clamped rather than infinite', isFinite(NF.projY(90)) && isFinite(NF.projY(-90)));
+ok('fitBounds centres on the box',
+   (() => {
+     const f = NF.fitBounds([-6, 50, 2, 59], 400, 600, 0);
+     return Math.abs(f.cx - (NF.projX(-6) + NF.projX(2)) / 2) < 1e-12 &&
+            Math.abs(f.cy - (NF.projY(59) + NF.projY(50)) / 2) < 1e-12;
+   })());
+ok('pickNearest returns null when nothing is in range',
+   NF.pickNearest([{ x: 100, y: 100 }], 0, 0, 20) === null);
+ok('pickNearest finds a marker under the finger',
+   NF.pickNearest([{ x: 10, y: 10, id: 'a' }, { x: 200, y: 200, id: 'b' }], 12, 12, 20).id === 'a');
+ok('pickNearest prefers the closer of two overlapping markers',
+   NF.pickNearest([{ x: 0, y: 0, id: 'far' }, { x: 5, y: 0, id: 'near' }], 6, 0, 20).id === 'near');
+// Exactly on the radius must still register, or the tap target is a pixel
+// smaller than advertised and edge taps feel dead.
+ok('pickNearest includes the boundary of the radius',
+   NF.pickNearest([{ x: 20, y: 0, id: 'edge' }], 0, 0, 20).id === 'edge');
+
+ok('fitBounds keeps the box inside the viewport',
+   (() => {
+     const w = 400, h = 600, f = NF.fitBounds([-6, 50, 2, 59], w, h, 10);
+     const wpx = (NF.projX(2) - NF.projX(-6)) * f.scale;
+     const hpx = (NF.projY(50) - NF.projY(59)) * f.scale;
+     return wpx <= w - 19.9 && hpx <= h - 19.9;
+   })());
+
+
 console.log('\n--- sunset (vs api.sunrise-sunset.org, checked 2026-08-08) ---');
 function londonHHMM(d) {
   return d.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' });
@@ -113,6 +151,81 @@ ok('sites with no opening_summary are unknown',
   ok('dusk site is closed at 23:30 in June', night.state === 'closed', JSON.stringify(night));
   const always = forests.find(s => s.opening_summary && s.opening_summary.access === 'always');
   ok('24h site is open at 03:00', NF.openState(always, new Date('2026-01-15T03:00:00Z')).state === 'open');
+}
+
+console.log('');
+console.log('--- offline precache ---');
+{
+  const sw = fs.readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');
+  const html = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8');
+  const listed = new Set([...sw.matchAll(/'\.\/([^']*)'/g)].map(m => m[1]));
+
+  // Everything index.html pulls in must be precached, or the app half-works
+  // offline: the shell loads and the missing piece fails silently, somewhere
+  // with no signal, which is the one place that must not happen.
+  const referenced = [
+    ...[...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
+    ...[...html.matchAll(/<link[^>]+href="([^"]+)"/g)].map(m => m[1])
+  ].filter(u => !/^https?:/.test(u));
+
+  referenced.forEach(u => {
+    ok('sw precaches ' + u, listed.has(u), 'not in the ASSETS list in sw.js');
+  });
+  ok('sw precaches the map outline', listed.has('data/boundary.json'));
+  ok('sw precaches the dataset', listed.has('data/sites.json'));
+
+  // addAll is atomic: one 404 fails the whole install, so a listed-but-absent
+  // file means the app never becomes offline-capable at all.
+  [...listed].forEach(u => {
+    if (u === '') return;                      // './' is the directory index
+    ok('precached file exists: ' + u, fs.existsSync(path.join(ROOT, 'app', u)));
+  });
+}
+
+console.log('');
+console.log('--- map outline registration ---');
+{
+  const B = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'boundary.json'), 'utf8'));
+  const P = B.precision;
+  const decode = (flat) => {
+    const pts = []; let x = 0, y = 0;
+    for (let i = 0; i < flat.length; i += 2) { x += flat[i]; y += flat[i + 1]; pts.push([x / P, y / P]); }
+    return pts;
+  };
+  const rings = B.parts.flatMap(p => p.rings.map(decode));
+
+  const inRing = (ring, lng, lat) => {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      if ((yi > lat) !== (yj > lat) &&
+          lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  };
+  const onLand = (lng, lat) => rings.some(r => inRing(r, lng, lat));
+
+  ok('outline declares the vertex count it contains',
+     B.vertices === rings.reduce((n, r) => n + r.length, 0));
+
+  // Registration: if the projection or the source were wrong, inland sites
+  // would land in the sea and the map would be confidently misleading.
+  const inland = [
+    ['Kielder', 55.2333, -2.5667], ['Sherwood', 53.2050, -1.0700],
+    ['Grizedale', 54.3670, -3.0350], ['Forest of Dean', 51.8100, -2.5800]
+  ];
+  inland.forEach(([name, lat, lng]) => ok('outline contains ' + name, onLand(lng, lat)));
+  ok('outline excludes a point in the North Sea', !onLand(2.5, 54.0));
+  ok('outline excludes a point in the Irish Sea', !onLand(-5.0, 53.6));
+
+  // Coastal sites can fall marginally outside a 450m-simplified coastline, so
+  // this is a proportion rather than an absolute: a projection error would put
+  // the figure near zero, not near 100.
+  const sites = DATA.sites;
+  const hits = sites.filter(s => onLand(s.lng, s.lat)).length;
+  const pct = (hits / sites.length) * 100;
+  ok('at least 90% of sites fall inside the outline',
+     pct >= 90, `${pct.toFixed(1)}% of ${sites.length} sites (${sites.length - hits} outside)`);
 }
 
 console.log('\n--- ranking from Brighton ---');

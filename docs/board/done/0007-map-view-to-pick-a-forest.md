@@ -57,3 +57,15 @@ phone, the outline turns out to be too sparse to orient by, option 3 is a clean 
 it rather than a rewrite, so choosing 1 now does not close the door on tiles later.
 
 ## Decided
+**2026-08-08** Option 3. Bundled vector outline as the always-present base, with real tiles layered
+over it when there is a connection, and a toggle. So the app never shows a blank map, and it looks
+like Forestry England's when signal allows.
+
+Consequence, recorded so it is not rediscovered: this qualifies the CLAUDE.md rule "no external
+requests at runtime". The rule now has exactly one exception, the optional tile layer, and the
+exception is bounded: nothing the app *needs* may go over the network, and with tiles off the app
+must still make zero requests. CLAUDE.md updated to say so, because a future agent reading the old
+absolute would delete the tile layer as a violation.
+
+Split into two cards, because the halves have different blockers: 0008 is the offline map and is
+agent-ready now; 0009 is the tile layer and needs Rob to obtain a provider key first.

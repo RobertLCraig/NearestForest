@@ -19,6 +19,9 @@
 <header class="bar">
   <div class="bar__row">
     <h1 class="bar__title">Nearest Forest</h1>
+    <button id="btn-map" class="iconbtn" aria-label="Show the map" title="Map">
+      <span class="iconbtn__glyph" aria-hidden="true">&#9678;</span>
+    </button>
     <button id="btn-locate" class="iconbtn" aria-label="Refresh my location" title="Refresh location">
       <span class="iconbtn__glyph" aria-hidden="true">&#10227;</span>
     </button>
@@ -41,6 +44,17 @@
        Forest details from Forestry England. Personal use; not affiliated with Forestry England.</p>
   </footer>
 </main>
+
+<!-- Map. Full-screen over the list; the bundled outline means it works offline. -->
+<div id="map" class="map" hidden>
+  <canvas id="map-canvas" class="map__canvas"></canvas>
+  <div class="map__bar">
+    <button id="map-close" class="btn btn--ghost map__btn">Close</button>
+    <button id="map-fit" class="btn btn--ghost map__btn">Near me</button>
+    <button id="map-all" class="btn btn--ghost map__btn">All</button>
+  </div>
+  <p id="map-hint" class="map__hint">Tap a marker for details. Pinch to zoom.</p>
+</div>
 
 <!-- Detail sheet -->
 <div id="sheet" class="sheet" hidden>
@@ -74,6 +88,7 @@
 </div>
 
 <script src="core.js"></script>
+<script src="map.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
