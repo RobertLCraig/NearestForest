@@ -1,25 +1,31 @@
 # Optional tile layer over the offline map
 
 ## What I need from you
-**Choose a tile provider and create the account**, then tell me which one. I cannot: it needs a
-signup, it may need card details even on a free tier, and the choice has a cost and a privacy
-consequence that is yours to accept.
+**Provider chosen 2026-08-08: Thunderforest.** One action left, and only you can do it:
+
+1. Sign up at <https://www.thunderforest.com/pricing/> (the free Hobby plan is 150k tiles/month,
+   which this will not come close to) and copy your API key.
+2. Put it on the server, outside the web root so it can never be served:
+
+       ssh hostinger "printf '%s' 'YOUR_KEY_HERE' > ~/domains/forestlocator.enhanceify.co.uk/tiles.key && chmod 600 ~/domains/forestlocator.enhanceify.co.uk/tiles.key"
+
+   *Pass:* `ssh hostinger "ls -l ~/domains/forestlocator.enhanceify.co.uk/tiles.key"` shows a
+   `-rw-------` file. Do not paste the key into chat or into the repo; it belongs only in that file.
+
+Then tell me it is in place and I will build the layer against it.
+
+**Do not commit the key**, and note it lives one directory *above* `public_html`, so even a
+misconfigured Apache cannot hand it out.
 
 Blocked on that. Everything else about this card is buildable once a provider exists.
 
-Three that suit a personal app, all with a free tier:
+Rob picked Thunderforest from MapTiler / Thunderforest / Ordnance Survey. Its **Outdoors** style
+shows woodland and footpaths, which is the closest of the three to what Forestry England render and
+the most useful detail for this particular job.
 
-1. **MapTiler** — free tier around 100k tiles/month, UK-styled maps available.
-2. **Thunderforest** — has an "Outdoors" style showing woodland and footpaths, which is the closest
-   to what Forestry England render.
-3. **Ordnance Survey Maps API** — OS Leisure styling, the most recognisable basemap for British
-   forests, free tier for personal use.
-
-What to tell me: which provider, and whether you would rather the key sat in a gitignored file on
-the server and got proxied through `api/tiles.php` (keeps it out of the public repo, costs a hop),
-or be a domain-restricted key embedded in the client (simpler, only usable from our own domain).
-My recommendation is **Thunderforest Outdoors, proxied**, because woodland and footpath detail is
-what actually helps here and proxying keeps a public repo clean.
+Key handling follows the recommendation: **proxied through `api/tiles.php`**, key in a file above
+the web root. The repo is public, so an embedded key would be readable by anyone; a proxy also means
+the key can be rotated without redeploying the app.
 
 ## Why
 Card 0007 decided the map gets real tiles when there is signal, layered over the bundled outline

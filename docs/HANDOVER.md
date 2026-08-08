@@ -101,8 +101,16 @@ on-device. That split is deliberate and is the thing the two-method comparison i
 - `app/app.js` — DOM and events only.
 - `app/api/nearest.php` — mirrors `haversineMi()` from `core.js`. Change one, change both.
 - `app/sw.js` — precaches everything. **`CACHE` must be bumped whenever the data or app changes**,
-  or installed copies keep the old dataset forever. `deploy.ps1` now refuses to ship an `app/`
-  change that did not bump it.
+  or installed copies keep the old dataset forever. `deploy.ps1` refuses to ship an `app/` change
+  that did not bump it, and `core.js` `BUILD` must match the cache name (a self-test enforces it;
+  the footer shows it, which is how you tell what a phone is actually running).
+  **Install fetches with `cache: 'reload'` on purpose. Do not remove it.** `addAll()` fetches
+  through the browser HTTP cache, so without it a fresh cache name gets filled with stale bytes and
+  no amount of bumping helps. That is exactly what made the map render on desktop and not on the
+  phone on 2026-08-08.
+- `app/.htaccess` — **the shell is deliberately `Cache-Control: no-cache`.** The service worker
+  cache name already versions it, so HTTP-caching code and data buys nothing and breaks updates for
+  the reason above. Only images carry a long max-age. Do not "optimise" this back.
 - `scripts/fetch.py` — resumable and cached; re-running costs zero requests for pages already held.
 - `scripts/parse.py` — the only place the HTML shape is understood. Exits non-zero rather than
   emitting a partial dataset.
