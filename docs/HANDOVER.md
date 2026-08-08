@@ -7,7 +7,8 @@
 **Status:** Deployed, installed to the Home Screen, and working on the device. Map complete
 (bundled outline plus optional tiles). One agent-ready card, **0004**; four cards awaiting an
 adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5.
-_Last updated: 2026-08-08 (map shipped with the optional tile layer; PWA update path fixed)_
+_Last updated: 2026-08-08 (map shipped with the optional tile layer; PWA update path fixed;
+header map icon replaced from the Mo~oM pack)_
 
 ## Goal & success criteria
 
@@ -105,6 +106,11 @@ on-device. That split is deliberate and is the thing the two-method comparison i
   Loaded as `window.NF` in the browser and `require()`d by the tests, so the tests exercise the
   shipped code rather than a copy. **Put new logic here, not in `app.js`.**
 - `app/app.js` — DOM and events only.
+- **UI icons are inline `<svg>` pasted from the Mo~oM 2.2 pack** (`C:\Dev\Mo~oM 2.2/Icons-SVG`,
+  outline style), with `stroke="#11181C"` swapped for `currentColor` and a comment naming the source
+  `Section/Vector-N`. Do not add an icon as a linked file: inline is what keeps the offline rule and
+  the precache list honest. See DECISIONS 2026-08-08. `scripts/make_icons.py` is a different thing —
+  it generates the *app* icon (the conifer), which is a real PNG because a manifest needs one.
 - `app/api/nearest.php` — mirrors `haversineMi()` from `core.js`. Change one, change both.
 - `app/sw.js` — precaches everything. **`CACHE` must be bumped whenever the data or app changes**,
   or installed copies keep the old dataset forever. `deploy.ps1` refuses to ship an `app/` change
@@ -145,7 +151,8 @@ requirement); dataset bundled with no runtime API calls; sat-nav postcode wins o
 modelled as a mode with dusk computed from latitude; a small PHP endpoint for the Shortcut only;
 two front ends over one dataset; named forests as the default tab; deploy by `git pull` with the
 docroot symlinked into the checkout; the vhost PHP version pinned rather than inherited; a map
-whose basemap is a bundled outline always, with tiles only ever an optional extra on top.
+whose basemap is a bundled outline always, with tiles only ever an optional extra on top; UI icons
+taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Unicode glyph.
 
 ## Current state
 
@@ -154,11 +161,11 @@ whose basemap is a bundled outline always, with tiles only ever an optional extr
   one committed 515 KB JSON. The PWA is complete: two tabs, distance and compass bearing per row,
   filter, detail sheet with opening times and facilities, three-way map chooser, offline service
   worker, generated icons, dark and light themes. `api/nearest.php` is live and its error paths are
-  tested. 34 self-tests pass, covering geometry, sunset against an external reference, deep-link
-  URLs, dataset integrity and the rule that the app never claims a gate is open on a guess.
+  tested. `node scripts/selftest.js` passes, covering geometry, sunset against an external reference,
+  deep-link URLs, dataset integrity and the rule that the app never claims a gate is open on a guess.
 - **In progress:** nothing.
-- **Known bugs / broken:** none open. Four were found this session, all by running things rather
-  than reading them, and all fixed: a fixed-length smoke-test compare that failed a working
+- **Known bugs / broken:** none open. Four were found while shipping the map, all by running things
+  rather than reading them, and all fixed: a fixed-length smoke-test compare that failed a working
   endpoint; `deploy.sh` executing a splice of its old and new selves because the `git pull` it had
   just run rewrote the file bash was reading; the service worker precaching stale bytes (below);
   and a committed-key guard that both crashed on a pending rename and cried wolf on an unrelated

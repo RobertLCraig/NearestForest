@@ -3,6 +3,21 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-08 — UI icons come from the Mo~oM pack, inlined as SVG
+**Decision:** Interface icons are taken from the Mo~oM 2.2 icon pack (`C:\Dev\Mo~oM 2.2`,
+`Icons-SVG`, the outline style) and pasted into the markup as inline `<svg>`, with the pack's
+hardcoded `stroke="#11181C"` replaced by `currentColor` and a comment naming the source
+`Section/Vector-N`. First applied to the header map button, which was a bullseye glyph (`&#9678;`)
+sitting next to the locate button and reading as a second locate control.
+**Why:** The pack is a house asset already used by other projects, so the app stops depending on
+whatever a given phone renders for an arbitrary Unicode codepoint. Inlining rather than linking is
+what keeps the no-external-requests rule intact: an icon file would be one more thing to precache
+and one more way to ship a blank button offline. `currentColor` means one copy serves the dark and
+light themes, since `button { color:inherit }` already resolves to `--fg`.
+**Trade-off accepted:** Icon markup lives in `index.html` rather than a sprite, so a widely reused
+icon would be duplicated. Acceptable at this size; revisit only if the count grows.
+**Status:** active
+
 ## 2026-08-08 — A map with a bundled outline always, and tiles only as a bonus
 **Decision:** Add a map view for picking a site. Its basemap is a simplified England/GB outline
 bundled with the app and drawn offline; real raster tiles are layered over it only when a

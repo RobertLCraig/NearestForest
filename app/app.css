@@ -36,6 +36,7 @@ button { font:inherit; color:inherit; }
   background:var(--bg2); border-radius:50%; display:grid; place-items:center; cursor:pointer;
 }
 .iconbtn__glyph { font-size:20px; line-height:1; display:block; }
+.iconbtn__svg { width:22px; height:22px; display:block; }
 .iconbtn.is-spinning .iconbtn__glyph { animation:spin 1s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
