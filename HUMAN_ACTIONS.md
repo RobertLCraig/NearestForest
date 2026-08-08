@@ -34,33 +34,18 @@ Tick them off as they are done; do not delete the history.
       whole `.htaccess` parsed, including the two `<FilesMatch>` blocks.*
 - [x] **Check PHP runs on the subdomain.** *Returns `{"ok":true,` with Friston Forest first. The
       vhost is pinned to PHP 8.4 (it came up on 8.3 while the account CLI is 8.4).*
-- [ ] **Add to Home Screen on the iPhone.** Safari → Share → Add to Home Screen. Launch from the
-      icon, not from Safari, or it runs as a normal tab without the standalone chrome.
-- [ ] **Grant location permission** on first launch, then confirm the top row shows a real distance.
-- [ ] **Test offline properly.** Launch once with signal, then turn on aeroplane mode and relaunch
-      from the Home Screen icon. *Pass:* the full list still renders with distances. *Fail:* a Safari
-      error page means the service worker did not install; check `sw.js` returned 200.
-- [ ] **Build the iOS Shortcut** following `docs/build/IOS-SHORTCUT.md`.
-- [ ] **Sanity-check one destination in the real world.** Drive to the top result once and confirm
-      the coordinate lands at the car park entrance rather than in the middle of the trees. This is
-      the only check that cannot be done from a desk.
+- [x] **Add to Home Screen on the iPhone.** *Done 2026-08-08.*
+- [x] **Grant location permission** on first launch. *Done: the list sorts by real distance.*
+- [ ] **Test offline properly.** Now card
+      [0001](docs/board/human-review/0001-verify-on-iphone.md) check 5, and the only PRD success
+      criterion still unevidenced. Run it twice, tiles off and tiles on.
+- [ ] **Build the iOS Shortcut.** Now card [0002](docs/board/human-review/0002-build-ios-shortcut.md).
+- [ ] **Sanity-check one destination in the real world.** Now card
+      [0003](docs/board/human-review/0003-straight-line-distance-in-practice.md).
 
-The four remaining phone checks are board cards [0001](docs/board/human-review/0001-verify-on-iphone.md)
-and [0002](docs/board/human-review/0002-build-ios-shortcut.md); the real-world one is
-[0003](docs/board/human-review/0003-straight-line-distance-in-practice.md).
-
-## Created 2026-08-08 (tile layer)
-
-- [ ] **Regenerate the Thunderforest API key.** It was pasted into a chat transcript, so it is no
-      longer private. Nothing leaked into the repo (a self-test greps every tracked file for a key,
-      and `.gitignore` refuses `*.key`), and the server copy is `-rw-------` above the web root, so
-      this is hygiene rather than an incident. Regenerate at
-      <https://www.thunderforest.com/dashboard/>, then replace the file:
-
-      ssh hostinger "printf '%s' 'NEW_KEY' > ~/domains/forestlocator.enhanceify.co.uk/tiles.key && chmod 600 ~/domains/forestlocator.enhanceify.co.uk/tiles.key"
-
-      *Pass:* the map's Tiles toggle still draws tiles afterwards. No redeploy is needed; the proxy
-      reads the file on every request, which is why it was built this way.
+**Anything still open lives on [the board](docs/board/), not here.** This file is the historical
+record of what the initial build needed from a person; the board is the queue. Keeping open items in
+both places is how they drift, and the board is the one a fresh session reads.
 
 ## Recurring
 
