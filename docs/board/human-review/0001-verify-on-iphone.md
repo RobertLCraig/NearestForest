@@ -61,3 +61,9 @@ check 5 (offline from a cold launch) remains the one that matters.
 **2026-08-08** Rob connected Cloudflare and Hostinger MCP servers so the deploy could be done from a
 session rather than by hand. The infrastructure half of this card was split out to 0005 as a result;
 this card kept only what needs a physical phone.
+
+**2026-08-08** Rob, first phone test: "initial test looks good! seems to work so far!" So checks 1
+to 4 are provisionally passing on a real device. **Check 5 is still outstanding and is the one that
+matters**: aeroplane mode, relaunched from the Home Screen icon. Offline has still only ever been
+verified by serving locally, so the app's central claim remains unevidenced. The same test also
+produced card 0006 (the bearing arrow read as "straight ahead") and card 0007 (the map request).
