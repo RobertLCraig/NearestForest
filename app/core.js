@@ -10,6 +10,11 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
+  /* Shown in the footer so "which version is this phone actually running"
+     is answerable by looking, not by guessing. A self-test asserts it matches
+     the service worker CACHE name, so the two cannot drift. */
+  var BUILD = 'v4-2026-08-08';
+
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
   /* Spoken forms, for aria-label only: VoiceOver reads "NE" as "nee". */
@@ -181,7 +186,7 @@
     return out;
   }
 
-  return { ARROWS: ARROWS, POINTS: POINTS, POINT_NAMES: POINT_NAMES,
+  return { BUILD: BUILD, ARROWS: ARROWS, POINTS: POINTS, POINT_NAMES: POINT_NAMES,
            projX: projX, projY: projY, unprojX: unprojX, unprojY: unprojY,
            fitBounds: fitBounds, pickNearest: pickNearest,
            haversineMi: haversineMi, bearingDeg: bearingDeg,

@@ -5,7 +5,7 @@
    which is the only reliable way to retire a stale dataset on iOS. */
 'use strict';
 
-var CACHE = 'nearest-forest-v3-2026-08-08';
+var CACHE = 'nearest-forest-v4-2026-08-08';
 var ASSETS = [
   './',
   './index.html',
@@ -23,10 +23,25 @@ var ASSETS = [
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
-    caches.open(CACHE).then(function (c) {
-      // addAll is atomic: one 404 fails the install rather than leaving a half-cached app
-      // that appears to work until you are somewhere without signal.
-      return c.addAll(ASSETS);
+    Promise.all(ASSETS.map(function (url) {
+      // cache:'reload' bypasses the browser's HTTP cache. Without it, a plain
+      // addAll() happily fills a brand-new cache with whatever the browser
+      // already had: a phone that loaded the old app inside max-age installs
+      // the NEW cache name over the OLD bytes and is then stale forever.
+      // Bumping CACHE does not rescue it, because the next bump does the same.
+      // This cost one "renders on desktop, not on phone" bug on 2026-08-08.
+      return fetch(new Request(url, { cache: 'reload' })).then(function (res) {
+        if (!res || !res.ok) {
+          throw new Error('precache failed: ' + url + ' -> ' + (res && res.status));
+        }
+        return { url: url, res: res };
+      });
+    })).then(function (all) {
+      // Write only once every asset has arrived, keeping addAll's atomicity: a
+      // half-populated cache looks fine until you are somewhere with no signal.
+      return caches.open(CACHE).then(function (c) {
+        return Promise.all(all.map(function (a) { return c.put(a.url, a.res); }));
+      });
     }).then(function () {
       return self.skipWaiting();
     })

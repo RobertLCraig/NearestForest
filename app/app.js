@@ -238,7 +238,7 @@ fetch('data/sites.json').then(function (r) {
 }).then(function (d) {
   DATA = d;
   metaEl.textContent = 'Data generated ' + d.generated_at + ' · ' +
-    d.counts.forest + ' forests, ' + d.counts.carpark + ' car parks.';
+    d.counts.forest + ' forests, ' + d.counts.carpark + ' car parks · build ' + NF.BUILD;
   loadStale();
   render();
   locate(false);

@@ -154,6 +154,31 @@ ok('sites with no opening_summary are unknown',
 }
 
 console.log('');
+console.log('');
+console.log('--- update path ---');
+{
+  const sw = fs.readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');
+  const cache = (sw.match(/var CACHE = '([^']+)'/) || [])[1];
+
+  // The footer shows NF.BUILD so "which version is this phone running" is
+  // answerable by looking. It is only useful if it tracks the real cache name.
+  ok('service worker cache name embeds the build string',
+     cache === 'nearest-forest-' + NF.BUILD, `CACHE is ${cache}, BUILD is ${NF.BUILD}`);
+
+  // A plain addAll() fetches through the browser HTTP cache, so a new cache
+  // name can be populated with old bytes and stay stale forever. This is the
+  // bug that made the map render on desktop but not on the phone.
+  ok('precache bypasses the HTTP cache',
+     /cache:\s*'reload'/.test(sw),
+     "install must fetch with { cache: 'reload' }");
+  ok('precache still fails as a unit rather than half-populating',
+     /Promise\.all/.test(sw) && /skipWaiting/.test(sw));
+
+  const ht = fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8');
+  ok('the app shell is not HTTP-cached', /\(html\|css\|js\|json\|webmanifest\)/.test(ht) &&
+     /Cache-Control "no-cache"/.test(ht));
+}
+
 console.log('--- offline precache ---');
 {
   const sw = fs.readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');
