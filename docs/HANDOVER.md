@@ -149,7 +149,7 @@ on-device. That split is deliberate and is the thing the two-method comparison i
   repo is public. Whitelists styles, range-checks z/x/y, and never echoes `curl_error` because that
   string embeds the request URL and the URL carries the key. **Access control is `Sec-Fetch-Site`
   plus a per-address daily cap, and the `Referer` check is neither of them.** Until 2026-08-10
-  `Referer` was the whole control, and it served tiles to anyone who simply omitted the header —
+  `Referer` was the whole control, and it served tiles to anyone who simply omitted the header,
   including any third-party page using `referrerpolicy="no-referrer"`. Do not treat the `Referer`
   line as the guard, and do not make the cap read `X-Forwarded-For`: this origin is reached
   directly, so that header is attacker-supplied. See DECISIONS 2026-08-10 and card 0012.

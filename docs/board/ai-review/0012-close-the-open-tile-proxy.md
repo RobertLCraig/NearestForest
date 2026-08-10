@@ -34,7 +34,8 @@ costs the same quota, so removing nine would be tidying dressed as hardening.
 - [x] #3 WHEN one address has requested more than the daily cap, THE APP SHALL return 429 and
       SHALL NOT call the upstream provider.
 - [x] #4 IF the counter cannot be read or written, THEN THE APP SHALL serve the tile anyway.
-- [ ] #5 WHEN the tile layer is used on the phone, THE APP SHALL draw tiles as it did before.
+- [x] #5 WHEN the tile layer is switched on from the app itself, THE APP SHALL draw tiles as
+      it did before.
 <!-- AC:END -->
 
 ## Tasks
@@ -43,7 +44,8 @@ costs the same quota, so removing nine would be tidying dressed as hardening.
 - [x] Per-address daily cap, counted only for requests that would reach upstream
 - [x] Self-tests for both layers, including that the cap never keys on a forwarded header
 - [x] Verify against the live endpoint after deploy
-- [ ] Confirm the map still tiles on the phone
+- [x] Toggle Tiles on in the deployed app and confirm the tiles still arrive
+- [ ] Confirm the same on the phone
 
 ## Plan
 Two layers, because neither is enough alone.
@@ -56,8 +58,8 @@ would break the `curl` path this endpoint is checked with and anything older tha
 **The per-address daily cap** is what bounds a script, which can send any header it likes. A
 counter file per address per day under the system temp directory: no database, no dependency on
 APCu being compiled in, and the OS clears it up. Keyed on `REMOTE_ADDR` and deliberately never on
-`X-Forwarded-For` — this origin is reached directly, so that header is attacker-supplied, and a
-limiter reading a spoofable key is worse than none because it reports that it is working.
+`X-Forwarded-For`, because this origin is reached directly, so that header is attacker-supplied,
+and a limiter reading a spoofable key is worse than none: it reports that it is working.
 
 Two deliberate imperfections, both the right way round. The read-modify-write is not locked as a
 pair, so heavy concurrency from one address undercounts by a few: a leaky cap costs a few tiles, a

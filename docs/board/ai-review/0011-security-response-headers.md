@@ -41,7 +41,7 @@ targets honours the CSP form.
 - [x] #3 WHEN the app is loaded in a frame by another origin, THE APP SHALL refuse to render.
 - [x] #4 WHEN `sw.js` is requested, THE APP SHALL send the `no-store` value the file specifies
       rather than a value silently overridden by a later block.
-- [ ] #5 WHEN the tile layer is switched on, THE APP SHALL still draw tiles under the CSP.
+- [x] #5 WHEN the tile layer is switched on, THE APP SHALL still draw tiles under the CSP.
 <!-- AC:END -->
 
 ## Tasks
@@ -51,7 +51,8 @@ targets honours the CSP form.
 - [x] Self-tests for every header, for the block order, and for the app staying CSP-satisfiable
       (no inline script, no inline handler, no `style=` in markup, no `eval`)
 - [x] Verify the headers on the live site after deploy
-- [ ] Confirm on the phone that the app still renders and the tile toggle still works
+- [x] Load the deployed app in a browser and confirm nothing is CSP-blocked
+- [ ] Confirm the same on the phone, the only place iOS Safari's CSP behaviour is real
 
 ## Plan
 The CSP is strict because it can be: no build step, no CDN, no inline script, no inline handler.

@@ -75,7 +75,7 @@ has been in a transcript is no longer private. See HUMAN_ACTIONS.
 **Not verified:** how the layer behaves on a phone with no signal and the toggle left on. The
 outline should show through and no grey holes should appear; that is part of card 0001 check 5.
 
-**2026-08-10 — one conclusion above was wrong, and the way it was wrong is the useful part.**
+**2026-08-10. One conclusion above was wrong, and the way it was wrong is the useful part.**
 The entry says "a request carrying a foreign `Referer` is refused 403, so the endpoint is not a
 free tile server on our quota". The test was real and the result was real; the conclusion did not
 follow, because the check only ran when a `Referer` was present. A penetration test served itself a

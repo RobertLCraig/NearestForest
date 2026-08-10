@@ -11,7 +11,7 @@ refused. The cap keys on `REMOTE_ADDR` and never on `X-Forwarded-For`, and every
 path inside it serves the tile anyway.
 **Why:** The `Referer` check was the whole control and it was not one. An adversarial
 review got real tiles out of the live endpoint with no `Referer`, with a spoofed one, and
-from an `<img referrerpolicy="no-referrer">` on any origin — one HTML attribute made this a
+from an `<img referrerpolicy="no-referrer">` on any origin. One HTML attribute made this a
 free tile server for the internet on our quota. `Sec-Fetch-Site` is a forbidden header name,
 so a page cannot forge it and `referrerpolicy` cannot suppress it; that closes the hotlink
 case that `Referer` structurally cannot. A script can still send whatever headers it likes,
@@ -33,7 +33,7 @@ the app stays satisfiable under them (no inline script, no inline handler, no `s
 markup, no `eval`).
 **Why:** `app.js` renders by building HTML strings. `esc()` is correct and was audited, but
 a strict `script-src` is the layer that holds if it ever stops being correct. The policy is
-affordable only because of choices already made — no build step, no CDN, no framework — so
+affordable only because of choices already made (no build step, no CDN, no framework), so
 this is the cheapest defence this architecture will ever offer, and declining it would waste
 the property that makes it free.
 **Trade-off accepted:** A future contributor who reaches for an inline handler gets a failed

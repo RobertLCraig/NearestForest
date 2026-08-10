@@ -78,7 +78,7 @@ function readKey(): string
    REMOTE_ADDR only. X-Forwarded-For is deliberately NOT consulted: this origin is
    reached directly (the Cloudflare record is unproxied by decision), so any such
    header is attacker-supplied, and honouring it would let one script reset its own
-   counter on every request — a rate limiter that reads a spoofable key is worse
+   counter on every request. A rate limiter that reads a spoofable key is worse
    than none, because it reports that it is working.
 
    Read-modify-write without a lock around the pair, so heavy concurrency from one
@@ -145,7 +145,7 @@ if (!in_array($style, STYLES, true)) {
 /* ---- who is allowed to spend the quota ------------------------------------------------
    The Referer check below used to be the whole control, and it was not one. A
    penetration test on 2026-08-10 served a real tile to `curl` with no Referer, to
-   `curl` with a spoofed one, and — the case that matters — to an <img> on any
+   `curl` with a spoofed one, and, the case that matters, to an <img> on any
    third-party page carrying referrerpolicy="no-referrer". One HTML attribute made
    this a free tile server for the internet on our quota.
 

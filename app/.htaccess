@@ -45,7 +45,7 @@ Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=
 # forever. THIS BLOCK MUST STAY BELOW THE ONE ABOVE: sw.js matches both patterns,
 # and for one header the last `Header set` wins. With the order reversed the
 # stricter value is silently overwritten by "no-cache", while the file still
-# reads as though it were in force — which is what was actually being served
+# reads as though it were in force. That is what was actually being served
 # until 2026-08-10. A self-test asserts the order.
 <FilesMatch "sw\.js$">
   Header set Cache-Control "no-cache, no-store, must-revalidate"
@@ -60,8 +60,9 @@ Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=
 # Geolocation needs HTTPS. Force it, since the app silently loses GPS on plain HTTP.
 # The host is written out rather than taken from %{HTTP_HOST}: a redirect that
 # echoes the request's own Host header is the classic open-redirect shape. It is
-# not reachable as this vhost is configured — an unknown Host 404s before the
-# rewrite runs, tested 2026-08-10 — but a literal costs nothing and cannot regress.
+# not reachable as this vhost is configured, because an unknown Host 404s before
+# the rewrite runs (tested 2026-08-10), but a literal costs nothing to write and
+# cannot regress.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteCond %{HTTPS} !=on
