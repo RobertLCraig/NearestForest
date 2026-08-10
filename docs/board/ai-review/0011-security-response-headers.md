@@ -53,7 +53,7 @@ targets honours the CSP form.
 - [x] Verify the headers on the live site after deploy
 - [x] Load the deployed app in a browser and confirm nothing is CSP-blocked
 - [x] Confirm the same on the phone, the only place iOS Safari's CSP behaviour is real
-- [ ] Open the map on the phone with Tiles on, the one part the screenshot did not cover
+- [x] Open the map on the phone with Tiles on, the one part the first screenshot did not cover
 
 ## Plan
 The CSP is strict because it can be: no build step, no CDN, no inline script, no inline handler.
@@ -77,6 +77,12 @@ list sorted by distance). The build string in the footer is exactly what it exis
 shows the update landed on the first online launch rather than the second, so the
 `controllerchange` reload added on 2026-08-08 is doing its job.
 
-**Still uncovered:** the map with Tiles on, on the phone. The screenshot is of the list. Tiles
-under the CSP are verified in a desktop browser and by `curl`, which covers `img-src`, but not on
-iOS.
+**Tiles confirmed on the phone the same day.** Thunderforest Outdoors draws over the whole map at
+three zoom levels with the toggle on, and the detail sheet still renders its **Forestry England
+page** link, which is `NF.safeHref` from card 0013 passing on the device rather than in a test.
+So `img-src 'self'` covers the proxy correctly under iOS Safari, and nothing in the policy is
+blocking a tile.
+
+Everything on this card is now evidenced on the device. Card 0015 came out of the same
+screenshots, and is a legibility defect the tile layer has always had rather than anything the
+CSP introduced.

@@ -45,7 +45,7 @@ costs the same quota, so removing nine would be tidying dressed as hardening.
 - [x] Self-tests for both layers, including that the cap never keys on a forwarded header
 - [x] Verify against the live endpoint after deploy
 - [x] Toggle Tiles on in the deployed app and confirm the tiles still arrive
-- [ ] Confirm the same on the phone
+- [x] Confirm the same on the phone
 
 ## Plan
 Two layers, because neither is enough alone.
