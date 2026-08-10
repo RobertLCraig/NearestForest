@@ -7,8 +7,9 @@
 **Status:** Deployed, installed to the Home Screen, and working on the device. Map complete
 (bundled outline plus optional tiles). One agent-ready card, **0004**; four cards awaiting an
 adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5.
-_Last updated: 2026-08-08 (map shipped; header map icon replaced from the Mo~oM pack; sheets
-drag to dismiss; **the offline cache no longer swallows map tiles** — see Known bugs)_
+_Last updated: 2026-08-10 (offline cache no longer swallows map tiles — see Known bugs;
+overlapping map markers group into counted bubbles; both header icons now come from the Mo~oM
+pack; a paper grain drawn by the renderer rather than shipped as a file)_
 
 ## Goal & success criteria
 
@@ -132,6 +133,8 @@ on-device. That split is deliberate and is the thing the two-method comparison i
 - `scripts/parse.py` — the only place the HTML shape is understood. Exits non-zero rather than
   emitting a partial dataset.
 - `app/map.js` — the canvas map: outline, markers, pan, pinch, tap, plus the optional tile layer.
+  Markers that overlap are grouped into a counted bubble via `NF.clusterPoints`; the grouping
+  radius is in screen pixels because "do these overlap" is a screen question, not a map one.
   Reads the same ranked list the rows are built from, so the two cannot disagree about what is
   shown. **Tiles draw over the outline, never instead of it**, so a failed or offline tile reveals
   the coastline rather than a grey hole; a self-test asserts that draw order.
@@ -165,7 +168,8 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   forest pages fetched with zero failures, 630 car parks from the OGL dataset, both normalised into
   one committed 515 KB JSON. The PWA is complete: two tabs, distance and compass bearing per row,
   filter, detail sheet with opening times and facilities, three-way map chooser, offline service
-  worker, generated icons, dark and light themes, and sheets that drag to dismiss from the grip.
+  worker, generated icons, dark and light themes, sheets that drag to dismiss from the grip,
+  overlapping map markers grouped into counted bubbles, and a paper grain on the flat surfaces.
   `api/nearest.php` is live and its error paths are tested. `node scripts/selftest.js` passes, covering geometry, sunset against an external reference,
   deep-link URLs, dataset integrity and the rule that the app never claims a gate is open on a guess.
 - **In progress:** nothing.

@@ -3,6 +3,38 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-10 — Overlapping markers group into a counted bubble
+**Decision:** Map markers that collide on screen are drawn as one bubble carrying the
+number of sites inside it. Grouping is by drawn size (24px zoomed out, 15px zoomed in),
+so it fades out as you zoom and two car parks in one forest stay separately tappable.
+Tapping a group zooms into it; at full zoom, where there is nowhere left to go, it opens
+the closest member instead. The grouping itself is `clusterPoints` in `core.js`.
+**Why:** 630 car parks at full extent was a solid band of dots that hid how many sites
+were really there and made tapping a lottery. A count is more informative than the dots
+it replaces. Greedy grouping in ranked order means the nearest site anchors its own group
+rather than being absorbed into one centred elsewhere, which matters because the nearest
+site is the one the app exists to surface.
+**Trade-off accepted:** Group position is a centroid, so it sits near but not exactly on
+any real site, and a tap costs a zoom before you can open anything. Both are better than
+a dot you cannot hit. Labels are drawn only for lone markers, since a group has no name.
+**Status:** active
+
+## 2026-08-10 — Paper grain drawn by the renderer, not shipped as a file
+**Decision:** The dark and light themes carry a subtle paper grain, tiled from an inline
+`feTurbulence` SVG data URI (~400 bytes of CSS) on the page background, the header and the
+sheet panels. Not on list rows, which exist hundreds at a time.
+**Why:** Copied from haleypark.design, whose ground colour is close to this app's already.
+Theirs is a 935KB PNG tiled at 50% with `mix-blend-mode:overlay`. That single file is
+larger than this app's entire offline precache, and everything the app needs must be
+bundled and cached, so the cost lands squarely on the thing — working with no signal —
+that the app exists for. Generating the grain costs no file, no request and no precache
+entry. Their `overlay` blend was tried first and measured visually flat: on a ground this
+dark, overlay multiplies toward black. The tile carries its own low alpha instead.
+**Trade-off accepted:** It is a background layer rather than a full-page overlay, so it
+does not sit over the map canvas or the list rows. That is also why it cannot intercept a
+tap, which matters now that the sheets have a drag gesture.
+**Status:** active
+
 ## 2026-08-08 — The offline cache holds ASSETS and nothing else
 **Decision:** The service worker caches exactly the precache list. It writes nothing at
 runtime, and it bails out of `/api/` requests before it can touch them. Tiles stay in the

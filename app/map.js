@@ -275,25 +275,64 @@ var NFMap = (function () {
     var zoomed = view.scale > minScale * 5;
     var r = zoomed ? 5 : 3.5;
 
+    var visible = [];
     sites.forEach(function (s) {
       var x = sx(NF.projX(s.lng)), y = sy(NF.projY(s.lat));
       if (x < -20 || y < -20 || x > W + 20 || y > H + 20) return;
-      markers.push({ x: x, y: y, site: s });
+      visible.push({ x: x, y: y, site: s });
     });
 
-    ctx.fillStyle = c.accent;
+    /* Group by the size of the thing that gets DRAWN, not the size of a dot: a
+       group bubble is up to ~17px across, so grouping at the dot radius left the
+       bubbles themselves overlapping into blobs. Tighter once zoomed in, which is
+       what keeps the 64x limit's promise that two car parks in one forest stay
+       separately tappable. */
+    var clusterPx = zoomed ? 15 : 24;
+    markers = NF.clusterPoints(visible, clusterPx);
+
     markers.forEach(function (m) {
+      if (m.count === 1) {
+        ctx.fillStyle = c.accent;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
+      /* A group grows with what it holds, but slowly: 2 and 600 must stay the
+         same kind of object on screen, and the number is what carries the size. */
+      var gr = r + 3.5 + Math.min(5, Math.log(m.count) / Math.LN2);
+      ctx.fillStyle = c.accent;
       ctx.beginPath();
-      ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+      ctx.arc(m.x, m.y, gr, 0, Math.PI * 2);
       ctx.fill();
+      ctx.fillStyle = c.accentInk;
+      ctx.font = '700 ' + Math.round(gr) + 'px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(m.count), m.x, m.y + 0.5);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
     });
 
-    /* Nearest gets a ring, matching the "Nearest" badge in the list. */
+    /* Nearest gets a ring, matching the "Nearest" badge in the list. Drawn round
+       whatever is actually on screen at that spot, so when the nearest site has
+       been swallowed by a group the ring lands on the group rather than under it. */
     var nearest = sites[0];
     if (nearest && hooks.getPos()) {
       var nx = sx(NF.projX(nearest.lng)), ny = sy(NF.projY(nearest.lat));
+      var host = null;
+      markers.forEach(function (m) {
+        if (host) return;
+        for (var i = 0; i < m.items.length; i++) {
+          if (m.items[i].site === nearest) { host = m; return; }
+        }
+      });
+      var hx = host ? host.x : nx, hy = host ? host.y : ny;
+      var hr = host && host.count > 1
+        ? r + 3.5 + Math.min(5, Math.log(host.count) / Math.LN2) + 3
+        : r + 4;
       ctx.beginPath();
-      ctx.arc(nx, ny, r + 4, 0, Math.PI * 2);
+      ctx.arc(hx, hy, hr, 0, Math.PI * 2);
       ctx.strokeStyle = c.accent;
       ctx.lineWidth = 2;
       ctx.stroke();
@@ -307,7 +346,7 @@ var NFMap = (function () {
       /* markers is in ranked order, so slicing takes the nearest. Capped low
          on purpose: a stubbed-canvas run drew 32 labels at the default zoom,
          which is a wall of text rather than a legible map. */
-      var labelled = markers.slice(0, 12);
+      var labelled = markers.filter(function (m) { return m.count === 1; }).slice(0, 12);
       labelled.forEach(function (m) {
         var t = m.site.name;
         if (t.length > 22) t = t.slice(0, 21) + '…';
@@ -425,7 +464,19 @@ var NFMap = (function () {
     lastTap = now;
 
     var hit = NF.pickNearest(markers, xy.x, xy.y, 22);
-    if (hit) { lastTap = 0; hooks.onPick(hit.site); }
+    if (!hit) return;
+    lastTap = 0;
+    /* A group has no single site to open, and guessing one would be worse than
+       useless while driving. Zoom into it instead and let it break apart. */
+    if (hit.count > 1) {
+      /* At full zoom there is nowhere left to go, and a tap that does nothing
+         reads as a broken map. Open the closest member of the group instead. */
+      if (view.scale < maxScale) { zoomAbout(2.5, hit.x, hit.y); return; }
+      var member = NF.pickNearest(hit.items, xy.x, xy.y, 1e9);
+      if (member) hooks.onPick(member.site);
+      return;
+    }
+    hooks.onPick(hit.site);
   }
 
   /* ---------- public ---------- */

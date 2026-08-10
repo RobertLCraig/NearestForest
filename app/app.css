@@ -7,11 +7,15 @@
   --warn:#ffcf6b; --bad:#ff8f7a;
   --pad:16px; --radius:14px;
   --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.45' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.07'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: light) {
   :root {
     --bg:#f6f9f6; --bg2:#fff; --line:#dbe5dd;
     --fg:#12200f; --dim:#5c6f60; --accent:#1c7a3e; --accent-ink:#fff;
+    /* Overlay blending amplifies noise on a pale ground, so the light theme
+       gets a fainter tile rather than the dark one turned down. */
+    --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.45' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E");
   }
 }
 
@@ -20,12 +24,24 @@ html,body { margin:0; padding:0; background:var(--bg); color:var(--fg); }
 body {
   font:400 17px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overscroll-behavior-y:none;
+
+  /* Paper grain, borrowed from haleypark.design. They tile a 935KB PNG at 50%
+     opacity with `mix-blend-mode:overlay`; that file alone is larger than this
+     app's entire offline precache and would have to be bundled and cached, so
+     feTurbulence draws the same grain from ~400 bytes of CSS instead: no file,
+     no request, no precache entry. `stitchTiles` is what makes the tile seamless.
+     Their `overlay` is not reused: on a ground this dark it multiplies down to
+     nothing (measured: visually flat), so the tile carries its own low alpha.
+     It is a background LAYER, not an overlay element, so it can never intercept
+     a tap or sit on top of the map. */
+  background-image:var(--grain);
+  background-repeat:repeat;
 }
 button { font:inherit; color:inherit; }
 
 /* ---------- header ---------- */
 .bar {
-  position:sticky; top:0; z-index:20; background:var(--bg);
+  position:sticky; top:0; z-index:20; background:var(--bg) var(--grain) repeat;
   padding:calc(var(--safe-t) + 10px) var(--pad) 8px;
   border-bottom:1px solid var(--line);
 }
@@ -35,9 +51,8 @@ button { font:inherit; color:inherit; }
   width:44px; height:44px; flex:0 0 44px; border:1px solid var(--line);
   background:var(--bg2); border-radius:50%; display:grid; place-items:center; cursor:pointer;
 }
-.iconbtn__glyph { font-size:20px; line-height:1; display:block; }
 .iconbtn__svg { width:22px; height:22px; display:block; }
-.iconbtn.is-spinning .iconbtn__glyph { animation:spin 1s linear infinite; }
+.iconbtn.is-spinning .iconbtn__svg { animation:spin 1s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
 .status { margin:8px 0 0; font-size:14px; color:var(--dim); }
@@ -111,7 +126,8 @@ body.is-mapping { overflow:hidden; }
 .sheet[hidden] { display:none; }
 .sheet__scrim { position:absolute; inset:0; background:rgba(0,0,0,.55); }
 .sheet__panel {
-  position:relative; width:100%; max-height:88vh; overflow-y:auto; background:var(--bg2);
+  position:relative; width:100%; max-height:88vh; overflow-y:auto;
+  background:var(--bg2) var(--grain) repeat;
   border-radius:20px 20px 0 0; border-top:1px solid var(--line);
   padding:8px var(--pad) calc(var(--safe-b) + 18px);
   animation:rise .18s ease-out;

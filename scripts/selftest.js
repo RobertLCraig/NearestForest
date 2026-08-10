@@ -89,6 +89,44 @@ ok('fitBounds keeps the box inside the viewport',
    })());
 
 
+console.log('\n--- marker clustering ---');
+{
+  const P = (x, y, name) => ({ x, y, site: { name: name || (x + ',' + y) } });
+
+  ok('points far apart stay separate',
+     NF.clusterPoints([P(0, 0), P(100, 0), P(200, 0)], 10).length === 3);
+  ok('overlapping points become one group',
+     NF.clusterPoints([P(0, 0), P(3, 0), P(0, 4)], 10).length === 1);
+
+  const g = NF.clusterPoints([P(0, 0), P(10, 0)], 20)[0];
+  ok('a group counts its members', g.count === 2);
+  ok('a group is drawn at the centroid', g.x === 5 && g.y === 0);
+  ok('a group of many exposes its members', g.items.length === 2);
+
+  // Callers branch on this: a lone marker must still behave like a marker.
+  const singles = NF.clusterPoints([P(0, 0), P(500, 500)], 10);
+  ok('a group of one carries its site', singles[0].site && singles[0].count === 1);
+  ok('a real group carries no single site', g.site === null);
+
+  // The radius is a diameter-style test against the anchor, not a bounding box.
+  ok('the radius is honoured exactly',
+     NF.clusterPoints([P(0, 0), P(10, 0)], 10).length === 1 &&
+     NF.clusterPoints([P(0, 0), P(11, 0)], 10).length === 2);
+
+  ok('every input point lands in exactly one group', (() => {
+    const pts = [];
+    for (let i = 0; i < 200; i++) pts.push(P((i * 37) % 300, (i * 53) % 300));
+    const cl = NF.clusterPoints(pts, 12);
+    return cl.reduce((n, c) => n + c.count, 0) === pts.length;
+  })());
+
+  // Ranked order in, so the nearest site anchors its own group.
+  const ranked = NF.clusterPoints([P(0, 0, 'nearest'), P(5, 5, 'other')], 20);
+  ok('the first point anchors its group', ranked[0].items[0].site.name === 'nearest');
+
+  ok('an empty list clusters to nothing', NF.clusterPoints([], 10).length === 0);
+}
+
 console.log('\n--- sheet drag (the grip has to actually dismiss) ---');
 // A 600px panel: 28% of it is 168px.
 ok('a short drag springs back', NF.sheetShouldClose(40, 0.1, 600) === false);

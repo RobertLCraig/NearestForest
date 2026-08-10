@@ -13,7 +13,7 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v8-2026-08-08';
+  var BUILD = 'v9-2026-08-10';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -78,6 +78,48 @@
       if (d2 <= bestD2) { bestD2 = d2; best = pts[i]; }
     }
     return best;
+  }
+
+  /* ---- Marker clustering -------------------------------------------------
+     630 car parks zoomed out to the whole country is a solid band of dots that
+     hides how many sites are really there and makes tapping a lottery. Group
+     the ones that physically overlap on screen and show the count instead.
+
+     Greedy, in the order given: the first point of a group anchors it and later
+     points join if they land within `radius` of that anchor. `pts` arrives in
+     ranked order, so the nearest site anchors its own group rather than being
+     absorbed into one centred somewhere else. Drawn position is the centroid,
+     which sits where the eye expects the blob to be. */
+  function clusterPoints(pts, radius) {
+    var out = [];
+    var r2 = radius * radius;
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i], joined = false;
+      for (var j = 0; j < out.length; j++) {
+        var g = out[j];
+        var dx = p.x - g.ax, dy = p.y - g.ay;
+        if (dx * dx + dy * dy <= r2) {
+          g.items.push(p);
+          g.sumX += p.x; g.sumY += p.y;
+          joined = true;
+          break;
+        }
+      }
+      if (!joined) {
+        out.push({ ax: p.x, ay: p.y, sumX: p.x, sumY: p.y, items: [p] });
+      }
+    }
+    return out.map(function (g) {
+      var n = g.items.length;
+      return {
+        x: g.sumX / n,
+        y: g.sumY / n,
+        count: n,
+        items: g.items,
+        /* A group of one is just a marker, and callers treat it as such. */
+        site: n === 1 ? g.items[0].site : null
+      };
+    });
   }
 
   /* ---- Bottom-sheet drag ------------------------------------------------
@@ -216,6 +258,7 @@
            projX: projX, projY: projY, unprojX: unprojX, unprojY: unprojY,
            fitBounds: fitBounds, pickNearest: pickNearest,
            sheetOffset: sheetOffset, sheetShouldClose: sheetShouldClose,
+           clusterPoints: clusterPoints,
            haversineMi: haversineMi, bearingDeg: bearingDeg,
            compassIdx: compassIdx, pad2: pad2, hhmmToMins: hhmmToMins, sunsetAt: sunsetAt,
            openState: openState, navUrl: navUrl, rank: rank };
