@@ -52,7 +52,8 @@ targets honours the CSP form.
       (no inline script, no inline handler, no `style=` in markup, no `eval`)
 - [x] Verify the headers on the live site after deploy
 - [x] Load the deployed app in a browser and confirm nothing is CSP-blocked
-- [ ] Confirm the same on the phone, the only place iOS Safari's CSP behaviour is real
+- [x] Confirm the same on the phone, the only place iOS Safari's CSP behaviour is real
+- [ ] Open the map on the phone with Tiles on, the one part the screenshot did not cover
 
 ## Plan
 The CSP is strict because it can be: no build step, no CDN, no inline script, no inline handler.
@@ -66,5 +67,16 @@ other place it would show up, and only for whoever hits it first.
 
 ## Direction
 **2026-08-10** Built and deployed. Live headers verified with `curl`; see the acceptance boxes.
-AC #5 and the phone check are the outstanding pair, and they are the same check as card 0001's:
-somebody has to look at it on the device.
+
+**Confirmed on the device the same day**, which is the only check that counts for a CSP: iOS
+Safari applies it, other browsers only rehearse it. Rob's screenshot of the installed PWA shows
+the footer reading `build v10-2026-08-10`, so the strict policy is what the phone is actually
+running, and nothing in it is blocked: the stylesheet, all three scripts, the `data:` paper grain
+and the inline SVG icons all render, and geolocation still resolves (a fix at plus or minus 35 m,
+list sorted by distance). The build string in the footer is exactly what it exists for. It also
+shows the update landed on the first online launch rather than the second, so the
+`controllerchange` reload added on 2026-08-08 is doing its job.
+
+**Still uncovered:** the map with Tiles on, on the phone. The screenshot is of the list. Tiles
+under the CSP are verified in a desktop browser and by `curl`, which covers `img-src`, but not on
+iOS.

@@ -30,9 +30,15 @@ paragraph in the footer is read and a linked page is not.
 ## Tasks
 - [x] Footer paragraph in `index.html`, above the existing OGL attribution
 - [x] Self-test asserting the statement is present, so a future edit cannot quietly drop it
-- [ ] Read it on the phone and check it does not push the attribution off the useful part of the page
+- [x] Read it on the phone and check it does not push the attribution off the useful part of the page
 
 ## Plan
 Wording stays plain and specific: what is collected, where it stays, and the single exception,
 named as the control the reader can see (**Tiles**) rather than described. It sits above the OGL
 attribution because it is the more useful of the two to a person holding the phone.
+
+## Direction
+**2026-08-10** Read on the device. Seven lines at phone width, sitting under the build string and
+above the OGL attribution, which is still fully visible below it. Nothing is pushed off, and
+neither paragraph is reachable without deliberately scrolling past 274 rows, which is the right
+place for both.
