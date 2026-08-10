@@ -27,6 +27,13 @@ const DEFAULT_STYLE = 'outdoors';   // woodland and footpaths: the useful one he
 const MAX_ZOOM = 20;
 const TIMEOUT = 8;                  // seconds; a slow tile must not hang the map
 
+/* Tiles one address may pull in a day. A whole-country pan at every zoom is a
+   few hundred, and the app caps itself at 300 in memory, so a real user does not
+   come near this. It exists to bound what one abuser can spend, not to ration
+   anybody: the free tier is 150k tiles a month and this endpoint is reachable by
+   anyone who can type a URL. */
+const CAP_PER_DAY = 2000;
+
 function fail(int $status, string $message): void
 {
     http_response_code($status);
@@ -64,6 +71,58 @@ function readKey(): string
             . 'The map still works without it.');
 }
 
+/* Per-address daily cap. A counter file per address per day, under the system
+   temp directory: no database, no dependency on APCu being compiled in, and the
+   OS clears it up.
+
+   REMOTE_ADDR only. X-Forwarded-For is deliberately NOT consulted: this origin is
+   reached directly (the Cloudflare record is unproxied by decision), so any such
+   header is attacker-supplied, and honouring it would let one script reset its own
+   counter on every request — a rate limiter that reads a spoofable key is worse
+   than none, because it reports that it is working.
+
+   Read-modify-write without a lock around the pair, so heavy concurrency from one
+   address can undercount by a few. That is the right trade for a quota guard: the
+   cost of a slightly leaky cap is a few extra tiles, and the cost of blocking on a
+   lock is a slow map.
+
+   Every failure path here lets the tile through. A filesystem hiccup must not take
+   the map's optional layer down; the cap is a guard on spending, not a gate on
+   correctness. */
+function rateLimit(): void
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    if ($ip === '') {
+        return;                                    // nothing to count against
+    }
+    $dir = sys_get_temp_dir() . '/nf-tiles';
+    if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
+        return;                                    // cannot count; never fail closed
+    }
+
+    $today = gmdate('Ymd');
+    /* Hashed so the counter directory is not itself a log of who used the app. */
+    $file = $dir . '/' . $today . '-' . hash('sha256', $ip) . '.count';
+
+    $n = is_readable($file) ? (int) @file_get_contents($file) : 0;
+    if ($n >= CAP_PER_DAY) {
+        header('Retry-After: 3600');
+        fail(429, 'Daily tile limit reached for this address. The map still works without tiles.');
+    }
+    @file_put_contents($file, (string) ($n + 1), LOCK_EX);
+
+    /* Yesterday's counters are dead weight. Sweep occasionally rather than on
+       every request: one directory listing per ~200 tiles is unnoticeable, and
+       leaving them is a slow leak on a shared host. */
+    if ($n === 0 && random_int(1, 200) === 1) {
+        foreach (glob($dir . '/*.count') ?: [] as $old) {
+            if (!str_starts_with(basename($old), $today)) {
+                @unlink($old);
+            }
+        }
+    }
+}
+
 /* ---- input validation, explicit rather than coerced ------------------------------------ */
 $z = filter_input(INPUT_GET, 'z', FILTER_VALIDATE_INT);
 $x = filter_input(INPUT_GET, 'x', FILTER_VALIDATE_INT);
@@ -83,16 +142,42 @@ if (!in_array($style, STYLES, true)) {
     fail(400, 'Unknown style.');
 }
 
-/* A speed bump, not a lock: it stops the endpoint being casually hotlinked as a
-   free tile server on our quota. Browsers send a Referer for <img> on our own
-   pages; a missing one is allowed so curl checks and the Shortcut still work. */
+/* ---- who is allowed to spend the quota ------------------------------------------------
+   The Referer check below used to be the whole control, and it was not one. A
+   penetration test on 2026-08-10 served a real tile to `curl` with no Referer, to
+   `curl` with a spoofed one, and — the case that matters — to an <img> on any
+   third-party page carrying referrerpolicy="no-referrer". One HTML attribute made
+   this a free tile server for the internet on our quota.
+
+   So the control is now two layers, because neither is sufficient alone:
+
+   1. Sec-Fetch-Site. A browser sets it on every subresource request and a page
+      cannot forge it: it is a forbidden header name, so referrerpolicy, a meta
+      tag and fetch() options all leave it alone. That kills the hotlink case
+      outright. Absent means a non-browser client (curl, the Shortcut, something
+      older than iOS 16.4), which is allowed through to layer 2 rather than
+      refused, because failing closed here would break the debugging path this
+      endpoint is checked with.
+   2. A per-address daily cap, which is what actually bounds a scripted abuser,
+      since a script can send any header it likes. */
+$fetchSite = $_SERVER['HTTP_SEC_FETCH_SITE'] ?? '';
+if ($fetchSite !== '' && $fetchSite !== 'same-origin') {
+    fail(403, 'Cross-site tile requests are not served.');
+}
+
+/* Kept as well: it costs nothing and catches an older browser that sends a
+   Referer but no Sec-Fetch-Site. HTTP_HOST can carry a port, the Referer host
+   never does, so compare only the host part. */
 $ref = $_SERVER['HTTP_REFERER'] ?? '';
 if ($ref !== '') {
     $refHost = parse_url($ref, PHP_URL_HOST);
-    if ($refHost !== ($_SERVER['HTTP_HOST'] ?? '')) {
+    $ourHost = explode(':', (string) ($_SERVER['HTTP_HOST'] ?? ''))[0];
+    if ($refHost !== $ourHost) {
         fail(403, 'Cross-site tile requests are not served.');
     }
 }
+
+rateLimit();
 
 $url = sprintf(
     'https://api.thunderforest.com/%s/%d/%d/%d.png?apikey=%s',

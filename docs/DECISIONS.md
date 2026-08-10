@@ -3,6 +3,47 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-10 — The tile proxy authenticates the browser, and caps the address
+**Decision:** `api/tiles.php` requires `Sec-Fetch-Site: same-origin` whenever that header is
+present, keeps the `Referer` check for clients that do not send it, and caps every address
+at 2000 tiles a day. Absent `Sec-Fetch-Site` is allowed through to the cap rather than
+refused. The cap keys on `REMOTE_ADDR` and never on `X-Forwarded-For`, and every failure
+path inside it serves the tile anyway.
+**Why:** The `Referer` check was the whole control and it was not one. An adversarial
+review got real tiles out of the live endpoint with no `Referer`, with a spoofed one, and
+from an `<img referrerpolicy="no-referrer">` on any origin — one HTML attribute made this a
+free tile server for the internet on our quota. `Sec-Fetch-Site` is a forbidden header name,
+so a page cannot forge it and `referrerpolicy` cannot suppress it; that closes the hotlink
+case that `Referer` structurally cannot. A script can still send whatever headers it likes,
+which is what the cap is for: the two layers cover different attackers and neither is
+sufficient alone.
+**Trade-off accepted:** The counter's read-modify-write is not locked as a pair, so heavy
+concurrency from one address undercounts by a few. A leaky cap costs a few tiles; a lock
+costs a slow map. Allowing an absent `Sec-Fetch-Site` keeps the endpoint checkable with
+`curl` and usable below iOS 16.4, at the price of leaving scripted abuse to the cap alone.
+**Supersedes:** the "not adding rate limiting" line in card 0010, which deferred this until
+there were real numbers. There are now: three working bypasses against the live endpoint.
+**Status:** active
+
+## 2026-08-10 — A strict CSP, and the self-tests that keep the app inside it
+**Decision:** The app serves a Content-Security-Policy with no `unsafe-inline` and no
+`unsafe-eval`, plus HSTS, `nosniff`, `Referrer-Policy` and a `Permissions-Policy` scoping
+geolocation to `self`. Self-tests assert both halves: that `.htaccess` sends them, and that
+the app stays satisfiable under them (no inline script, no inline handler, no `style=` in
+markup, no `eval`).
+**Why:** `app.js` renders by building HTML strings. `esc()` is correct and was audited, but
+a strict `script-src` is the layer that holds if it ever stops being correct. The policy is
+affordable only because of choices already made — no build step, no CDN, no framework — so
+this is the cheapest defence this architecture will ever offer, and declining it would waste
+the property that makes it free.
+**Trade-off accepted:** A future contributor who reaches for an inline handler gets a failed
+self-test instead of working code. That is the point: the alternative is a blank screen on
+somebody's phone, discovered by whoever hits it first.
+**Note:** `style-src 'self'` does not conflict with the sheet drag writing
+`panel.style.transform`. CSP governs `<style>` elements and `style` attributes parsed from
+markup, not CSSOM property assignment.
+**Status:** active
+
 ## 2026-08-10 — Overlapping markers group into a counted bubble
 **Decision:** Map markers that collide on screen are drawn as one bubble carrying the
 number of sites inside it. Grouping is by drawn size (24px zoomed out, 15px zoomed in),

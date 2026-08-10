@@ -13,7 +13,7 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v9-2026-08-10';
+  var BUILD = 'v10-2026-08-10';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -227,6 +227,21 @@
     return null;
   }
 
+  /* The only route a dataset URL may take into an href. Returns the URL, or null
+     if it is not something safe to hand a browser as a link.
+
+     Every one of the 904 records is an https:// forestryengland.uk page today, and
+     parse.py now refuses to emit anything else, so this guards a door that is
+     already shut. It is here because the app SHIPS the dataset rather than deriving
+     it: the scheme is checked where it is used, not trusted from where it came, and
+     the upstream is a website nobody here controls. esc() already stops an attribute
+     breakout; what it cannot stop is `javascript:` sitting legitimately inside an
+     href, which is XSS with no escaping error anywhere. */
+  function safeHref(u) {
+    var s = String(u == null ? '' : u).trim();
+    return /^https:\/\/[^\s/?#]/i.test(s) ? s : null;
+  }
+
   /* Sorted list of the sites in `source`, nearest first, or alphabetical when pos is null.
 
      Returns shallow COPIES carrying _mi/_bear rather than annotating the input objects.
@@ -261,5 +276,5 @@
            clusterPoints: clusterPoints,
            haversineMi: haversineMi, bearingDeg: bearingDeg,
            compassIdx: compassIdx, pad2: pad2, hhmmToMins: hhmmToMins, sunsetAt: sunsetAt,
-           openState: openState, navUrl: navUrl, rank: rank };
+           openState: openState, navUrl: navUrl, safeHref: safeHref, rank: rank };
 }));

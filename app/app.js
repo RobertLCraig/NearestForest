@@ -177,8 +177,12 @@ function openSheet(site) {
   }
   if (site.status) h += field('Status', site.status);
   h += field('Coordinates', site.lat.toFixed(5) + ', ' + site.lng.toFixed(5));
-  if (site.url) {
-    h += field('More', '<a href="' + esc(site.url) + '" target="_blank" rel="noopener">Forestry England page</a>',
+  /* NF.safeHref, not site.url: a dataset URL only reaches an href through the
+     scheme check. noreferrer as well as noopener, so following the link does not
+     tell Forestry England which page sent you. */
+  var moreHref = NF.safeHref(site.url);
+  if (moreHref) {
+    h += field('More', '<a href="' + esc(moreHref) + '" target="_blank" rel="noopener noreferrer">Forestry England page</a>',
                { raw: true });
   }
   h += field('Data checked', site.scraped_at);

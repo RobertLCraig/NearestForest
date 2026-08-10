@@ -74,3 +74,15 @@ has been in a transcript is no longer private. See HUMAN_ACTIONS.
 
 **Not verified:** how the layer behaves on a phone with no signal and the toggle left on. The
 outline should show through and no grey holes should appear; that is part of card 0001 check 5.
+
+**2026-08-10 — one conclusion above was wrong, and the way it was wrong is the useful part.**
+The entry says "a request carrying a foreign `Referer` is refused 403, so the endpoint is not a
+free tile server on our quota". The test was real and the result was real; the conclusion did not
+follow, because the check only ran when a `Referer` was present. A penetration test served itself a
+tile with no `Referer`, with a spoofed one, and from an `<img referrerpolicy="no-referrer">` on any
+origin. Fixed in card 0012.
+
+The lesson is narrower than "test more". Every check in that list was a test of the case the code
+handles. None of them tested the case the code *skips*, and the skip was written down, in a comment,
+directly above the check. A verification pass that only exercises the guarded path will confirm any
+guard, including one with a hole its own author documented.

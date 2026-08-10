@@ -1,14 +1,37 @@
-# Nearest Forest — static PWA on Apache shared hosting.
+# Nearest Forest — static PWA on Apache/LiteSpeed shared hosting.
 
 # Apache does not know .webmanifest by default; without this iOS ignores the manifest.
 AddType application/manifest+json .webmanifest
 AddType image/png .png
 
-# The service worker must be served fresh, or a stale one pins an old app version forever.
-<FilesMatch "sw\.js$">
-  Header set Cache-Control "no-cache, no-store, must-revalidate"
-</FilesMatch>
+# ── Security headers ─────────────────────────────────────────────────────────
+# `always` rather than plain `set`: without it these are absent on error
+# responses, which is exactly where a framed or sniffed reply would be served.
+#
+# The CSP is strict because it can be. There is no build step, no CDN, no inline
+# script and no inline event handler anywhere in the app, so 'self' costs nothing
+# and closes the one real gap: app.js renders rows and the detail sheet by
+# building HTML strings, and a strict script-src is what stands behind esc() if
+# the escaping is ever wrong. A self-test asserts the app stays CSP-satisfiable.
+#   img-src data:   the paper grain is a data: SVG in app.css, not a file.
+#   frame-ancestors nothing should ever frame this: the Navigate button is a
+#                   tap-jacking target and there is no legitimate embed.
+Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 
+# HTTPS is load-bearing, not cosmetic: iOS grants navigator.geolocation only to
+# secure origins, so a stripped connection is an app that silently never locates
+# you. The redirect below only helps after the first request; this is what makes
+# the second onwards unstrippable, and this is a PWA opened over and over on
+# whatever Wi-Fi is going.
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+# Geolocation is the one sensitive capability this app holds. Scoping it to self
+# means this document can never delegate it to an embedded third party.
+Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), usb=()"
+
+# ── Caching ──────────────────────────────────────────────────────────────────
 # Code and data are versioned by the service worker cache name, so HTTP caching
 # them buys nothing and actively breaks updates: the service worker's own
 # precache fetches go through this cache, so a max-age here can pin an installed
@@ -18,16 +41,31 @@ AddType image/png .png
   Header set Cache-Control "no-cache"
 </FilesMatch>
 
+# The service worker must be served fresh, or a stale one pins an old app version
+# forever. THIS BLOCK MUST STAY BELOW THE ONE ABOVE: sw.js matches both patterns,
+# and for one header the last `Header set` wins. With the order reversed the
+# stricter value is silently overwritten by "no-cache", while the file still
+# reads as though it were in force — which is what was actually being served
+# until 2026-08-10. A self-test asserts the order.
+<FilesMatch "sw\.js$">
+  Header set Cache-Control "no-cache, no-store, must-revalidate"
+</FilesMatch>
+
 # Images are content-addressed by name and effectively never change.
 <FilesMatch "\.(png|ico)$">
   Header set Cache-Control "public, max-age=604800"
 </FilesMatch>
 
+# ── Transport ────────────────────────────────────────────────────────────────
 # Geolocation needs HTTPS. Force it, since the app silently loses GPS on plain HTTP.
+# The host is written out rather than taken from %{HTTP_HOST}: a redirect that
+# echoes the request's own Host header is the classic open-redirect shape. It is
+# not reachable as this vhost is configured — an unknown Host 404s before the
+# rewrite runs, tested 2026-08-10 — but a literal costs nothing and cannot regress.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteCond %{HTTPS} !=on
-  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  RewriteRule ^(.*)$ https://forestlocator.enhanceify.co.uk%{REQUEST_URI} [L,R=301]
 </IfModule>
 
 Options -Indexes

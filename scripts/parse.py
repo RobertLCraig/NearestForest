@@ -6,6 +6,7 @@ on freely. Fails loudly and exits non-zero rather than emitting a partial datase
 """
 import json, os, re, sys, html as htmllib
 from datetime import date, datetime
+from urllib.parse import urlparse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(ROOT, "data", "raw")
@@ -19,6 +20,10 @@ LNG_RANGE = (-6.8, 2.2)
 
 VALID_STATUS = {"Permanent - Official", "Permanent - Unofficial",
                 "Seasonal - Official", "Seasonal - Unofficial", "Temporary"}
+
+# Hosts a site URL may point at. The app puts these in an href, so the set is
+# closed rather than "whatever the scrape found".
+URL_HOSTS = {"www.forestryengland.uk", "forestryengland.uk"}
 
 problems = []
 notes = {"jsonld_missing": 0, "satnav_missing": 0, "opening_missing": 0,
@@ -332,6 +337,18 @@ def validate(sites):
         for k in ("id", "source", "name", "lat", "lng", "scraped_at"):
             if s.get(k) in (None, ""):
                 problems.append("%s missing required field %s" % (s.get("id"), k))
+        # The app renders this straight into an href. A URL is allowed to be absent
+        # (car parks have none), but if one is here it must be an https page on the
+        # site we scraped: a "javascript:" that reached the dataset would be XSS in
+        # the detail sheet, with no escaping bug anywhere to blame. The app checks
+        # the scheme again at render time, because it ships this file rather than
+        # rebuilding it, but a bad URL should never get as far as being shipped.
+        u = s.get("url")
+        if u is not None:
+            if not isinstance(u, str) or not u.startswith("https://"):
+                problems.append("%s url is not https: %r" % (s.get("id"), u))
+            elif urlparse(u).hostname not in URL_HOSTS:
+                problems.append("%s url is off-site: %r" % (s.get("id"), u))
     ids = [s["id"] for s in sites]
     if len(ids) != len(set(ids)):
         dupes = {i for i in ids if ids.count(i) > 1}

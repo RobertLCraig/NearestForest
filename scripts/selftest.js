@@ -251,6 +251,88 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
   ok('no provider key is committed anywhere', leaked.length === 0, leaked.join(', '));
 }
 
+console.log('');
+console.log('--- hardening (adversarial review, 2026-08-10) ---');
+{
+  const htaccess = fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8');
+  const appjs = fs.readFileSync(path.join(ROOT, 'app', 'app.js'), 'utf8');
+  const indexhtml = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8');
+  const tiles = fs.readFileSync(path.join(ROOT, 'app', 'api', 'tiles.php'), 'utf8');
+  const shipped = ['app.js', 'core.js', 'map.js', 'sw.js']
+    .map(f => fs.readFileSync(path.join(ROOT, 'app', f), 'utf8')).join('\n');
+
+  // A dataset URL goes into an href. esc() stops an attribute breakout; it cannot
+  // stop a javascript: scheme sitting legitimately inside one.
+  ok('safeHref passes an ordinary https page',
+     NF.safeHref('https://www.forestryengland.uk/bedgebury') === 'https://www.forestryengland.uk/bedgebury');
+  ok('safeHref rejects javascript:', NF.safeHref('javascript:alert(1)') === null);
+  ok('safeHref rejects a leading-whitespace javascript:',
+     NF.safeHref('  \t javascript:alert(1)') === null);
+  ok('safeHref rejects data:', NF.safeHref('data:text/html,<script>alert(1)</script>') === null);
+  ok('safeHref rejects plain http', NF.safeHref('http://example.com') === null);
+  ok('safeHref rejects a protocol-relative URL', NF.safeHref('//evil.example.com') === null);
+  ok('safeHref rejects null and empty', NF.safeHref(null) === null && NF.safeHref('') === null);
+  ok('app.js puts site.url through safeHref rather than straight into the href',
+     /NF\.safeHref\(site\.url\)/.test(appjs) && !/href="'\s*\+\s*esc\(site\.url\)/.test(appjs));
+
+  // The generator refuses to emit anything else, so this should never trip; it is
+  // here because the app ships the file rather than rebuilding it.
+  const badUrls = DATA.sites.filter(s => s.url != null && NF.safeHref(s.url) === null);
+  const offSite = DATA.sites.filter(s => s.url != null &&
+    !/^https:\/\/(www\.)?forestryengland\.uk\//.test(s.url));
+  ok('every dataset url survives safeHref', badUrls.length === 0,
+     badUrls.slice(0, 3).map(s => s.id).join(', '));
+  ok('every dataset url is on forestryengland.uk', offSite.length === 0,
+     offSite.slice(0, 3).map(s => s.url).join(', '));
+
+  // The CSP below has no 'unsafe-inline' and no 'unsafe-eval'. These assert the app
+  // stays inside it, so a violation fails here rather than as a blank screen on a
+  // phone, which is the only other place it would show up.
+  ok('no inline <script> in index.html',
+     !/<script(?![^>]*\bsrc=)[^>]*>/i.test(indexhtml));
+  ok('no inline event handlers in index.html',
+     !/\son[a-z]{3,}\s*=\s*["']/i.test(indexhtml));
+  ok('no style attributes in index.html markup', !/\sstyle\s*=\s*["']/i.test(indexhtml));
+  ok('no eval or Function constructor in the shipped JS',
+     !/\beval\s*\(|\bnew\s+Function\s*\(/.test(shipped));
+
+  const wantHeaders = [
+    ['Content-Security-Policy', /Header always set Content-Security-Policy/],
+    ['frame-ancestors none', /frame-ancestors 'none'/],
+    ['Strict-Transport-Security', /Header always set Strict-Transport-Security "max-age=\d{7,}/],
+    ['X-Content-Type-Options', /Header always set X-Content-Type-Options "nosniff"/],
+    ['Referrer-Policy', /Header always set Referrer-Policy/],
+    ['Permissions-Policy scoping geolocation', /Permissions-Policy "geolocation=\(self\)/]
+  ];
+  wantHeaders.forEach(([name, re]) => ok('.htaccess sets ' + name, re.test(htaccess)));
+  ok('the CSP carries no unsafe-inline or unsafe-eval', !/unsafe-(inline|eval)/.test(htaccess));
+
+  // sw.js matches both FilesMatch patterns and the last `Header set` wins, so the
+  // stricter block has to be the later one. Reversed, the file reads as though the
+  // strict value were in force while "no-cache" is what actually ships.
+  ok('the sw.js cache block comes after the general js one',
+     htaccess.indexOf('\\.(html|css|js|json|webmanifest)$') < htaccess.indexOf('sw\\.js$'));
+  // A redirect that echoes the request's own Host header is an open redirect.
+  ok('the HTTPS redirect does not echo the request Host',
+     !/RewriteRule.*%\{HTTP_HOST\}/.test(htaccess));
+
+  // The Referer check alone served a real tile to curl with no Referer and to any
+  // page using referrerpolicy="no-referrer". Sec-Fetch-Site is unforgeable from a
+  // page; the per-address cap is what bounds a script that sends its own headers.
+  ok('the tile proxy checks Sec-Fetch-Site', /HTTP_SEC_FETCH_SITE/.test(tiles));
+  ok('the tile proxy refuses a cross-site fetch',
+     /\$fetchSite !== 'same-origin'[\s\S]{0,120}fail\(403/.test(tiles));
+  ok('the tile proxy caps tiles per address per day',
+     /CAP_PER_DAY/.test(tiles) && /fail\(429/.test(tiles));
+  ok('the tile cap keys on REMOTE_ADDR and never on a forwarded header',
+     /REMOTE_ADDR/.test(tiles) && !/HTTP_X_FORWARDED_FOR|X-Forwarded-For['"]\]/.test(tiles));
+
+  // Now that other people use it, the app says what it does with a location.
+  ok('the app states its privacy position in the footer',
+     /location stays on this phone/i.test(indexhtml));
+}
+
+console.log('');
 console.log('--- update path ---');
 {
   const sw = fs.readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');

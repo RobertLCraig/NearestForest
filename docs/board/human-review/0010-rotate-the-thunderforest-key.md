@@ -1,18 +1,29 @@
+---
+waiting_on: Thunderforest support to issue a replacement key - recheck 2026-08-17
+---
+
 # Rotate the Thunderforest API key
 
 ## What I need from you
 The key was pasted into a chat transcript on 2026-08-08, so it is no longer private. Only you can
-replace it: it needs a login to the Thunderforest dashboard. Two steps, each with its own pass:
+replace it, and **the dashboard has no self-service rotation** (established 2026-08-10, which is
+why step 1 below changed shape). Three steps, each with its own pass:
 
-1. Regenerate the key at <https://www.thunderforest.com/dashboard/>.
-   *Pass:* the dashboard shows a key you have not used before.
+1. Ask Thunderforest support for a replacement key, from the account's own email address, saying
+   the existing key should be revoked once the new one is live. There is a contact form at
+   <https://www.thunderforest.com/contact/>.
+   *Pass:* a reply carrying a new key. *Fail:* silence for a week, which is the recheck date in
+   this card's `waiting_on`.
 2. Replace the server copy. Do not paste the new key into chat, into the repo, or into a card:
 
        ssh hostinger "printf '%s' 'NEW_KEY' > ~/domains/forestlocator.enhanceify.co.uk/tiles.key && chmod 600 ~/domains/forestlocator.enhanceify.co.uk/tiles.key"
 
    *Pass:* open <https://forestlocator.enhanceify.co.uk/> , open the map, tap **Tiles**, and the
    basemap still draws. *Fail:* the outline draws but no tiles, which means the file is empty, has
-   a trailing newline, or holds a key the dashboard has already revoked.
+   a trailing newline, or holds a key that has already been revoked.
+3. Confirm the old key is dead rather than merely superseded, by asking support to say so.
+   *Pass:* a reply confirming revocation. This is the step that actually ends the exposure; a new
+   key alongside a live old one changes nothing.
 
 No redeploy is needed. `api/tiles.php` reads the file on every request, which is exactly why it was
 built that way rather than baking the key into the app.
@@ -24,10 +35,16 @@ leaked into the repository: a self-test greps every tracked file for a key and `
 `/../tiles.key` and `/api/../../tiles.key` were each checked and return 404. The only exposure is
 the transcript, and the realistic worst case is someone spending the free tier's 150k tiles a month.
 
+**2026-08-10, and it cuts both ways.** A penetration test found the proxy would serve a tile to
+anyone who omitted a `Referer`, so until card 0012 landed, spending the quota needed no key at all
+and this rotation was not the control anyone thought it was. 0012 closed that. What is left here is
+the original point, undiminished: a key that has been in a transcript is not private, and only a
+revocation makes it so.
+
 ## Not this card
-Not changing provider, not changing the proxy, not adding rate limiting or server-side tile caching.
-If the quota ever actually gets abused, that is a new card with real numbers behind it rather than a
-precaution invented now.
+Not changing provider and not changing the proxy. Rate limiting and the access control that should
+have been on the endpoint are card 0012, which was built rather than deferred once the review
+showed the endpoint was open in practice and not merely in theory. Not server-side tile caching.
 
 ## Acceptance
 <!-- AC:BEGIN -->
@@ -36,6 +53,6 @@ precaution invented now.
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Regenerate the key in the Thunderforest dashboard
+- [ ] Ask Thunderforest support for a replacement key (no self-service rotation exists)
 - [ ] Replace `tiles.key` on the server and re-check the Tiles toggle
 - [ ] Confirm the old key is revoked rather than merely superseded
