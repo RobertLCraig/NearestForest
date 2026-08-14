@@ -262,6 +262,17 @@ can start immediately. Seven cards need Rob, and they fit in one conversation:
   bug already filled.
 - **0010** — rotate the Thunderforest key, which reached a chat transcript. Hygiene, not an
   incident: nothing leaked into the repo and the server copy is 600 above the web root.
+
+**One blocker sits underneath three of these cards and is not fixable here.** 0010, 0017 and 0018
+all need Rob to send mail and receive a reply, and **`enhanceify.co.uk` mail does not currently
+reach its Migadu mailbox.** Measured 2026-08-14 by direct DNS query against 1.1.1.1: MX points at
+Cloudflare Email Routing (`route1/2/3.mx.cloudflare.net`) and SPF authorises
+`_spf.mx.cloudflare.net`, while Migadu's own records are all still present alongside them
+(`hosted-email-verify=`, three DKIM CNAMEs, `autoconfig`). Enabling Cloudflare Email Routing writes
+the zone's MX and SPF records, per Cloudflare's own documentation, which is consistent with what is
+there. So inbound mail is accepted by Cloudflare and forwarded to whatever destination Email Routing
+holds, and Migadu never sees it. **The fix belongs on the enhanceify-V2 board, not this one**, and
+until it lands, do not send any of the three emails from an @enhanceify.co.uk address.
 - **0002** — build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
 - **0018** — **do we write to Forestry England, and with which asks?** The email is drafted at
   `docs/outreach/forestry-england-enquiry.md` and the address is confirmed on their own pages. The

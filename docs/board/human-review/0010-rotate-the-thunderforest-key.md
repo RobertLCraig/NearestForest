@@ -1,5 +1,5 @@
 ---
-waiting_on: Thunderforest support to issue a replacement key - recheck 2026-08-17
+waiting_on: enhanceify.co.uk mail to be fixed before step 1 can even be sent - recheck 2026-08-28
 ---
 
 # Rotate the Thunderforest API key
@@ -35,6 +35,15 @@ newline, or holds a key that has already been revoked.
 
 **Why it needs you** The request has to come from the account's own email address, and the new key
 must not pass through chat, the repository or a card. That leaves nowhere for an agent to stand.
+
+**Step 1 is blocked on something else entirely, and this is why the card has not moved.** Mail for
+`enhanceify.co.uk` is not reaching its Migadu mailbox. Measured 2026-08-14 by direct DNS query: the
+domain's MX records point at Cloudflare Email Routing (`route1/2/3.mx.cloudflare.net`) and SPF
+authorises `_spf.mx.cloudflare.net`, while every Migadu artefact is still in place beside them
+(`hosted-email-verify`, all three DKIM CNAMEs, the `autoconfig` CNAME). Inbound mail is therefore
+being accepted by Cloudflare and forwarded somewhere, and Migadu never sees it. Step 1 asks
+Thunderforest to reply to that address, so sending it now means losing the reply and the key with
+it. Fix the mail first. That work belongs on the **enhanceify-V2** board, not this one.
 
 No redeploy is needed. `api/tiles.php` reads the file on every request, which is exactly why it was
 built that way rather than baking the key into the app.

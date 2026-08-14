@@ -1,5 +1,12 @@
 # Do we write to Forestry England, and with which asks?
 
+> **Do not send from an @enhanceify.co.uk address until the mail is fixed.** Measured 2026-08-14:
+> the domain's MX records point at Cloudflare Email Routing, not at Migadu, so mail to that domain
+> is being forwarded by Cloudflare and never reaches the Migadu mailbox. A reply from Forestry
+> England is the entire point of this card, so send from an address that is known to receive, or fix
+> the mail first. Same blocker as 0010, and 0017's email to Natural Resources Wales. It belongs on
+> the **enhanceify-V2** board.
+
 ## What I need from you
 
 **One choice, then one send.**
