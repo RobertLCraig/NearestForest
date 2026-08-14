@@ -17,6 +17,12 @@ readable.** Thunderforest's terms and the OpenStreetMap licence both require vis
 and this is the app being handed to other people. That is what lifts it above a styling nit: it is
 the difference between crediting the data properly and only appearing to.
 
+**Fresh evidence, and a new reason to do it now.** `docs/img/2026-08-14_Screenshots/IMG_5794.PNG`
+and `IMG_5795.PNG` show the same failure four days on, at two zoom levels, the attribution greyed
+into the basemap and barely picked out at all. Those shots were taken as candidate attachments for
+the enquiry to Forestry England (card 0018), which argues that this project handles data licensing
+properly. They cannot be attached while they show the opposite, so this card now gates part of 0018.
+
 ## Not this card
 Not the marker labels, which collide and truncate over tiles ("Bedgebury National Pi…" sitting on
 "Hemsted Forest", "Queen Elizabeth Count…" over "Creech Wood"). Same screenshots, same surface,

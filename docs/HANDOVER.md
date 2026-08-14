@@ -11,7 +11,8 @@ check 5. **Seven cards now wait on a person: two ask whether the app leaves Engl
 asks whether we write to Forestry England at all.**
 _Last updated: 2026-08-14 (drafted the enquiry to Forestry England and opened card 0018 to decide
 whether to send it; the app is public and the forest half of its data rests on nothing anyone has
-agreed to, which is the question underneath the commercial one)_
+agreed to, which is the question underneath the commercial one. Six phone screenshots arrived as
+candidate attachments and two of them are evidence for card 0015, which now gates part of 0018)_
 
 ## Goal & success criteria
 
@@ -164,7 +165,15 @@ on-device. That split is deliberate and is the thing the two-method comparison i
 - `docs/outreach/` — drafted correspondence to outside parties, in markdown, which is the source.
   **`*.docx` is gitignored**, so a Word review copy handed to a person will not be in the repo; if
   one comes back marked up, fold the edits into the markdown and regenerate. Card 0018 holds the
-  Forestry England one; the Natural Resources Wales one is still inline on card 0017.
+  Forestry England one; the Natural Resources Wales one is still inline on card 0017. Two files:
+  `forestry-england-enquiry.md` is the email itself, and `forestry-england-handover.md` is a
+  **self-contained** briefing for a Claude session working in Word with no repo access, which is why
+  it repeats the email in full rather than linking it. **Both are rendered to Word by one throwaway
+  script, and the email text therefore lives in two places that must be edited together.**
+- `docs/img/2026-08-14_Screenshots/` — six phone screenshots, **untracked pending a call on whether
+  14MB of PNGs belong in a repo the server pulls on every deploy.** IMG_5792 (list), 5796 (detail
+  sheet) and 5797 (map chooser) are the ones worth attaching to the enquiry. **5794 and 5795 are
+  evidence for card 0015**: they show the tile attribution as unreadable grey on a pale basemap.
 - `HUMAN_ACTIONS.md` — what is left for a person, and the recurring data-refresh procedure.
 
 ## Decisions locked
@@ -236,7 +245,12 @@ The queue is [docs/board/](board/), one card per file. At the head:
    exists: an unnamed dot is worse than an unnamed row. The nearest car park to Brighton is one of
    them, which is the whole problem in a single row.
 2. **0015** the tile attribution is unreadable over tiles (`todo/`) — small, and it is a licence
-   obligation rather than a styling nit, on an app now shared with other people.
+   obligation rather than a styling nit, on an app now shared with other people. **It now gates part
+   of 0018**: two of the screenshots meant for the Forestry England enquiry show the attribution
+   failing, and that email's argument is that this project handles licensing properly.
+   **Its "Not this card" promises a separate card for colliding marker labels and that card does not
+   exist.** The same screenshots show it ("Bedgebury National Pi…" over "Hemsted Fores…"). Worth
+   opening.
 3. **An adversarial pass over `ai-review/`** — four cards (0005 deploy, 0006 compass, 0008 offline
    map, 0009 tile layer) are built and unreviewed. Nothing reaches `done/` without somebody trying
    to break it. **0008 deserves the most scepticism:** its gestures have only ever run against a
