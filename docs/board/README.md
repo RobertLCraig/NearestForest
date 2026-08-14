@@ -174,6 +174,15 @@ the agent should know. `## Decided` is the answer to a decision card, and fillin
 exit condition. Both are append-only dated entries, added and never edited. An answer recorded as
 direction neither reads as a ruling nor moves the card, which was found by watching it happen.
 
+**`## Direction` may be pruned, but only intentionally, and needing to is a defect report about
+whatever filled it.** The target state is one where pruning is never needed. A card that has to be
+pruned is a card something has been writing to without having anything new to say: one real card
+reached 4,764 lines across 100 dated entries, most of them recording that it was still blocked on
+the same ruling as the entry above, until it was too large for the agent file reader that had to
+open it. So prune when a person decides to, never as routine tidying, and treat the decision as
+evidence that the writer upstream needs fixing rather than the log needs trimming. An entry that
+records nothing a reader could act on should not have been written.
+
 An entry can carry screenshots. They live in `docs/board/attachments/`, named after the card and
 dated, and a card links to one as `![name](../attachments/NNNN-YYYY-MM-DD-N.png)`. That path is
 correct from every lane folder and therefore survives every move, where a picture stored beside the

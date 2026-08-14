@@ -7,10 +7,11 @@
 **Status:** Deployed, installed to the Home Screen, and working on the device. Map complete
 (bundled outline plus optional tiles). Two agent-ready cards, **0004** and **0015**; eight cards
 awaiting an adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001**
-check 5. **Six cards now wait on a person, and the newest two ask whether the app leaves England.**
-_Last updated: 2026-08-14 (surveyed the Scottish and Welsh equivalents of the Forestry England
-sources and wrote cards 0016 and 0017; both contradict a written PRD non-goal, so both sit in
-human-review behind that one call rather than in the queue)_
+check 5. **Seven cards now wait on a person: two ask whether the app leaves England, and the newest
+asks whether we write to Forestry England at all.**
+_Last updated: 2026-08-14 (drafted the enquiry to Forestry England and opened card 0018 to decide
+whether to send it; the app is public and the forest half of its data rests on nothing anyone has
+agreed to, which is the question underneath the commercial one)_
 
 ## Goal & success criteria
 
@@ -160,6 +161,10 @@ on-device. That split is deliberate and is the thing the two-method comparison i
 - `.gitattributes` — pins LF on anything the Linux host executes. A CRLF `deploy.sh` dies with a
   `^M` interpreter error, which is a baffling way to meet a line ending.
 - `docs/build/IOS-SHORTCUT.md` — the Shortcut recipe, since `.shortcut` files cannot be generated.
+- `docs/outreach/` — drafted correspondence to outside parties, in markdown, which is the source.
+  **`*.docx` is gitignored**, so a Word review copy handed to a person will not be in the repo; if
+  one comes back marked up, fold the edits into the markdown and regenerate. Card 0018 holds the
+  Forestry England one; the Natural Resources Wales one is still inline on card 0017.
 - `HUMAN_ACTIONS.md` — what is left for a person, and the recurring data-refresh procedure.
 
 ## Decisions locked
@@ -246,7 +251,7 @@ which is why they sit in `human-review/` rather than at the head of this queue.
 ## Blockers / open questions
 
 See [docs/board/human-review/](board/human-review/). Nothing blocks agent work: cards 0004 and 0015
-can start immediately. Six cards need Rob, and they fit in one conversation:
+can start immediately. Seven cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. Checks 1 to 4 now pass on the device. This is the last unevidenced PRD criterion
@@ -258,6 +263,13 @@ can start immediately. Six cards need Rob, and they fit in one conversation:
 - **0010** — rotate the Thunderforest key, which reached a chat transcript. Hygiene, not an
   incident: nothing leaked into the repo and the server copy is 600 above the web root.
 - **0002** — build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
+- **0018** — **do we write to Forestry England, and with which asks?** The email is drafted at
+  `docs/outreach/forestry-england-enquiry.md` and the address is confirmed on their own pages. The
+  ask Rob started from was commercial (would they buy it), but the load-bearing one is permission:
+  the app is public, the repo is public, and the forest data is scraped from their pages under a
+  PRD constraint that says "personal use; not redistributed as a dataset", which is no longer what
+  is happening. Three options on the card with a recommendation. **Its third ask contradicts the
+  PRD non-goal "No App Store release"**, the same way 0016 and 0017 contradict the England-only one.
 - **0016** — **does the app leave England?** Scotland is measured and ready to build: FLS publishes
   278 destinations, the whole index arrives in one HTML attribute, and the detail pages carry the
   same fields the English ones do. But the PRD's non-goals say "No Wales, Scotland or Northern

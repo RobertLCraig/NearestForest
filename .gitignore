@@ -13,3 +13,8 @@ Thumbs.db
 # be committed: this repository is public.
 tiles.key
 *.key
+
+# Review copies of outreach drafts. The markdown under docs/outreach/ is the source;
+# the .docx is a regenerable working copy passed to a human to mark up, and an unsent
+# draft addressed to a third party has no business in a public repository.
+*.docx
