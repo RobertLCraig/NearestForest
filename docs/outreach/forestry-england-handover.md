@@ -105,10 +105,10 @@ redraft.**
 >
 > I drive a lot, and when I stop for a meal I would rather eat somewhere with a view than in a
 > restaurant or a service station car park. So my girlfriend and I got into the habit of driving to
-> Forestry England sites just to have lunch, which is how I ended up parked in a lay-by trying to
-> work out which of your forests was nearest. Your finder is fine at a desk. On a phone, on the
-> move, with one bar of signal, I could not get a straight answer out of it (and forest car parks
-> are precisely where the signal dies).
+> Forestry England sites just to have lunch, maybe take a short walk after, which is how I ended up
+> parked in a lay-by trying to work out which of your forests was nearest. Your finder is fine at a
+> desk. On a phone, on the move, with one bar of signal, I could not get an answer out of it (and
+> forest car parks often have limited to no mobile signal).
 >
 > So I built a page that does one thing: it opens to a list of your sites sorted nearest first, and
 > one tap hands the chosen one to Apple Maps, Google Maps or Waze.
