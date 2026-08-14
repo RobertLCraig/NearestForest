@@ -36,14 +36,20 @@ newline, or holds a key that has already been revoked.
 **Why it needs you** The request has to come from the account's own email address, and the new key
 must not pass through chat, the repository or a card. That leaves nowhere for an agent to stand.
 
-**Step 1 is blocked on something else entirely, and this is why the card has not moved.** Mail for
-`enhanceify.co.uk` is not reaching its Migadu mailbox. Measured 2026-08-14 by direct DNS query: the
-domain's MX records point at Cloudflare Email Routing (`route1/2/3.mx.cloudflare.net`) and SPF
-authorises `_spf.mx.cloudflare.net`, while every Migadu artefact is still in place beside them
-(`hosted-email-verify`, all three DKIM CNAMEs, the `autoconfig` CNAME). Inbound mail is therefore
-being accepted by Cloudflare and forwarded somewhere, and Migadu never sees it. Step 1 asks
-Thunderforest to reply to that address, so sending it now means losing the reply and the key with
-it. Fix the mail first. That work belongs on the **enhanceify-V2** board, not this one.
+**Step 1 is blocked on something else entirely, and this is why the card has not moved.** Rob cannot
+currently **send** from `enhanceify.co.uk`. Receiving is fine, so a reply would arrive; it is the
+outgoing half that does not work, and step 1 has to come *from* the Thunderforest account's own
+registered address.
+
+Measured 2026-08-14 by direct DNS query: the domain's MX records point at Cloudflare Email Routing
+(`route1/2/3.mx.cloudflare.net`) and SPF authorises `_spf.mx.cloudflare.net`, while every Migadu
+artefact is still in place beside them (`hosted-email-verify`, all three DKIM CNAMEs, the
+`autoconfig` CNAME). Cloudflare Email Routing forwards inbound mail and does not send outbound at
+all, which is consistent with what Rob reports: mail arrives, nothing can leave.
+
+So this card waits until sending works, and no workaround helps, because the sending address is the
+thing Thunderforest checks. **The fix belongs on the enhanceify-V2 board, not this one**, and Rob
+asked on 2026-08-14 that it be left alone for now.
 
 No redeploy is needed. `api/tiles.php` reads the file on every request, which is exactly why it was
 built that way rather than baking the key into the app.
