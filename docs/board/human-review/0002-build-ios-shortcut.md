@@ -1,10 +1,9 @@
 # Build the iOS Shortcut
 
 ## What I need from you
-Build the Shortcut on the phone by following `docs/build/IOS-SHORTCUT.md`, then use both it and the
-PWA for a couple of weeks and say which you actually reach for. A `.shortcut` file is a signed Apple
-format that cannot be generated off-device, so this is a five-minute build by hand rather than
-something I can hand you.
+
+**Build the Shortcut from `docs/build/IOS-SHORTCUT.md`, then use it and the PWA side by side for a
+couple of weeks and say which one you actually reach for.**
 
 No longer blocked: card 0005 deployed the endpoint on 2026-08-08. Step 3 of the recipe should call
 
@@ -15,6 +14,18 @@ which is live now and returns Friston Forest first from Brighton.
 The comparison is the point of building both. The two things worth noticing:
 1. Does Siri triggering actually get used while driving, or does the phone stay in the cradle?
 2. Does the Shortcut fail in a real forest car park where the PWA keeps working?
+
+**Pass** is the Shortcut built and working, plus a verdict recorded under `## Direction` naming
+which of the two you kept using.
+
+**Fail** is the recipe being wrong, which is a real possibility: if an action name has changed in
+the current Shortcuts app, note it here and move the card to `todo/` so the doc gets fixed rather
+than working around it on the phone.
+
+**Why it needs you** A `.shortcut` file is a signed Apple format that cannot be generated
+off-device, so the build is five minutes by hand rather than something anybody can hand you. The
+verdict is the other half: only real use over a couple of weeks settles which access method is worth
+keeping, and keeping both forever is a maintenance cost for a personal app.
 
 ## Why
 Two access methods were built deliberately (DECISIONS 2026-08-08) because they have different

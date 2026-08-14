@@ -4,10 +4,22 @@ waiting_on: real-world use after card 0001 - recheck 2026-09-19
 # Is straight-line distance good enough in practice?
 
 ## What I need from you
-After using the app for a few real trips, tell me whether the top result was ever the wrong choice
-because a nearer-by-air site was a longer drive. One example is enough to settle it. I cannot answer
-this from the data: it depends on which roads you actually take and how you feel about the result,
-not on anything measurable from here.
+
+**After a few real trips, say whether the top result was ever the wrong choice because a
+nearer-by-air site turned out to be a longer drive.** One example is enough.
+
+My recommendation is **1**, leave it as straight-line, unless you have such an example.
+
+**Pass** is either a concrete case ("Friston came top but X was fifteen minutes closer by road") or
+"no, it has been fine". Both close the card.
+
+**Fail** is a general feeling either way. Without a specific trip there is nothing to weigh option 2
+against, and option 2 costs the thing the app is for: it needs a live connection, so it degrades
+exactly where the app is most needed.
+
+**Why it needs you** It depends on which roads you actually take and on whether a wrong ordering
+bothered you. Neither is measurable from here, which is why the PRD left it as an open question
+rather than assuming it away.
 
 ## Why
 The app ranks by great-circle distance (DECISIONS 2026-08-08). From Brighton the South Downs and the

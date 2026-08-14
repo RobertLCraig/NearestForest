@@ -5,9 +5,10 @@ waiting_on: Thunderforest support to issue a replacement key - recheck 2026-08-1
 # Rotate the Thunderforest API key
 
 ## What I need from you
-The key was pasted into a chat transcript on 2026-08-08, so it is no longer private. Only you can
-replace it, and **the dashboard has no self-service rotation** (established 2026-08-10, which is
-why step 1 below changed shape). Three steps, each with its own pass:
+
+**Ask Thunderforest support for a replacement key, install it on the server, and get the old one
+revoked.** The dashboard has no self-service rotation (established 2026-08-10), so step 1 is an
+email rather than a button. Three steps, each with its own pass:
 
 1. Ask Thunderforest support for a replacement key, from the account's own email address, saying
    the existing key should be revoked once the new one is live. There is a contact form at
@@ -24,6 +25,16 @@ why step 1 below changed shape). Three steps, each with its own pass:
 3. Confirm the old key is dead rather than merely superseded, by asking support to say so.
    *Pass:* a reply confirming revocation. This is the step that actually ends the exposure; a new
    key alongside a live old one changes nothing.
+
+**Pass** is all three, and step 3 is the one that ends the exposure: a new key alongside a live old
+one changes nothing.
+
+**Fail** at step 1 is silence for a week, which is the recheck date in this card's `waiting_on`. At
+step 2 it is the outline drawing with no tiles, which means the file is empty, carries a trailing
+newline, or holds a key that has already been revoked.
+
+**Why it needs you** The request has to come from the account's own email address, and the new key
+must not pass through chat, the repository or a card. That leaves nowhere for an agent to stand.
 
 No redeploy is needed. `api/tiles.php` reads the file on every request, which is exactly why it was
 built that way rather than baking the key into the app.

@@ -40,9 +40,10 @@ Something like:
 > would read "Contains Natural Resources Wales information © Natural Resources Wales and Database
 > Right".
 
-Pass is a written yes naming the licence: that unlocks option 2.
-Fail is either a no, or nothing by the recheck date. Either way we take option 1 and move on, since
-option 1 needs no permission from anyone.
+**Pass** is a written yes naming the licence: that unlocks option 2.
+
+**Fail** is either a no, or nothing by the recheck date. Either way we take option 1 and move on,
+since option 1 needs no permission from anyone.
 
 **On 2.** The choice is what Welsh coverage is worth to you, and the sizes differ by a factor of
 thirty. See the options below; my recommendation is there too.

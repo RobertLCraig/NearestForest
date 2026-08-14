@@ -1,12 +1,13 @@
 # Verify the deployed app on the iPhone
 
 ## What I need from you
-Run these five checks on the phone. **The app is deployed and waiting for you at
-https://forestlocator.enhanceify.co.uk/** (card 0005, done 2026-08-08). Only you can: they need a physical
-iPhone, a real GPS fix, and the network genuinely taken away. Nothing here can be established from a
-desk, and until it is, none of the PRD success criteria are evidenced.
 
-Each check names its own pass, so a failure points at one cause rather than at the whole card:
+**Only check 5 is left: put the phone in aeroplane mode, relaunch from the Home Screen icon, and
+say whether the full list still renders.** Run it twice, once with Tiles off and once with Tiles
+left on. Checks 1 to 4 already passed on your device (see Direction).
+
+The app is at **https://forestlocator.enhanceify.co.uk/**. All five checks are below, each naming
+its own pass, so a failure points at one cause rather than at the whole card:
 
 1. Open **https://forestlocator.enhanceify.co.uk/** in Safari. *Pass:* padlock, no certificate warning.
    *Fail:* SSL is not issued, and GPS will silently never work.
@@ -21,9 +22,16 @@ Each check names its own pass, so a failure points at one cause rather than at t
    *Pass:* the full list still renders with distances.
    *Fail:* a Safari error page means the service worker did not install.
 
-Report which numbers passed. A failure on 5 is the one that matters most: offline is the whole
-premise of the app, and so far it has only been verified by serving locally, never by pulling the
-network away from a real installed copy.
+**Pass** on check 5 is the full list rendering with distances, on both runs. With Tiles left on and
+no signal, the bundled coastline should still draw, the markers should still draw, and there should
+be no grey holes.
+
+**Fail** is a Safari error page, which means the service worker did not install. Note the number and
+move this card to `todo/` so an agent picks up the fix, rather than fixing it on the phone.
+
+**Why it needs you** It needs a physical iPhone and the network genuinely taken away. Offline has
+only ever been verified by serving locally, never by pulling the network from a real installed copy,
+and offline is the whole premise of the app. Until check 5 runs, the central claim is unevidenced.
 
 ## Why
 The app was built on Windows and tested in node and a local HTTP server. Every claim about how it
