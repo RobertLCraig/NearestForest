@@ -5,12 +5,12 @@
 
 **Stage:** active
 **Status:** Deployed, installed to the Home Screen, and working on the device. Map complete
-(bundled outline plus optional tiles). One agent-ready card, **0004**; eight cards awaiting an
-adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5.
-_Last updated: 2026-08-10 (adversarial review and penetration test, prompted by the app being
-shared with other people: the tile proxy was open to the internet and is now closed, cards
-0011-0014; earlier the same day, offline cache no longer swallows map tiles, overlapping map
-markers group into counted bubbles, both header icons from the Mo~oM pack, renderer-drawn grain)_
+(bundled outline plus optional tiles). Two agent-ready cards, **0004** and **0015**; eight cards
+awaiting an adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001**
+check 5. **Six cards now wait on a person, and the newest two ask whether the app leaves England.**
+_Last updated: 2026-08-14 (surveyed the Scottish and Welsh equivalents of the Forestry England
+sources and wrote cards 0016 and 0017; both contradict a written PRD non-goal, so both sit in
+human-review behind that one call rather than in the queue)_
 
 ## Goal & success criteria
 
@@ -226,21 +226,27 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 
 The queue is [docs/board/](board/), one card per file. At the head:
 
-1. **0004** derive names for the 170 unnamed car parks (`todo/`) — **the only agent-ready card, so
-   start here.** DATA-MODEL calls it the main open divergence, and it matters more now the map
+1. **0004** derive names for the 170 unnamed car parks (`todo/`) — **an agent-ready card, so start
+   here.** DATA-MODEL calls it the main open divergence, and it matters more now the map
    exists: an unnamed dot is worse than an unnamed row. The nearest car park to Brighton is one of
    them, which is the whole problem in a single row.
-2. **An adversarial pass over `ai-review/`** — four cards (0005 deploy, 0006 compass, 0008 offline
+2. **0015** the tile attribution is unreadable over tiles (`todo/`) — small, and it is a licence
+   obligation rather than a styling nit, on an app now shared with other people.
+3. **An adversarial pass over `ai-review/`** — four cards (0005 deploy, 0006 compass, 0008 offline
    map, 0009 tile layer) are built and unreviewed. Nothing reaches `done/` without somebody trying
    to break it. **0008 deserves the most scepticism:** its gestures have only ever run against a
    stubbed canvas in node, never a real finger, and nobody has watched 630 car park markers render
    on a phone. `/code-review` is the tool.
-3. Everything else needs a person: see below.
+4. Everything else needs a person: see below.
+
+**Scotland and Wales are researched, costed and blocked on one product call**, cards 0016 and 0017.
+Do not start either from the board alone: the PRD's non-goals rule out both countries in writing,
+which is why they sit in `human-review/` rather than at the head of this queue.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). Nothing blocks agent work: card 0004 can start
-immediately. Four cards need Rob, and they fit in one conversation:
+See [docs/board/human-review/](board/human-review/). Nothing blocks agent work: cards 0004 and 0015
+can start immediately. Six cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. Checks 1 to 4 now pass on the device. This is the last unevidenced PRD criterion
@@ -252,6 +258,15 @@ immediately. Four cards need Rob, and they fit in one conversation:
 - **0010** — rotate the Thunderforest key, which reached a chat transcript. Hygiene, not an
   incident: nothing leaked into the repo and the server copy is 600 above the web root.
 - **0002** — build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
+- **0016** — **does the app leave England?** Scotland is measured and ready to build: FLS publishes
+  278 destinations, the whole index arrives in one HTML attribute, and the detail pages carry the
+  same fields the English ones do. But the PRD's non-goals say "No Wales, Scotland or Northern
+  Ireland (different agencies entirely)", so building it means changing that line. One yes or no,
+  and it gates 0017 too.
+- **0017** — how much of Wales to ship. Blocked behind 0016, and behind one email: NRW's own
+  metadata says the recreation data is OGL with no access restrictions, while data.gov.uk says the
+  same dataset needs their prior approval before use in an internet application. The email is
+  drafted on the card. Recheck 2026-09-11, so not due.
 - **0003** — a decision with options and a recommendation already on the card, waiting on real
   trips rather than analysis. Recheck 2026-09-19, so not due.
 
