@@ -191,6 +191,29 @@ redraft.**
   is actually sent from**, because a reply is the entire point.
 - **A reviewer has a Word copy.** It went to Cheryl on 2026-08-14 for comment. Her edits have not
   come back yet.
+- **Screenshots exist.** Six, taken on the phone on 2026-08-14, in
+  `docs/img/2026-08-14_Screenshots`. Described below so this document stands alone, because a
+  session reading it in Word cannot open them.
+
+| File | What it shows | Use it? |
+|---|---|---|
+| IMG_5792 | The list. Friston Forest marked NEAREST at 11 miles E, sat-nav postcode, "Until 20:00", a play button per row. | **Yes, lead with it.** It is the entire pitch in one image. |
+| IMG_5796 | The detail sheet for Frillinghurst Wood: open state with dusk at 20:28, "No sat nav postcode published" in italics, opening prose, parking, facilities, coordinates, a link to the Forestry England page, and "DATA CHECKED 2026-08-08". | **Yes.** It evidences the honest-null claim and the snapshot claim at once. |
+| IMG_5797 | The map app chooser: Apple Maps, Google Maps, Waze. | **Yes.** Proves the one-tap-to-navigation claim. |
+| IMG_5793 | The map with tiles off, so the bundled offline outline only. Sparse to an outsider. | Only with a caption saying it is the no-signal view. |
+| IMG_5794 | The map with tiles on, south-east England. | **Hold.** See the attribution problem below. |
+| IMG_5795 | The map with tiles on, zoomed to Surrey and Hampshire. | **Hold.** Same problem. |
+
+**Do not attach IMG_5794 or IMG_5795 as they stand.** The map attribution line ("Maps © Thunderforest,
+Data © OpenStreetMap contributors") is rendered in grey over a pale map and is close to illegible in
+both. That is an open defect on the project board (card 0015) and it is a licence obligation rather
+than a styling nit. Sending an image that visibly fails an attribution requirement, inside an email
+whose central argument is that the project takes data licensing seriously, undercuts the email. Fix
+0015 and retake, or attach the other four.
+
+**Sizes are a practical problem.** The six files total about 13.5 MB, and the largest is 4.1 MB on
+its own. Three full-size attachments would make a cold email to a general inbox heavy enough to be
+rejected or ignored. They need resizing before they are attached.
 - **It is tracked as decision card 0018** on the project's board, sitting in the lane for things
   waiting on a person, with three options and a recommendation to send as drafted.
 
@@ -211,8 +234,10 @@ redraft.**
 
 - Which address to send from, given the enhanceify sending problem.
 - Whether to keep ask 3 at all, given it contradicts a written project non-goal.
-- Whether to attach two or three screenshots. **Recommended:** yes. A cold email to a general inbox
+- Which screenshots to attach, now that six exist. **Recommended:** IMG_5792, IMG_5796 and IMG_5797,
+  resized, and none of the tiled map shots until card 0015 is fixed. A cold email to a general inbox
   describing a website gets skimmed; a picture of the list on a phone gets forwarded.
+- Whether to fix the map attribution (card 0015) before sending, so the tiled map shots can go too.
 - Whether he would actually hand the project over for nothing if they said yes to ask 1.
 
 ## 8. Things to get right in any redraft
