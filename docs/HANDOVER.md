@@ -9,10 +9,12 @@
 awaiting an adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001**
 check 5. **Seven cards now wait on a person: two ask whether the app leaves England, and the newest
 asks whether we write to Forestry England at all.**
-_Last updated: 2026-08-14 (drafted the enquiry to Forestry England and opened card 0018 to decide
-whether to send it; the app is public and the forest half of its data rests on nothing anyone has
-agreed to, which is the question underneath the commercial one. Six phone screenshots arrived as
-candidate attachments and two of them are evidence for card 0015, which now gates part of 0018)_
+_Last updated: 2026-08-15 (researched the licensing and the answer changed the project: **both data
+sources are OGL and commercial use is expressly permitted**, so the PRD constraint saying the forest
+list was personal-use-only was wrong and is superseded. See DECISIONS 2026-08-15. The only thing not
+covered is the trade mark, which is now the one hard reason card 0018 exists. Card 0019 opened for
+the attribution wording. The enquiry itself was rewritten several times and put through a cold
+review by three agents given no project context)_
 
 ## Goal & success criteria
 
@@ -251,6 +253,11 @@ The queue is [docs/board/](board/), one card per file. At the head:
    **Its "Not this card" promises a separate card for colliding marker labels and that card does not
    exist.** The same screenshots show it ("Bedgebury National Pi…" over "Hemsted Fores…"). Worth
    opening.
+3. **0019** credit Forestry England the way they ask to be credited (`todo/`) — a text change in
+   `app/index.html` plus a self-test. It follows from the licensing research (DECISIONS 2026-08-15):
+   the footer uses the generic OGL fallback wording when Forestry England publish their own, and it
+   still claims "personal use", which stopped being true a long time ago. **Do it before 0018 is
+   sent**, since that email promises their wording is in use.
 3. **An adversarial pass over `ai-review/`** — four cards (0005 deploy, 0006 compass, 0008 offline
    map, 0009 tile layer) are built and unreviewed. Nothing reaches `done/` without somebody trying
    to break it. **0008 deserves the most scepticism:** its gestures have only ever run against a

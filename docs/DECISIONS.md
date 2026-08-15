@@ -3,7 +3,7 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
-## 2026-08-15 — The forest data is OGL-licensed, and the app never needed permission
+## 2026-08-15: The forest data is OGL-licensed, and the app never needed permission
 **Decision:** Treat the forest details scraped from forestryengland.uk as reusable under the Open
 Government Licence v3.0, including commercially. Supersede the PRD's Licensing constraint, which
 said the forest list was taken "for personal use" and "not redistributed as a dataset". Correct the

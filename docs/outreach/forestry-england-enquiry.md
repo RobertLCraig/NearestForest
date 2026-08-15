@@ -44,10 +44,15 @@ put it on their phone too, which is why I am writing rather than quietly keeping
 I would like to speak to the team this belongs with. There are two routes I can see, and the first is
 the one I would prefer:
 
-1. **You are happy for me to carry on.** This is the one I would prefer. I would like to keep the app
-   free, put it in the app stores so people can actually find it, and be able to say clearly that it
-   helps them find Forestry England forests. I understand your name is not covered by the open
-   licence, so I would not use it in that way without your agreement.
+1. **You are happy for me to carry on.** I would like to put it in the app stores so people can
+   actually find it, and to be able to say clearly that it helps them find Forestry England forests. I understand your name is not covered by the open licence, so I would
+   not use it in that way without your agreement.
+
+   It will stay free to use, and I have no intention of putting adverts in it. I would like to add a
+   quiet way for anyone who finds it useful to put something towards the running costs, and I may
+   offer a paid version alongside the free one. The open licence does allow for that, so I am
+   telling you rather than asking, but I would far rather you heard it from me now than came across
+   it later.
 
    If you are happy with that, my plan from there is to extend it beyond England: Forestry and Land
    Scotland first, then Natural Resources Wales, then Northern Ireland and Ireland, so that it still
