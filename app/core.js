@@ -13,7 +13,7 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v10-2026-08-10';
+  var BUILD = 'v11-2026-08-15';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];

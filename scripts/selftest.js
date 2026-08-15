@@ -190,6 +190,90 @@ ok('no British National Grid leakage',
 ok('attribution present', /Open Government Licence/.test(DATA.attribution || ''));
 ok('every forest has a Forestry England url', forests.every(s => /^https:\/\/www\.forestryengland\.uk\//.test(s.url || '')));
 
+console.log('\n--- campsites (a second database, under a second licence) ---');
+const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsites.json'), 'utf8'));
+{
+  const camps = CAMP.sites;
+  ok('campsite count matches header', camps.length === CAMP.counts.campsite,
+     `${camps.length} vs ${CAMP.counts.campsite}`);
+  ok('every record in campsites.json is a campsite', camps.every(s => s.source === 'campsite'));
+  ok('campsite ids are unique', new Set(camps.map(s => s.id)).size === camps.length);
+
+  // The two files are two databases. sites.json is Open Government Licence and this one
+  // is ODbL, and ODbL 1.0 s4.5(a) only exempts them from share-alike while they stay
+  // independent. A campsite record inside sites.json would end that argument.
+  ok('the OGL file holds no campsite record', !sites.some(s => s.source === 'campsite'));
+  ok('the two files share no id', (() => {
+    const a = new Set(sites.map(s => s.id));
+    return camps.every(s => !a.has(s.id));
+  })());
+  ok('the campsite file states its own licence and attribution',
+     /ODbL/.test(CAMP.licence || '') && /OpenStreetMap/.test(CAMP.attribution || ''));
+
+  // Great Britain, not England: Scotland and Wales are the point of this tab.
+  // Widened, never removed, because it is the tripwire for unprojected coordinates.
+  ok('all campsite coords inside the Great Britain bbox',
+     camps.every(s => s.lat >= 49.5 && s.lat <= 61.2 && s.lng >= -8.8 && s.lng <= 2.2));
+  ok('campsites exist in all three countries',
+     ['England', 'Scotland', 'Wales'].every(c => camps.some(s => s.country === c)),
+     JSON.stringify(CAMP.counts_by_country));
+
+  // Rob's call on 2026-08-15: named and explicitly able to take a van, or not listed.
+  ok('every campsite has a real name',
+     camps.every(s => s.name && s.name.trim().length && !s.name_is_derived));
+  ok('every campsite names at least one vehicle it takes',
+     camps.every(s => Array.isArray(s.vehicles) && s.vehicles.length > 0));
+  ok('every campsite takes a caravan or a motorhome',
+     camps.every(s => s.vehicles.some(v => v === 'caravans' || v === 'motorhomes')),
+     'a tents-only site does not belong in this tab');
+
+  // 99 of 3,723 records publish any hours at all, so a badge here would be a guess,
+  // and this project does not guess that a gate is open.
+  ok('no campsite carries a parsed opening summary',
+     camps.every(s => s.opening_summary == null));
+  ok('no campsite is ever reported open or closed',
+     camps.every(s => NF.openState(s, new Date('2026-08-15T23:30:00Z')).state === 'unknown'));
+
+  // These URLs come from a source anybody may edit, and the app puts them in an href.
+  ok('every campsite url is https', camps.every(s => s.url == null || /^https:\/\//.test(s.url)));
+  ok('every campsite url survives the href guard',
+     camps.every(s => s.url == null || NF.safeHref(s.url) === s.url));
+
+  // OSM maps a lot of campsites twice, once as a node and once as the area around it.
+  // Both pass every other check, and the result was the same name in the first two
+  // rows of the list from Brighton.
+  ok('no campsite is listed twice under one name in one place', (() => {
+    const by = new Map();
+    for (const s of camps) {
+      const k = s.name.trim().toLowerCase();
+      if (!by.has(k)) by.set(k, []);
+      by.get(k).push(s);
+    }
+    for (const g of by.values()) {
+      for (let i = 0; i < g.length; i++) {
+        for (let j = i + 1; j < g.length; j++) {
+          if (NF.haversineMi(g[i].lat, g[i].lng, g[j].lat, g[j].lng) < 0.5) return false;
+        }
+      }
+    }
+    return true;
+  })());
+
+  const stn = camps.filter(s => s.stay_the_night);
+  ok('the Stay the Night car parks are present', stn.length >= 30, `${stn.length} found`);
+  ok('every Stay the Night record carries the scheme rules',
+     stn.every(s => /6pm to 10am/.test(s.parking || '') && /[Ss]elf-contained/.test(s.parking || '')),
+     'listing one without its rules invites someone to break them');
+  ok('every Stay the Night record is in Scotland', stn.every(s => s.country === 'Scotland'));
+
+  const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
+  ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
+  ok('campsite ranking is sorted ascending',
+     ranked.every((s, i) => i === 0 || s._mi >= ranked[i - 1]._mi));
+  ok('the nearest campsite to Brighton is plausibly close', ranked[0]._mi < 25,
+     `${ranked[0].name} at ${ranked[0]._mi.toFixed(1)} mi`);
+}
+
 console.log('\n--- opening logic safety ---');
 ok('never reports open without a parsed summary',
    sites.every(s => {
@@ -352,6 +436,18 @@ console.log('--- update path ---');
   ok('precache still fails as a unit rather than half-populating',
      /Promise\.all/.test(sw) && /skipWaiting/.test(sw));
 
+  // A tab whose data is not precached works on the sofa and fails in the car park,
+  // which is the one place this app has to work.
+  ok('the campsite dataset is precached', /\.\/data\/campsites\.json/.test(sw));
+
+  // ODbL requires the credit and requires saying the data is under that licence.
+  // It is a licence condition, not a nicety, so it is tested rather than trusted.
+  const html = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8');
+  ok('the app credits OpenStreetMap and names the licence',
+     /OpenStreetMap/.test(html) && /Open Database License/.test(html) &&
+     /openstreetmap\.org\/copyright/.test(html));
+  ok('the Campsites tab exists in the shell', /data-tab="campsite"/.test(html));
+
   const ht = fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8');
   ok('the app shell is not HTTP-cached', /\(html\|css\|js\|json\|webmanifest\)/.test(ht) &&
      /Cache-Control "no-cache"/.test(ht));
@@ -475,6 +571,13 @@ console.log('\n  Nearest 3 car parks:');
 rankedC.slice(0, 3).forEach(s => {
   console.log(`    ${s._mi.toFixed(1).padStart(5)} mi ${NF.POINTS[NF.compassIdx(s._bear)].padEnd(3)} ` +
               `${s.name.slice(0, 38).padEnd(38)} ${s.surface || ''}`);
+});
+
+console.log('\n  Nearest 5 campsites:');
+NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
+  console.log(`    ${s._mi.toFixed(1).padStart(5)} mi ${NF.POINTS[NF.compassIdx(s._bear)].padEnd(3)} ` +
+              `${s.name.slice(0, 38).padEnd(38)} ${(s.postcode_satnav || '-').padEnd(9)} ` +
+              `${(s.vehicles || []).join('/')}`);
 });
 
 console.log(`\n${pass} passed, ${failures.length} failed`);

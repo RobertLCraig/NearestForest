@@ -3,6 +3,44 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-15: Campsites come from OpenStreetMap, and ship in their own file
+**Decision:** The Campsites tab is built from OpenStreetMap (`tourism=camp_site` and
+`tourism=caravan_site`) via one Overpass query per country, plus Forestry and Land Scotland's Stay
+the Night car parks. It ships as `app/data/campsites.json`, **a separate file from `sites.json`**,
+each carrying its own licence and attribution block. The app merges the two arrays in memory at load
+and never on disk.
+
+**Why OpenStreetMap.** Checked rather than assumed on 2026-08-15: there is no national
+open-government campsite dataset. data.gov.uk carries only per-council fragments (Durham caravan
+parks, Mid Ulster caravan and camping sites), the Forestry Commission recreation hub publishes no
+camping layer, and every commercial directory (Searchforsites, park4night, Britstops, the Caravan and
+Motorhome Club) is proprietary with no licence that would let the data ship inside an app. OSM is the
+only source with full Great Britain coverage and an open licence: 8,501 features across England,
+Scotland and Wales, every one with a usable coordinate.
+
+**Why a separate file, which is the part most likely to be "tidied up" later.** OSM is ODbL, not OGL.
+A GB-wide campsite extract is a Derivative Database, so share-alike applies to it. ODbL 1.0 section
+4.5(a) exempts a *Collective Database*, "this Database in unmodified form as part of a collection of
+independent databases in themselves that together are assembled into a collective whole", and says
+the licence still applies to that database as part of the collective while the rest keeps its own
+terms. Two files side by side are exactly that. One merged file invites the argument that the OGL
+forest data became a derivative of the ODbL one, which would throw away the clean licence position
+established in the entry below it, on the same day. A self-test asserts that no campsite record has
+found its way into `sites.json`.
+
+**Trade-off accepted:** OSM is crowd-edited, so its tagging is uneven and its coverage is not
+uniform. That is met with an explicit filter rather than with hope. Rob's call on the cut was named
+and explicitly caravan or motorhome capable, which takes 8,501 features down to 3,681: an untagged
+`camp_site` is not evidence that a van can get in, and a list read while driving is worth more short
+and recognisable than long and speculative. Every exclusion is counted and printed by the parser.
+The 2,292 unnamed and 2,370 untagged records are not lost, only unshipped, and widening the filter is
+a one-line change if real use says the list is too thin.
+
+**Also decided here:** the campsite tab never shows an open or closed badge. 99 of 3,681 records
+publish any opening text at all, so a badge would be a guess, and the standing rule that this app
+does not guess a gate is open applies with more force to somewhere you intended to sleep.
+**Status:** active
+
 ## 2026-08-15: The full licence position, checked source by source
 **Decision:** Ship, sell, and take donations without asking Forestry England for anything. Name the
 app neutrally, describe the relationship factually, carry both attributions and a non-affiliation

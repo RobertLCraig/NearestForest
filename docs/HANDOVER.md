@@ -4,17 +4,19 @@
 > one tap. Live at https://forestlocator.enhanceify.co.uk/ and installed on Rob's phone.
 
 **Stage:** active
-**Status:** Deployed, installed to the Home Screen, and working on the device. Map complete
-(bundled outline plus optional tiles). Two agent-ready cards, **0004** and **0015**; eight cards
-awaiting an adversarial pass in `ai-review/`; the last unevidenced PRD criterion is card **0001**
-check 5. **Seven cards now wait on a person: two ask whether the app leaves England, and the newest
-asks whether we write to Forestry England at all.**
-_Last updated: 2026-08-15 (researched the licensing and the answer changed the project: **both data
-sources are OGL and commercial use is expressly permitted**, so the PRD constraint saying the forest
-list was personal-use-only was wrong and is superseded. See DECISIONS 2026-08-15. The only thing not
-covered is the trade mark, which is now the one hard reason card 0018 exists. Card 0019 opened for
-the attribution wording. The enquiry itself was rewritten several times and put through a cold
-review by three agents given no project context)_
+**Status:** Deployed, installed to the Home Screen, and working on the device. **Three tabs now: a
+Campsites tab covering England, Scotland and Wales was built on 2026-08-15**, so the app is no
+longer England only and no longer single-licence. Map complete (bundled outline plus optional
+tiles). Two agent-ready cards, **0004** and **0015**; nine cards awaiting an adversarial pass in
+`ai-review/`; the last unevidenced PRD criterion is card **0001** check 5, and the campsite tab has
+added a second reason to run it. **Seven cards wait on a person.**
+_Last updated: 2026-08-15 (two sessions. First: researched the licensing and the answer changed the
+project, since **both forest sources are OGL and commercial use is expressly permitted**, so the PRD
+constraint saying the forest list was personal-use-only was wrong and is superseded. See DECISIONS
+2026-08-15. The only thing not covered is the trade mark, which is now the one hard reason card 0018
+exists. Card 0019 opened for the attribution wording. Second: **built the Campsites tab** on Rob's
+instruction, card 0020, from OpenStreetMap plus Forestry and Land Scotland's Stay the Night scheme.
+That brought a third licence into the project, ODbL, and the file layout now carries that boundary)_
 
 ## Goal & success criteria
 
@@ -34,10 +36,25 @@ locally.** That is card 0001 check 5, not a formality.
 
 Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session must not re-guess:
 
-- **One `Site` record** normalises two very different upstream sources. `source` is `forest` or
-  `carpark` and drives which tab a record appears in, nothing else. Do not branch logic on it.
-- **`app/data/sites.json` is generated, never hand-edited.** 904 records, 515 KB, committed on
-  purpose because it is what the app ships. Fix the generator and re-run; do not patch the JSON.
+- **One `Site` record** normalises four very different upstream sources. `source` is `forest`,
+  `carpark` or `campsite` and drives which tab a record appears in, nothing else. Do not branch
+  logic on it.
+- **One record shape, but TWO files, and the split is a licence boundary rather than a modelling
+  one.** `app/data/sites.json` is Open Government Licence (Forestry England). `app/data/campsites.json`
+  is **ODbL** (OpenStreetMap, plus Forestry and Land Scotland's Stay the Night car parks). They are
+  merged into one array in memory at load and **never on disk**. ODbL 1.0 s4.5(a) exempts a
+  Collective Database from share-alike; one merged file would invite the argument that the OGL data
+  became a derivative of the ODbL one. **A self-test fails if a campsite record appears inside
+  `sites.json`.** Do not "tidy" the two files into one.
+- **Both are generated, never hand-edited.** 904 records / 515 KB and 3,681 records / 972 KB,
+  committed on purpose because they are what the app ships. Fix the generator and re-run; do not
+  patch the JSON.
+- **The Campsites tab covers England, Scotland and Wales; the other two tabs are England only.**
+  That asymmetry is deliberate and is written into the PRD: the campsite source is one GB-wide
+  database, while the forest sources are three separate national agencies. Cards 0016 and 0017 still
+  hold the forest question.
+- **A campsite never shows an open/closed badge.** 99 of 3,681 records publish any hours at all, so
+  a badge would be a guess, and a self-test asserts `openState()` returns `unknown` for every one.
 - **Coordinates are WGS84 decimal degrees everywhere.** The car park source is EPSG:27700 and is
   reprojected at fetch time by asking ArcGIS for `outSR=4326`. `scripts/parse.py` asserts every
   coordinate falls inside an England bounding box, so an unprojected value fails the build loudly.
@@ -90,17 +107,31 @@ opened from the Files app was rejected as an option.
 Static files only. No build step, no bundler, no npm, no framework, no database.
 
 ```
-Forestry England website --scrape--+
-                                   +--> scripts/fetch.py --> data/raw/ (142MB, gitignored)
-ArcGIS FeatureServer (OGL v3) -----+          |
-                                              v
-                                   scripts/parse.py --> app/data/sites.json (904 sites)
-                                                             |
-                                        +--------------------+--------------------+
-                                        v                                         v
-                              PWA (offline, no server)              api/nearest.php (Shortcut only)
-                              core.js does the maths                does the maths server-side
+OGL v3                                                   ODbL 1.0
+------                                                   --------
+Forestry England website --scrape--+       OpenStreetMap (Overpass, 1 query per country) --+
+                                   |                                                       |
+ArcGIS FeatureServer --------------+       FLS "Stay the Night" (2 requests) --------------+
+                                   |                                                       |
+                          scripts/fetch.py                                 scripts/fetch_campsites.py
+                                   |                                                       |
+                                   v                                                       v
+                          scripts/parse.py                                 scripts/parse_campsites.py
+                                   |                                                       |
+                                   v                                                       v
+                    app/data/sites.json (904)                        app/data/campsites.json (3,681)
+                                   |                                                       |
+                                   +---------------------+---------------------------------+
+                                                         |  merged in memory at load, NEVER on disk
+                        +--------------------------------+--------------------+
+                        v                                                     v
+              PWA (offline, no server)                        api/nearest.php (Shortcut only)
+              core.js does the maths                          reads sites.json only, no campsites
 ```
+
+**The two branches never join on disk, and that is a licence boundary.** See the data shape section
+above. `api/nearest.php` and the iOS Shortcut cover the forest tabs only: unaffected rather than
+broken, but the two front ends no longer cover the same ground.
 
 The PWA never calls a server. The Shortcut must, because Shortcuts is far too slow to rank 904 sites
 on-device. That split is deliberate and is the thing the two-method comparison is meant to settle.
@@ -142,7 +173,20 @@ on-device. That split is deliberate and is the thing the two-method comparison i
   the reason above. Only images carry a long max-age. Do not "optimise" this back.
 - `scripts/fetch.py` — resumable and cached; re-running costs zero requests for pages already held.
 - `scripts/parse.py` — the only place the HTML shape is understood. Exits non-zero rather than
-  emitting a partial dataset.
+  emitting a partial dataset. **Its `LAT_RANGE` is still an England box and should stay one**: the
+  file it validates is still England only, and the campsite pipeline carries its own Great Britain
+  box rather than loosening this one.
+- `scripts/fetch_campsites.py` / `scripts/parse_campsites.py`: the campsite half, same rules.
+  **Overpass answers 429 when its slots are busy, and that is the service working, not an error**:
+  the fetcher waits it out with a doubling backoff rather than failing. It also checks for a
+  `remark` key and a short body, because Overpass returns HTTP 200 for a rejected or timed-out
+  query and a naive `raise_for_status()` would cache the truncation. One query per country, so the
+  record's `country` comes from which query returned it rather than from a bounding box: England and
+  Wales share too long a border for a box to be honest about it.
+- **The campsite filter is where the judgement lives**, in `takes_a_van()` and the drop rules around
+  it. 8,501 features in, 3,681 out, every exclusion counted and printed. Widening it to include the
+  2,370 records that simply carry no caravan tag is a one-line change, and it is the first thing to
+  reach for if real use says the list is too thin.
 - `app/map.js` — the canvas map: outline, markers, pan, pinch, tap, plus the optional tile layer.
   Markers that overlap are grouped into a counted bubble via `NF.clusterPoints`; the grouping
   radius is in screen pixels because "do these overlap" is a screen question, not a map one.
@@ -212,6 +256,17 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   degradation, so its 515 KB re-parse per request is **not** a DoS lever and does not need caching;
   and the `%{HTTP_HOST}` open-redirect shape in `.htaccess` was tested and is not reachable, since
   an unknown `Host` 404s before the rewrite runs. It was replaced with a literal anyway.
+- **Built this session:** the **Campsites** tab, card 0020. 3,681 sites across England (2,612),
+  Scotland (505) and Wales (564), every one named and explicitly able to take a caravan or a
+  motorhome, including all 44 of Forestry and Land Scotland's Stay the Night car parks with the
+  scheme's 6pm-to-10am rules shown on the record. Two new scripts, a new data file under a new
+  licence, 25 new self-tests. Driven in a browser at 390px rather than inferred: three tabs fit,
+  the list ranks, the detail sheet reads correctly, the map draws the whole of Great Britain, and
+  the service worker precaches the new file under one cache name.
+  **Two bugs were found by running it, both invisible in the code:** the same campsite appeared as
+  the first and second rows from Brighton, because OSM maps many sites as both a node and an area;
+  and the Stay the Night rules were labelled "Charges", so the sentence saying no tents are allowed
+  sat under a heading about money. Both fixed, the first with a self-test.
 - **In progress:** nothing.
 - **Known bugs / broken:** none open, but the most serious one yet was found and fixed this
   session, by Rob running the offline check rather than by anyone reading the code.
@@ -258,16 +313,23 @@ The queue is [docs/board/](board/), one card per file. At the head:
    the footer uses the generic OGL fallback wording when Forestry England publish their own, and it
    still claims "personal use", which stopped being true a long time ago. **Do it before 0018 is
    sent**, since that email promises their wording is in use.
-3. **An adversarial pass over `ai-review/`** — four cards (0005 deploy, 0006 compass, 0008 offline
-   map, 0009 tile layer) are built and unreviewed. Nothing reaches `done/` without somebody trying
+3. **An adversarial pass over `ai-review/`** — five cards now (0005 deploy, 0006 compass, 0008
+   offline map, 0009 tile layer, and **0020 campsites**, which is the newest and the largest
+   single change since the map). 0020 is worth real scepticism on three points: the filter that
+   decides what a campervan can get into, whether the ODbL Collective Database argument holds, and
+   whether 3,681 more markers have broken the map's clustering or its label collisions. Nothing reaches `done/` without somebody trying
    to break it. **0008 deserves the most scepticism:** its gestures have only ever run against a
    stubbed canvas in node, never a real finger, and nobody has watched 630 car park markers render
    on a phone. `/code-review` is the tool.
 4. Everything else needs a person: see below.
 
 **Scotland and Wales are researched, costed and blocked on one product call**, cards 0016 and 0017.
-Do not start either from the board alone: the PRD's non-goals rule out both countries in writing,
-which is why they sit in `human-review/` rather than at the head of this queue.
+Do not start either from the board alone. **Read that pair carefully now, because the ground moved
+under them on 2026-08-15**: the Campsites tab already covers all three countries, so the PRD non-goal
+they quote has been rewritten and no longer says what those cards say it says. What 0016 and 0017
+still hold is a genuinely different question, and a dearer one: whether the **forest** tabs take on
+two more agencies, two more scrapers and two more sites that will change under us. A campsite tab
+built from one GB-wide database is not evidence that the answer is yes.
 
 ## Blockers / open questions
 
@@ -275,7 +337,9 @@ See [docs/board/human-review/](board/human-review/). Nothing blocks agent work: 
 can start immediately. Seven cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
-  and tiles on**. Checks 1 to 4 now pass on the device. This is the last unevidenced PRD criterion
+  and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
+  offline cache went from ~550 KB to ~1.5 MB and the campsite data is precached with everything
+  else. Tap into the Campsites tab while offline as part of it. Checks 1 to 4 now pass on the device. This is the last unevidenced PRD criterion
   and the reason the app exists rather than using Forestry England's own finder.
   **Partly run on 2026-08-08 and it failed**, which is how the tile-eviction bug above was found.
   It must be re-run from a cold launch on v8 or later, and it is worth deleting the app from the
@@ -321,9 +385,12 @@ the mail fix. **That fix belongs on the enhanceify-V2 board, not this one**, and
 ```bash
 cd C:/Dev/NearestForest
 
-# Rebuild the dataset from scratch. fetch and build_boundary are both resumable and skip
-# anything already cached; a cold run is ~2 minutes and reports failures explicitly.
+# Rebuild the dataset from scratch. Every fetcher is resumable and skips anything already cached;
+# a cold run is ~2 minutes and reports failures explicitly.
 python scripts/fetch.py && python scripts/parse.py && python scripts/build_boundary.py
+
+# The campsite half, which is a separate pipeline over a separately licensed source.
+python scripts/fetch_campsites.py && python scripts/parse_campsites.py
 
 # Verify. Exits non-zero on any failure and prints the nearest sites to Brighton as a sanity check.
 node scripts/selftest.js          # expect: all passed, 0 failed

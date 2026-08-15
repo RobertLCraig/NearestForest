@@ -3,6 +3,8 @@
 'use strict';
 
 var DATA = null;              // { generated_at, counts, sites: [] }
+var CAMP = null;              // campsites.json, a SEPARATE database under a separate licence
+var CAMP_ERROR = null;        // why the campsite file did not load, if it did not
 var POS = null;               // { lat, lng, stale:bool, at:ISO }
 var TAB = 'forest';
 var FILTER = '';
@@ -31,6 +33,11 @@ function render() {
   var sites = NF.rank(DATA.sites, TAB, POS, FILTER);
   RENDERED = sites;
   emptyEl.hidden = sites.length > 0;
+  /* An empty Campsites tab has two very different causes and they must not look alike:
+     a filter that matched nothing, or a dataset that never arrived. */
+  emptyEl.textContent = (TAB === 'campsite' && CAMP_ERROR)
+    ? 'The campsite data could not be loaded (' + CAMP_ERROR + '). Forests and car parks are unaffected.'
+    : 'No sites match that filter.';
   if (typeof NFMap !== 'undefined') NFMap.refresh();
 
   listEl.innerHTML = sites.map(function (s, i) {
@@ -42,6 +49,13 @@ function render() {
     if (st.state === 'closed') sub.push('<span class="row__closed">' + esc(st.label) + '</span>');
     else if (st.state === 'open') sub.push('<span>' + esc(st.label) + '</span>');
     if (s.source === 'carpark' && s.surface) sub.push('<span>' + esc(s.surface) + '</span>');
+    /* On a campsite row the thing worth knowing before driving is whether you can
+       actually get in, so a restriction outranks a facility for the space available. */
+    if (s.source === 'campsite') {
+      if (s.stay_the_night) sub.push('<span class="row__badge">Stay the Night</span>');
+      if (s.access_note) sub.push('<span class="row__closed">' + esc(s.access_note) + '</span>');
+      else if (s.parking === 'Free') sub.push('<span>Free</span>');
+    }
 
     var dist;
     if (s._mi === null || s._mi === undefined) {
@@ -168,8 +182,26 @@ function openSheet(site) {
   }
   h += field('Sat nav postcode', site.postcode_satnav, { missing: 'No sat nav postcode published' });
   h += field('Address', site.address);
-  h += field('Opening times', site.opening_times, { missing: 'Not published' });
-  h += field('Parking', site.parking);
+  /* Campsites: the source publishes hours for 99 of 3,723 records, so "Opening times"
+     as a headline field would be an empty row on almost every one of them. What the
+     source does say is who may use the place and what it takes, and that is what
+     decides whether the drive is worth making. */
+  if (site.source === 'campsite') {
+    h += field('Takes', (site.vehicles || []).join(', '), { missing: 'Not stated' });
+    if (site.access_note) h += field('Access', site.access_note);
+    /* On a Stay the Night car park this field holds the scheme's rules, not a price,
+       and "Charges" over the sentence that tells you no tents are allowed is the kind
+       of mislabel someone reads past at 9pm. */
+    h += site.stay_the_night ? field('Overnight rules', site.parking)
+                             : field('Charges', site.parking, { missing: 'Not stated' });
+    if (site.operator) h += field('Operator', site.operator);
+    if (site.phone) h += field('Phone', site.phone);
+    if (site.opening_times) h += field('Opening times', site.opening_times);
+    if (site.country) h += field('Country', site.country);
+  } else {
+    h += field('Opening times', site.opening_times, { missing: 'Not published' });
+    h += field('Parking', site.parking);
+  }
   if (site.facilities && site.facilities.length) {
     h += '<dt>Facilities</dt><dd><div class="tags">' +
          site.facilities.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') +
@@ -182,10 +214,21 @@ function openSheet(site) {
      tell Forestry England which page sent you. */
   var moreHref = NF.safeHref(site.url);
   if (moreHref) {
-    h += field('More', '<a href="' + esc(moreHref) + '" target="_blank" rel="noopener noreferrer">Forestry England page</a>',
-               { raw: true });
+    /* A campsite's website is whatever OpenStreetMap holds for it, so the link text
+       must not claim it is a Forestry England page. Show the host instead: it is the
+       one honest label available, and it lets you see where a tap will take you. */
+    var label = 'Forestry England page';
+    if (site.source === 'campsite') {
+      label = site.stay_the_night ? 'Forestry and Land Scotland page'
+                                  : moreHref.replace(/^https:\/\/(www\.)?/, '').split('/')[0];
+    }
+    h += field('More', '<a href="' + esc(moreHref) + '" target="_blank" rel="noopener noreferrer">' +
+               esc(label) + '</a>', { raw: true });
   }
-  h += field('Data checked', site.scraped_at);
+  h += field('Data checked', site.scraped_at || (site.source === 'campsite' && CAMP ? CAMP.generated_at : null));
+  if (site.source === 'campsite' && !site.stay_the_night) {
+    h += field('Source', 'OpenStreetMap contributors, ODbL');
+  }
   $('#sheet-body').innerHTML = h;
   showSheet($('#sheet'));
 }
@@ -304,13 +347,37 @@ dragSheet($('#sheet'));
 dragSheet($('#chooser'));
 
 /* ---------- boot ---------- */
-fetch('data/sites.json').then(function (r) {
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}).then(function (d) {
-  DATA = d;
-  metaEl.textContent = 'Data generated ' + d.generated_at + ' · ' +
-    d.counts.forest + ' forests, ' + d.counts.carpark + ' car parks · build ' + NF.BUILD;
+function loadJson(url) {
+  return fetch(url).then(function (r) {
+    if (!r.ok) throw new Error(url + ' returned HTTP ' + r.status);
+    return r.json();
+  });
+}
+
+/* Two files, because they are two databases under two licences: sites.json is Open
+   Government Licence and campsites.json is ODbL. They are merged into one array here
+   and nowhere on disk. See the note inside campsites.json before changing that.
+
+   The campsite file failing must not take the forests down with it, so it is caught
+   separately. It is never swallowed: the Campsites tab says what went wrong. */
+Promise.all([
+  loadJson('data/sites.json'),
+  loadJson('data/campsites.json').catch(function (err) {
+    CAMP_ERROR = err.message;
+    return null;
+  })
+]).then(function (res) {
+  DATA = res[0];
+  CAMP = res[1];
+
+  var meta = 'Data generated ' + DATA.generated_at + ' · ' +
+    DATA.counts.forest + ' forests, ' + DATA.counts.carpark + ' car parks';
+  if (CAMP && CAMP.sites) {
+    DATA.sites = DATA.sites.concat(CAMP.sites);
+    meta += ', ' + CAMP.counts.campsite + ' campsites';
+  }
+  metaEl.textContent = meta + ' · build ' + NF.BUILD;
+
   loadStale();
   render();
   locate(false);

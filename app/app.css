@@ -63,8 +63,12 @@ button { font:inherit; color:inherit; }
 
 .tabs { display:flex; gap:6px; margin:10px 0 0; }
 .tab {
+  /* 15px, not the inherited 17px: three tabs share the width now, and "Campsites"
+     has to fit beside "Car parks" on a 375px phone without wrapping. The 44px
+     touch target is untouched, which is the part that matters one-handed. */
   flex:1; min-height:44px; border:1px solid var(--line); background:var(--bg2);
-  border-radius:var(--radius); font-weight:600; cursor:pointer; color:var(--dim);
+  border-radius:var(--radius); font-weight:600; font-size:15px; padding:0 4px;
+  white-space:nowrap; cursor:pointer; color:var(--dim);
 }
 .tab.is-active { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
 

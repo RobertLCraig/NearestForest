@@ -38,6 +38,7 @@
   <nav class="tabs" role="tablist">
     <button class="tab is-active" role="tab" aria-selected="true"  data-tab="forest">Forests</button>
     <button class="tab"           role="tab" aria-selected="false" data-tab="carpark">Car parks</button>
+    <button class="tab"           role="tab" aria-selected="false" data-tab="campsite">Campsites</button>
   </nav>
   <input id="filter" class="filter" type="search" placeholder="Filter by name&hellip;"
          autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Filter by name">
@@ -58,6 +59,12 @@
        at. It is off unless you turn it on.</p>
     <p>Contains public sector information licensed under the Open Government Licence v3.0.
        Forest details from Forestry England. Personal use; not affiliated with Forestry England.</p>
+    <!-- The campsite data is ODbL, not OGL like the two above it, which is why it ships as a
+         separate file and why this credit is a separate sentence. ODbL requires the credit and
+         requires saying the data is under that licence. Do not fold it into the OGL line. -->
+    <p id="osm-credit">Campsite data &copy; <a href="https://www.openstreetmap.org/copyright"
+       target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors, available under the
+       Open Database License. Stay the Night car parks from Forestry and Land Scotland.</p>
   </footer>
 </main>
 
