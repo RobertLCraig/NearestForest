@@ -3,6 +3,70 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-15: The full licence position, checked source by source
+**Decision:** Ship, sell, and take donations without asking Forestry England for anything. Name the
+app neutrally, describe the relationship factually, carry both attributions and a non-affiliation
+line. Do not seek permission, a licence, or a badge.
+
+**Why:** Rob asked for the licensing and legal risk to be researched thoroughly rather than assumed.
+Every claim below was checked against a primary source on 2026-08-15.
+
+**The data itself**
+
+| Question | Finding | Source |
+|---|---|---|
+| Car park dataset licence | Open Government Licence v3.0, publisher Forestry Commission | data.gov.uk dataset `3d279869-555d-45c2-a859-d029dab1fc39` |
+| Any use restriction on it | **"There are no public access constraints to this data. Use of this data is subject to the licence identified."** | environment.data.gov.uk record `bb768e37-7fb6-4362-9f07-ecc50ef14793` |
+| Required attribution | "© Forestry Commission copyright and/or database right 2025. All rights reserved." | `copyrightText` on the live ArcGIS FeatureServer |
+| Website content licence | "You may use and re-use the information featured on this website (not including logos or images) free of charge in any format or medium, under the terms of the Open Government Licence." | forestryengland.uk/article/crown-copyright |
+| Does OGL allow selling it | Yes: "exploit the Information commercially and non-commercially" | OGL v3 |
+| Does OGL cover database right | Yes, explicitly: "protected by copyright **or by database right**" | OGL v3 |
+
+**This is the opposite of the Welsh position on card 0017**, where NRW's own metadata and data.gov.uk
+contradict each other about internet applications. The English record has no such restriction, and
+was checked for one specifically because of that card.
+
+**The method of obtaining it**
+
+- `forestryengland.uk/robots.txt` is stock Drupal. It disallows `/admin`, `/user/*`, `/search`,
+  `/core/` and `/profiles/`. **Nothing covering the forest pages.**
+- **There is no terms of use page.** The site footer carries Crown Copyright, Disclaimers, Privacy
+  Policy, Cookie Policy, Accessibility, Modern Slavery and Counter Fraud, and nothing else. So there
+  is no contractual term prohibiting automated collection to breach.
+- Their Disclaimers page says nothing about automated collection either. What it does say is that
+  **they disclaim the accuracy of their own information**: "we cannot ensure that all information
+  will always be accurate". Useful: the app is no less accurate than its source, and can say so.
+- `scripts/fetch.py` rate-limits to 4 workers at 0.35s and caches every page, so re-runs cost zero
+  requests. Politeness is a defence in practice even where it is not required in law.
+
+**What is not covered, and what to do instead**
+
+OGL excludes "logos, crests and the Royal Arms" and "other intellectual property rights, including
+patents, **trade marks**, and design rights". This is the only real gap, and the answer is to design
+around it rather than ask:
+
+- **Do not use "Forestry England" as the app's name or store title.** That asserts whose app it is.
+- **Do describe factually** what it does, e.g. "finds your nearest forest managed by Forestry
+  England". A statement of fact about the subject matter is ordinary referential use.
+- **Carry a non-affiliation line.** The app already does. Forestry England's own Disclaimers page
+  takes the same position about outbound links: "The inclusion of links to organisations in any
+  section is not an endorsement of companies or products."
+
+**Other exposures considered and dismissed**
+
+- **Personal data:** none. The dataset is site locations, not people. The user's own location never
+  leaves their device.
+- **Accessibility regulations:** the Public Sector Bodies (Websites and Mobile Applications)
+  Accessibility Regulations 2018 bind public sector bodies. Rob is not one, so they do not apply.
+  **They would become an expectation the moment Forestry England badged or promoted the app**, which
+  is one more reason not to seek that.
+- **App store trade mark complaints:** a real risk, but a risk created by using their name as
+  branding, which the decision above avoids.
+
+**Not legal advice.** This is a reading of published licences, metadata records and a robots file, all
+named above so the next person can check rather than trust.
+**Status:** active
+
 ## 2026-08-15: The forest data is OGL-licensed, and the app never needed permission
 **Decision:** Treat the forest details scraped from forestryengland.uk as reusable under the Open
 Government Licence v3.0, including commercially. Supersede the PRD's Licensing constraint, which
