@@ -1,68 +1,67 @@
 # Draft email to Forestry England
 
-*For review. Nothing has been sent. Two facts marked **[confirm]** need checking before it goes.*
+*For review. Nothing has been sent.*
 
 **To:** info@forestryengland.uk
-**Subject:** An app I built that gets more people to your forests
+**Subject:** Free forest-finder app for Forestry England visitors
 
 ---
 
 Hello,
 
-**The problem.** Somebody has a free afternoon and fancies a walk somewhere green. To use your
-website to find a forest, they more or less have to know which forest they want first. Out on the
-road it is harder still. I have lost count of the times I have sat in a lay-by somewhere unfamiliar,
-trying to work out which of your sites was nearest, with almost no phone signal, and given up and
-gone to a pub car park instead.
+I built a free app that helps people find their nearest Forestry England forests, even with no phone
+signal, and I would like to discuss whether Forestry England would be interested in having a version
+of their own, working with me on it, or allowing me to continue publishing it clearly as a Forestry
+England forest finder.
 
-**What I built.** A free app that opens straight to your nearest forests, closest first, and sends
-you to the one you pick in Apple Maps, Google Maps or Waze with a single tap. It carries everything
-it needs with it, so it still works with no signal at all, which matters because that is exactly
-what forest car parks are like. Nothing to sign up to, no tracking, no adverts.
+**The problem.** If someone has a free afternoon and wants a walk somewhere green, your website works
+best when they already know which forest they want. On the road it is harder again. I have often sat
+somewhere unfamiliar, with little signal, trying to work out which Forestry England site is nearest
+and giving up.
+
+**What I built.** A free app that opens with the nearest Forestry England forests first, then sends
+the user to their chosen site in Apple Maps, Google Maps or Waze with one tap. It works without
+signal, requires no sign-up, and has no tracking or adverts.
 
 **It is here: https://forestlocator.enhanceify.co.uk/**
 
-I am a Forestry England member **[confirm]** and I have been to more than twenty of your sites so far
-**[confirm the number]**. I built this for myself, but everyone I have shown it to has asked me to
-put it on their phone too, which is why I am writing rather than quietly keeping it.
-
 ## Why I think it is worth your time
 
-- **It reaches people at the moment they are choosing where to go**, instead of needing them to
-  already know a forest by name.
-- **It puts your quieter sites in front of people.** Everybody knows the big ones. Almost nobody goes
-  looking for Footland Wood, because you would have to know it was there.
-- **It stops wasted trips to a gate that has already shut**, which is one less disappointed phone
-  call for whoever answers this address.
-- **It sends people to you.** Every forest in it links back to that forest's own page on your
-  website.
+- It reaches people at the moment they are choosing where to go, instead of needing them to already
+  know a forest by name.
+- It puts your quieter sites in front of people. Well-known forests are easy to search for; smaller
+  sites are much harder to discover unless someone already knows they exist.
+- It helps avoid wasted trips to a closed gate, which means fewer disappointed visitors and fewer
+  avoidable enquiries.
+- It sends people to you. Every forest in it links back to that forest's own page on your website.
 
 ## What I am asking
 
-I would like to talk to whoever this sits with. There is more than one way it could go and I am
-genuinely open to all of them:
+I would like to speak to the team this belongs with. I can see a few possible routes, and I am open
+to whichever is most useful for you:
 
-1. **You take it on.** I would hand over the app and everything behind it. If there is a budget for
-   that, I would welcome it.
+1. **A version of your own.** I would licence it to you, or build you a Forestry England version and
+   keep it maintained, whichever suits you better. I would want to keep developing the wider app
+   alongside it, because I would like to extend it to Scotland, Wales, Northern Ireland and Ireland
+   in time, so that it still works when somebody crosses a border they cannot see.
 2. **You bring me in.** I would be glad to work on it for you, or on the forest finder on your own
    website, which is the problem I started with.
 3. **You are happy for me to carry on.** In that case I would like to put it in the app stores so
-   people can actually find it, and to be able to say plainly that it finds Forestry England
-   forests. Your name is the one thing the open licence does not cover, so that part is genuinely
-   yours to answer rather than mine to assume.
+   people can find it, and to be able to say clearly that it helps them find Forestry England
+   forests. I understand your name is not covered by the open licence, so I would not use it in that
+   way without your agreement.
 
-Anything that gets it in front of more people is a good outcome as far as I am concerned. If you
-would rather simply link to it, or mention it to your members, that would be worth more to me than
-most of the above.
+Anything that gets it in front of more people would be a good outcome. If you would rather simply
+link to it or mention it to your members, I would value that too.
 
 For completeness: the car park locations come from the open data you publish, and the forest details
-come from your own website, which says its content may be reused under the Open Government Licence.
-I have used none of your logos or photographs, and I credit you in the app.
+come from your website, which says its content may be reused under the Open Government Licence. I
+have not used your logos or photographs, and I credit Forestry England in the app.
 
-I would be very happy to show it to anyone, or for this to be passed on to whichever team it belongs
-with.
+I would be very happy to show the app to anyone who would like to see it, or for this email to be
+passed to the right team.
 
-Many Thanks,
+Many thanks,
 
 Robert Craig
 [phone]
