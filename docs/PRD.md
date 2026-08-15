@@ -55,9 +55,18 @@ In priority order.
 - **Not routing.** No road distances, no traffic, no ETA. Straight-line distance only. The map app
   does routing; duplicating it would need a paid API and a live connection.
 - **Not England-wide woodland.** Forestry England sites only. No National Trust, Woodland Trust,
-  RSPB, or council parks. No Wales, Scotland or Northern Ireland (different agencies entirely).
-- **No App Store release**, no Apple Developer account, no accounts, no login, no sync, no analytics,
-  no telemetry, no server-side anything.
+  RSPB, or council parks. ~~No Wales, Scotland or Northern Ireland (different agencies entirely).~~
+  **Contradicted by stated intent, 2026-08-15.** Rob wants Scotland, Wales, Northern Ireland and
+  Ireland, and Europe and the United States after that. Cards 0016 and 0017 hold the measured cost
+  for Scotland and Wales; nothing has been researched for Ireland or beyond. **This line is not yet
+  rewritten because "I want to" is not the same as a scoped decision**, and the two cards were
+  written against the old wording.
+- ~~**No App Store release**, no Apple Developer account~~, no accounts, no login, no sync, no
+  analytics, no telemetry, no server-side anything. **The App Store half is contradicted by stated
+  intent, 2026-08-15:** Rob intends to list it, free with donations or at a low price. The Apple
+  half still stands on its own facts, since an iOS release needs a Mac and a paid developer account
+  and he has neither; Android does not. Card 0018 carries the trade mark question that gates a
+  listing either way.
 - **No live data at runtime.** Notices and closures on the Forestry England site are not fetched;
   the app is a snapshot, refreshed when the pipeline is re-run.
 - Not a general map. No tile rendering, no pan-and-zoom browsing.
@@ -91,9 +100,14 @@ In priority order.
   needs an `.htaccess` entry to serve `.webmanifest` with the correct MIME type.
 - **Local-first deploy.** Built and verified locally under Laravel Herd before anything is pushed
   live. No direct edits on the host.
-- **Licensing.** The car park data is Open Government Licence v3.0 and requires attribution, which
-  ships in the app's About view. The forest list is scraped from Forestry England's public pages for
-  personal use; it is not redistributed as a dataset.
+- **Licensing.** **Both** sources are Open Government Licence v3.0, and OGL v3 permits commercial as
+  well as non-commercial reuse, adaptation and redistribution. The car park data is published as an
+  OGL dataset. The forest details are read from forestryengland.uk, whose Crown copyright page offers
+  the site's information for reuse under the same licence, excluding logos and images. Attribution is
+  required for both and ships in the app's About view. See DECISIONS 2026-08-15, which supersedes an
+  earlier constraint here that wrongly described the forest list as personal-use-only.
+  **What the licence does not cover is trade marks**, so the Forestry England name in an app store
+  listing is a separate question and is card 0018.
 - **Both sources are fragile.** The forest list is parsed out of Drupal-rendered HTML and will break
   when they redesign. The pipeline must fail loudly on a parse shortfall, never emit a short file quietly.
 

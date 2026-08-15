@@ -3,6 +3,39 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-15 — The forest data is OGL-licensed, and the app never needed permission
+**Decision:** Treat the forest details scraped from forestryengland.uk as reusable under the Open
+Government Licence v3.0, including commercially. Supersede the PRD's Licensing constraint, which
+said the forest list was taken "for personal use" and "not redistributed as a dataset". Correct the
+app's attribution to the wording Forestry England themselves specify.
+
+**Why:** The constraint was written cautiously and never checked. Checked on 2026-08-15 against the
+primary sources rather than assumed:
+
+- Forestry England's own [Crown copyright page](https://www.forestryengland.uk/article/crown-copyright)
+  states: "You may use and re-use the information featured on this website (not including logos or
+  images) free of charge in any format or medium, under the terms of the Open Government Licence."
+  It excludes third-party material and asks for the attribution "Crown Copyright, courtesy Forestry
+  England (date of publication), licensed under the Open Government Licence".
+- [OGL v3](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) grants the
+  right to "copy, publish, distribute and transmit the Information; adapt the Information; exploit
+  the Information commercially and non-commercially", and defines "Information" as material
+  "protected by copyright **or by database right**".
+- OGL v3 does **not** cover logos, crests, the Royal Arms, or "other intellectual property rights,
+  including patents, **trade marks**, and design rights".
+- `forestryengland.uk/robots.txt` is stock Drupal. It disallows `/admin`, `/user/*`, `/search`,
+  `/core/` and `/profiles/`, and nothing under the forest pages the scraper reads.
+
+**What follows.** The app takes text, not logos or photographs, so it is inside the licence, and the
+commercial questions (a paid listing, donations) need no one's permission on the data. **The one
+genuine gap is the trade mark**, which is why the enquiry to Forestry England (card 0018) survives
+this finding rather than being cancelled by it: an app store listing that leans on the Forestry
+England name is the part the licence does not reach.
+
+**Not a lawyer's opinion.** This is a reading of two published licences and one robots file, all
+linked above so the next person can check rather than trust it.
+**Status:** active
+
 ## 2026-08-10 — The tile proxy authenticates the browser, and caps the address
 **Decision:** `api/tiles.php` requires `Sec-Fetch-Site: same-origin` whenever that header is
 present, keeps the `Referer` check for clients that do not send it, and caps every address

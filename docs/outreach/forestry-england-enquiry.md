@@ -3,7 +3,7 @@
 *For review. Nothing has been sent.*
 
 **To:** info@forestryengland.uk
-**Subject:** A free offline app I built for finding the nearest Forestry England site
+**Subject:** A free offline app for finding the nearest Forestry England site, and what I plan to do with it
 
 ---
 
@@ -21,6 +21,11 @@ forest car parks often have limited to no mobile signal).
 
 So I built a page that does one thing: it opens to a list of your sites sorted nearest first, and one
 tap hands the chosen one to Apple Maps, Google Maps or Waze.
+
+I built it for myself, but I have since shown it to quite a few people, and the reaction has been
+consistent enough that I no longer think the problem was only mine. Everyone who has seen it has
+asked for it on their own phone. So I would like to keep it running, and to put it in front of more
+people than I can reach by showing them my phone.
 
 It is live and free here: **https://forestlocator.enhanceify.co.uk/**
 
@@ -40,41 +45,61 @@ It is live and free here: **https://forestlocator.enhanceify.co.uk/**
   gate is open when it has no basis for saying so.
 - No accounts, no login, no tracking, no analytics, no adverts. There is no server for it to send
   anything to, and a phone's location never leaves the phone.
-- It credits the Open Government Licence and states that it is not affiliated with you.
 
-## What I am asking
+## Where the data comes from, and why I am writing
 
-Three questions, and the second one is the one that matters most to me.
+The 630 car parks come from the dataset you publish under the Open Government Licence. The forest
+details (name, sat-nav postcode, opening times, parking, facilities) are read from your own public
+forest pages, which your Crown copyright page offers for reuse under that same licence.
 
-1. **Is it something you would want to take on?** I would genuinely rather it lived with you than
-   with me. I am happy to hand over all of it: the app, the source code, and the pipeline that
-   rebuilds the data from your published sources. If there is budget to pay me for it, or for my
-   time to finish and maintain it, I would welcome that, but I am not making it a condition.
+I have read both, and I believe the app sits inside them. I have not used your logos, your
+photographs, or anything marked as belonging to a third party. **So I am not writing to ask
+permission to use the information**, and I would rather say that plainly than imply otherwise.
 
-2. **If it is not for you, are you content for it to stay online as it is, free and public?** I am
-   asking rather than assuming, because it is already up and the source is public. A yes or no from
-   you settles it and I will act on either.
+I am writing for two reasons. The first is that I would simply rather you heard about this from me
+than came across it. The second is that there are things the Open Government Licence explicitly does
+not cover, and those are yours to answer rather than mine to assume.
 
-3. **And if you are content with 2, would you also allow me to publish it on the app stores?** Either
-   free with donations accepted, or as a low-priced paid app. I would follow whatever conditions you
-   wanted to attach on naming, branding and wording.
+## What I would like to ask
 
-## Two things I should be upfront about
+1. **Is there anything you would want changed?** If a field is wrong, or you would rather I did not
+   show something, or you want the wording altered, tell me and I will do it. I would also like to
+   get the credit right: I plan to use your own stated wording, "Crown Copyright, courtesy Forestry
+   England, licensed under the Open Government Licence", alongside the existing credit for the car
+   park data.
 
-**Where the data comes from.** The car park locations are your published Open Government Licence
-dataset, credited in the app. The forest details (name, postcode, opening times, facilities) are read
-from your own public forest pages. That part is not covered by a licence I can point to, which is a
-large part of why I am writing to you rather than carrying on quietly. If you would prefer I took the
-data a different way, or dropped a particular field, tell me and I will.
+2. **Your name and branding.** The licence specifically excludes trade marks, and the app has to be
+   able to say what it does, which is find Forestry England sites. Are you content with that, and are
+   there conditions you would want if it were listed on an app store? I would follow them.
+
+3. **Would you want any involvement?** I am not asking you to take it on or to run it. But if it is
+   useful to you, or there is something you would want it to do, I am open to that conversation,
+   including a commercial one.
+
+## What I intend to do with it
+
+I would rather set this out now than have it come as a surprise later.
+
+- **Keep it running free on the web**, as it is today.
+- **Put it on the app stores**, most likely free with donations accepted, possibly at a low price. I
+  am not trying to make a living from it, but if it turns out to be useful to a lot of people I would
+  like it to at least pay for itself.
+- **Extend it beyond England.** The obvious next steps are Forestry and Land Scotland, Natural
+  Resources Wales, and then Northern Ireland and Ireland, so that it answers the question anywhere in
+  these islands rather than stopping at a border a driver cannot see. Further out I would like to
+  take the same idea to Europe and the United States. Each of those means a separate conversation
+  with a separate body, and this is the first of them.
+
+## One thing I should be upfront about
 
 **It is a snapshot, not a live feed.** It does not know about a closure or a notice you posted
-yesterday, and I would not want that to embarrass you. Each site already links through to its page on
-your website for current information. If it would help, I can make that limitation more prominent,
-and I can commit to refreshing the data on whatever schedule you would want.
+yesterday, and I would not want that to embarrass you. Every site links through to its page on your
+website for current information, and each one shows the date its data was last checked. If it would
+help, I can make that limitation more prominent, and I can commit to refreshing on whatever schedule
+you would want.
 
-I am happy to walk anyone through it, send screenshots, or pass it to whichever team this belongs
-with. If I have written to the wrong address, I would be grateful if you could point me at the right
-one.
+I am happy to walk anyone through it, or to pass it to whichever team this belongs with. If I have
+written to the wrong address, I would be grateful if you could point me at the right one.
 
 Many Thanks,
 
@@ -87,11 +112,10 @@ https://forestlocator.enhanceify.co.uk/
 
 ## Proposed attachments
 
-*Not part of the email body. These three go on the email as attachments, resized to about 130 KB
-each so the whole thing stays light enough for a general inbox to accept.*
+*Not part of the email body. Four screenshots, resized so the whole email stays light enough for a
+general inbox to accept.*
 
-![The list, sorted nearest first](../img/2026-08-14_Screenshots/web/IMG_5792.jpg) ![A site's detail, including an honestly empty postcode field](../img/2026-08-14_Screenshots/web/IMG_5796.jpg) ![One tap to Apple Maps, Google Maps or Waze](../img/2026-08-14_Screenshots/web/IMG_5797.jpg)
+![The list, sorted nearest first](../img/2026-08-14_Screenshots/web/IMG_5821.jpg) ![A site in detail, with the data-checked date](../img/2026-08-14_Screenshots/web/IMG_5822.jpg) ![One tap to Apple Maps, Google Maps or Waze](../img/2026-08-14_Screenshots/web/IMG_5825.jpg) ![Every forest at once, drawn with no connection](../img/2026-08-14_Screenshots/web/IMG_5829.jpg)
 
-*The two screenshots of the map with the tile layer on are deliberately left out. The Thunderforest
-and OpenStreetMap attribution is close to illegible on them, which is an open defect, and this email
-argues that the project handles data licensing properly.*
+*The last one earns its place twice over: the outline it draws is Great Britain, and Scotland and
+Wales are visibly empty. It makes the expansion point better than a sentence does.*
