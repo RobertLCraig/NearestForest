@@ -10,10 +10,19 @@
 
 **One choice, then one send.**
 
-1. Read the draft at `docs/outreach/forestry-england-enquiry.md` and pick option 1, 2 or 3 below.
-2. If 1 or 2, fill in the `[phone]` and `[email]` placeholders in the signature and send it to
+1. **Confirm two facts the draft claims about you**, both marked `[confirm]` in it: that you are a
+   Forestry England member, and that you have visited more than twenty of their sites. Fix the
+   number or cut the sentence. **Do not send with either still unverified.** They are the two claims
+   in the email that are about you rather than about the app, and they are what make you a member who
+   built something rather than a stranger scraping a website. Worth having, and worth being exactly
+   right about.
+2. Read the draft at `docs/outreach/forestry-england-enquiry.md` and pick option 1, 2 or 3 below.
+3. Decide whether to add the ask nobody has considered yet: **an introduction to Forestry and Land
+   Scotland and Natural Resources Wales.** It is nearly free for them to give and it would turn cards
+   0016 and 0017 from cold approaches into warm ones. See the menu below.
+4. Fill in the `[phone]` and `[email]` placeholders in the signature and send it to
    **info@forestryengland.uk**.
-3. Paste whatever comes back into this card.
+5. Paste whatever comes back into this card.
 
 ---
 
@@ -111,6 +120,27 @@ Note that the name question only matters for Android in the near term. An iOS re
 an Apple Developer account, which the PRD lists as a hard constraint; Google Play will take a wrapped
 PWA built on Windows. Rob's position on 2026-08-14 was to worry about Apple later if approval comes.
 
+## The full menu of possible asks
+
+Rob asked what else he could be asking for. Everything below is a real option; the draft uses four
+of them, because a cold email with eight asks lands none.
+
+| Ask | Value to Rob | Odds of a yes | In the draft? |
+|---|---|---|---|
+| **Link to it, or mention it to members** | High. Distribution is the scarce thing, and an official mention settles the name question by implication | **Highest.** Costs them nothing, no budget, no procurement | Yes, and deliberately last, because last is where a reader's eye lands |
+| **Permission to use the name** | Necessary for a store listing | High | Yes, ask 3 |
+| **Bring him in to work on it, or on their own finder** | **Highest of all.** Paid work and a public-sector reference, worth more than an app sale | Low from a cold email, but nonzero and free to ask | Yes, ask 2 |
+| **Buy it outright** | High, one-off | Low. Public bodies cannot usually buy software from an individual without procurement | Yes, ask 1, softened |
+| **An introduction to Forestry and Land Scotland or Natural Resources Wales** | **High and underrated.** Nearly free for them, and it turns two cold approaches into warm ones for cards 0016 and 0017 | High | **No, and it should probably be added.** Rob has not considered it |
+| **An official data feed instead of scraping** | Medium. Makes the pipeline durable rather than hostage to a redesign | Medium | No. Adds a technical ask to a non-technical reader |
+| **A quote for the store listing** | Medium | Medium, but only after a relationship exists | No. Premature |
+| **Accuracy contact who can check the data** | Medium | Medium | No. Ask it in a reply, not a cold open |
+
+**The primary ask is a conversation, not a decision.** Nobody sells software or wins a contract from
+an unsolicited email to a general inbox. What a cold email can win is a reply from a named person.
+The draft therefore asks to talk to whoever it sits with and offers a menu, rather than demanding one
+answer.
+
 ## Direction
 
 **2026-08-15** Not a permission request and not an offer to hand it over. It is a pitch. Lead with
@@ -118,3 +148,14 @@ what it does for them and why it is worth their time. The audience is clerical a
 staff at a conservation body, not engineers, so cut the technicalities: no payload sizes, no jargon,
 and drop the "it is a snapshot, not a live feed" caveat entirely, since that is an internal concern
 that will change as the project grows and it means nothing to the reader.
+
+**2026-08-15** Structure it problem, solution, ask. An opening that begins "I built this for myself"
+tells a reader who has no idea what "this" is, and no reason yet to care. State the problem in their
+terms first.
+
+**2026-08-15** Rob does want them to buy in, and the strongest outcome for him is being **hired**,
+either on this or on the forest finder on their own site, ahead of an outright sale. Keep that ask in
+even though its odds are low, because it costs one line.
+
+**2026-08-15** Cheryl's standing note: keep the waffle to a minimum. The body was 989 words and is
+now about 450. Treat that as the ceiling, not the target.
