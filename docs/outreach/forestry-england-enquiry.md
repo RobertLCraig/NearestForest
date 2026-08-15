@@ -10,9 +10,9 @@
 Hello,
 
 I built a free app that helps people find their nearest Forestry England forests, even with no phone
-signal, and I would like to discuss whether Forestry England would be interested in having a version
-of their own, working with me on it, or allowing me to continue publishing it clearly as a Forestry
-England forest finder.
+signal. I would like to keep publishing it, clearly badged as a Forestry England forest finder, and
+I am writing to check you are happy with that and to ask whether there is any interest in working
+together on it.
 
 **The problem.** If someone has a free afternoon and wants a walk somewhere green, your website works
 best when they already know which forest they want. On the road it is harder again. I have often sat
@@ -37,19 +37,16 @@ signal, requires no sign-up, and has no tracking or adverts.
 
 ## What I am asking
 
-I would like to speak to the team this belongs with. I can see a few possible routes, and I am open
-to whichever is most useful for you:
+I would like to speak to the team this belongs with. There are two routes I can see, and the first is
+the one I would prefer:
 
-1. **A version of your own.** I would licence it to you, or build you a Forestry England version and
-   keep it maintained, whichever suits you better. I would want to keep developing the wider app
-   alongside it, because I would like to extend it to Scotland, Wales, Northern Ireland and Ireland
-   in time, so that it still works when somebody crosses a border they cannot see.
-2. **You bring me in.** I would be glad to work on it for you, or on the forest finder on your own
-   website, which is the problem I started with.
-3. **You are happy for me to carry on.** In that case I would like to put it in the app stores so
-   people can find it, and to be able to say clearly that it helps them find Forestry England
+1. **You are happy for me to carry on.** I would like to keep it free, put it in the app stores so
+   people can actually find it, and be able to say clearly that it helps them find Forestry England
    forests. I understand your name is not covered by the open licence, so I would not use it in that
-   way without your agreement.
+   way without your agreement. In time I would also like to extend it to Scotland, Wales, Northern
+   Ireland and Ireland, so that it still works when somebody crosses a border they cannot see.
+2. **You bring me in.** If you would rather it were closer to home, I would be glad to work on it
+   for you, or on the forest finder on your own website, which is the problem I started with.
 
 Anything that gets it in front of more people would be a good outcome. If you would rather simply
 link to it or mention it to your members, I would value that too.

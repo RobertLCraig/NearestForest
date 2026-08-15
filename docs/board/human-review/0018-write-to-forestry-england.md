@@ -130,7 +130,7 @@ of them, because a cold email with eight asks lands none.
 | **Link to it, or mention it to members** | High. Distribution is the scarce thing, and an official mention settles the name question by implication | **Highest.** Costs them nothing, no budget, no procurement | Yes, and deliberately last, because last is where a reader's eye lands |
 | **Permission to use the name** | Necessary for a store listing | High | Yes, ask 3 |
 | **Bring him in to work on it, or on their own finder** | **Highest of all.** Paid work and a public-sector reference, worth more than an app sale | Low from a cold email, but nonzero and free to ask | Yes, ask 2 |
-| ~~**Buy it outright**~~ **Licence them a version, or build them one** | High, and recurring rather than one-off | Medium, and **better than a sale**: a public body can procure a service far more easily than it can acquire software from an individual | Yes, ask 1, **rewritten 2026-08-15** |
+| ~~**Buy it outright**~~ ~~**Licence them a version**~~ | Was high, and recurring | Medium | **No. Cut 2026-08-15**, see Direction. Rob does not want it |
 | **An introduction to Forestry and Land Scotland or Natural Resources Wales** | **High and underrated.** Nearly free for them, and it turns two cold approaches into warm ones for cards 0016 and 0017 | High | **No, and it should probably be added.** Rob has not considered it |
 | **An official data feed instead of scraping** | Medium. Makes the pipeline durable rather than hostage to a redesign | Medium | No. Adds a technical ask to a non-technical reader |
 | **A quote for the store listing** | Medium | Medium, but only after a relationship exists | No. Premature |
@@ -162,8 +162,19 @@ now about 450. Treat that as the ceiling, not the target.
 
 **2026-08-15** **Do not offer to hand the project over.** Rob spotted that a straight sale is against
 his own interests: Forestry England care about England, so if they own it, the app is England-only
-for ever and the whole reason for building a platform dies with the transfer. Ask 1 is now a licence
-or a built-for-them version, with the wider app explicitly staying his. That is also the easier sale,
-because a public body can procure a service far more readily than it can buy software outright from
-an individual. **Any future draft that reintroduces "I would hand over the app and everything behind
-it" has undone a deliberate decision.**
+for ever and the whole reason for building a platform dies with the transfer. Scotland, Wales,
+Northern Ireland and Ireland all go with it. **Any future draft that reintroduces "I would hand over
+the app and everything behind it" has undone a deliberate decision.**
+
+**2026-08-15** **Two asks, not three, and keeping it is the preferred one.** The licence-them-a-
+version option was cut the same day it was written: it competes with his own app, it is slow, and it
+is not what he wants. What is left, in his order of preference:
+
+1. you are happy for me to carry on, which carries the app store intent, the use of the name, and
+   the expansion beyond England
+2. you bring me in, on this or on their own finder
+
+The ordering is the message. Leading with "carry on" says he intends to continue and is checking
+rather than petitioning, and it puts the easiest yes first. **This is not a return to asking
+permission**: the pitch structure stands above it, and the only actual permission sought is for the
+name, which is the one thing the licence genuinely does not give him.
