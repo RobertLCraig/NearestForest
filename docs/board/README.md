@@ -25,17 +25,33 @@ There is no `status:` field, because the folder already says it. A card carrying
 eventually disagree with itself, which is the failure this board exists to remove. There is no
 `created`, `updated` or `author` field either: git holds those, and a copy would drift.
 
-## The one field that is not derivable: `needs:`
+## The three permitted fields, and what each one is for
+
+Frontmatter carries **no required keys**. Three are permitted, and each earns its place by holding a
+fact neither the folder, nor git, nor the card's own shape can supply. Write the reason into the
+value on all three: a key whose value is `yes` tells the next reader that somebody decided something
+and not what.
+
+| Key | Holds | Effect |
+|---|---|---|
+| `needs:` | prerequisite cards, as numbers | orders the lane, and shows what is stuck behind what |
+| `waiting_on:` | who or what is being waited for, with a recheck date | surfaces as drift when the date arrives; keeps the unattended loop off the card |
+| `not_for_the_loop:` | why this card is a person's | keeps the **unattended** loop off it, and nothing else |
 
 ```yaml
 ---
 needs: 0057, 0082
+waiting_on: the broker quote - recheck 2026-09-01
+not_for_the_loop: edits the scheduled task that would be running it
 ---
 ```
 
-What a card cannot start without, as card numbers. It is the only dependency notation there is, and
-it earns its place because it is the one fact neither the folder nor git nor the card's own shape
-can supply.
+`needs:` is what a card cannot start without, resolved within the project only, because card numbers
+are per board. **It is read in both directions** - what this card waits on, and what waits on it -
+and it is also the work order: `0002` naming `0004` is `0002` saying `0004` happens first, so the
+lane lists `0004` ahead of it whatever the numbers are. There is no rank and no `priority:`, because
+the ordering statement is already on the card and it decays on its own the moment the prerequisite
+lands.
 
 **It has to be in the frontmatter, not in a paragraph.** A blocker named only in prose is one no
 view can show, and one real board ran for weeks with most of its dependencies sitting in sentences
@@ -117,6 +133,47 @@ settles where that fact belongs, which is why it is yours.
 ```
 
 ### How to write it
+
+**Explain it like the reader is five.** This is the rule the others serve. They know their own
+business, not our docs, so lead with the real-world thing they would recognise and name ours second:
+"the emails your staff send about a job" before `InteractionEvent`, "the list of things the client
+said they wanted" before "the anchor coverage table". Unpack every internal name on first use, in the
+same clause, never as a glossary link. The commonest failure here is not a card that is wrong. It is
+a card that is perfectly accurate and completely opaque, and it costs a whole round trip while the
+reader asks what it is actually about.
+
+**Cut everything that does not change the answer.** This is the one that shortens cards, and it is a
+test rather than a preference: take any paragraph out and ask whether the reader would now answer
+differently. If not, it was not context, it was throat-clearing - and that is true of writing which is
+accurate, interesting and hard-won. Background nobody acts on, the third piece of evidence for a point
+already made, the history of how the card was drafted, the aside that shows the work: all of it costs
+the reader attention and buys them nothing. **An agent writing a card is the usual source**, because
+producing more text is cheap for it and reading the text is the entire cost to the person.
+
+**Say how the situation arose, in one or two sentences.** "Nobody ever decided to leave email out, it
+just never got ticked" is the sentence that makes a card land, and it passes the test above because a
+reader who cannot see how a thing happened cannot judge whether it matters. Its own paragraph, not
+its own section: this is the commonest place a card starts growing a history of itself.
+
+**Cost the options in plain words.** "Costs the most, and nobody has researched how yet" beats "a
+research pass plus a connector, in a version that already contains the assessment engine". The
+second is more precise and tells the reader less.
+
+**Put the answer in the recommendation, ready to paste.** End `## Recommendation` with the exact
+line to copy into `## Decided`, dated, written as the reader would write it. Answering is then a
+copy rather than a composition, which is most of the difference between a card answered today and
+one answered next month.
+
+These five govern the whole card, not only the ask. `## Why`, the options and the tasks are read by
+the same person in the same sitting.
+
+**A whole card fits in 100 lines.** Measured over the 108 cards in `human-review/` across 22 boards
+on 2026-08-15: the median is 63 lines and nine in ten are under 104, so this is the estate's own
+habit written down rather than a new constraint - but the tail is where the reader is lost, at 301,
+194, 173 and 161 lines. Over the budget means one of two things and never a third: it is two cards,
+or it failed the cut-everything test above. **It is not a licence to compress.** Cutting a sentence
+the answer depends on to make a number is the one way to fail this rule while passing it, and the
+ask, the pass condition and the costs are the last things that may go.
 
 **Checkable, not merely short.** "Four clicks in a browser" is not an ask: it says how much work it
 is, not what the work is. Name the exact thing to do and what a pass looks like. Numbered steps each
