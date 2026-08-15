@@ -44,19 +44,27 @@ source. If the Word copy comes back with edits, fold them into the markdown and 
 
 ## Why
 
-The app is live at forestlocator.enhanceify.co.uk, the repo is public, and `sites.json` is committed
-in it. The PRD's Licensing constraint describes something narrower than that: "the forest list is
-scraped from Forestry England's public pages **for personal use; it is not redistributed as a
-dataset**". Both halves of that sentence stopped being true when the app was shared with other
-people and the repo was made public.
+**This card was opened on a premise that turned out to be false, and the correction is the most
+useful thing on it.** It originally said the forest data "rests on nothing anyone has agreed to",
+and that the email was therefore a permission request. Researched on 2026-08-15 and written up in
+DECISIONS 2026-08-15 with every source linked:
 
-The car park half is fine and always was: Open Government Licence v3.0, attributed in the app's
-footer. The forest half (name, sat-nav postcode, opening times, facilities, parsed out of their
-Drupal pages) rests on nothing anyone has agreed to.
+- Forestry England's own Crown copyright page offers the website's information for reuse under the
+  Open Government Licence, excluding logos and images.
+- OGL v3 permits adaptation and **commercial** exploitation, and covers database right.
+- Their robots.txt does not touch the forest pages.
 
-So there is an unmanaged position, and it is not primarily a commercial one. Rob's opening question
-was whether they would buy it. The question underneath that is whether they mind it existing, and
-that one gets answered either way, by them or by a takedown request at a worse moment.
+**So no permission is needed for the data, or to charge for the result.** The old framing was
+over-cautious, and the PRD constraint it came from has been superseded.
+
+What the licence explicitly does **not** cover is trade marks. An app store listing that says
+"Forestry England" is precisely that, and no amount of reading settles it, because it is theirs to
+answer. That is now the only hard reason this card exists.
+
+The other two reasons are softer and still good. **It is a pitch, not a disclosure.** Forestry
+England's remit is getting people into forests, and this gets people into forests, including the
+quiet sites nobody searches for by name. And telling them beforehand costs nothing, while being
+found later costs goodwill Rob may want when he asks about the name.
 
 Contact route confirmed 2026-08-14 on their own pages: `info@forestryengland.uk` is given both on
 [Contact us](https://www.forestryengland.uk/contact-us) for general enquiries and on
@@ -66,37 +74,47 @@ published.
 
 ## Options
 
-1. **Send it as drafted, all three asks.** Offers them the app and the code, asks whether it may stay
-   public, and asks whether it may go on an app store as a donation-supported or paid release. Cost:
-   it puts a commercial ask in front of an organisation that may not be able to act on one, and a
-   general inbox may read the whole thing as sales and bin it. It also opens the door to conditions
-   on naming and branding that would mean real work.
+1. **Send it as drafted: a pitch, with the name question inside it.** Leads with what the app does
+   for Forestry England (gets people to forests, surfaces the sites nobody searches for, prevents
+   wasted trips to locked gates, drives traffic back to their own pages, costs them nothing), then
+   asks the three questions. Cost: a general inbox may still file it as sales, and it invites
+   conditions on naming that would mean real work.
 
-2. **Send the permission ask only.** Drop asks 1 and 3, keep "here is what I built, here is where the
-   data comes from, are you content for it to stay up". Cost: it forecloses the commercial
-   conversation before anyone has read it, and getting a second bite later looks like moving the
-   goalposts. Cheapest yes available, and the least likely to be filed as sales.
+2. **Send a bare trade mark question.** Two paragraphs: here is the app, may I use your name in an
+   app store listing. Cost: it throws away the only chance to interest them, and a bare licensing
+   question from a stranger is the easiest kind of email to ignore or refuse by default. It also
+   makes the name sound like the point, which invites a cautious no.
 
-3. **Send nothing.** Cost: the position above stays unmanaged indefinitely, the app store route is
-   closed permanently (an Apple or Google review would raise the trademark question anyway, and there
-   would be no answer to give), and the day it does surface, it surfaces as their complaint rather
-   than as Rob's question.
+3. **Send nothing and list it without using their name.** Genuinely viable now the data question is
+   settled: call it something generic, describe it as finding forest car parks, never say "Forestry
+   England" in the listing. Cost: the listing becomes much harder to find and much less obviously
+   useful, and it looks evasive if anyone at Forestry England notices later. It also throws away a
+   relationship worth having before Scotland, Wales and Ireland each need their own conversation.
 
 ## Recommendation
 
-**Option 1, as drafted.** The exposure already exists, so the only thing sending changes is whether
-the answer arrives on Rob's timing or theirs. The commercial ask is worth including because it costs
-one paragraph and it is already softened to "would you want to take this on, and if there is budget I
-would welcome it" rather than a price. Their own partnerships page invites expressions of interest,
-so it is not an unsolicited pitch into a vacuum.
+**Option 1.** The data question is answered, so this is no longer a request that can be refused into
+a problem. The worst realistic outcome is silence, which changes nothing, and the second worst is a
+condition on naming, which is an afternoon's work and better learned now than after a store listing.
 
-The worst realistic outcome of option 1 is a request to change the name or add a disclaimer, which is
-an afternoon's work and something Rob would want to do anyway. The worst outcome of option 3 is the
-same request arriving as a complaint after an app store listing.
+The pitch framing is the part that matters and it is Rob's own instruction, on 2026-08-15: the
+audience at `info@` is clerical and non-technical, so the email leads with what it does for them
+rather than how it works. **Any redraft that starts explaining the technology has lost the thread.**
 
 **Do not chase.** Public bodies are slow and a second email converts a low-priority enquiry into an
 irritation. One send, one recheck date, then move on.
 
-Note that ask 3's answer only matters for Android in the near term. An iOS release needs a Mac and an
-Apple Developer account, which the PRD lists as a hard constraint; Google Play will take a wrapped
+**Card 0019 should land first if it can.** The email says Rob will use their own attribution wording,
+and it is better if that is already true when they look.
+
+Note that the name question only matters for Android in the near term. An iOS release needs a Mac and
+an Apple Developer account, which the PRD lists as a hard constraint; Google Play will take a wrapped
 PWA built on Windows. Rob's position on 2026-08-14 was to worry about Apple later if approval comes.
+
+## Direction
+
+**2026-08-15** Not a permission request and not an offer to hand it over. It is a pitch. Lead with
+what it does for them and why it is worth their time. The audience is clerical and administrative
+staff at a conservation body, not engineers, so cut the technicalities: no payload sizes, no jargon,
+and drop the "it is a snapshot, not a live feed" caveat entirely, since that is an internal concern
+that will change as the project grows and it means nothing to the reader.
