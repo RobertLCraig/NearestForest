@@ -25,6 +25,10 @@ signal, requires no sign-up, and has no tracking or adverts.
 
 **It is here: https://forestlocator.enhanceify.co.uk/**
 
+I am a Forestry England member **[confirm]** and I have visited more than twenty of your sites so far
+**[confirm the number]**. I built this for myself, but everyone I have shown it to has asked me to
+put it on their phone too, which is why I am writing rather than quietly keeping it.
+
 ## Why I think it is worth your time
 
 - It reaches people at the moment they are choosing where to go, instead of needing them to already
@@ -40,13 +44,24 @@ signal, requires no sign-up, and has no tracking or adverts.
 I would like to speak to the team this belongs with. There are two routes I can see, and the first is
 the one I would prefer:
 
-1. **You are happy for me to carry on.** I would like to keep it free, put it in the app stores so
-   people can actually find it, and be able to say clearly that it helps them find Forestry England
-   forests. I understand your name is not covered by the open licence, so I would not use it in that
-   way without your agreement. In time I would also like to extend it to Scotland, Wales, Northern
-   Ireland and Ireland, so that it still works when somebody crosses a border they cannot see.
-2. **You bring me in.** If you would rather it were closer to home, I would be glad to work on it
-   for you, or on the forest finder on your own website, which is the problem I started with.
+1. **You are happy for me to carry on.** This is the one I would prefer. I would like to keep the app
+   free, put it in the app stores so people can actually find it, and be able to say clearly that it
+   helps them find Forestry England forests. I understand your name is not covered by the open
+   licence, so I would not use it in that way without your agreement.
+
+   If you are happy with that, my plan from there is to extend it beyond England: Forestry and Land
+   Scotland first, then Natural Resources Wales, then Northern Ireland and Ireland, so that it still
+   works when somebody crosses a border they cannot see. Longer term I would like to take the same
+   idea further afield. Every one of those means a separate conversation with a separate
+   organisation, and yours is the first, partly because England is where I started and partly
+   because your open data made it possible at all.
+
+   **On that last point, one small thing that would help enormously:** if you think this is worth
+   doing, an introduction to your counterparts at Forestry and Land Scotland and Natural Resources
+   Wales would save me starting from nothing twice over.
+
+2. **You bring me in.** If you would rather it were closer to home, I would be glad to work on it for
+   you, or on the forest finder on your own website, which is the problem I started with.
 
 Anything that gets it in front of more people would be a good outcome. If you would rather simply
 link to it or mention it to your members, I would value that too.

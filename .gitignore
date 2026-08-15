@@ -19,6 +19,11 @@ tiles.key
 # draft addressed to a third party has no business in a public repository.
 *.docx
 
+# Datetimed copies of whatever a .docx held before it was regenerated, stamped with
+# that file's own modification time. Rob edits these in Word, and a rebuild once
+# overwrote edits that a pre-write check could not see. Local safety net, not history.
+docs/outreach/backups/
+
 # Full-size phone screenshots: ~2MB each, and the server pulls this repo on every
 # deploy. The downscaled copies under docs/img/**/web/ ARE tracked, because the
 # outreach documents embed them and could not be rebuilt from a fresh clone without
