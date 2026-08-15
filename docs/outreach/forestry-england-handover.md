@@ -204,6 +204,10 @@ redraft.**
 | IMG_5794 | The map with tiles on, south-east England. | **Hold.** See the attribution problem below. |
 | IMG_5795 | The map with tiles on, zoomed to Surrey and Hampshire. | **Hold.** Same problem. |
 
+![IMG_5792 the list, the one to lead with](../img/2026-08-14_Screenshots/web/IMG_5792.jpg) ![IMG_5796 the detail sheet](../img/2026-08-14_Screenshots/web/IMG_5796.jpg) ![IMG_5797 the map app chooser](../img/2026-08-14_Screenshots/web/IMG_5797.jpg)
+
+![IMG_5793 map with tiles off, the offline view](../img/2026-08-14_Screenshots/web/IMG_5793.jpg) ![IMG_5794 tiles on, attribution illegible along the bottom](../img/2026-08-14_Screenshots/web/IMG_5794.jpg) ![IMG_5795 tiles on and zoomed, same problem](../img/2026-08-14_Screenshots/web/IMG_5795.jpg)
+
 **Do not attach IMG_5794 or IMG_5795 as they stand.** The map attribution line ("Maps © Thunderforest,
 Data © OpenStreetMap contributors") is rendered in grey over a pale map and is close to illegible in
 both. That is an open defect on the project board (card 0015) and it is a licence obligation rather

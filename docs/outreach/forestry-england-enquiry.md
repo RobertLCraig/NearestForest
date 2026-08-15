@@ -82,3 +82,16 @@ Robert Craig
 [phone]
 [email]
 https://forestlocator.enhanceify.co.uk/
+
+---
+
+## Proposed attachments
+
+*Not part of the email body. These three go on the email as attachments, resized to about 130 KB
+each so the whole thing stays light enough for a general inbox to accept.*
+
+![The list, sorted nearest first](../img/2026-08-14_Screenshots/web/IMG_5792.jpg) ![A site's detail, including an honestly empty postcode field](../img/2026-08-14_Screenshots/web/IMG_5796.jpg) ![One tap to Apple Maps, Google Maps or Waze](../img/2026-08-14_Screenshots/web/IMG_5797.jpg)
+
+*The two screenshots of the map with the tile layer on are deliberately left out. The Thunderforest
+and OpenStreetMap attribution is close to illegible on them, which is an open defect, and this email
+argues that the project handles data licensing properly.*

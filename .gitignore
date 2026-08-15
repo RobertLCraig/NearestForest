@@ -18,3 +18,11 @@ tiles.key
 # the .docx is a regenerable working copy passed to a human to mark up, and an unsent
 # draft addressed to a third party has no business in a public repository.
 *.docx
+
+# Full-size phone screenshots: ~2MB each, and the server pulls this repo on every
+# deploy. The downscaled copies under docs/img/**/web/ ARE tracked, because the
+# outreach documents embed them and could not be rebuilt from a fresh clone without
+# them. Delete these two lines if the originals are worth 14MB of history.
+docs/img/**/IMG_*.PNG
+docs/img/**/IMG_*.jpg
+!docs/img/**/web/*.jpg
