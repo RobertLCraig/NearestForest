@@ -102,3 +102,8 @@ don't know about Wales", it confidently names something further away.
 If NRW confirms the open licence, the points are still worth having later, as their own card,
 filtered to parking and joined to the named sites. That is a better shape than taking all of it
 because it was available.
+
+## Decided
+<!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
+
+**2026-08-18** Draft the email request from r@enhanceify.co.uk However, the draft as currently put, is too technical. Use the ELI5 approach. Do not state what the attribution would be, say that I am happy to include any attributions needed. Give a link to the current project for them to see.
