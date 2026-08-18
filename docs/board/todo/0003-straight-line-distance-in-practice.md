@@ -43,3 +43,8 @@ Option 1 unless real use turns up an actual bad call. The whole design rests on 
 signal, and option 2 trades that away to fix a problem that may not exist on the roads you drive.
 Option 3 adds guesswork to dodge a paid API, which is usually a bad trade. Revisit only with a
 concrete example in hand.
+
+## Decided
+<!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
+
+**2026-08-18** Leave it as straight-line
