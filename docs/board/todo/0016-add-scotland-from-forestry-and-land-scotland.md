@@ -105,3 +105,8 @@ pages before deciding whether to exclude them or label them.
 Expect roughly +278 records on 904, so `sites.json` grows by about 160 KB against a 515 KB baseline.
 That is comfortable for the precache, and it is the last comfortable increment — see 0017, where the
 Welsh point data is four times the size of everything shipped so far.
+
+## Decided
+<!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
+
+**2026-08-18** Add Scotland's 278 forests from Forestry and Land Scotland: Yes
