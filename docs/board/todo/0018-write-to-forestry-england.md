@@ -299,3 +299,8 @@ The ordering is the message. Leading with "carry on" says he intends to continue
 rather than petitioning, and it puts the easiest yes first. **This is not a return to asking
 permission**: the pitch structure stands above it, and the only actual permission sought is for the
 name, which is the one thing the licence genuinely does not give him.
+
+## Decided
+<!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
+
+**2026-08-18** sending from enhanceify.co.uk has now been unblocked. but I am still on the fence about what to ask them for. I fully intend at some point to convert this project into an app both for apple and android and load it into the respective app stores. potentially with donation links at the very least.
