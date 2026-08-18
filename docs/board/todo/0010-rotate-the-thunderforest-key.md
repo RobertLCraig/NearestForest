@@ -82,3 +82,8 @@ showed the endpoint was open in practice and not merely in theory. Not server-si
 - [ ] Ask Thunderforest support for a replacement key (no self-service rotation exists)
 - [ ] Replace `tiles.key` on the server and re-check the Tiles toggle
 - [ ] Confirm the old key is revoked rather than merely superseded
+
+## Decided
+<!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
+
+**2026-08-18** Key rotation email has now been sent.
