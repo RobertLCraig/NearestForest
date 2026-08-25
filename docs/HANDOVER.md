@@ -4,7 +4,7 @@
 > one tap. Live at https://forestlocator.enhanceify.co.uk/ and installed on Rob's phone.
 
 **Stage:** active
-**Category:** app (guess)
+**Category:** app, site
 **Status:** Deployed, installed to the Home Screen, and working on the device. **Three tabs now: a
 Campsites tab covering England, Scotland and Wales was built on 2026-08-15**, so the app is no
 longer England only and no longer single-licence. Map complete (bundled outline plus optional
