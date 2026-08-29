@@ -123,6 +123,17 @@ button { font:inherit; color:inherit; }
   margin:0; text-align:center; font-size:13px; color:var(--dim);
   text-shadow:0 1px 3px var(--bg);
 }
+/* With tiles on the same element becomes the provider attribution, which carries a
+   licence obligation, and the background stops being dark. So it gets what .map__btn
+   already gets: an opaque panel of its own. Picked against the lightest part of the
+   Outdoors style rather than an average — white on 72% black is >=9:1 even over a
+   pure white tile. The pill hugs the text so the map is not banded across. */
+.map__hint--attrib {
+  left:50%; right:auto; transform:translateX(-50%);
+  max-width:calc(100% - 2 * var(--pad));
+  padding:4px 10px; border-radius:999px;
+  background:rgba(0,0,0,.72); color:#fff; text-shadow:none;
+}
 /* The list underneath must not scroll while the map has the screen. */
 body.is-mapping { overflow:hidden; }
 

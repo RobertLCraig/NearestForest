@@ -220,6 +220,7 @@ var NFMap = (function () {
     var hint = document.getElementById('map-hint');
     if (hint) {
       hint.textContent = tilesOn ? ATTRIB : 'Tap a marker for details. Pinch to zoom.';
+      hint.classList.toggle('map__hint--attrib', tilesOn);
     }
     schedule();
   }

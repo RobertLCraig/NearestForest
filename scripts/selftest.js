@@ -371,6 +371,21 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
   ok('tiles draw over the bundled outline, not instead of it',
      map.indexOf('ctx.fill();') < map.indexOf('if (tilesOn) drawTiles()'));
   ok('provider attribution is present', /Thunderforest.*OpenStreetMap/.test(map));
+  // The attribution is a licence obligation, so it must appear with the layer it
+  // credits and be readable against a light basemap while it does. Card 0015.
+  ok('the attribution is shown only when the layer is on',
+     /hint\.textContent = tilesOn \? ATTRIB :/.test(map));
+  ok('the attribution gets its solid backing from the same toggle',
+     /hint\.classList\.toggle\('map__hint--attrib', tilesOn\)/.test(map));
+  {
+    const css = fs.readFileSync(path.join(ROOT, 'app', 'app.css'), 'utf8');
+    const attrib = /\.map__hint--attrib \{([^}]*)\}/.exec(css);
+    ok('the attribution style exists and is opaque enough to read on white', !!attrib &&
+       /background:rgba\(0,0,0,\.(7[2-9]|[89]\d)\)/.test(attrib[1]) && /color:#fff/.test(attrib[1]));
+    // Both states share .map__hint, so one bottom rule keeps both off the home bar.
+    ok('the hint clears the safe-area inset in both states',
+       /\.map__hint \{[^}]*bottom:calc\(var\(--safe-b\)/.test(css) && !/bottom:/.test(attrib[1]));
+  }
 
   ok('the proxy whitelists styles rather than passing them through', /in_array\(\$style, STYLES/.test(php));
   ok('the proxy validates z, x and y', /FILTER_VALIDATE_INT/.test(php) && /MAX_ZOOM/.test(php));
