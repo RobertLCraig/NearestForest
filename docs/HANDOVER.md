@@ -8,10 +8,17 @@
 **Status:** Deployed, installed to the Home Screen, and working on the device. **Three tabs now: a
 Campsites tab covering England, Scotland and Wales was built on 2026-08-15**, so the app is no
 longer England only and no longer single-licence. Map complete (bundled outline plus optional
-tiles). Two agent-ready cards, **0004** and **0015**; nine cards awaiting an adversarial pass in
+tiles). **Card 0004 was built on 2026-08-29: the 177 car parks with no usable upstream name are now
+named after the forest they are nearest to, and DATA-MODEL's main open divergence is closed.**
+One agent-ready card left, **0015**; nine cards awaiting an adversarial pass in
 `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5, and the campsite tab has
 added a second reason to run it. **Seven cards wait on a person.**
-_Last updated: 2026-08-15 (two sessions. First: researched the licensing and the answer changed the
+**The 0004 build is not deployed and has not been looked at on a screen**, because it was built in
+a worktree that Herd does not serve.
+_Last updated: 2026-08-29 (card 0004, unattended, in a worktree: the unnamed car parks are named
+after the forest they are nearest to, on a threshold measured from the distance distribution rather
+than guessed. Not deployed and not seen on a screen; see "What's next" item 1. Earlier:)_
+_2026-08-15 (two sessions. First: researched the licensing and the answer changed the
 project, since **both forest sources are OGL and commercial use is expressly permitted**, so the PRD
 constraint saying the forest list was personal-use-only was wrong and is superseded. See DECISIONS
 2026-08-15. The only thing not covered is the trade mark, which is now the one hard reason card 0018
@@ -64,6 +71,12 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
 - **`opening_summary.access`** is `always` / `dusk` / `hours` / `unknown` and is the primary opening
   field, because most sites publish no clock time at all. Measured: 94 always, 104 dusk, 43 hours,
   27 unknown. `dusk` deliberately stores no closing time; the app computes sunset per site at render.
+- **177 car park names are ours, not upstream's, and they are flagged.** 170 were published as
+  `Unknown` and 7 as a bare `Car Park`. `scripts/parse.py` names each after its nearest forest
+  point (`Car park near Friston Forest`) when one is within **5 miles**, a threshold taken from the
+  measured distribution rather than picked. Beyond that it stays `Unnamed car park`. The flag is
+  `name_is_derived`, and the list, the detail sheet and the map label all style it dim italic,
+  because those names read exactly like official ones. See DATA-MODEL "Closed".
 - **Null means "not known" and the UI says so.** Empty string never appears.
 
 ## Deployment
@@ -268,6 +281,18 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   the first and second rows from Brighton, because OSM maps many sites as both a node and an area;
   and the Stay the Night rules were labelled "Charges", so the sentence saying no tents are allowed
   sat under a heading about money. Both fixed, the first with a self-test.
+- **Built 2026-08-29:** card **0004**, the derived car park names. `scripts/parse.py` grew a
+  nearest-forest join, `sites.json` was regenerated (never patched), the detail sheet and the map
+  label learned to mark a derived name, and 12 self-tests cover it. 186 self-tests pass.
+  **Two things it deliberately left alone, both now written into DATA-MODEL rather than fixed:**
+  about **68 car parks published as internal asset codes** (`CFD-THH-CAR PARK`) still show the code,
+  because a code is a real upstream value and the card scoped itself to Unknown-and-generic; and
+  **opening hours are still not inherited from the nearest forest**, because a gate time copied off a
+  forest five miles away is this project guessing a barrier is open.
+  **One thing it found and did not fix:** `parse.py` stamps `scraped_at` with today's date on every
+  run, so re-parsing an old cache says the data is fresher than it is. All 904 records now read
+  2026-08-29 while the HTML behind them is from 2026-08-08. The honest value is the fetch date, which
+  `fetch.py` would have to record. Worth a card.
 - **In progress:** nothing.
 - **Known bugs / broken:** none open, but the most serious one yet was found and fixed this
   session, by Rob running the offline check rather than by anyone reading the code.
@@ -298,17 +323,21 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 
 The queue is [docs/board/](board/), one card per file. At the head:
 
-1. **0004** derive names for the 170 unnamed car parks (`todo/`) — **an agent-ready card, so start
-   here.** DATA-MODEL calls it the main open divergence, and it matters more now the map
-   exists: an unnamed dot is worse than an unnamed row. The nearest car park to Brighton is one of
-   them, which is the whole problem in a single row.
+1. **Look at 0004 on a screen, then deploy it.** The names are built, generated and self-tested, but
+   nothing has been seen: a worktree is not served by Herd. Check the dim italic against the **dark**
+   theme, where it has the least contrast to spare, and check a map label, since "Car park near
+   Bedgebury Nat…" truncates at 22 characters. Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD`
+   are already bumped to `v12-2026-08-29`.
 2. **0015** the tile attribution is unreadable over tiles (`todo/`) — small, and it is a licence
    obligation rather than a styling nit, on an app now shared with other people. **It now gates part
    of 0018**: two of the screenshots meant for the Forestry England enquiry show the attribution
    failing, and that email's argument is that this project handles licensing properly.
    **Its "Not this card" promises a separate card for colliding marker labels and that card does not
    exist.** The same screenshots show it ("Bedgebury National Pi…" over "Hemsted Fores…"). Worth
-   opening.
+   opening, and **0004 has raised the stakes**: 14 car parks now share the label "Car park near Dalby
+   Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map truncates
+   most derived names before the forest is reached. In the list this is fine, because each row still
+   carries its own distance and bearing. On the map it is not.
 3. **0019** credit Forestry England the way they ask to be credited (`todo/`) — a text change in
    `app/index.html` plus a self-test. It follows from the licensing research (DECISIONS 2026-08-15):
    the footer uses the generic OGL fallback wording when Forestry England publish their own, and it
@@ -334,8 +363,8 @@ built from one GB-wide database is not evidence that the answer is yes.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). Nothing blocks agent work: cards 0004 and 0015
-can start immediately. Seven cards need Rob, and they fit in one conversation:
+See [docs/board/human-review/](board/human-review/). Nothing blocks agent work: card 0015 can start
+immediately. Seven cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
