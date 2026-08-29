@@ -14,14 +14,16 @@ named after the forest they are nearest to, and DATA-MODEL's main open divergenc
 agent-ready card is left; nine cards await an adversarial pass in
 `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5, and the campsite tab has
 added a second reason to run it. **Seven cards wait on a person.**
-**Neither the 0004 nor the 0015 build is deployed, and neither has been looked at on a screen**,
-because both were built in a worktree that Herd does not serve. 0015 leaves one acceptance criterion
-open for exactly that reason.
-_Last updated: 2026-08-29 (two unattended worktree cards. 0004: the unnamed car parks are named
+**Neither the 0004 nor the 0015 build is deployed. 0004 has still not been looked at on a screen;
+0015 now has**, in a desktop browser over a synthetic worst-case white tile, and all three of its
+acceptance criteria are met. Its remaining task is a real phone over real tiles.
+**A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
+done. See card 0015's second comment entry.
+_Last updated: 2026-08-29 (three unattended worktree runs. 0004: the unnamed car parks are named
 after the forest they are nearest to, on a threshold measured from the distance distribution rather
 than guessed. 0015: the tile attribution gets a dark pill and white text when, and only when, tiles
-are on, bounded at 9.29:1 against a pure white tile. Neither is deployed or seen on a screen; see
-"What's next" item 1. Earlier:)_
+are on, bounded at 9.29:1 against a pure white tile; a second run then rendered it and closed its
+last criterion. Neither card is deployed; see "What's next" item 1. Earlier:)_
 _2026-08-15 (two sessions. First: researched the licensing and the answer changed the
 project, since **both forest sources are OGL and commercial use is expressly permitted**, so the PRD
 constraint saying the forest list was personal-use-only was wrong and is superseded. See DECISIONS
@@ -305,9 +307,15 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   white tile composites the pill to `rgb(71)` and white on that is 9.29:1, so the contrast holds at
   every zoom without anyone having to measure a basemap. 190 self-tests pass. `CACHE` and `BUILD`
   are at `v13-2026-08-29`.
-  **Its acceptance #1 is deliberately left open.** The colour is proven; the layout is not seen. Does
-  the pill wrap to two lines at 390px, and does a wrapped pill still clear the home bar? That needs a
-  screen, and a worktree has none.
+  **Its acceptance #1 was closed by a second run the same day, which rendered it.** A worktree does
+  have a screen: Herd will not serve it, but `php -S 127.0.0.1:8791 -t app <router>` will, with a
+  throwaway router returning a pure white tile in place of `api/tiles.php`, whose key is on the
+  server. Measured at three widths: the pill wraps to **three** lines at 320 and 390, not the two
+  that was guessed, drops to two at 430, is centred to the pixel, and sits 44px above the bottom at
+  every width, so **a wrap grows it upward and never toward the home bar**. Tiles off is unchanged.
+  **Still owed: the same look on a real phone over real Thunderforest tiles**, which is the card's
+  one open task. The white tile bounds legibility rather than sampling it, and the safe-area inset
+  was simulated at 34px rather than reported by iOS.
 - **In progress:** nothing.
 - **Known bugs / broken:** none open, but the most serious one yet was found and fixed this
   session, by Rob running the offline check rather than by anyone reading the code.
@@ -338,14 +346,14 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 
 The queue is [docs/board/](board/), one card per file. At the head:
 
-1. **Look at 0004 and 0015 on a screen, then deploy both.** Both are built, self-tested and unseen:
-   a worktree is not served by Herd, so one browser session clears both. For **0004**, check the dim
-   italic against the **dark** theme, where it has the least contrast to spare, and check a map
-   label, since "Car park near Bedgebury Nat…" truncates at 22 characters. For **0015**, open the
-   map, tap **Tiles**, and check the attribution pill: whether it wraps to two lines at 390px and
-   whether a wrapped pill still clears the home bar. Colour is not the question there — that is
-   proven at 9.29:1 worst case — layout is, and it is the one acceptance criterion 0015 left open.
+1. **Look at 0004 on a screen, then deploy both it and 0015.** For **0004**, check the dim italic
+   against the **dark** theme, where it has the least contrast to spare, and check a map label, since
+   "Car park near Bedgebury Nat…" truncates at 22 characters. **0015 no longer needs a desktop look**
+   — it got one, and its layout and contrast both hold; what it still wants is the phone, which the
+   0018 screenshots need anyway, so fold it into that rather than blocking the deploy on it.
    Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v13-2026-08-29`.
+   **Serving a worktree is a solved problem now** and is worth reusing on 0004:
+   `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
 2. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
    still does not exist. The 2026-08-14 screenshots show it ("Bedgebury National Pi…" over "Hemsted
    Fores…"). Worth

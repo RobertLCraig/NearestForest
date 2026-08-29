@@ -32,7 +32,7 @@ into the detail sheet or a credits screen: it has to be on the map it credits.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN the tile layer is on, THE APP SHALL render the provider attribution legibly against a
+- [x] #1 WHEN the tile layer is on, THE APP SHALL render the provider attribution legibly against a
       light basemap at every zoom level.
 - [x] #2 WHEN the tile layer is off, THE APP SHALL render the hint exactly as it does today.
 - [x] #3 WHEN either state is shown, THE APP SHALL keep the text clear of the safe-area inset.
@@ -84,3 +84,50 @@ passes at **190, 0 failed** (186 before; 4 new cover the attribution, the toggle
 and the shared safe-area rule). And the `--pad` used for the pill's `max-width` is the page padding,
 not a map-specific one; there is no map padding variable, and it reads correctly against the
 `.map__bar` above, which uses the same value.
+
+**2026-08-29 (second run)** No code changed. The previous run left #1 open because nobody had looked
+at it, so this run looked at it, and it holds. **#1 is now ticked. Task 2 is not**, because it asks
+for a phone and this was a desktop render.
+
+**How it was looked at, since the last run said a worktree cannot be.** It can. Herd serves
+`C:\Dev\NearestForest`, but nothing stops a session serving this worktree itself:
+`php -S 127.0.0.1:8791 -t app <router>`, with a throwaway router doing two jobs. It stood in for
+`api/tiles.php`, which cannot run here because the Thunderforest key lives on the server and not in
+the repo, and returned **a pure white 256px tile** — which is not a compromise but the exact worst
+case the card says to design against, and the same bound the .72 figure was picked from. It also
+served `index.html` with a script appended that opens the map and presses **Tiles**, because a
+headless browser cannot tap a button. Chrome on this machine ignores `--window-size` and renders at
+500px whatever is asked, so the phone width was imposed on `.map` instead; `.map` is the containing
+block for both the bar and the hint, so that is the same geometry a 390px screen gives. `--safe-b`
+was pinned to 34px, the iPhone home indicator, which desktop Chrome reports as 0. The router lived
+in `%TEMP%` and is deleted; nothing under `app/` was touched.
+
+**What it showed, measured rather than eyeballed** (`getBoundingClientRect`, three widths):
+
+| map width | pill | centre | lines | gap below |
+|---|---|---|---|---|
+| 320 | 80–240, 160 wide | 160 | 3 | 44px |
+| 390 | 98–293, 195 wide | 195 | 3 | 44px |
+| 430 | 108–323, 215 wide | 215 | 2 | 44px |
+
+So the two questions the last run left are answered. **It wraps** — to three lines at 320 and 390,
+not the two that was guessed, and 430 is the width where it drops to two. **The wrapped pill still
+clears the home bar**: the gap is 44px at every width, which is the 34px inset plus the 10px the
+rule asks for, so the wrap grows the pill upward and never downward. The pill is centred to the
+pixel in all three, and at 320 it is 160px against a 288px cap, so `max-width` is not close to
+biting. White on the composited grey reads cleanly at a glance, which is the thing the screenshots
+of 2026-08-10 and 2026-08-14 show it failing to do.
+
+Tiles off was rendered too, and is untouched: full-width hint, no pill, the dim text and its dark
+glow over the bundled outline, same 44px gap. That is #2 and #3 seen rather than assumed.
+
+**What this check does not cover, and it is two things.** The basemap was synthetic white, not the
+real Outdoors style — which bounds legibility rather than sampling it, since no tile can be brighter
+than white at any zoom, but it does mean nobody has yet seen the pill over an actual
+Thunderforest tile. And it was a desktop browser, not a phone: the safe-area inset was simulated,
+not reported by iOS. **Task 2 stays open for both reasons.** Card 0018 needs fresh phone screenshots
+anyway, so that look is already owed.
+
+The suite the card names still does not exist here: no `vendor/`, no `pest.bat`, no `pint.bat`, and
+this project has no PHP test suite. `node scripts/selftest.js` is the suite per CLAUDE.md, and it
+passes at **190, 0 failed**, unchanged from the last run because no code changed.
