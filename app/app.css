@@ -146,6 +146,8 @@ body.is-mapping { overflow:hidden; }
    area rather than the pill keeps the look and makes it hittable at arm's length. */
 .sheet__grip::before { content:''; position:absolute; inset:-16px -80px; }
 .sheet__name { margin:0; font-size:22px; line-height:1.2; }
+/* Same treatment as .row__derived, so a name we made up looks the same wherever it shows. */
+.sheet__name--derived { color:var(--dim); font-style:italic; font-weight:500; }
 .sheet__sub { margin:4px 0 12px; color:var(--dim); font-size:14px; }
 .sheet__actions { display:flex; gap:8px; margin-top:14px; }
 

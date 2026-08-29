@@ -190,6 +190,70 @@ ok('no British National Grid leakage',
 ok('attribution present', /Open Government Licence/.test(DATA.attribution || ''));
 ok('every forest has a Forestry England url', forests.every(s => /^https:\/\/www\.forestryengland\.uk\//.test(s.url || '')));
 
+console.log('\n--- derived car park names ---');
+{
+  // Must match NEAR_FOREST_MI in scripts/parse.py. Taken from the measured distribution
+  // of unnamed-car-park-to-nearest-forest distances (q3 2.19, IQR ~2.16, Tukey fence
+  // 5.45mi), not picked to make a number look good.
+  const NEAR_MI = 5.0;
+  const GENERIC = 'Unnamed car park';
+  const nearestForest = (s) => forests.reduce((best, f) => {
+    const d = NF.haversineMi(s.lat, s.lng, f.lat, f.lng);
+    return (best === null || d < best.d) ? { d: d, f: f } : best;
+  }, null);
+  const derived = carparks.filter(s => s.name_is_derived);
+  const bare = derived.filter(s => s.name === GENERIC);
+
+  ok('some car park names are derived', derived.length > 100, `${derived.length} derived`);
+
+  // The card's point: a row that names no place is useless read in a moving car.
+  ok('no car park within the threshold is left unnamed',
+     bare.every(s => nearestForest(s).d > NEAR_MI),
+     bare.filter(s => nearestForest(s).d <= NEAR_MI).slice(0, 3)
+         .map(s => `${s.id} at ${nearestForest(s).d.toFixed(2)}mi`).join(', '));
+
+  // ...and the other half: beyond the threshold we say nothing rather than claim a
+  // forest the car park is probably not part of.
+  ok('no car park beyond the threshold claims a forest',
+     derived.every(s => s.name === GENERIC || nearestForest(s).d <= NEAR_MI),
+     derived.filter(s => s.name !== GENERIC && nearestForest(s).d > NEAR_MI)
+            .slice(0, 3).map(s => s.name).join(', '));
+
+  const named = derived.filter(s => s.name !== GENERIC);
+  ok('every derived name reads as a place near a forest',
+     named.every(s => /^(?:[A-Z][a-z]+ )?[Cc]ar park near \S/.test(s.name)),
+     named.filter(s => !/^(?:[A-Z][a-z]+ )?[Cc]ar park near \S/.test(s.name))
+          .slice(0, 3).map(s => s.name).join(' | '));
+
+  // A join against the wrong forest is invisible by inspection and wrong in the one way
+  // that matters: it sends someone to the wrong wood.
+  ok('every derived name names the forest it is actually nearest to',
+     named.every(s => s.name.endsWith(' near ' + nearestForest(s).f.name)),
+     named.filter(s => !s.name.endsWith(' near ' + nearestForest(s).f.name))
+          .slice(0, 3).map(s => `${s.name} vs ${nearestForest(s).f.name}`).join(' | '));
+
+  // Only a car park may carry one, and only a derived name may look like one.
+  ok('no forest carries a derived name', forests.every(s => !s.name_is_derived));
+  ok('nothing reads as derived without the flag',
+     sites.every(s => !/ car park near /i.test(s.name) || s.name_is_derived));
+
+  // The row that started the card: the nearest car park to Brighton was "Unnamed car park".
+  const nearestCp = NF.rank(sites, 'carpark', BRIGHTON, '')[0];
+  ok('the nearest car park to Brighton is named after Friston Forest',
+     nearestCp.name === 'Car park near Friston Forest', nearestCp.name);
+
+  // A derived name reads like an official one, so every screen that shows a name has to
+  // say it is ours. The list already did; the sheet and the map labels were the gap.
+  const appjs004 = fs.readFileSync(path.join(ROOT, 'app', 'app.js'), 'utf8');
+  const appcss = fs.readFileSync(path.join(ROOT, 'app', 'app.css'), 'utf8');
+  const mapjs = fs.readFileSync(path.join(ROOT, 'app', 'map.js'), 'utf8');
+  ok('the list marks a derived name', /row__derived/.test(appjs004) && /\.row__derived/.test(appcss));
+  ok('the detail sheet marks a derived name',
+     /sheet__name--derived/.test(appjs004) && /\.sheet__name--derived/.test(appcss));
+  ok('the detail sheet says the name is ours', /not a published one/.test(appjs004));
+  ok('the map marks a derived label', /name_is_derived \? 'italic/.test(mapjs));
+}
+
 console.log('\n--- campsites (a second database, under a second licence) ---');
 const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsites.json'), 'utf8'));
 {

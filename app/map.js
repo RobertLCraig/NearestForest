@@ -350,6 +350,9 @@ var NFMap = (function () {
       labelled.forEach(function (m) {
         var t = m.site.name;
         if (t.length > 22) t = t.slice(0, 21) + '…';
+        /* Italic marks a name we derived, the same way the list and the sheet do. */
+        ctx.font = (m.site.name_is_derived ? 'italic 500 ' : '600 ') +
+                   '12px -apple-system, system-ui, sans-serif';
         ctx.lineWidth = 3;
         ctx.strokeStyle = c.sea;
         ctx.strokeText(t, m.x, m.y - r - 3);      /* halo, so it reads over land */

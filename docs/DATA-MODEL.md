@@ -1,6 +1,6 @@
 # Data model: NearestForest
 
-_Last updated: 2026-08-15_
+_Last updated: 2026-08-29_
 
 The single source of truth for this project's data shape. Every layer (scrape, transform, bundled
 JSON, PWA, iOS Shortcut) conforms to this. Anywhere a layer diverges is a bug to close, not a state
@@ -24,8 +24,8 @@ See the campsites section below before changing that.
 |-------|------|-------|----------|----------------|
 | `id` | string | — | no | Stable slug. `fe-<url-slug>` for forests, `cp-<OBJECTID>` for car parks. Never reused. |
 | `source` | enum | — | no | `forest` \| `carpark` \| `campsite`. Drives which tab it appears in, nothing else. `campsite` records live in a **different file**; see below. |
-| `name` | string | — | no | Display name. For car parks named "Unknown" upstream, see `name_is_derived`. |
-| `name_is_derived` | bool | — | no | `true` when we generated the name because upstream had none. Shown in UI as a lighter label so it is never mistaken for an official name. |
+| `name` | string | — | no | Display name. For car parks with no usable upstream name, see `name_is_derived`. |
+| `name_is_derived` | bool | — | no | `true` when we generated the name because upstream had none usable. **177 car parks: `Car park near <nearest forest>` where a forest point is within 5 miles, otherwise the bare `Unnamed car park`.** Shown in the list, the detail sheet and the map label as dim italic, so it is never mistaken for an official name. |
 | `lat` | number | deg | no | WGS84, EPSG:4326. 7 dp. This is what Navigate uses. |
 | `lng` | number | deg | no | WGS84, EPSG:4326. 7 dp. Negative is west. |
 | `postcode_satnav` | string | — | yes | The **sat-nav** postcode from the page's "How to find us", not the JSON-LD `postalCode`. These genuinely differ. See DECISIONS 2026-08-08. |
@@ -93,17 +93,32 @@ no stale copy of a position-dependent value on disk.
 
 ## Known divergences (to close)
 
-- **Car parks have no parent forest.** The open data carries no link back to the forest containing a
-  car park, so a car park row cannot say which forest it belongs to. The 170 upstream "Unknown"
-  entries currently render as "Unnamed car park" with `name_is_derived: true`, which is honest but
-  not helpful. Candidate fix: a nearest-neighbour join against the forest coordinates at build time,
-  giving names like "Car park near Friston Forest". Not yet built, and the most valuable next change
-  to the dataset.
 - **`opening_summary` is forest-only.** Car parks carry `null`, because the open data publishes no
   hours at all. A car park row therefore never shows an open/closed badge, even when the forest it
-  sits in does. The nearest-neighbour join above would fix this too.
+  sits in does. **The nearest-forest join below deliberately does not fix this.** A name is a claim
+  about proximity and is marked as ours; a gate time copied off a forest up to five miles away would
+  be this project telling somebody a barrier is open on a guess, which is the one error it refuses
+  to make. Closing this needs opening hours published per car park, and nobody publishes them.
+- **`CFD-` asset codes are still shown as names.** About 68 car parks are published under an internal
+  code such as `CFD-THH-CAR PARK` or `CFD-SAL- Car Park 2`. They are a real upstream value, so the
+  derived-name rule below leaves them alone, but they read as machine output in a list. Out of scope
+  for card 0004, which scoped itself to the "Unknown" and bare-"Car Park" records; worth its own card.
 
 ### Closed
+
+- ~~**Car parks have no parent forest.**~~ Closed 2026-08-29 by card 0004. The open data still
+  carries no link, so `scripts/parse.py` joins each unusable-name car park to its **nearest forest
+  point** and names it `Car park near <forest>` (a qualifier survives, so `Overflow Car Park` becomes
+  `Overflow car park near Delamere Forest`). 177 records qualify: the 170 published as `Unknown` and
+  7 published as a bare `Car Park` / `Main Carpark`.
+  **The threshold is 5 miles and it is measured, not chosen.** Distances from those 177 to the
+  nearest forest point run q1 0.03, median 0.32, q3 2.19, max 23.66 mi, so the Tukey outlier fence
+  (q3 + 1.5 × IQR) sits at 5.45 mi; rounded down to 5. 158 are named, and the 19 beyond it keep the
+  bare `Unnamed car park` rather than claim a forest they are probably not part of.
+  **This is proximity, never membership.** Forest records are single points, not polygons, so a
+  point-in-polygon join is not available and the name says "near" on purpose. Self-tests assert that
+  no car park inside the threshold is left bare, that none outside it claims a forest, and that every
+  derived name names the forest it is genuinely nearest to.
 
 - ~~**Forest coordinate provenance is mixed.**~~ Resolved 2026-08-08 by measurement: the search-page
   `data-lat`/`data-lng` and the per-forest JSON-LD `geo` block agree to **0.00 miles across all 274**

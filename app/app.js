@@ -167,11 +167,15 @@ function field(label, value, opts) {
 function openSheet(site) {
   TARGET = site;
   $('#sheet-name').textContent = site.name;
+  /* "Car park near Friston Forest" reads like a real name, and this is the one screen
+     where somebody looks the place up. Say whose name it is. */
+  $('#sheet-name').classList.toggle('sheet__name--derived', !!site.name_is_derived);
 
   var sub = [];
   if (site._mi !== null && site._mi !== undefined) {
     sub.push(site._mi.toFixed(1) + ' miles ' + NF.POINTS[NF.compassIdx(site._bear)] + ' of you');
   }
+  if (site.name_is_derived) sub.push('our name for it, not a published one');
   if (POS && POS.stale) sub.push('from last known position');
   $('#sheet-sub').textContent = sub.join(' · ');
 

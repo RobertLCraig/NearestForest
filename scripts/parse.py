@@ -4,7 +4,7 @@
 Reads only from data/raw/, so it makes zero network requests and can be iterated
 on freely. Fails loudly and exits non-zero rather than emitting a partial dataset.
 """
-import json, os, re, sys, html as htmllib
+import json, math, os, re, sys, html as htmllib
 from datetime import date, datetime
 from urllib.parse import urlparse
 
@@ -25,6 +25,30 @@ VALID_STATUS = {"Permanent - Official", "Permanent - Unofficial",
 # closed rather than "whatever the scrape found".
 URL_HOSTS = {"www.forestryengland.uk", "forestryengland.uk"}
 
+# ------------------------------------------------ derived car park names (card 0004)
+# What the app shows when there is nothing better to say.
+GENERIC_NAME = "Unnamed car park"
+
+# Upstream values that are not a name at all.
+NO_NAME = {"unknown", "n/a", "na", "tbc"}
+
+# Names that are only the words "car park", optionally with a qualifier. They are a real
+# upstream value but they say nothing about WHICH forest, which is the one thing a row
+# read in a moving car needs. The qualifier is kept, so "Overflow Car Park" derives to
+# "Overflow car park near Dalby Forest" and stays distinct from the main one.
+RE_GENERIC_NAME = re.compile(
+    r"^(?:the\s+)?(?:(main|overflow|additional|upper|lower|new|old)\s+)?car\s*parks?$", re.I)
+
+# How far a car park may be from a forest point before the join stops being a claim worth
+# making, in miles. Measured rather than guessed: over the 177 car parks with no usable
+# name the distance to the nearest forest point runs q1 0.03, median 0.32, q3 2.19, max
+# 23.66, so the Tukey outlier fence (q3 + 1.5 x IQR) falls at 5.43 mi. Rounded down to 5.
+# That names 158 of the 177; the 19 beyond it keep GENERIC_NAME rather than claim a forest
+# they are probably not part of. A forest record is one published point, not a polygon, so
+# this measures proximity to that point and never membership of a wood. Hence "near" in
+# the name, and the derived flag the UI styles.
+NEAR_FOREST_MI = 5.0
+
 problems = []
 notes = {"jsonld_missing": 0, "satnav_missing": 0, "opening_missing": 0,
          "parking_missing": 0, "facilities_missing": 0,
@@ -34,6 +58,16 @@ coord_deltas = []
 
 def log(m):
     print(m, flush=True)
+
+
+def haversine_mi(a_lat, a_lng, b_lat, b_lng):
+    """Great-circle miles. Same formula and same radius as core.js haversineMi(), so the
+    self-test can re-derive this join against the shipped code and get the same answer."""
+    R, r = 3958.7613, math.pi / 180
+    d_lat, d_lng = (b_lat - a_lat) * r, (b_lng - a_lng) * r
+    s = (math.sin(d_lat / 2) ** 2 +
+         math.cos(a_lat * r) * math.cos(b_lat * r) * math.sin(d_lng / 2) ** 2)
+    return 2 * R * math.asin(min(1, math.sqrt(s)))
 
 
 # ---------------------------------------------------------------- html helpers
@@ -293,9 +327,50 @@ def build_forests():
     return sites
 
 
+def unusable_name(raw_name):
+    """(is_derived, qualifier) for an upstream car park name that cannot stand on its own.
+
+    Two kinds: the 170 records published as "Unknown", and the handful published as a
+    bare "Car Park" / "Main Carpark". Both leave a row that names no place.
+    """
+    n = (raw_name or "").strip()
+    if not n or n.lower() in NO_NAME:
+        return True, None
+    m = RE_GENERIC_NAME.match(n)
+    if m:
+        return True, (m.group(1) or "").lower().capitalize() or None
+    return False, None
+
+
+def name_after_nearest_forest(pending, forests):
+    """Name each unusable-name car park after the forest point it is nearest to.
+
+    The open data carries no link from a car park back to a parent forest, and the forest
+    records are single points rather than polygons, so nearest-neighbour is the only join
+    available. `pending` is [(site_dict, qualifier)] from build_carparks().
+    """
+    if not pending:
+        return [], []
+    if not forests:
+        problems.append("no forests parsed, so no car park name could be derived")
+        return [], []
+    named, dists = [], []
+    for s, qual in pending:
+        best_d, best_f = min(
+            ((haversine_mi(s["lat"], s["lng"], f["lat"], f["lng"]), f) for f in forests),
+            key=lambda t: t[0])
+        dists.append(best_d)
+        if best_d > NEAR_FOREST_MI:
+            continue                  # too far to claim an association; keep GENERIC_NAME
+        s["name"] = ("%s car park near %s" % (qual, best_f["name"])) if qual else \
+                    ("Car park near %s" % best_f["name"])
+        named.append(best_d)
+    return named, dists
+
+
 def build_carparks():
     d = json.load(open(os.path.join(RAW, "carparks.json"), encoding="utf-8"))
-    sites = []
+    sites, pending = [], []
     for feat in d.get("features", []):
         a = feat.get("attributes", {})
         c = feat.get("centroid")
@@ -303,15 +378,12 @@ def build_carparks():
             problems.append("car park OBJECTID %s has no centroid" % a.get("OBJECTID"))
             continue
         raw_name = (a.get("asset_name") or "").strip()
-        derived = False
-        name = raw_name
-        if not raw_name or raw_name.lower() in {"unknown", "n/a", "na", "tbc"}:
-            name = "Unnamed car park"
-            derived = True
+        derived, qualifier = unusable_name(raw_name)
+        name = GENERIC_NAME if derived else raw_name
         st = a.get("status")
         if st and st not in VALID_STATUS:
             problems.append("unexpected status %r on OBJECTID %s" % (st, a.get("OBJECTID")))
-        sites.append({
+        rec = {
             "id": "cp-%s" % a.get("OBJECTID"),
             "source": "carpark",
             "name": name,
@@ -324,8 +396,11 @@ def build_carparks():
             "status": st,
             "district": a.get("cots_district_id"),
             "scraped_at": TODAY,
-        })
-    return sites
+        }
+        sites.append(rec)
+        if derived:
+            pending.append((rec, qualifier))
+    return sites, pending
 
 
 def validate(sites):
@@ -361,8 +436,18 @@ def main():
     log("      %d forests parsed" % len(forests))
 
     log("[2/3] Parsing car parks ...")
-    carparks = build_carparks()
-    log("      %d car parks parsed" % len(carparks))
+    carparks, pending = build_carparks()
+    log("      %d car parks parsed, %d with no usable upstream name" % (len(carparks), len(pending)))
+
+    named, dists = name_after_nearest_forest(pending, forests)
+    if dists:
+        ds = sorted(dists)
+        n = len(ds)
+        log("      distance to nearest forest point, miles: n=%d min=%.2f q1=%.2f "
+            "median=%.2f q3=%.2f max=%.2f"
+            % (n, ds[0], ds[n // 4], ds[n // 2], ds[(3 * n) // 4], ds[-1]))
+        log("      named after a forest within %.1f mi: %d; left as %r: %d"
+            % (NEAR_FOREST_MI, len(named), GENERIC_NAME, n - len(named)))
 
     forests.sort(key=lambda s: s["name"].lower())
     carparks.sort(key=lambda s: s["name"].lower())
