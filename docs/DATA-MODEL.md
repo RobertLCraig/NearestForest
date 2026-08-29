@@ -1,14 +1,14 @@
 # Data model: NearestForest
 
-_Last updated: 2026-08-29_
+_Last updated: 2026-08-29 (card 0016 added Scotland to the Forests tab)_
 
 The single source of truth for this project's data shape. Every layer (scrape, transform, bundled
 JSON, PWA, iOS Shortcut) conforms to this. Anywhere a layer diverges is a bug to close, not a state
 to preserve.
 
-Four upstream sources with different shapes are normalised into **one** `Site` record so the PWA and
-the Shortcut never branch on provenance. The `source` field is the only thing that tells them apart,
-and it exists for display and debugging, not for control flow.
+Five upstream sources with different shapes are normalised into **one** `Site` record so the PWA and
+the Shortcut never branch on provenance. The `source` and `country` fields are the only things that
+tell them apart, and they exist for display and debugging, not for control flow.
 
 **One record shape, but two files on disk, and that split is a licence boundary rather than a
 modelling one.** `app/data/sites.json` holds the Open Government Licence sources (Forestry England
@@ -22,8 +22,9 @@ See the campsites section below before changing that.
 
 | Field | Type | Units | Nullable | Format / notes |
 |-------|------|-------|----------|----------------|
-| `id` | string | — | no | Stable slug. `fe-<url-slug>` for forests, `cp-<OBJECTID>` for car parks. Never reused. |
+| `id` | string | — | no | Stable slug. `fe-<url-slug>` for Forestry England forests, `fls-<slug>` for Forestry and Land Scotland ones, `cp-<OBJECTID>` for car parks. The prefix is the publishing agency. Never reused. |
 | `source` | enum | — | no | `forest` \| `carpark` \| `campsite`. Drives which tab it appears in, nothing else. `campsite` records live in a **different file**; see below. |
+| `country` | enum | | no | `England` \| `Scotland`. Provenance, not control flow: **there is no country filter and no country tab**, and a Scottish forest ranks in the same list as an English one. It exists so the build can assert a tighter bounding box per country and so a count is checkable. |
 | `name` | string | — | no | Display name. For car parks with no usable upstream name, see `name_is_derived`. |
 | `name_is_derived` | bool | — | no | `true` when we generated the name because upstream had none usable. **177 car parks: `Car park near <nearest forest>` where a forest point is within 5 miles, otherwise the bare `Unnamed car park`.** Shown in the list, the detail sheet and the map label as dim italic, so it is never mistaken for an official name. |
 | `lat` | number | deg | no | WGS84, EPSG:4326. 7 dp. This is what Navigate uses. |
@@ -31,7 +32,7 @@ See the campsites section below before changing that.
 | `postcode_satnav` | string | — | yes | The **sat-nav** postcode from the page's "How to find us", not the JSON-LD `postalCode`. These genuinely differ. See DECISIONS 2026-08-08. |
 | `postcode_postal` | string | — | yes | JSON-LD `address.postalCode`. Kept for reference, never used for navigation. |
 | `address` | string | — | yes | Human-readable single line, assembled from JSON-LD `streetAddress[]` + `addressLocality`. |
-| `url` | string | — | yes | Absolute Forestry England page URL. `null` for car parks. |
+| `url` | string | — | yes | Absolute page URL on the agency that publishes the record: `www.forestryengland.uk` or `forestryandland.gov.scot`. `null` for car parks. **The host set is closed**, in the build and again in the app, because this string goes into an `href`. |
 | `opening_times` | string | — | yes | Free text, as published. Not parsed into a schedule; see below. |
 | `opening_summary` | object | — | yes | Best-effort parse. `null` when the free text could not be parsed confidently. Never guessed. |
 | `parking` | string | — | yes | Charges and parking notes as published. |
@@ -61,6 +62,16 @@ app computes sunset per site at render time rather than freezing a wrong time in
 **Rule: an unparsed opening time is shown as raw text, never as "open".** Guessing a gate is open is
 the one error that strands someone at a locked car park at night.
 
+**Scotland barely publishes hours at all, and that is an answer, not a gap.** 7 of the 276 Forestry
+and Land Scotland destinations publish any opening text; the other 269 carry `null`, which the app
+renders as "not listed". Of the 7, **four are about a café, a shop or a visitor centre rather than
+about the gate**, so their `access` is `unknown` and the published sentence is shown as written.
+Glentrool is the example the rule was written from: under a heading reading "Opening hours" it says
+"The café is open from 10.30am to 4.30pm", and the forest itself never closes. Kirroughtree is the
+counter-example: it names a café *and* says "The car park and trails are always open", so the
+always-open statement wins and it resolves to `always`. The test is in `fls_opening()` in
+`scripts/parse.py`, and a self-test asserts `openState()` returns `unknown` for every café-only site.
+
 ### Runtime-only, never persisted
 
 `distance_mi` (float, miles, great-circle) and `bearing_deg` (float, degrees true, 0 = north) are
@@ -73,8 +84,9 @@ no stale copy of a position-dependent value on disk.
 
 ```json
 {
-  "generated_at": "2026-08-08",
-  "counts": { "forest": 274, "carpark": 630 },
+  "generated_at": "2026-08-29",
+  "counts": { "forest": 550, "carpark": 630 },
+  "counts_by_country": { "England": 904, "Scotland": 276 },
   "attribution": "Contains public sector information licensed under the Open Government Licence v3.0.",
   "sites": [ /* Site records, forests first, each tab already sorted by name */ ]
 }
@@ -84,12 +96,52 @@ no stale copy of a position-dependent value on disk.
   National Grid) and is reprojected at build time by requesting `outSR=4326` from the FeatureServer.
   No British National Grid value survives into `sites.json`. A record carrying an easting/northing
   in the six-figure range is a bug, and the build asserts against it.
+- **The bounding-box tripwire is per country, and a Great Britain box on top.** `scripts/parse.py`
+  asserts every record inside Great Britain (49.5 to 61.2 N, -8.8 to 2.2 E), and then inside the box
+  for the country it names: England 49.5 to 56.2 N, Scotland 54.5 to 61.2 N. Card 0016 widened this
+  without loosening it, deliberately: the records that get reprojected are the English car parks, so
+  an England box is the one that catches a bad reprojection, and a single box reaching Shetland would
+  wave one through.
 - **Car park geometry is a polygon upstream**; only its centroid is kept, because you navigate to a
   point. The polygon is discarded.
 - **Null means "not known", empty string never appears.** A field that could not be scraped is `null`,
   and the UI renders that as an explicit "not listed" rather than blank space.
 - Enums are exactly the values listed above. An unrecognised upstream value fails the build loudly
   rather than being coerced or dropped.
+
+## Scotland, from Forestry and Land Scotland (card 0016, 2026-08-29)
+
+276 destinations in the same `forest` tab and the same ranked list as the English 274. Same record
+shape, no new fields beyond `country`, and nothing in the app branches on where a site is.
+
+- **The index is one HTML attribute.** `/visit/destinations` carries all 278 destinations in
+  `data-forest-search-map` as HTML-escaped JSON (`title`, `link`, `latitude`, `longitude`, plus
+  fields the app ignores), repeated identically on all 31 pages of the pager. `sitemap.xml`
+  independently lists the same 278 destination URLs, which is the cross-check that this is the whole
+  set rather than a filtered view. The whole index costs one request.
+  **Do not use the attribute's `open` field for anything**: it reads `false` on all 278 records, so
+  it is a UI flag, not a status.
+- **278 published, 276 shipped.** Allt Mor and Puck's Glen are published as "<name> (closed)" on the
+  index and again in their own page's `<h1>`, and both were confirmed closed against their own pages
+  (a wildfire and storm damage respectively). A place you cannot get into is not somewhere to offer
+  as a drive, so they are dropped rather than labelled. A self-test asserts no shipped name ends in
+  "(closed)".
+- **Detail comes from `/visit/destinations/<slug>/visitor-information`.** Sections are cut out by
+  heading, not by CSS class, because the same section appears at different heading depths from page
+  to page: "Using SatNav?" is an `h3` at Aberfoyle and an `h4` at Allean. `fls_section()` accepts h1
+  to h4 and stops at the next heading of that level or higher, or at `<nav>`.
+- **Coverage, measured 2026-08-29:** sat nav postcode 269/276, facilities 273/276, parking
+  information 232/276, opening text 7/276. Every absent field is `null`, never an empty string.
+- **The page repeats its own coordinate** in `data-inline-map`, and the parser compares it to the
+  index value on every run. Max disagreement across all 276 is 0.000 miles, so a future drift between
+  the two sources shows up in the build report rather than passing silently.
+- **`postcode_postal` and `address` are always `null`.** FLS publishes neither: its JSON-LD carries
+  only an organisation block, and the only postcode on the page is the sat-nav one. That is the same
+  distinction Forestry England makes, so `postcode_satnav` is still the one to navigate to.
+- **No Scottish car parks.** No open dataset exists: the Forestry Commission hub publishes England
+  recreation Areas, Points and Routes only, the "National Forest Estate Recreation Scotland 2017"
+  ArcGIS items return 403, and FLS's own ArcGIS org has boundaries, blocks and parking machines but
+  no recreation points. Scotland fills the Forests tab and not the Car parks tab, on purpose.
 
 ## Known divergences (to close)
 
@@ -99,6 +151,18 @@ no stale copy of a position-dependent value on disk.
   about proximity and is marked as ours; a gate time copied off a forest up to five miles away would
   be this project telling somebody a barrier is open on a guess, which is the one error it refuses
   to make. Closing this needs opening hours published per car park, and nobody publishes them.
+- **The English opening-hours parser has two measured defects, found by card 0016 and left alone.**
+  Both were reproduced on 2026-08-29 and both are outside that card's scope, which was Scotland.
+  1. **Minutes written with a dot are dropped.** `parse_opening()` reads `7:30am` and not `7.30am`,
+     so Wyre Forest's "April to September: 7.30am - 9pm" is invisible and it falls through to its
+     November-to-February line. Accepting `[:.]` fixes those, and it also makes five other English
+     records pick up **café** times they currently miss, which is the wrong direction. Fixing this
+     properly means teaching the parser whose hours a sentence is about, the way `fls_opening()` now
+     does for Scotland. **Worth its own card.**
+  2. **A month-to-month range takes the opening time as the closing time.** "Summer (April to
+     September): 8am - 10pm" reads as closing at 08:00. It is currently harmless because such
+     records come out as `partial`, and the app shows raw text below `parsed`, so no wrong badge is
+     ever displayed. It becomes harmful the moment anything starts trusting `closes` directly.
 - **`CFD-` asset codes are still shown as names.** About 68 car parks are published under an internal
   code such as `CFD-THH-CAR PARK` or `CFD-SAL- Car Park 2`. They are a real upstream value, so the
   derived-name rule below leaves them alone, but they read as machine output in a list. Out of scope

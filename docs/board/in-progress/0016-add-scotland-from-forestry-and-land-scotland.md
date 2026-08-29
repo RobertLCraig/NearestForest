@@ -53,36 +53,36 @@ Scottish forest is a forest. Not a re-scrape of the English pages.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN the pipeline runs, THE APP SHALL carry every currently published FLS destination as a
+- [x] #1 WHEN the pipeline runs, THE APP SHALL carry every currently published FLS destination as a
       `forest` record with a name, WGS84 coordinates and its source URL.
-- [ ] #2 WHEN a Scottish site is shown, THE APP SHALL take its sat-nav postcode, facilities and
+- [x] #2 WHEN a Scottish site is shown, THE APP SHALL take its sat-nav postcode, facilities and
       opening text from that site's own page, and say "not known" wherever the page is silent.
-- [ ] #3 WHEN a site publishes only café or visitor-centre hours, THE APP SHALL NOT present those as
+- [x] #3 WHEN a site publishes only café or visitor-centre hours, THE APP SHALL NOT present those as
       the site's access hours.
-- [ ] #4 IF a destination is published as closed, THEN THE APP SHALL keep it out of the ranked list
+- [x] #4 IF a destination is published as closed, THEN THE APP SHALL keep it out of the ranked list
       rather than offering it as somewhere to drive to.
-- [ ] #5 WHEN any record's coordinates fall outside Great Britain, THE APP SHALL fail the build,
+- [x] #5 WHEN any record's coordinates fall outside Great Britain, THE APP SHALL fail the build,
       as the England bounding box does today.
-- [ ] #6 WHEN a name contains a diacritic, THE APP SHALL display it correctly end to end, for
+- [x] #6 WHEN a name contains a diacritic, THE APP SHALL display it correctly end to end, for
       example "Allt na Crìche".
 <!-- AC:END -->
 
 ## Tasks
-- [ ] `scripts/fetch.py`: one request for the index, cached to `data/raw/fls/`, then one request per
+- [x] `scripts/fetch.py`: one request for the index, cached to `data/raw/fls/`, then one request per
       destination at the existing rate limit, resumable in the same way
-- [ ] `scripts/parse.py`: emit `fls-<slug>` ids, alongside the existing `fe-` and `cp-` prefixes
-- [ ] Add `country` to the `Site` record and to `docs/DATA-MODEL.md`, and widen the coordinate
+- [x] `scripts/parse.py`: emit `fls-<slug>` ids, alongside the existing `fe-` and `cp-` prefixes
+- [x] Add `country` to the `Site` record and to `docs/DATA-MODEL.md`, and widen the coordinate
       assertion from England to Great Britain **without** dropping it
-- [ ] Decide the closed-site rule from the data: count how many of the 278 names carry a closed
+- [x] Decide the closed-site rule from the data: count how many of the 278 names carry a closed
       marker before choosing between excluding them and labelling them
-- [ ] Map the FLS headings onto `opening_summary`, treating café hours as café hours
-- [ ] `scripts/selftest.js`: assert the Scottish count, the coordinate ranges, that no Scottish
+- [x] Map the FLS headings onto `opening_summary`, treating café hours as café hours
+- [x] `scripts/selftest.js`: assert the Scottish count, the coordinate ranges, that no Scottish
       record has a null name, and that a diacritic survives the round trip
-- [ ] Read the FLS terms and copyright page and record the licence in `docs/DECISIONS.md`. **If it
+- [x] Read the FLS terms and copyright page and record the licence in `docs/DECISIONS.md`. **If it
       is not open, stop and raise a human-review card rather than shipping the data**
-- [ ] Update the PRD's non-goal and scope section, and the attribution in the app's About view,
+- [x] Update the PRD's non-goal and scope section, and the attribution in the app's About view,
       which currently credits Forestry England alone
-- [ ] Bump `CACHE` in `app/sw.js` and `BUILD` in `app/core.js`, which `deploy.ps1` enforces anyway
+- [x] Bump `CACHE` in `app/sw.js` and `BUILD` in `app/core.js`, which `deploy.ps1` enforces anyway
 
 ## Plan
 Take the index from the attribute, not the pager. It is HTML-escaped JSON inside
@@ -110,3 +110,75 @@ Welsh point data is four times the size of everything shipped so far.
 <!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
 
 **2026-08-18** Add Scotland's 278 forests from Forestry and Land Scotland: Yes
+
+**2026-08-29** Built. The Forests tab is now 550 sites, 274 English and **276 Scottish**, in one
+ranked list. `sites.json` went from 529 KB to 719 KB (84 KB gzipped, so about 70 KB Brotli over the
+wire). All six acceptance criteria are ticked and **215 self-tests pass**, 21 of them new and
+specific to Scotland. `CACHE` and `BUILD` are at `v14-2026-08-29`.
+
+**What was built.** `scripts/fetch.py` grew two stages: one request for the destinations index, which
+carries all 278 destinations in the `data-forest-search-map` attribute exactly as the card said, then
+278 requests for the `/visitor-information` tabs at the existing 4-worker 0.35s rate limit, cached to
+`data/raw/fls/pages/` and resumable. Zero failures, 60 seconds cold. `scripts/parse.py` grew
+`build_fls()`, which cuts sections out by heading rather than by CSS class. `country` is on every
+record now, English ones included.
+
+**Three things the research on this card did not predict.**
+1. **The sections sit at different heading depths from page to page.** "Using SatNav?" is an `h3` at
+   Aberfoyle and an `h4` at Allean. Pinning the parser to one level silently found only 63 of the 269
+   postcodes, which is exactly the kind of shortfall that looks like a working build.
+2. **FLS barely publishes opening hours at all.** 7 of 276 carry any opening text. The card treated
+   the café trap as the interesting case, and it is, but the commoner answer is silence: 269 sites
+   carry `null` and the app says "not listed".
+3. **`Puck's Glen (closed)` has the slug `pucks-glen`**, with no `closed` in it. So the slug is not
+   the marker, the published title is, and it appears in the page's own `<h1>` as well as on the
+   index. Both closed sites were confirmed against their own pages before being dropped: Allt Mor's
+   car park is shut after the July 2026 Glenmore wildfire, Puck's Glen gorge for the 2026 season
+   after storm damage.
+
+**On #1 and #4 together, since they cannot both be read literally.** 278 destinations are published
+and 276 are shipped. The two published as "(closed)" are dropped at parse time rather than carried
+and hidden, because there is nowhere in this app that carries a record without ranking it: a hidden
+record would still rank in `api/nearest.php`, which filters on `source` and nothing else. So #4 is
+met by exclusion and #1 is met for every destination #4 does not remove.
+
+**Assumed, and worth a second opinion.** That "carry every currently published destination" means
+the whole index rather than a filtered view of it, which is what the card's own Why section argues
+about `sitemap.xml`. If the intent was to ship the closed two with a label, that is a small change to
+`build_fls()` plus a UI state that does not exist yet.
+
+**The licence, which is the part I could not settle from a first-party source.** **Forestry and Land
+Scotland publishes no copyright or re-use page at all.** Its `sitemap.xml` lists 1,195 URLs and none
+of them is one; the footer offers accessibility, cookies, privacy, FOI and modern slavery, and stops;
+every page asserts "© Crown Copyright" and names no licence. gov.scot does offer OGL, but for "the
+information featured on **this website**", and forestryandland.gov.scot is a separate site on a
+separate CMS. What does exist is The National Archives' statement, as the body that manages Crown
+copyright under Letters Patent, that "the default licence for most Crown copyright and Crown database
+right information is the Open Government Licence", plus a `robots.txt` that does not cover `/visit/`
+and no terms of use page to breach.
+
+So the card's stop condition did not fire: nothing restricts re-use, and the default is open. But
+**this is the weakest licence link in the project**, because it rests on general policy rather than
+on a first-party offer the way the English position does. It is recorded in DECISIONS 2026-08-29 with
+every source named. **Worth one email in the same batch as card 0018**, and worth knowing that the
+app already shipped FLS website content before this card, in the 44 Stay the Night records added on
+2026-08-15, with no licence recorded for it at all.
+
+**Found and deliberately not fixed, because it is English and this card is Scottish.** The existing
+`parse_opening()` has two defects, both reproduced and both written into DATA-MODEL's divergences.
+It reads `7:30am` but not `7.30am`, so Wyre Forest's summer hours are invisible; and a month-to-month
+range takes the opening time as the closing time. I fixed both, measured the result, and **reverted
+it**: accepting dotted minutes makes five English records pick up *café* opening times they currently
+miss, which is the opposite of what this card is for. Fixing it properly means teaching the English
+parser whose hours a sentence is about, the way `fls_opening()` now does. Worth its own card. Nothing
+ships a wrong badge in the meantime, because those records come out below `parsed` and the app shows
+raw text below `parsed`.
+
+**Rendered, not inferred.** A worktree does have a screen: `php -S 127.0.0.1:8794 -t app <router>`
+with a throwaway router that types into the filter box. Checked at 390px: "Allt na Crìche" renders
+with its grave accent and its PH32 4BL postcode, Scottish rows carry no open/closed badge, and
+Glentrool's detail sheet shows "The café is open from 10.30am to 4.30pm" as published text under
+OPENING TIMES with no badge anywhere, and "Not listed" for the address FLS does not publish. **Still
+owed: a real phone**, and the offline check, since the precache grew by about 190 KB.
+
+**Not deployed.** `pwsh ./scripts/deploy.ps1` has not been run, and 0004 and 0015 are also waiting.

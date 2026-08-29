@@ -183,12 +183,23 @@ ok('carpark count matches header', carparks.length === DATA.counts.carpark,
    `${carparks.length} vs ${DATA.counts.carpark}`);
 ok('ids are unique', new Set(sites.map(s => s.id)).size === sites.length);
 ok('every site has a name', sites.every(s => s.name && s.name.trim().length));
-ok('all coords inside England bbox',
-   sites.every(s => s.lat >= 49.5 && s.lat <= 56.2 && s.lng >= -6.8 && s.lng <= 2.2));
+// Great Britain, not England, since card 0016 added Scotland. Widened, never removed:
+// this is the tripwire that catches an unprojected British National Grid value.
+ok('all coords inside the Great Britain bbox',
+   sites.every(s => s.lat >= 49.5 && s.lat <= 61.2 && s.lng >= -8.8 && s.lng <= 2.2));
+ok('every English record is still inside the England bbox',
+   sites.filter(s => s.country === 'England')
+        .every(s => s.lat >= 49.5 && s.lat <= 56.2 && s.lng >= -6.8 && s.lng <= 2.2));
 ok('no British National Grid leakage',
    sites.every(s => Math.abs(s.lat) < 90 && Math.abs(s.lng) < 180));
 ok('attribution present', /Open Government Licence/.test(DATA.attribution || ''));
-ok('every forest has a Forestry England url', forests.every(s => /^https:\/\/www\.forestryengland\.uk\//.test(s.url || '')));
+ok('every record names the country it is in',
+   sites.every(s => s.country === 'England' || s.country === 'Scotland'),
+   JSON.stringify(DATA.counts_by_country));
+ok('every forest links to the agency that publishes it',
+   forests.every(s => s.country === 'Scotland'
+     ? /^https:\/\/forestryandland\.gov\.scot\//.test(s.url || '')
+     : /^https:\/\/www\.forestryengland\.uk\//.test(s.url || '')));
 
 console.log('\n--- derived car park names ---');
 {
@@ -252,6 +263,88 @@ console.log('\n--- derived car park names ---');
      /sheet__name--derived/.test(appjs004) && /\.sheet__name--derived/.test(appcss));
   ok('the detail sheet says the name is ours', /not a published one/.test(appjs004));
   ok('the map marks a derived label', /name_is_derived \? 'italic/.test(mapjs));
+}
+
+console.log('\n--- Scotland, from Forestry and Land Scotland (card 0016) ---');
+{
+  const scots = forests.filter(s => s.country === 'Scotland');
+  const english = forests.filter(s => s.country === 'England');
+
+  // 278 destinations published on 2026-08-29, two of them marked closed. The floor is
+  // well below that: it catches a broken index attribute, not week-to-week movement.
+  ok('Scotland fills the Forests tab', scots.length >= 250, `${scots.length} destinations`);
+  ok('England is still there too', english.length >= 250, `${english.length} forests`);
+  ok('every Scottish id is prefixed fls-', scots.every(s => /^fls-[a-z0-9-]+$/.test(s.id)));
+  ok('every Scottish record has a name', scots.every(s => s.name && s.name.trim().length));
+  ok('no Scottish record is a car park or a campsite',
+     scots.every(s => s.source === 'forest'));
+
+  // Scotland reaches 60.86N at Shetland and -8.6E at St Kilda, so the useful assertion is
+  // that nothing Scottish has landed in England or in the sea off Ireland.
+  ok('Scottish coords are in Scotland',
+     scots.every(s => s.lat >= 54.5 && s.lat <= 61.2 && s.lng >= -8.8 && s.lng <= 0.0),
+     scots.filter(s => !(s.lat >= 54.5 && s.lat <= 61.2 && s.lng >= -8.8 && s.lng <= 0.0))
+          .slice(0, 3).map(s => `${s.id} ${s.lat},${s.lng}`).join(' | '));
+  ok('Scotland is north of every English forest',
+     Math.min(...scots.map(s => s.lat)) > 54.0);
+
+  // The names carry Gaelic diacritics, and the whole chain (fetch, parse, JSON, this
+  // read) has to keep them. A mojibake name is how a wrong encoding shows up.
+  const dia = scots.filter(s => /[À-ſ]/.test(s.name));
+  ok('Gaelic diacritics survive the round trip', dia.length >= 10, `${dia.length} names`);
+  ok('Allt na Criche keeps its grave accent',
+     scots.some(s => s.name === 'Allt na Crìche'),
+     dia.slice(0, 4).map(s => s.name).join(' | '));
+  ok('no name arrived as mojibake', !scots.some(s => /Ã.|�/.test(s.name)),
+     scots.filter(s => /Ã.|�/.test(s.name)).slice(0, 3).map(s => s.name).join(' | '));
+
+  // A destination FLS has taken out of use is not somewhere to drive to. Both are
+  // published as "<name> (closed)" on the index and again in their own page's h1.
+  ok('a destination published as closed is not offered',
+     !sites.some(s => /\(\s*closed\s*\)\s*$/i.test(s.name)),
+     sites.filter(s => /\(\s*closed\s*\)\s*$/i.test(s.name)).map(s => s.id).join(', '));
+
+  // The reason this card was not a copy of the English one. Glentrool publishes
+  // "The cafe is open from 10.30am to 4.30pm" under its Opening hours heading. That is
+  // the cafe, not the gate, and the forest itself never closes.
+  const indoor = /caf|visitor centre|tea ?room|restaurant|kiosk|\bshop\b/i;
+  const cafeOnly = scots.filter(s => s.opening_times && indoor.test(s.opening_times) &&
+                                     !/24\s*hour|always open|dusk/i.test(s.opening_times));
+  ok('some Scottish sites publish only indoor hours', cafeOnly.length > 0,
+     `${cafeOnly.length} sites`);
+  ok('indoor hours never become the site\'s access hours',
+     cafeOnly.every(s => !s.opening_summary || s.opening_summary.access === 'unknown'),
+     cafeOnly.filter(s => s.opening_summary && s.opening_summary.access !== 'unknown')
+             .map(s => s.name).join(', '));
+  ok('and the app never claims such a site is open',
+     cafeOnly.every(s => NF.openState(s, new Date('2026-08-29T12:00:00')).state === 'unknown'),
+     cafeOnly.filter(s => NF.openState(s, new Date('2026-08-29T12:00:00')).state !== 'unknown')
+             .map(s => s.name).join(', '));
+  ok('the raw text is still published for the reader to judge',
+     cafeOnly.every(s => typeof s.opening_times === 'string' && s.opening_times.length));
+
+  // Most Scottish forests publish no hours and no postcode at all. Null is the answer,
+  // and an empty string would render as blank space rather than "not known".
+  ok('a silent field is null, never an empty string',
+     scots.every(s => ['postcode_satnav', 'opening_times', 'parking', 'address']
+                        .every(k => s[k] === null || (typeof s[k] === 'string' && s[k].length))));
+  ok('most Scottish sites carry a sat nav postcode',
+     scots.filter(s => s.postcode_satnav).length > scots.length * 0.8,
+     `${scots.filter(s => s.postcode_satnav).length}/${scots.length}`);
+  ok('every sat nav postcode looks like a UK postcode',
+     scots.every(s => !s.postcode_satnav || /^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/.test(s.postcode_satnav)),
+     scots.filter(s => s.postcode_satnav &&
+                       !/^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/.test(s.postcode_satnav))
+          .slice(0, 3).map(s => s.postcode_satnav).join(', '));
+  ok('most Scottish sites list facilities',
+     scots.filter(s => s.facilities && s.facilities.length).length > scots.length * 0.8);
+
+  // The Forests tab is one ranked list, so a Scottish record has to rank like any other.
+  const fromGlasgow = NF.rank(sites, 'forest', { lat: 55.8642, lng: -4.2518 }, '');
+  ok('the nearest forest to Glasgow is Scottish', fromGlasgow[0].country === 'Scotland',
+     `${fromGlasgow[0].name} (${fromGlasgow[0].country})`);
+  ok('the nearest forest to Brighton is still English',
+     NF.rank(sites, 'forest', BRIGHTON, '')[0].country === 'England');
 }
 
 console.log('\n--- campsites (a second database, under a second licence) ---');
@@ -441,11 +534,14 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // The generator refuses to emit anything else, so this should never trip; it is
   // here because the app ships the file rather than rebuilding it.
   const badUrls = DATA.sites.filter(s => s.url != null && NF.safeHref(s.url) === null);
+  // Two publishing agencies since card 0016, so two hosts. The set stays closed: an
+  // href in the detail sheet may only reach the site the record was scraped from.
   const offSite = DATA.sites.filter(s => s.url != null &&
-    !/^https:\/\/(www\.)?forestryengland\.uk\//.test(s.url));
+    !/^https:\/\/(www\.)?forestryengland\.uk\//.test(s.url) &&
+    !/^https:\/\/forestryandland\.gov\.scot\//.test(s.url));
   ok('every dataset url survives safeHref', badUrls.length === 0,
      badUrls.slice(0, 3).map(s => s.id).join(', '));
-  ok('every dataset url is on forestryengland.uk', offSite.length === 0,
+  ok('every dataset url is on a publishing agency host', offSite.length === 0,
      offSite.slice(0, 3).map(s => s.url).join(', '));
 
   // The CSP below has no 'unsafe-inline' and no 'unsafe-eval'. These assert the app
@@ -493,6 +589,14 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // Now that other people use it, the app says what it does with a location.
   ok('the app states its privacy position in the footer',
      /location stays on this phone/i.test(indexhtml));
+
+  // Attribution is a licence condition rather than a courtesy, and there are now two
+  // agencies to name. Adding a name also means extending the non-affiliation line:
+  // naming somebody without it is what implies an endorsement.
+  ok('the footer credits both forest agencies',
+     /Forestry England/.test(indexhtml) && /Forestry and\s+Land Scotland/.test(indexhtml));
+  ok('the footer disclaims affiliation with both',
+     /not affiliated with Forestry England or with Forestry and\s+Land Scotland/.test(indexhtml));
 }
 
 console.log('');

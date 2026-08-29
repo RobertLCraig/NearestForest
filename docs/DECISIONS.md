@@ -3,6 +3,68 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-08-29: The Forests tab leaves England, and takes on a second agency
+**Decision:** Card 0016, answered "Yes" by Rob on 2026-08-18. `app/data/sites.json` now carries
+Forestry and Land Scotland's destinations alongside Forestry England's, in the same `forest` tab and
+the same ranked list. The PRD non-goal that read "No Wales, Scotland or Northern Ireland (different
+agencies entirely)" is superseded for the Forests tab as well as for Campsites. Wales stays out; it
+is card 0017 and it has its own licence question.
+
+**What the decision actually costs, said plainly:** a second scraper against a second CMS that will
+change under us. Forestry England is Drupal and is parsed through `field--name-field-*` divs.
+Forestry and Land Scotland is Umbraco and is parsed through ordinary headings. Neither is a
+contract. The pipeline fails loudly on a shortfall in both halves rather than emitting a short file.
+
+**What is cheaper than expected.** The whole Scottish index is one HTML attribute,
+`data-forest-search-map`, on `/visit/destinations`: 278 destinations with title, link, latitude and
+longitude, repeated identically on all 31 pages of the pager. `sitemap.xml` independently lists the
+same 278 destination URLs, which is the cross-check that the attribute is the whole set. So the
+index costs one request rather than 31.
+
+**Three rules were decided from the data rather than assumed:**
+
+- **A destination published as "(closed)" is dropped, not labelled.** Two of the 278: Allt Mor, whose
+  car park is shut after the July 2026 Glenmore wildfire, and Puck's Glen, whose gorge is shut for
+  the 2026 season after storm damage. Both were confirmed against their own pages, not just the
+  index. **Do not reach for the index attribute's `open` field for this**: it reads `false` on all
+  278 records, so it is a UI flag and not a status. The published title is the marker, and it appears
+  in the page's own `<h1>` as well as in the index.
+- **Indoor hours never become the site's access hours.** Glentrool publishes, under a heading that
+  says "Opening hours", the sentence "The café is open from 10.30am to 4.30pm". A forest that never
+  closes would otherwise be given a closing time. So when the opening text names a café, shop,
+  restaurant or visitor centre and carries no always-open or dawn-till-dusk statement, `access` is
+  `unknown` and the raw text is shown as published. Four of the seven Scottish sites that publish any
+  hours at all are in that position. Kirroughtree is the counter-example that proves the rule works:
+  it says "The car park and trails are always open" as well as naming a café, and it resolves to
+  `always`.
+- **The coordinate assertion widened to Great Britain without loosening.** `scripts/parse.py` keeps
+  a per-country box and asserts a Great Britain one over everything. The England box still guards the
+  English records, which are the ones reprojected from British National Grid and therefore the ones
+  a loose box would wave through.
+
+**The licence position is weaker than the English one, and that is the honest summary.** Checked
+against primary sources on 2026-08-29:
+
+| Question | Finding | Source |
+|---|---|---|
+| Does FLS publish a copyright or re-use page | **No.** Its sitemap lists 1,195 URLs and none is a copyright, terms or re-use page. The footer links accessibility, cookies, privacy, FOI, modern slavery, and stops. | `forestryandland.gov.scot/sitemap.xml`, page footer |
+| What the site does assert | "© Crown Copyright", with no licence named | every page footer |
+| Does gov.scot's OGL offer cover it | **Not on its face.** gov.scot's Crown Copyright page offers "the information featured on **this website**" under OGL, and forestryandland.gov.scot is a different site on a different CMS. | `gov.scot/crown-copyright/` |
+| What the default is for Crown copyright | "The default licence for most Crown copyright and Crown database right information is the Open Government Licence." | The National Archives, who manage Crown copyright under Letters Patent |
+| robots.txt | Disallows admin paths and `/search-results` only. `/visit/` is not covered. | `forestryandland.gov.scot/robots.txt` |
+| A terms of use page to breach | None exists, so there is no contractual bar on automated collection | as above |
+
+So the reading is **OGL by default**, and the card's stop condition ("if it is not open, stop") did
+not fire: nothing restricts re-use, and the body that administers Crown copyright says OGL is the
+default for it. But it rests on a general policy rather than on a first-party offer, which is what
+the English position rests on. **This is the weakest licence link in the project**, and it is worth
+one email in the same batch as card 0018. The app already scraped and shipped FLS website content
+before this card, in the 44 Stay the Night records added on 2026-08-15, and no licence was recorded
+for it then; this entry is the first time the question has been asked at all.
+
+**Not legal advice.** Every source is named above so the next person can check rather than trust.
+**Status:** active
+
 ## 2026-08-15: Campsites come from OpenStreetMap, and ship in their own file
 **Decision:** The Campsites tab is built from OpenStreetMap (`tourism=camp_site` and
 `tourism=caravan_site`) via one Overpass query per country, plus Forestry and Land Scotland's Stay

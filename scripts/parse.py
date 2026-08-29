@@ -11,19 +11,30 @@ from urllib.parse import urlparse
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(ROOT, "data", "raw")
 PAGES = os.path.join(RAW, "pages")
+FLS_PAGES = os.path.join(RAW, "fls", "pages")
 OUT = os.path.join(ROOT, "app", "data", "sites.json")
 TODAY = date.today().isoformat()
 
-# England bounding box, used as a tripwire against unprojected British National Grid
-LAT_RANGE = (49.5, 56.2)
-LNG_RANGE = (-6.8, 2.2)
+# Bounding box per country, used as a tripwire against unprojected British National Grid.
+# The file now carries England and Scotland, so the assertion covers Great Britain, but it
+# is kept per country rather than widened to one loose GB box: a car park is the record
+# that gets reprojected, it is English, and an England box catches a bad reprojection that
+# a box reaching to Shetland would wave through. Card 0016 widened this without loosening
+# it. Scotland reaches 60.86N at Shetland and -8.6E at St Kilda.
+COUNTRY_RANGE = {
+    "England":  {"lat": (49.5, 56.2), "lng": (-6.8, 2.2)},
+    "Scotland": {"lat": (54.5, 61.2), "lng": (-8.8, 0.0)},
+}
+# Great Britain overall, asserted for every record whatever its country says.
+GB_LAT_RANGE = (49.5, 61.2)
+GB_LNG_RANGE = (-8.8, 2.2)
 
 VALID_STATUS = {"Permanent - Official", "Permanent - Unofficial",
                 "Seasonal - Official", "Seasonal - Unofficial", "Temporary"}
 
 # Hosts a site URL may point at. The app puts these in an href, so the set is
 # closed rather than "whatever the scrape found".
-URL_HOSTS = {"www.forestryengland.uk", "forestryengland.uk"}
+URL_HOSTS = {"www.forestryengland.uk", "forestryengland.uk", "forestryandland.gov.scot"}
 
 # ------------------------------------------------ derived car park names (card 0004)
 # What the app shows when there is nothing better to say.
@@ -53,7 +64,10 @@ problems = []
 notes = {"jsonld_missing": 0, "satnav_missing": 0, "opening_missing": 0,
          "parking_missing": 0, "facilities_missing": 0,
          "access_always": 0, "access_dusk": 0, "access_hours": 0, "access_unknown": 0}
+fls_notes = {"satnav_missing": 0, "opening_missing": 0, "parking_missing": 0,
+             "facilities_missing": 0, "cafe_hours_only": 0, "closed": 0}
 coord_deltas = []
+fls_coord_deltas = []
 
 
 def log(m):
@@ -310,6 +324,7 @@ def build_forests():
         sites.append({
             "id": "fe-" + f["slug"].replace("/", "-"),
             "source": "forest",
+            "country": "England",
             "name": (ld.get("name") if ld else None) or f["name"],
             "name_is_derived": False,
             "lat": round(lat, 7), "lng": round(lng, 7),
@@ -319,6 +334,167 @@ def build_forests():
             "url": f["url"],
             "opening_times": opening,
             "opening_summary": parse_opening(opening),
+            "parking": parking,
+            "facilities": fac,
+            "category": None, "surface": None, "status": None, "district": None,
+            "scraped_at": TODAY,
+        })
+    return sites
+
+
+# ------------------------------------------------------- Scotland (card 0016)
+# Forestry and Land Scotland runs a different CMS from Forestry England, so none of the
+# Drupal field--name-field-* helpers above apply. What it does publish is an ordinary
+# heading structure, and the headings are stable enough to cut sections out of.
+
+# A destination FLS has taken out of use says so in its published title, on the index and
+# again in the <h1> of its own page: "Allt Mor (closed)", "Puck's Glen (closed)". The
+# index attribute also carries an `open` field, and it is NOT this: it reads false on all
+# 278 records, so it is a UI flag rather than a status. Confirmed against both pages on
+# 2026-08-29: Allt Mor's car park is shut after a wildfire, and Puck's Glen gorge is shut
+# for the 2026 season after storm damage. Neither belongs in a list of places to drive to.
+RE_CLOSED_TITLE = re.compile(r"\(\s*closed\s*\)\s*$", re.I)
+
+# Words that mean the sentence is about somewhere inside the site rather than about the
+# gate. Glentrool's "Opening hours" section reads "The café is open from 10.30am to
+# 4.30pm", and a forest that never closes would otherwise be given a closing time.
+RE_INDOOR_SUBJECT = re.compile(
+    r"caf[eé]|coffee shop|tea\s*room|restaurant|kiosk|visitor centre|visitor center|"
+    r"\bshop\b|museum|castle|gallery|hub\b", re.I)
+
+
+def fls_section(h, heading_re):
+    """Inner HTML from a heading matching `heading_re` to the next heading of that level
+    or higher. Returns None when the heading is absent, which is how "not known" gets in.
+
+    Levels h1 to h4, because the same section is published at different depths from page
+    to page: "Using SatNav?" is an h3 at Aberfoyle and an h4 at Allean. Pinning it to one
+    level silently loses three quarters of the postcodes.
+    """
+    m = re.search(r"<h([1-4])[^>]*>\s*(?:<[^>]+>\s*)*" + heading_re + r".*?</h\1>",
+                  h, re.S | re.I)
+    if not m:
+        return None
+    level = int(m.group(1))
+    rest = h[m.end():]
+    # `<nav` ends the last section on a page that has no "You might also be interested in"
+    # block: without it the previous/next links land in the text as a bare forest name.
+    stop = re.search(r"<h[1-%d]\b|<nav\b|</main\b|<footer\b" % level, rest, re.I)
+    return rest[:stop.start()] if stop else rest[:8000]
+
+
+def fls_facilities(h):
+    m = re.search(r'<ul class="destination-facilities__list".*?</ul>', h, re.S)
+    if not m:
+        return None
+    out, seen = [], set()
+    for it in re.findall(r"<span[^>]*>(.*?)</span>", m.group(0), re.S):
+        t = re.sub(r"\s+", " ", strip_tags(it)).strip()
+        if t and t.lower() not in seen and len(t) < 80:
+            seen.add(t.lower())
+            out.append(t)
+    return out or None
+
+
+RE_UK_POSTCODE = re.compile(r"\b([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})\b")
+
+
+def fls_satnav(h):
+    """FLS publishes the sat-nav postcode under its own "Using SatNav?" heading, the same
+    distinction Forestry England makes. There is no postal postcode to confuse it with."""
+    blk = fls_section(h, r"Using\s*SatNav")
+    if not blk:
+        return None
+    m = RE_UK_POSTCODE.search(strip_tags(blk).upper())
+    return "%s %s" % (m.group(1), m.group(2)) if m else None
+
+
+def fls_opening(text):
+    """Opening text to an opening_summary, with the indoor-hours trap handled.
+
+    An always-open or dawn-till-dusk statement is about the site itself, so it stands even
+    when a café is mentioned in the same breath. A bare clock time next to the word café is
+    not attributable to the gate, so access is unknown and the app shows the raw text. The
+    standing rule is that this project never claims a barrier is open on a guess.
+    """
+    if not text:
+        return None
+    if re.search(RE_INDOOR_SUBJECT, text) and not re.search(
+            RE_ALWAYS + "|" + RE_DUSK, text, re.I):
+        fls_notes["cafe_hours_only"] += 1
+        return {"access": "unknown", "opens": None, "closes": None,
+                "season_from": None, "season_to": None, "confidence": "unparsed"}
+    return parse_opening(text)
+
+
+def build_fls():
+    """The Scottish half. One record per currently published, open destination."""
+    index = json.load(open(os.path.join(RAW, "fls", "index.json"), encoding="utf-8"))
+    sites = []
+    for d in index:
+        if RE_CLOSED_TITLE.search(d["name"]):
+            fls_notes["closed"] += 1
+            continue
+        path = os.path.join(FLS_PAGES, d["slug"] + ".html")
+        if not os.path.exists(path):
+            problems.append("missing FLS page file for %s" % d["slug"])
+            continue
+        h = open(path, encoding="utf-8", errors="replace").read()
+
+        # The published title says "closed" on the destination's own page too, not only on
+        # the index. Belt and braces, because the index is one attribute and could go.
+        h1 = re.search(r"<h1[^>]*>(.*?)</h1>", h, re.S)
+        if h1 and RE_CLOSED_TITLE.search(strip_tags(h1.group(1))):
+            fls_notes["closed"] += 1
+            continue
+
+        lat, lng = d["lat"], d["lng"]
+        # The page repeats its own coordinate in data-inline-map. Same tripwire as the
+        # English JSON-LD comparison: a silent drift between the two shows up in the report.
+        im = re.search(r'data-inline-map="([^"]*)"', h)
+        if im:
+            try:
+                pt = json.loads(htmllib.unescape(im.group(1)))[0]
+                fls_coord_deltas.append(
+                    (haversine_mi(lat, lng, float(pt["latitude"]), float(pt["longitude"])),
+                     d["slug"]))
+            except Exception:
+                pass
+
+        satnav = fls_satnav(h)
+        if not satnav:
+            fls_notes["satnav_missing"] += 1
+
+        # `or None` rather than the bare strip: a section that is present but holds only
+        # an image or a button strips to "", and the rule is that null means "not known"
+        # and an empty string never reaches the app.
+        ob = fls_section(h, r"Opening\s*(?:hours|times)")
+        opening = (strip_tags(ob) or None) if ob else None
+        if not opening:
+            fls_notes["opening_missing"] += 1
+
+        pb = fls_section(h, r"Parking\s*information")
+        parking = (strip_tags(pb) or None) if pb else None
+        if not parking:
+            fls_notes["parking_missing"] += 1
+
+        fac = fls_facilities(h)
+        if fac is None:
+            fls_notes["facilities_missing"] += 1
+
+        sites.append({
+            "id": "fls-" + d["slug"],
+            "source": "forest",
+            "country": "Scotland",
+            "name": d["name"],
+            "name_is_derived": False,
+            "lat": round(lat, 7), "lng": round(lng, 7),
+            "postcode_satnav": satnav,
+            "postcode_postal": None,          # FLS publishes no postal address
+            "address": None,
+            "url": d["url"],
+            "opening_times": opening,
+            "opening_summary": fls_opening(opening),
             "parking": parking,
             "facilities": fac,
             "category": None, "surface": None, "status": None, "district": None,
@@ -386,6 +562,7 @@ def build_carparks():
         rec = {
             "id": "cp-%s" % a.get("OBJECTID"),
             "source": "carpark",
+            "country": "England",
             "name": name,
             "name_is_derived": derived,
             "lat": round(float(c["y"]), 7), "lng": round(float(c["x"]), 7),
@@ -405,11 +582,23 @@ def build_carparks():
 
 def validate(sites):
     for s in sites:
-        if not (LAT_RANGE[0] <= s["lat"] <= LAT_RANGE[1]):
-            problems.append("%s lat %s outside England (unprojected coords?)" % (s["id"], s["lat"]))
-        if not (LNG_RANGE[0] <= s["lng"] <= LNG_RANGE[1]):
-            problems.append("%s lng %s outside England (unprojected coords?)" % (s["id"], s["lng"]))
-        for k in ("id", "source", "name", "lat", "lng", "scraped_at"):
+        # Great Britain first, because that is the promise the file makes whatever a
+        # record claims about itself, then the tighter box for the country it names.
+        if not (GB_LAT_RANGE[0] <= s["lat"] <= GB_LAT_RANGE[1]):
+            problems.append("%s lat %s outside Great Britain (unprojected coords?)"
+                            % (s["id"], s["lat"]))
+        if not (GB_LNG_RANGE[0] <= s["lng"] <= GB_LNG_RANGE[1]):
+            problems.append("%s lng %s outside Great Britain (unprojected coords?)"
+                            % (s["id"], s["lng"]))
+        box = COUNTRY_RANGE.get(s.get("country"))
+        if box is None:
+            problems.append("%s has no known country: %r" % (s["id"], s.get("country")))
+        else:
+            if not (box["lat"][0] <= s["lat"] <= box["lat"][1]):
+                problems.append("%s lat %s outside %s" % (s["id"], s["lat"], s["country"]))
+            if not (box["lng"][0] <= s["lng"] <= box["lng"][1]):
+                problems.append("%s lng %s outside %s" % (s["id"], s["lng"], s["country"]))
+        for k in ("id", "source", "country", "name", "lat", "lng", "scraped_at"):
             if s.get(k) in (None, ""):
                 problems.append("%s missing required field %s" % (s.get("id"), k))
         # The app renders this straight into an href. A URL is allowed to be absent
@@ -431,11 +620,14 @@ def validate(sites):
 
 
 def main():
-    log("[1/3] Parsing forest pages ...")
+    log("[1/4] Parsing Forestry England forest pages ...")
     forests = build_forests()
     log("      %d forests parsed" % len(forests))
+    # Snapshot before the Scottish pages add to the same access counters, so the English
+    # coverage report keeps saying what it has always said.
+    en_notes = dict(notes)
 
-    log("[2/3] Parsing car parks ...")
+    log("[2/4] Parsing car parks ...")
     carparks, pending = build_carparks()
     log("      %d car parks parsed, %d with no usable upstream name" % (len(carparks), len(pending)))
 
@@ -449,23 +641,49 @@ def main():
         log("      named after a forest within %.1f mi: %d; left as %r: %d"
             % (NEAR_FOREST_MI, len(named), GENERIC_NAME, n - len(named)))
 
-    forests.sort(key=lambda s: s["name"].lower())
-    carparks.sort(key=lambda s: s["name"].lower())
-    sites = forests + carparks
+    log("[3/4] Parsing Forestry and Land Scotland destinations ...")
+    scots = build_fls()
+    log("      %d destinations parsed, %d dropped as published closed"
+        % (len(scots), fls_notes["closed"]))
 
-    log("[3/3] Validating ...")
+    all_forests = forests + scots
+    all_forests.sort(key=lambda s: s["name"].lower())
+    carparks.sort(key=lambda s: s["name"].lower())
+    sites = all_forests + carparks
+
+    log("[4/4] Validating ...")
     validate(sites)
 
     log("")
-    log("FIELD COVERAGE (forests, n=%d)" % len(forests))
+    log("FIELD COVERAGE (Forestry England forests, n=%d)" % len(forests))
     for k, label in [("satnav_missing", "sat nav postcode"), ("opening_missing", "opening times"),
                      ("parking_missing", "parking info"), ("facilities_missing", "facilities"),
                      ("jsonld_missing", "JSON-LD block")]:
-        have = len(forests) - notes[k]
-        log("  %-18s %3d/%d present  (%d missing)" % (label, have, len(forests), notes[k]))
+        have = len(forests) - en_notes[k]
+        log("  %-18s %3d/%d present  (%d missing)" % (label, have, len(forests), en_notes[k]))
     log("  access: always-open=%d dusk=%d clock-hours=%d unknown=%d"
-        % (notes["access_always"], notes["access_dusk"],
-           notes["access_hours"], notes["access_unknown"]))
+        % (en_notes["access_always"], en_notes["access_dusk"],
+           en_notes["access_hours"], en_notes["access_unknown"]))
+
+    log("")
+    log("FIELD COVERAGE (Forestry and Land Scotland, n=%d)" % len(scots))
+    for k, label in [("satnav_missing", "sat nav postcode"), ("opening_missing", "opening times"),
+                     ("parking_missing", "parking info"), ("facilities_missing", "facilities")]:
+        have = len(scots) - fls_notes[k]
+        log("  %-18s %3d/%d present  (%d missing)" % (label, have, len(scots), fls_notes[k]))
+    log("  access: always-open=%d dusk=%d clock-hours=%d unknown=%d"
+        % (notes["access_always"] - en_notes["access_always"],
+           notes["access_dusk"] - en_notes["access_dusk"],
+           notes["access_hours"] - en_notes["access_hours"],
+           notes["access_unknown"] - en_notes["access_unknown"]))
+    log("  of which held back because the hours are a cafe's or a visitor centre's, "
+        "not the gate's: %d" % fls_notes["cafe_hours_only"])
+
+    if fls_coord_deltas:
+        fls_coord_deltas.sort(reverse=True)
+        ds = [d for d, _ in fls_coord_deltas]
+        log("  index vs page coordinate, miles: n=%d max=%.3f median=%.4f >0.5mi=%d"
+            % (len(ds), ds[0], ds[len(ds) // 2], len([d for d in ds if d > 0.5])))
 
     if coord_deltas:
         coord_deltas.sort(reverse=True)
@@ -477,10 +695,15 @@ def main():
         for d, slug in coord_deltas[:5]:
             log("    %6.2f mi  %s" % (d, slug))
 
+    by_country = {}
+    for s in sites:
+        by_country[s["country"]] = by_country.get(s["country"], 0) + 1
+
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     payload = {
         "generated_at": TODAY,
-        "counts": {"forest": len(forests), "carpark": len(carparks)},
+        "counts": {"forest": len(all_forests), "carpark": len(carparks)},
+        "counts_by_country": by_country,
         "attribution": "Contains public sector information licensed under the Open Government Licence v3.0.",
         "sites": sites,
     }

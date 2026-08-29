@@ -1,29 +1,33 @@
 # HANDOVER: NearestForest
 
-> An offline iPhone app that finds the closest Forestry England site and hands it to a map app in
-> one tap. Live at https://forestlocator.enhanceify.co.uk/ and installed on Rob's phone.
+> An offline iPhone app that finds the closest national forest, car park or campsite and hands it to
+> a map app in one tap. Live at https://forestlocator.enhanceify.co.uk/ and installed on Rob's phone.
 
 **Stage:** active
 **Category:** app, site
-**Status:** Deployed, installed to the Home Screen, and working on the device. **Three tabs now: a
-Campsites tab covering England, Scotland and Wales was built on 2026-08-15**, so the app is no
-longer England only and no longer single-licence. Map complete (bundled outline plus optional
-tiles). **Card 0004 was built on 2026-08-29: the 177 car parks with no usable upstream name are now
-named after the forest they are nearest to, and DATA-MODEL's main open divergence is closed.**
-**Card 0015 was built the same day: the tile attribution now sits on an opaque pill.** No
-agent-ready card is left; nine cards await an adversarial pass in
-`ai-review/`; the last unevidenced PRD criterion is card **0001** check 5, and the campsite tab has
-added a second reason to run it. **Seven cards wait on a person.**
-**Neither the 0004 nor the 0015 build is deployed. 0004 has still not been looked at on a screen;
-0015 now has**, in a desktop browser over a synthetic worst-case white tile, and all three of its
-acceptance criteria are met. Its remaining task is a real phone over real tiles.
+**Status:** Deployed, installed to the Home Screen, and working on the device. **The app is now
+Great Britain minus Wales in two of its three tabs.** A Campsites tab covering England, Scotland and
+Wales was built on 2026-08-15, and **card 0016 was built on 2026-08-29: the Forests tab took on
+Forestry and Land Scotland as a second agency, so it is 550 sites, 274 English and 276 Scottish, in
+one ranked list.** Car parks is still England only, because no open dataset of Scottish forest car
+parks exists. Map complete (bundled outline plus optional tiles).
+**Cards 0004 and 0015 were also built on 2026-08-29**: the 177 car parks with no usable upstream
+name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
+No agent-ready card is left; nine cards await an adversarial pass in `ai-review/`; the last
+unevidenced PRD criterion is card **0001** check 5, and Scotland has added a third reason to run it.
+**Six cards wait on a person**, one fewer than before, because 0016 is answered and built.
+**None of 0004, 0015 or 0016 is deployed.** 0004 has still not been looked at on a screen; 0015 and
+0016 both have.
 **A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
-done. See card 0015's second comment entry.
-_Last updated: 2026-08-29 (three unattended worktree runs. 0004: the unnamed car parks are named
-after the forest they are nearest to, on a threshold measured from the distance distribution rather
-than guessed. 0015: the tile attribution gets a dark pill and white text when, and only when, tiles
-are on, bounded at 9.29:1 against a pure white tile; a second run then rendered it and closed its
-last criterion. Neither card is deployed; see "What's next" item 1. Earlier:)_
+done. See card 0015's second comment entry and card 0016's.
+_Last updated: 2026-08-29 (four unattended worktree runs. 0016: Scotland, 276 destinations from
+Forestry and Land Scotland, whose whole index arrives in one HTML attribute; the two published as
+"(closed)" are dropped, and cafe hours are never presented as a forest's access hours. 0004: the
+unnamed car parks are named after the forest they are nearest to, on a threshold measured from the
+distance distribution rather than guessed. 0015: the tile attribution gets a dark pill and white
+text when, and only when, tiles are on, bounded at 9.29:1 against a pure white tile; a second run
+then rendered it and closed its last criterion. Nothing is deployed; see "What's next" item 1.
+Earlier:)_
 _2026-08-15 (two sessions. First: researched the licensing and the answer changed the
 project, since **both forest sources are OGL and commercial use is expressly permitted**, so the PRD
 constraint saying the forest list was personal-use-only was wrong and is superseded. See DECISIONS
@@ -50,9 +54,14 @@ locally.** That is card 0001 check 5, not a formality.
 
 Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session must not re-guess:
 
-- **One `Site` record** normalises four very different upstream sources. `source` is `forest`,
-  `carpark` or `campsite` and drives which tab a record appears in, nothing else. Do not branch
-  logic on it.
+- **One `Site` record** normalises five very different upstream sources. `source` is `forest`,
+  `carpark` or `campsite` and drives which tab a record appears in, nothing else. `country` is
+  `England`, `Scotland` or `Wales` and drives **nothing at all**. Do not branch logic on either, and
+  do not add a country filter or a country tab: a Scottish forest is a forest.
+- **The Forests tab is two agencies in one ranked list.** `fe-` ids are Forestry England (274),
+  `fls-` ids are Forestry and Land Scotland (276). Both are scraped from a website, both fail the
+  build loudly on a shortfall, and the two sites have nothing in common structurally: one is Drupal
+  and is read through `field--name-field-*` divs, the other is Umbraco and is read by heading.
 - **One record shape, but TWO files, and the split is a licence boundary rather than a modelling
   one.** `app/data/sites.json` is Open Government Licence (Forestry England). `app/data/campsites.json`
   is **ODbL** (OpenStreetMap, plus Forestry and Land Scotland's Stay the Night car parks). They are
@@ -60,18 +69,22 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
   Collective Database from share-alike; one merged file would invite the argument that the OGL data
   became a derivative of the ODbL one. **A self-test fails if a campsite record appears inside
   `sites.json`.** Do not "tidy" the two files into one.
-- **Both are generated, never hand-edited.** 904 records / 515 KB and 3,681 records / 972 KB,
+- **Both are generated, never hand-edited.** 1,180 records / 719 KB and 3,681 records / 972 KB,
   committed on purpose because they are what the app ships. Fix the generator and re-run; do not
   patch the JSON.
-- **The Campsites tab covers England, Scotland and Wales; the other two tabs are England only.**
-  That asymmetry is deliberate and is written into the PRD: the campsite source is one GB-wide
-  database, while the forest sources are three separate national agencies. Cards 0016 and 0017 still
-  hold the forest question.
+- **Campsites and Forests cover England and Scotland (Campsites adds Wales); Car parks is England
+  only.** That asymmetry is deliberate and is written into the PRD: no open dataset of Scottish
+  forest car parks exists. **Wales is card 0017 and is still open**, blocked on a contradiction
+  between NRW's own metadata and data.gov.uk about internet applications.
 - **A campsite never shows an open/closed badge.** 99 of 3,681 records publish any hours at all, so
   a badge would be a guess, and a self-test asserts `openState()` returns `unknown` for every one.
 - **Coordinates are WGS84 decimal degrees everywhere.** The car park source is EPSG:27700 and is
   reprojected at fetch time by asking ArcGIS for `outSR=4326`. `scripts/parse.py` asserts every
-  coordinate falls inside an England bounding box, so an unprojected value fails the build loudly.
+  coordinate falls inside a **Great Britain** box and then inside the box for the country it names,
+  so an unprojected value fails the build loudly. **Keep it per country.** Card 0016 widened this
+  and deliberately did not loosen it: the records that get reprojected are the English car parks, so
+  an England box is the one that catches a bad reprojection, and one box reaching Shetland would
+  wave it through.
 - **`postcode_satnav` is the one to navigate to, never `postcode_postal`.** They genuinely differ
   (Bedgebury publishes `TN17 2SJ` for sat nav and `TN17 2SL` as its postal code).
 - **`opening_summary.access`** is `always` / `dusk` / `hours` / `unknown` and is the primary opening
@@ -133,13 +146,15 @@ Forestry England website --scrape--+       OpenStreetMap (Overpass, 1 query per 
                                    |                                                       |
 ArcGIS FeatureServer --------------+       FLS "Stay the Night" (2 requests) --------------+
                                    |                                                       |
+Forestry and Land Scotland --------+                                                       |
+  (1 index request + 278 pages)    |                                                       |
                           scripts/fetch.py                                 scripts/fetch_campsites.py
                                    |                                                       |
                                    v                                                       v
                           scripts/parse.py                                 scripts/parse_campsites.py
                                    |                                                       |
                                    v                                                       v
-                    app/data/sites.json (904)                        app/data/campsites.json (3,681)
+                   app/data/sites.json (1,180)                       app/data/campsites.json (3,681)
                                    |                                                       |
                                    +---------------------+---------------------------------+
                                                          |  merged in memory at load, NEVER on disk
@@ -153,8 +168,8 @@ ArcGIS FeatureServer --------------+       FLS "Stay the Night" (2 requests) ---
 above. `api/nearest.php` and the iOS Shortcut cover the forest tabs only: unaffected rather than
 broken, but the two front ends no longer cover the same ground.
 
-The PWA never calls a server. The Shortcut must, because Shortcuts is far too slow to rank 904 sites
-on-device. That split is deliberate and is the thing the two-method comparison is meant to settle.
+The PWA never calls a server. The Shortcut must, because Shortcuts is far too slow to rank 1,180
+sites on-device. That split is deliberate and is the thing the two-method comparison is meant to settle.
 
 ## Key files / structure
 
@@ -192,10 +207,19 @@ on-device. That split is deliberate and is the thing the two-method comparison i
   cache name already versions it, so HTTP-caching code and data buys nothing and breaks updates for
   the reason above. Only images carry a long max-age. Do not "optimise" this back.
 - `scripts/fetch.py` — resumable and cached; re-running costs zero requests for pages already held.
-- `scripts/parse.py` — the only place the HTML shape is understood. Exits non-zero rather than
-  emitting a partial dataset. **Its `LAT_RANGE` is still an England box and should stay one**: the
-  file it validates is still England only, and the campsite pipeline carries its own Great Britain
-  box rather than loosening this one.
+- `scripts/parse.py` — the only place the HTML shape is understood, for **both** forest sites.
+  Exits non-zero rather than emitting a partial dataset. `build_forests()` reads Drupal field divs,
+  `build_fls()` cuts sections out by heading, and `COUNTRY_RANGE` keeps the England box tight while
+  `GB_LAT_RANGE` covers everything. **`fls_section()` accepts h1 to h4 on purpose**: the same
+  section is published at different depths from page to page, and pinning it to one level silently
+  found 63 of 269 Scottish postcodes.
+  **`fls_opening()` is where the judgement lives.** FLS publishes a heading called "Opening hours"
+  that is often about a café, a shop or a visitor centre, so unless the text also carries an
+  always-open or dawn-till-dusk statement, `access` is `unknown` and the raw sentence is shown.
+  **The English `parse_opening()` has the same trap and does not handle it**, plus it reads `7:30am`
+  but not `7.30am`. Both are measured and written into DATA-MODEL's divergences. Card 0016 tried the
+  fix and reverted it, because accepting dotted minutes makes five English records pick up café
+  times. Fixing it means teaching that function whose hours a sentence is about. Worth a card.
 - `scripts/fetch_campsites.py` / `scripts/parse_campsites.py`: the campsite half, same rules.
   **Overpass answers 429 when its slots are busy, and that is the service working, not an error**:
   the fetcher waits it out with a doubling backoff rather than failing. It also checks for a
@@ -257,8 +281,8 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 ## Current state
 
 - **Done:** The full pipeline runs clean from scratch, and the app is deployed and serving. 274
-  forest pages fetched with zero failures, 630 car parks from the OGL dataset, both normalised into
-  one committed 515 KB JSON. The PWA is complete: two tabs, distance and compass bearing per row,
+  English forest pages and 278 Scottish ones fetched with zero failures, 630 car parks from the OGL
+  dataset, all normalised into one committed 719 KB JSON. The PWA is complete: two tabs, distance and compass bearing per row,
   filter, detail sheet with opening times and facilities, three-way map chooser, offline service
   worker, generated icons, dark and light themes, sheets that drag to dismiss from the grip,
   overlapping map markers grouped into counted bubbles, and a paper grain on the flat surfaces.
@@ -316,6 +340,24 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   **Still owed: the same look on a real phone over real Thunderforest tiles**, which is the card's
   one open task. The white tile bounds legibility rather than sampling it, and the safe-area inset
   was simulated at 34px rather than reported by iOS.
+- **Also built 2026-08-29:** card **0016**, Scotland. `sites.json` grew from 904 records / 529 KB to
+  **1,180 records / 719 KB** (84 KB gzipped), and the Forests tab is one ranked list of 550 across
+  two agencies. 215 self-tests pass, 21 of them new.
+  **Three things the card's research did not predict**, all found by running it: the FLS sections sit
+  at different heading depths from page to page, so a parser pinned to `h3` found 63 of 269 sat-nav
+  postcodes; **only 7 of 276 Scottish sites publish opening hours at all**, so silence is the common
+  answer rather than the café trap; and `Puck's Glen (closed)` has the slug `pucks-glen`, so the
+  published title is the closed marker and the slug is not.
+  **The licence is the weak point and is worth an email.** Forestry and Land Scotland publishes no
+  copyright or re-use page: 1,195 URLs in its sitemap and none is one, and every page says "© Crown
+  Copyright" and names no licence. gov.scot's OGL offer is scoped to gov.scot. What carries the
+  position is The National Archives saying OGL is the default for Crown copyright, plus a
+  `robots.txt` that leaves `/visit/` alone and no terms page to breach. Open, but on policy rather
+  than on a first-party offer. See DECISIONS 2026-08-29. **The app was already shipping FLS website
+  content before this card** (the 44 Stay the Night records) with no licence recorded at all.
+  **Rendered at 390px, not inferred**: "Allt na Crìche" keeps its accent, Scottish rows show no
+  open/closed badge, and Glentrool's sheet shows the café sentence as published text under OPENING
+  TIMES with no badge. Still owed: a real phone, and the offline check.
 - **In progress:** nothing.
 - **Known bugs / broken:** none open, but the most serious one yet was found and fixed this
   session, by Rob running the offline check rather than by anyone reading the code.
@@ -346,14 +388,16 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 
 The queue is [docs/board/](board/), one card per file. At the head:
 
-1. **Look at 0004 on a screen, then deploy both it and 0015.** For **0004**, check the dim italic
+1. **Look at 0004 on a screen, then deploy 0004, 0015 and 0016 together.** For **0004**, check the dim italic
    against the **dark** theme, where it has the least contrast to spare, and check a map label, since
    "Car park near Bedgebury Nat…" truncates at 22 characters. **0015 no longer needs a desktop look**
    — it got one, and its layout and contrast both hold; what it still wants is the phone, which the
    0018 screenshots need anyway, so fold it into that rather than blocking the deploy on it.
-   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v13-2026-08-29`.
+   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v14-2026-08-29`.
    **Serving a worktree is a solved problem now** and is worth reusing on 0004:
    `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
+   **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
+   about 190 KB and the Forests tab doubled, so a cold offline launch is now testing more than it was.
 2. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
    still does not exist. The 2026-08-14 screenshots show it ("Bedgebury National Pi…" over "Hemsted
    Fores…"). Worth
@@ -376,24 +420,23 @@ The queue is [docs/board/](board/), one card per file. At the head:
    on a phone. `/code-review` is the tool.
 4. Everything else needs a person: see below.
 
-**Scotland and Wales are researched, costed and blocked on one product call**, cards 0016 and 0017.
-Do not start either from the board alone. **Read that pair carefully now, because the ground moved
-under them on 2026-08-15**: the Campsites tab already covers all three countries, so the PRD non-goal
-they quote has been rewritten and no longer says what those cards say it says. What 0016 and 0017
-still hold is a genuinely different question, and a dearer one: whether the **forest** tabs take on
-two more agencies, two more scrapers and two more sites that will change under us. A campsite tab
-built from one GB-wide database is not evidence that the answer is yes.
+**Scotland is answered and built** (card 0016, answered Yes on 2026-08-18, built 2026-08-29). The
+forest tabs took on a second agency and a second scraper, knowingly. **Wales is still open**, card
+0017, and it is not blocked by 0016 any more: it is blocked on its own contradiction, where NRW's
+metadata says OGL with no restrictions while data.gov.uk says the same dataset needs prior approval
+before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **No agent-ready card is left**: 0015 was the
-last one, and what remains is the adversarial pass over `ai-review/`. Seven cards need Rob, and they
+See [docs/board/human-review/](board/human-review/). **No agent-ready card is left**: 0016 was the
+last one, and what remains is the adversarial pass over `ai-review/`. Six cards need Rob, and they
 fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
-  offline cache went from ~550 KB to ~1.5 MB and the campsite data is precached with everything
-  else. Tap into the Campsites tab while offline as part of it. Checks 1 to 4 now pass on the device. This is the last unevidenced PRD criterion
+  offline cache went from ~550 KB to ~1.7 MB and the campsite data is precached with everything
+  else. Tap into the Campsites tab while offline as part of it. **Card 0016 added a third reason**:
+  the Forests tab is now 550 sites rather than 274, so scroll it while offline too. Checks 1 to 4 now pass on the device. This is the last unevidenced PRD criterion
   and the reason the app exists rather than using Forestry England's own finder.
   **Partly run on 2026-08-08 and it failed**, which is how the tile-eviction bug above was found.
   It must be re-run from a cold launch on v8 or later, and it is worth deleting the app from the
@@ -422,12 +465,11 @@ the mail fix. **That fix belongs on the enhanceify-V2 board, not this one**, and
   PRD constraint that says "personal use; not redistributed as a dataset", which is no longer what
   is happening. Three options on the card with a recommendation. **Its third ask contradicts the
   PRD non-goal "No App Store release"**, the same way 0016 and 0017 contradict the England-only one.
-- **0016** — **does the app leave England?** Scotland is measured and ready to build: FLS publishes
-  278 destinations, the whole index arrives in one HTML attribute, and the detail pages carry the
-  same fields the English ones do. But the PRD's non-goals say "No Wales, Scotland or Northern
-  Ireland (different agencies entirely)", so building it means changing that line. One yes or no,
-  and it gates 0017 too.
-- **0017** — how much of Wales to ship. Blocked behind 0016, and behind one email: NRW's own
+- ~~**0016**~~ — answered Yes on 2026-08-18 and built on 2026-08-29. **One thing it leaves for a
+  person: the FLS licence.** They publish no copyright or re-use page anywhere, so the position rests
+  on The National Archives' default rather than on a first-party offer. Worth an email in the same
+  batch as 0018. See DECISIONS 2026-08-29.
+- **0017** — how much of Wales to ship. No longer blocked behind 0016, but still behind one email: NRW's own
   metadata says the recreation data is OGL with no access restrictions, while data.gov.uk says the
   same dataset needs their prior approval before use in an internet application. The email is
   drafted on the card. Recheck 2026-09-11, so not due.
