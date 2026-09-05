@@ -755,6 +755,123 @@ console.log('--- map outline registration ---');
      pct >= 90, `${pct.toFixed(1)}% of ${sites.length} sites (${sites.length - hits} outside)`);
 }
 
+console.log('');
+console.log('--- staleness: scraped_at is the fetch date, not the parse date (card 0026) ---');
+{
+  // The pipeline is Python and this suite is node, so these three drive the real
+  // scripts/fetch.py and scripts/parse.py in a throwaway tree. Nothing here touches
+  // data/raw/ or app/data/sites.json: the fixture is synthetic and lives in a temp
+  // directory, so the suite cannot overwrite the committed dataset or cost a request.
+  const osmod = require('os');
+  const { spawnSync } = require('child_process');
+  const PY = process.env.PYTHON || 'python';
+  // No .pyc, or running the suite litters scripts/ with an untracked __pycache__.
+  const PYENV = Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' });
+  const tmp = fs.mkdtempSync(path.join(osmod.tmpdir(), 'nf-0026-'));
+  const today = new Date().toISOString().slice(0, 10);
+  const write = (p, s) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); };
+
+  try {
+    // ---- #1: the fetcher records a download date for each page it writes.
+    // requests.get is stubbed, so this downloads nothing; what is checked is the
+    // artefact left beside the cached HTML.
+    const raw1 = path.join(tmp, 'raw1');
+    const stub = [
+      'import importlib.util, os, sys',
+      'raw = sys.argv[1]',
+      'spec = importlib.util.spec_from_file_location("nf_fetch", os.path.join("scripts", "fetch.py"))',
+      'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+      'm.RAW = raw',
+      'm.PAGES = os.path.join(raw, "pages")',
+      'm.FLS_DIR = os.path.join(raw, "fls")',
+      'm.FLS_PAGES = os.path.join(m.FLS_DIR, "pages")',
+      'm.DELAY = 0',
+      'os.makedirs(m.PAGES, exist_ok=True); os.makedirs(m.FLS_PAGES, exist_ok=True)',
+      'class R:',
+      '    text = "<html>a page</html>"',
+      '    encoding = "utf-8"',
+      '    def raise_for_status(self): pass',
+      'm.get = lambda url, **kw: R()',
+      'm.requests.get = lambda url, **kw: R()',
+      'n = sys.argv[2]',
+      'print(m.fetch_page({"slug": "a-forest" + n, "url": "https://www.forestryengland.uk/x"}, 0, 1))',
+      'print(m.fetch_fls_page({"slug": "a-glen" + n, "url": "https://forestryandland.gov.scot/visit/destinations/x"}))',
+    ].join('\n');
+    // Twice, in two processes, because the fetcher is resumable: the second run must add
+    // to the index rather than replace it, or every page fetched before today loses its
+    // date the next time somebody resumes an interrupted scrape.
+    const r1 = spawnSync(PY, ['-c', stub, raw1, ''], { cwd: ROOT, encoding: 'utf8', env: PYENV });
+    spawnSync(PY, ['-c', stub, raw1, '-2'], { cwd: ROOT, encoding: 'utf8', env: PYENV });
+    const idxPath = path.join(raw1, 'fetched.json');
+    const wroteHtml = fs.existsSync(path.join(raw1, 'pages', 'a-forest.html')) &&
+                      fs.existsSync(path.join(raw1, 'fls', 'pages', 'a-glen.html'));
+    let idx = null;
+    if (fs.existsSync(idxPath)) { try { idx = JSON.parse(fs.readFileSync(idxPath, 'utf8')); } catch (e) { idx = null; } }
+    const want = ['pages/a-forest.html', 'pages/a-forest-2.html',
+                  'fls/pages/a-glen.html', 'fls/pages/a-glen-2.html'];
+    ok('fetch records a download date alongside every cached page',
+       wroteHtml && idx !== null && want.every(k => idx[k] === today),
+       !wroteHtml ? `the stub fetch wrote no page: ${(r1.stderr || '').trim().split('\n').slice(-3).join(' / ')}`
+       : idx === null ? 'the fetcher wrote the pages but left no data/raw/fetched.json to read a date back from'
+       : `fetched.json = ${JSON.stringify(idx)}, wanted all four pages dated ${today}`);
+
+    // ---- #2 and #3: the parser reads that date back, per page.
+    // A copy of parse.py in a fixture tree, because parse.py derives its ROOT from
+    // its own location, and the three dates differ from each other and from today.
+    const fx = path.join(tmp, 'fixture');
+    const FE_DATE = '2026-08-08', FLS_DATE = '2026-08-20', CP_DATE = '2026-08-25';
+    fs.mkdirSync(path.join(fx, 'scripts'), { recursive: true });
+    fs.copyFileSync(path.join(ROOT, 'scripts', 'parse.py'), path.join(fx, 'scripts', 'parse.py'));
+    const rawf = path.join(fx, 'data', 'raw');
+    write(path.join(rawf, 'index.json'), JSON.stringify([{
+      id: '1', name: 'Test Forest', slug: 'test-forest',
+      url: 'https://www.forestryengland.uk/test-forest', lat: 51.0, lng: -1.0 }]));
+    write(path.join(rawf, 'pages', 'test-forest.html'), '<html><body>Test Forest</body></html>');
+    write(path.join(rawf, 'fls', 'index.json'), JSON.stringify([{
+      slug: 'test-glen', name: 'Test Glen',
+      url: 'https://forestryandland.gov.scot/visit/destinations/test-glen', lat: 56.5, lng: -4.0 }]));
+    write(path.join(rawf, 'fls', 'pages', 'test-glen.html'), '<html><body>Test Glen</body></html>');
+    write(path.join(rawf, 'carparks.json'), JSON.stringify({ features: [{
+      attributes: { OBJECTID: 1, asset_name: 'Beacon Hill', category: 'Car Parks',
+                    area_asset_type: 'Gravel', status: 'Permanent - Official', cots_district_id: 'X' },
+      centroid: { x: -1.1, y: 51.1 } }] }));
+    const dated = {
+      'pages/test-forest.html': FE_DATE,
+      'fls/pages/test-glen.html': FLS_DATE,
+      'carparks.json': CP_DATE,
+    };
+    write(path.join(rawf, 'fetched.json'), JSON.stringify(dated));
+
+    const runParse = () => spawnSync(PY, [path.join(fx, 'scripts', 'parse.py')],
+                                     { cwd: fx, encoding: 'utf8', env: PYENV });
+    const r2 = runParse();
+    const outPath = path.join(fx, 'app', 'data', 'sites.json');
+    let built = null;
+    if (r2.status === 0 && fs.existsSync(outPath)) built = JSON.parse(fs.readFileSync(outPath, 'utf8'));
+    const stamp = (id) => built && (built.sites.find(s => s.id === id) || {}).scraped_at;
+    ok("scraped_at is the page's download date, not the parse date",
+       !!built && stamp('fe-test-forest') === FE_DATE && stamp('fls-test-glen') === FLS_DATE &&
+       stamp('cp-1') === CP_DATE,
+       !built ? `parse.py exited ${r2.status}: ${(r2.stdout || '').trim().split('\n').slice(-4).join(' / ')}`
+       : `England ${stamp('fe-test-forest')} (wanted ${FE_DATE}), Scotland ${stamp('fls-test-glen')} ` +
+         `(wanted ${FLS_DATE}), car park ${stamp('cp-1')} (wanted ${CP_DATE}); today is ${today}`);
+
+    // The migration case, and the one that must never be papered over: data/raw/ is
+    // gitignored, so every page cached before this change carries no date and its age
+    // is unknowable. Stamping today would be the original bug wearing a new coat.
+    delete dated['pages/test-forest.html'];
+    write(path.join(rawf, 'fetched.json'), JSON.stringify(dated));
+    const r3 = runParse();
+    const said = ((r3.stdout || '') + (r3.stderr || '')).includes('pages/test-forest.html');
+    ok('parse fails loudly on a cached page with no download date',
+       r3.status !== 0 && said,
+       r3.status === 0 ? 'parse.py exited 0 on a page with no recorded download date'
+                       : `exited ${r3.status} but never named pages/test-forest.html`);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 console.log('\n--- ranking from Brighton ---');
 const rankedF = NF.rank(sites, 'forest', BRIGHTON, '');
 const rankedC = NF.rank(sites, 'carpark', BRIGHTON, '');

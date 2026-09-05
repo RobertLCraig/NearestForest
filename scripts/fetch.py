@@ -4,8 +4,9 @@
 Re-running costs zero requests for anything already cached, so the parser can be
 iterated on without touching forestryengland.uk again.
 """
-import json, os, re, sys, time, html
+import json, os, re, sys, threading, time, html
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import date
 import requests
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,6 +40,36 @@ EXPECT_MIN_FLS = 250      # 278 published on 2026-08-29
 
 failures = []
 
+# ------------------------------------------------------------------ download dates (card 0026)
+# One JSON index under data/raw/, mapping each cached file to the date it was downloaded,
+# so parse.py can stamp a record with the age of the page behind it rather than with the
+# date the parser happened to run. It has to be written here, at the moment of the
+# request, because nothing downstream can recover it: re-parsing the cache costs zero
+# requests and is the intended way to work, and a file modification time is rewritten by
+# any copy of the tree, including a build worktree.
+FETCHED = "fetched.json"
+_dates_lock = threading.Lock()
+_dates = {}
+
+
+def record_fetch(path):
+    """Record today as the download date of a file just written into data/raw/.
+
+    Keyed by the path relative to data/raw/ with forward slashes, so an index written on
+    Windows reads the same on the server. Rewritten after every page rather than once at
+    the end: a run that dies half way leaves cached HTML on disk, and HTML whose date was
+    never recorded is HTML the parser has to reject for ever.
+    """
+    rel = os.path.relpath(path, RAW).replace(os.sep, "/")
+    idx = os.path.join(RAW, FETCHED)
+    with _dates_lock:
+        if not _dates and os.path.exists(idx):
+            _dates.update(json.load(open(idx, encoding="utf-8")))
+        _dates[rel] = date.today().isoformat()
+        with open(idx + ".tmp", "w", encoding="utf-8") as fh:
+            json.dump(_dates, fh, indent=1, sort_keys=True)
+        os.replace(idx + ".tmp", idx)     # never leave a half-written index behind
+
 
 def log(msg):
     print(msg, flush=True)
@@ -60,6 +91,7 @@ def fetch_index():
     else:
         h = get(SEARCH).text
         open(path, "w", encoding="utf-8").write(h)
+        record_fetch(path)
         log(f"      downloaded ({len(h):,} bytes)")
 
     forests = []
@@ -105,6 +137,7 @@ def fetch_page(f, i, total):
         time.sleep(DELAY)
         r = get(f["url"])
         open(path, "w", encoding="utf-8").write(r.text)
+        record_fetch(path)
         return ("ok", f["slug"], len(r.text))
     except Exception as e:
         return ("fail", f["slug"], f"{type(e).__name__}: {e}")
@@ -153,6 +186,7 @@ def fetch_fls_index():
         r.raise_for_status()
         r.encoding = "utf-8"        # Gaelic diacritics; never let requests guess
         open(path, "w", encoding="utf-8").write(r.text)
+        record_fetch(path)
         h = r.text
         log(f"      downloaded ({len(h):,} bytes)")
 
@@ -197,6 +231,7 @@ def fetch_fls_page(d):
         r.raise_for_status()
         r.encoding = "utf-8"
         open(path, "w", encoding="utf-8").write(r.text)
+        record_fetch(path)
         return ("ok", d["slug"], len(r.text))
     except Exception as e:
         return ("fail", d["slug"], f"{type(e).__name__}: {e}")
@@ -241,7 +276,9 @@ def fetch_carparks():
     if not feats:
         log("FAIL: car park query returned zero features.")
         sys.exit(1)
-    json.dump(d, open(os.path.join(RAW, "carparks.json"), "w", encoding="utf-8"))
+    cp_path = os.path.join(RAW, "carparks.json")
+    json.dump(d, open(cp_path, "w", encoding="utf-8"))
+    record_fetch(cp_path)
     log(f"      {len(feats)} car park features saved")
     return feats
 

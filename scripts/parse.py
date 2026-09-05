@@ -15,6 +15,14 @@ FLS_PAGES = os.path.join(RAW, "fls", "pages")
 OUT = os.path.join(ROOT, "app", "data", "sites.json")
 TODAY = date.today().isoformat()
 
+# ------------------------------------------------ download dates (card 0026)
+# fetch.py records the date it downloaded each file into data/raw/fetched.json, and
+# `scraped_at` comes from there rather than from the clock. Re-parsing the cache costs
+# zero requests and is the intended way to work, so a parse-time stamp made the whole
+# dataset look a day old however old the HTML behind it was.
+FETCHED = os.path.join(RAW, "fetched.json")
+fetched = json.load(open(FETCHED, encoding="utf-8")) if os.path.exists(FETCHED) else {}
+
 # Bounding box per country, used as a tripwire against unprojected British National Grid.
 # The file now carries England and Scotland, so the assertion covers Great Britain, but it
 # is kept per country rather than widened to one loose GB box: a car park is the record
@@ -72,6 +80,23 @@ fls_coord_deltas = []
 
 def log(m):
     print(m, flush=True)
+
+
+def fetched_on(rel):
+    """The date fetch.py recorded for a cached file, keyed as it keys it: relative to
+    data/raw/, forward slashes.
+
+    Never falls back to today. data/raw/ is gitignored and holds pages cached before any
+    date was recorded, and the age of one of those is not recoverable: a modification
+    time is rewritten by any copy of the tree. So the page is named and the build fails,
+    which is this project's rule and is also the only honest answer.
+    """
+    d = fetched.get(rel)
+    if not d:
+        problems.append("no recorded download date for %s; it was cached before fetch.py "
+                        "recorded dates, so re-fetch it (delete it from data/raw/ and "
+                        "re-run scripts/fetch.py)" % rel)
+    return d
 
 
 def haversine_mi(a_lat, a_lng, b_lat, b_lng):
@@ -263,7 +288,8 @@ def build_forests():
     index = json.load(open(os.path.join(RAW, "index.json"), encoding="utf-8"))
     sites = []
     for f in index:
-        path = os.path.join(PAGES, f["slug"].replace("/", "__") + ".html")
+        cached = "pages/" + f["slug"].replace("/", "__") + ".html"
+        path = os.path.join(RAW, cached)
         if not os.path.exists(path):
             problems.append("missing page file for %s" % f["slug"])
             continue
@@ -337,7 +363,7 @@ def build_forests():
             "parking": parking,
             "facilities": fac,
             "category": None, "surface": None, "status": None, "district": None,
-            "scraped_at": TODAY,
+            "scraped_at": fetched_on(cached),
         })
     return sites
 
@@ -435,7 +461,8 @@ def build_fls():
         if RE_CLOSED_TITLE.search(d["name"]):
             fls_notes["closed"] += 1
             continue
-        path = os.path.join(FLS_PAGES, d["slug"] + ".html")
+        cached = "fls/pages/" + d["slug"] + ".html"
+        path = os.path.join(RAW, cached)
         if not os.path.exists(path):
             problems.append("missing FLS page file for %s" % d["slug"])
             continue
@@ -498,7 +525,7 @@ def build_fls():
             "parking": parking,
             "facilities": fac,
             "category": None, "surface": None, "status": None, "district": None,
-            "scraped_at": TODAY,
+            "scraped_at": fetched_on(cached),
         })
     return sites
 
@@ -546,6 +573,9 @@ def name_after_nearest_forest(pending, forests):
 
 def build_carparks():
     d = json.load(open(os.path.join(RAW, "carparks.json"), encoding="utf-8"))
+    # One query answers for every car park, so they share one download date. Asked once,
+    # so a missing one is reported once rather than 630 times.
+    stamp = fetched_on("carparks.json")
     sites, pending = [], []
     for feat in d.get("features", []):
         a = feat.get("attributes", {})
@@ -572,7 +602,7 @@ def build_carparks():
             "surface": a.get("area_asset_type"),
             "status": st,
             "district": a.get("cots_district_id"),
-            "scraped_at": TODAY,
+            "scraped_at": stamp,
         }
         sites.append(rec)
         if derived:

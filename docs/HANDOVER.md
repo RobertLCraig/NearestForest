@@ -13,7 +13,9 @@ one ranked list.** Car parks is still England only, because no open dataset of S
 parks exists. Map complete (bundled outline plus optional tiles).
 **Cards 0004 and 0015 were also built on 2026-08-29**: the 177 car parks with no usable upstream
 name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
-**Two agent-ready cards are open**, 0026 and 0028; fourteen cards await an adversarial pass in
+**Card 0026 was built on 2026-09-05**: `scraped_at` is now the date the page was downloaded, not the
+date the parser ran, and the pipeline is red until `data/raw/` is re-fetched. See "What's next" 2.
+**Two agent-ready cards are open**, 0028 and 0029; fourteen cards await an adversarial pass in
 `ai-review/`; the last
 unevidenced PRD criterion is card **0001** check 5, and Scotland has added a third reason to run it.
 **Seven cards wait on a person**: 0018 split into the choice (0018) and the send (0027) on 2026-09-05.
@@ -24,7 +26,11 @@ published wording, credits the OGL *and* the Forestry Commission's own copyright
 car park data, and no longer claims personal use. `CACHE` and `BUILD` are at `v16-2026-09-05`.
 **A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
 done. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-05 (four unattended worktree runs. 0024: cards 0018 and 0020 were two and a
+_Last updated: 2026-09-05 (five unattended worktree runs. 0026: `scraped_at` now comes from
+`data/raw/fetched.json`, which `fetch.py` writes as it downloads, and a page cached before that index
+existed fails the build by name rather than being stamped with today. It raised 0029, because the
+failing parse that proved it also overwrote the good `sites.json` before exiting. Earlier:
+0024: cards 0018 and 0020 were two and a
 half times the board's 100-line budget and are now 100 each. 0018's three cold reviews and its ask
 menu moved verbatim to `docs/outreach/forestry-england-enquiry-review.md`; its send became card 0027,
 because its two append-only logs are 53 of the 100 lines. 0020's measurements moved into DATA-MODEL,
@@ -223,6 +229,10 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   cache name already versions it, so HTTP-caching code and data buys nothing and breaks updates for
   the reason above. Only images carry a long max-age. Do not "optimise" this back.
 - `scripts/fetch.py` — resumable and cached; re-running costs zero requests for pages already held.
+  **It records the download date of every file it saves into `data/raw/fetched.json`** (card 0026),
+  rewritten after each page so an interrupted run still leaves dated HTML. That index is the only
+  honest source of a page's age: a modification time is rewritten by any copy of the tree, and a
+  build worktree is a copy.
 - `scripts/parse.py` — the only place the HTML shape is understood, for **both** forest sites.
   Exits non-zero rather than emitting a partial dataset. `build_forests()` reads Drupal field divs,
   `build_fls()` cuts sections out by heading, and `COUNTRY_RANGE` keeps the England box tight while
@@ -375,9 +385,15 @@ The queue is [docs/board/](board/), one card per file. At the head:
    `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
    about 190 KB and the Forests tab doubled, so a cold offline launch is now testing more than it was.
-2. **Cards 0026 and 0028, the agent-ready ones.** 0026: `scraped_at` is stamped when the parser runs,
-   so re-parsing the cached scrape reports the data as fresher than it is. 0028: one line in 0026's
-   own `## Links`, which is the only thing keeping the board's convention check off zero.
+2. **Re-fetch `data/raw/`, because card 0026 made the parser refuse it.** `scraped_at` is now the
+   date `fetch.py` downloaded the page, read back from `data/raw/fetched.json`, and a page cached
+   before that index existed has an age nobody can recover. So `python scripts/parse.py` names those
+   552 pages and exits 1, which is the change working. Until somebody deletes `data/raw/` and re-runs
+   `scripts/fetch.py`, `app/data/sites.json` keeps the stamps it has. **A re-fetch also refreshes the
+   data**, so it is a dataset change to look at, not a formality. Card **0029** is worth doing first:
+   a failing parse currently overwrites the good `sites.json` before it exits.
+   **0028** is still open: one line in 0026's own `## Links`, and the only thing keeping the board's
+   convention check off zero.
 3. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
    still does not exist. The 2026-08-14 screenshots show it ("Bedgebury National Pi…" over "Hemsted
    Fores…"). Worth
@@ -403,10 +419,10 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**: 0026, which
-makes `scraped_at` report the date a page was fetched rather than the date the parser ran, and 0028,
-which puts the board's convention check back to zero. Otherwise what remains is the adversarial pass
-over `ai-review/`. Seven cards need Rob, and they fit in one conversation:
+See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**: 0029, which
+stops a failing parse overwriting the good dataset, and 0028, which puts the board's convention check
+back to zero. Otherwise what remains is the adversarial pass over `ai-review/` and the re-fetch that
+card 0026 left. Seven cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
@@ -460,6 +476,12 @@ cd C:/Dev/NearestForest
 
 # Rebuild the dataset from scratch. Every fetcher is resumable and skips anything already cached;
 # a cold run is ~2 minutes and reports failures explicitly.
+#
+# THIS FAILS TODAY, AND IT IS MEANT TO. Since card 0026, parse.py takes scraped_at from
+# data/raw/fetched.json, which fetch.py writes as it downloads. Pages cached before that index
+# existed carry no date, so parse.py names them and exits 1 rather than stamping them with today.
+# Clear the cache first, which costs a full re-fetch and also refreshes the data:
+#   rm -rf data/raw && python scripts/fetch.py
 python scripts/fetch.py && python scripts/parse.py && python scripts/build_boundary.py
 
 # The campsite half, which is a separate pipeline over a separately licensed source.

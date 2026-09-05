@@ -30,22 +30,23 @@ recorded date honest and nothing more. Not re-fetching anything.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `scripts/fetch.py` writes a page into `data/raw/`, THE FETCHER SHALL record the date it
+- [x] #1 WHEN `scripts/fetch.py` writes a page into `data/raw/`, THE FETCHER SHALL record the date it
       downloaded that page, in a form the parser can read back per page. proves: `fetch records a
       download date alongside every cached page`
-- [ ] #2 WHEN `scripts/parse.py` builds a record from a cached page, THE PARSER SHALL set
+- [x] #2 WHEN `scripts/parse.py` builds a record from a cached page, THE PARSER SHALL set
       `scraped_at` to that page's recorded download date rather than to today. proves: `scraped_at is
       the page's download date, not the parse date`
-- [ ] #3 WHEN a cached page has no recorded download date, because it was cached before this change,
+- [x] #3 WHEN a cached page has no recorded download date, because it was cached before this change,
       THE PARSER SHALL fail loudly and name the page rather than falling back to today. proves:
       `parse fails loudly on a cached page with no download date`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Have `fetch.py` record a per-page download date beside the cached HTML
-- [ ] Have `parse.py` read it back and use it for `scraped_at`, for both the English and Scottish builds
-- [ ] Make a missing date a loud failure, never a silent fallback to today
-- [ ] Re-run the pipeline and close the divergence in `docs/DATA-MODEL.md`
+- [x] Have `fetch.py` record a per-page download date beside the cached HTML
+- [x] Have `parse.py` read it back and use it for `scraped_at`, for both the English and Scottish builds
+- [x] Make a missing date a loud failure, never a silent fallback to today
+- [ ] Re-run the pipeline and close the divergence in `docs/DATA-MODEL.md` - divergence closed, pipeline
+      not re-run, because re-running it means re-fetching and `## Not this card` forbids that
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. Only `scripts/fetch.py`,
@@ -71,3 +72,53 @@ was downloaded rather than the date you ran the parser.
 ## Comments
 **2026-09-05** Raised from card 0023, which folded the note out of HANDOVER's prose and into
 DATA-MODEL's divergences. 0023 did not fix it; the fault is exactly as card 0004 first measured it.
+
+**2026-09-05** RESULT: done
+TESTS: +3 new, all green (222 passed, 0 failed)
+TOUCHED: scripts/fetch.py, scripts/parse.py, scripts/selftest.js, docs/DATA-MODEL.md,
+docs/HANDOVER.md, docs/board/todo/0029-a-failed-parse-overwrites-the-dataset-it-just-refused.md,
+this card
+OUT-OF-SCOPE: 0029
+
+Built as the Plan proposed. `fetch.py` gains `record_fetch()`, which writes `data/raw/fetched.json`,
+one JSON object mapping each cached file to the date it was downloaded, keyed by the path relative
+to `data/raw/` with forward slashes so it reads the same on the server. It is rewritten after every
+page rather than once at the end, through a temporary file and `os.replace`, because a run that dies
+half way leaves cached HTML on disk and HTML whose date was never written is HTML the parser must
+reject for ever. Five call sites record: both index pages, both page fetchers, and `carparks.json`.
+`parse.py` gains `fetched_on()`, and the three `TODAY` stamps at the old lines 340, 501 and 575 now
+read that index. Car parks ask once for the whole file, since one ArcGIS query answers for all 630,
+so a missing date there is one problem rather than 630.
+
+**The three tests drive the real Python scripts, not a copy of their logic.** The suite is node and
+the pipeline is Python, so each test spawns `python` against a synthetic tree in `os.tmpdir()`:
+criterion 1 calls the real `fetch_page` and `fetch_fls_page` with `requests.get` stubbed, so it
+downloads nothing and asserts on the index left behind; criteria 2 and 3 copy `parse.py` into a
+fixture root with one English page, one Scottish page and one car park, dated `2026-08-08`,
+`2026-08-20` and `2026-08-25`, three dates that are not each other and are not today. Nothing in the
+suite touches `data/raw/` or the committed `sites.json`. All three were watched failing first, each
+for its own criterion's reason: no `fetched.json` written; all three stamps reading today; and
+`parse.py` exiting 0 on a page with no date. **The first test fetches twice, in two processes**,
+because the fetcher is resumable and a second run that replaced the index rather than adding to it
+would silently drop the date of every page fetched before it. That was watched failing too, by
+disabling the merge.
+
+**The pipeline is red in this repository and that is the change working, not a regression.**
+`data/raw/` is gitignored and its 552 pages were cached before any date was recorded, so
+`python scripts/parse.py` now names them and exits 1. Verified: it did, listing
+`pages/hicks-lodge.html` and 1,703 others. Their age is not recoverable and a modification time is
+not a substitute, since this worktree is itself a copy and every file in it is dated today. So
+`app/data/sites.json` still carries `2026-08-29` on all 1,180 records and cannot honestly be rebuilt
+until `data/raw/` is re-fetched, which `## Not this card` rules out and which would change the data
+as well as the dates. That is written into DATA-MODEL as an open divergence beside the closed one,
+and it is the reason the fourth task is left open. **Whoever re-fetches gets the honest dates, and
+until then the shipped file is unchanged rather than freshly wrong.**
+
+`docs/HANDOVER.md` is one file more than the Plan listed, and deliberately: "How to pick up" still
+told a fresh session to run a pipeline that now exits 1, and a red step nobody warned about reads as
+a broken repository. Four short edits, all about that.
+
+Raised `0029`: running the failing parse to check criterion 3 overwrote `app/data/sites.json` with
+`"scraped_at": null` on every record before the exit, because both parsers write their output and
+check `problems` afterwards. It was restored with `git checkout`. `parse_campsites.py` has the same
+ordering, so the card covers both.

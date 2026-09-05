@@ -41,7 +41,7 @@ See the campsites section below before changing that.
 | `surface` | string | — | yes | Car parks only, from upstream `area_asset_type`, e.g. `Gravel`, `Tarmac`, `Grass`. |
 | `status` | enum | — | yes | Car parks only. `Permanent - Official` \| `Permanent - Unofficial` \| `Seasonal - Official` \| `Seasonal - Unofficial` \| `Temporary`. |
 | `district` | string | — | yes | Car parks only, upstream `cots_district_id`. |
-| `scraped_at` | string | — | no | ISO-8601 date the record's source was last read. Makes staleness visible. |
+| `scraped_at` | string | — | no | ISO-8601 date `fetch.py` **downloaded** the page behind the record, read back from `data/raw/fetched.json`. Never the date the parser ran. Makes staleness visible. |
 
 ### opening_summary — nested, nullable
 
@@ -163,17 +163,33 @@ shape, no new fields beyond `country`, and nothing in the app branches on where 
      September): 8am - 10pm" reads as closing at 08:00. It is currently harmless because such
      records come out as `partial`, and the app shows raw text below `parsed`, so no wrong badge is
      ever displayed. It becomes harmful the moment anything starts trusting `closes` directly.
-- **`scraped_at` is stamped when the parser runs, not when the page was fetched.** `scripts/parse.py`
-  writes today's date on every run, so re-parsing a cached scrape reports the data as fresher than it
-  is: on 2026-08-29 all 904 records read `2026-08-29` while the HTML behind them was fetched on
-  2026-08-08. The honest value is the fetch date, which `fetch.py` would have to record. Found by
-  card 0004 and outside its scope; card **0026** carries it.
+- **The committed `sites.json` still carries parse-date stamps, and only a re-fetch clears them.**
+  The generator was fixed by card 0026 (see Closed below), but the file in the repository was built
+  before that, so all 904 records still read `2026-08-29` while the English HTML behind them was
+  downloaded on `2026-08-08`. It cannot be rebuilt from the cache that is on disk: those pages were
+  cached before any date was recorded and their age is not recoverable, so `scripts/parse.py` now
+  refuses them by name and exits non-zero. **The pipeline is therefore red until `data/raw/` is
+  re-fetched**, which card 0026 held out of its own scope because a re-fetch also changes the data.
 - **`CFD-` asset codes are still shown as names.** About 68 car parks are published under an internal
   code such as `CFD-THH-CAR PARK` or `CFD-SAL- Car Park 2`. They are a real upstream value, so the
   derived-name rule below leaves them alone, but they read as machine output in a list. Out of scope
   for card 0004, which scoped itself to the "Unknown" and bare-"Car Park" records; worth its own card.
 
 ### Closed
+
+- ~~**`scraped_at` is stamped when the parser runs, not when the page was fetched.**~~ Closed
+  2026-09-05 by card 0026, in the generator. `scripts/fetch.py` writes the download date of every
+  file it saves into **`data/raw/fetched.json`**, keyed by the path relative to `data/raw/` with
+  forward slashes, rewritten after each page so a run that dies half way still leaves dated HTML.
+  `scripts/parse.py` reads that index and stamps each record with the date of the page behind it:
+  the English page, the Scottish page, or `carparks.json` for all 630 car parks, since one query
+  answers for the lot.
+  **A page with no recorded date is named and the build fails.** It is never given today's date,
+  which was the bug: re-parsing the cache costs zero requests and is the intended way to work, so a
+  parse-time stamp made the whole dataset look a day old whatever the age of the HTML. A file
+  modification time is not a substitute either, because any copy of the tree rewrites it and a build
+  worktree is a copy. Three self-tests cover it, all driving the real Python scripts in a temporary
+  tree. **What is not closed is the shipped file**: see the open divergence above.
 
 - ~~**Car parks have no parent forest.**~~ Closed 2026-08-29 by card 0004. The open data still
   carries no link, so `scripts/parse.py` joins each unusable-name car park to its **nearest forest
