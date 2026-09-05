@@ -163,6 +163,11 @@ shape, no new fields beyond `country`, and nothing in the app branches on where 
      September): 8am - 10pm" reads as closing at 08:00. It is currently harmless because such
      records come out as `partial`, and the app shows raw text below `parsed`, so no wrong badge is
      ever displayed. It becomes harmful the moment anything starts trusting `closes` directly.
+- **`scraped_at` is stamped when the parser runs, not when the page was fetched.** `scripts/parse.py`
+  writes today's date on every run, so re-parsing a cached scrape reports the data as fresher than it
+  is: on 2026-08-29 all 904 records read `2026-08-29` while the HTML behind them was fetched on
+  2026-08-08. The honest value is the fetch date, which `fetch.py` would have to record. Found by
+  card 0004 and outside its scope; card **0026** carries it.
 - **`CFD-` asset codes are still shown as names.** About 68 car parks are published under an internal
   code such as `CFD-THH-CAR PARK` or `CFD-SAL- Car Park 2`. They are a real upstream value, so the
   derived-name rule below leaves them alone, but they read as machine output in a list. Out of scope

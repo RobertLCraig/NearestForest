@@ -13,7 +13,7 @@ one ranked list.** Car parks is still England only, because no open dataset of S
 parks exists. Map complete (bundled outline plus optional tiles).
 **Cards 0004 and 0015 were also built on 2026-08-29**: the 177 car parks with no usable upstream
 name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
-**No agent-ready card is left**; twelve cards await an adversarial pass in
+**One agent-ready card is open**, 0026, raised by 0023; fourteen cards await an adversarial pass in
 `ai-review/`; the last
 unevidenced PRD criterion is card **0001** check 5, and Scotland has added a third reason to run it.
 **Six cards wait on a person**, one fewer than before, because 0016 is answered and built.
@@ -246,6 +246,11 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   Reads the same ranked list the rows are built from, so the two cannot disagree about what is
   shown. **Tiles draw over the outline, never instead of it**, so a failed or offline tile reveals
   the coastline rather than a grey hole; a self-test asserts that draw order.
+  **The tile attribution carries its own modifier, `.map__hint--attrib`**, toggled on the same line
+  of `setTiles` that swaps the text: white on `rgba(0,0,0,.72)`, a pill that hugs the text, dark
+  `text-shadow` cleared. **`.72` is not a taste call and must not be lightened**: a pure white tile
+  composites the pill to `rgb(71)`, so white on it is 9.29:1, and that bounds the worst case at
+  every zoom without anyone sampling a basemap.
 - `app/api/tiles.php` — Thunderforest proxy. Exists so the key never reaches the browser, since this
   repo is public. Whitelists styles, range-checks z/x/y, and never echoes `curl_error` because that
   string embeds the request URL and the URL carries the key. **Access control is `Sec-Fetch-Site`
@@ -309,64 +314,16 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   degradation, so its 515 KB re-parse per request is **not** a DoS lever and does not need caching;
   and the `%{HTTP_HOST}` open-redirect shape in `.htaccess` was tested and is not reachable, since
   an unknown `Host` 404s before the rewrite runs. It was replaced with a literal anyway.
-- **Built this session:** the **Campsites** tab, card 0020. 3,681 sites across England (2,612),
-  Scotland (505) and Wales (564), every one named and explicitly able to take a caravan or a
-  motorhome, including all 44 of Forestry and Land Scotland's Stay the Night car parks with the
-  scheme's 6pm-to-10am rules shown on the record. Two new scripts, a new data file under a new
-  licence, 25 new self-tests. Driven in a browser at 390px rather than inferred: three tabs fit,
-  the list ranks, the detail sheet reads correctly, the map draws the whole of Great Britain, and
-  the service worker precaches the new file under one cache name.
-  **Two bugs were found by running it, both invisible in the code:** the same campsite appeared as
-  the first and second rows from Brighton, because OSM maps many sites as both a node and an area;
-  and the Stay the Night rules were labelled "Charges", so the sentence saying no tents are allowed
-  sat under a heading about money. Both fixed, the first with a self-test.
-- **Built 2026-08-29:** card **0004**, the derived car park names. `scripts/parse.py` grew a
-  nearest-forest join, `sites.json` was regenerated (never patched), the detail sheet and the map
-  label learned to mark a derived name, and 12 self-tests cover it. 186 self-tests pass.
-  **Two things it deliberately left alone, both now written into DATA-MODEL rather than fixed:**
-  about **68 car parks published as internal asset codes** (`CFD-THH-CAR PARK`) still show the code,
-  because a code is a real upstream value and the card scoped itself to Unknown-and-generic; and
-  **opening hours are still not inherited from the nearest forest**, because a gate time copied off a
-  forest five miles away is this project guessing a barrier is open.
-  **One thing it found and did not fix:** `parse.py` stamps `scraped_at` with today's date on every
-  run, so re-parsing an old cache says the data is fresher than it is. All 904 records now read
-  2026-08-29 while the HTML behind them is from 2026-08-08. The honest value is the fetch date, which
-  `fetch.py` would have to record. Worth a card.
-- **Also built 2026-08-29:** card **0015**, the tile attribution. `.map__hint` did two jobs with one
-  style, and the state that carries a licence obligation was the less readable of the two. It now
-  gets a modifier class, `.map__hint--attrib`, toggled on the same line of `setTiles` that swaps the
-  text: white on `rgba(0,0,0,.72)`, a pill that hugs the text rather than banding the map, with the
-  dark `text-shadow` cleared. **`.72` is not a taste call**: it bounds the worst case, since a pure
-  white tile composites the pill to `rgb(71)` and white on that is 9.29:1, so the contrast holds at
-  every zoom without anyone having to measure a basemap. 190 self-tests pass. `CACHE` and `BUILD`
-  are at `v13-2026-08-29`.
-  **Its acceptance #1 was closed by a second run the same day, which rendered it.** A worktree does
-  have a screen: Herd will not serve it, but `php -S 127.0.0.1:8791 -t app <router>` will, with a
-  throwaway router returning a pure white tile in place of `api/tiles.php`, whose key is on the
-  server. Measured at three widths: the pill wraps to **three** lines at 320 and 390, not the two
-  that was guessed, drops to two at 430, is centred to the pixel, and sits 44px above the bottom at
-  every width, so **a wrap grows it upward and never toward the home bar**. Tiles off is unchanged.
-  **Still owed: the same look on a real phone over real Thunderforest tiles**, which is the card's
-  one open task. The white tile bounds legibility rather than sampling it, and the safe-area inset
-  was simulated at 34px rather than reported by iOS.
-- **Also built 2026-08-29:** card **0016**, Scotland. `sites.json` grew from 904 records / 529 KB to
-  **1,180 records / 719 KB** (84 KB gzipped), and the Forests tab is one ranked list of 550 across
-  two agencies. 215 self-tests pass, 21 of them new.
-  **Three things the card's research did not predict**, all found by running it: the FLS sections sit
-  at different heading depths from page to page, so a parser pinned to `h3` found 63 of 269 sat-nav
-  postcodes; **only 7 of 276 Scottish sites publish opening hours at all**, so silence is the common
-  answer rather than the café trap; and `Puck's Glen (closed)` has the slug `pucks-glen`, so the
-  published title is the closed marker and the slug is not.
-  **The licence is the weak point and is worth an email.** Forestry and Land Scotland publishes no
-  copyright or re-use page: 1,195 URLs in its sitemap and none is one, and every page says "© Crown
-  Copyright" and names no licence. gov.scot's OGL offer is scoped to gov.scot. What carries the
-  position is The National Archives saying OGL is the default for Crown copyright, plus a
-  `robots.txt` that leaves `/visit/` alone and no terms page to breach. Open, but on policy rather
-  than on a first-party offer. See DECISIONS 2026-08-29. **The app was already shipping FLS website
-  content before this card** (the 44 Stay the Night records) with no licence recorded at all.
-  **Rendered at 390px, not inferred**: "Allt na Crìche" keeps its accent, Scottish rows show no
-  open/closed badge, and Glentrool's sheet shows the café sentence as published text under OPENING
-  TIMES with no badge. Still owed: a real phone, and the offline check.
+- **Built 2026-08-15:** the **Campsites** tab, card 0020, from OpenStreetMap plus Forestry and Land
+  Scotland's Stay the Night scheme — a second data file under a second licence.
+- **Built and not yet deployed, as one batch:** **0004** (177 car parks named after their nearest
+  forest) and **0016** (Scotland in the Forests tab), both 2026-08-29; **0015** (the tile
+  attribution pill), 2026-08-29, rendered and closed by a second run the same day; **0019** and
+  **0022** (the footer credits), both 2026-09-05. 219 self-tests pass and `CACHE` / `BUILD` are at
+  `v16-2026-09-05`. See "What's next" item 1 for what is still owed before they ship.
+  **What each card measured, found and deliberately left alone is on its own comment thread** in
+  `ai-review/`; the facts that outlived the build are in DATA-MODEL and DECISIONS, and the FLS
+  licence gap 0016 left for a person is in Blockers below.
 - **In progress:** nothing.
 - **Known bugs / broken:** none open, but the most serious one yet was found and fixed this
   session, by Rob running the offline check rather than by anyone reading the code.
@@ -435,8 +392,9 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **No agent-ready card is left**: 0022 was the
-last one, and what remains is the adversarial pass over `ai-review/`. Six cards need Rob, and they
+See [docs/board/human-review/](board/human-review/). **One agent-ready card is open**: 0026, raised
+by 0023, which makes `scraped_at` report the date a page was fetched rather than the date the parser
+ran. Otherwise what remains is the adversarial pass over `ai-review/`. Six cards need Rob, and they
 fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
