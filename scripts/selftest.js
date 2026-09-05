@@ -612,6 +612,14 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // The app is public and heading for a store listing, so a personal-use claim states a
   // licence basis that does not match what is happening. OGL is the real basis.
   ok('the footer makes no personal-use claim', !/personal use/i.test(indexhtml));
+
+  // Card 0022. The car park dataset does publish its own attribution statement, in
+  // copyrightText on the FeatureServer (DECISIONS 2026-08-15), so the same rule 0019
+  // applied to Forestry England applies here: the licence alone is not the credit.
+  // The (c) symbol is left out of the match on purpose -- HTML has two spellings of it
+  // and neither one is the obligation; the holder's name and the statement are.
+  ok('the footer names the copyright holder of the car park data',
+     flat.includes('Forestry Commission copyright and/or database right 2025. All rights reserved.'));
 }
 
 console.log('');
