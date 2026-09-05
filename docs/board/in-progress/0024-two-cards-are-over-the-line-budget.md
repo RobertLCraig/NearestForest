@@ -281,3 +281,19 @@ reported on every run, `0026 todo unexplained link: 0023`, in a card this sessio
 `0028` is still sitting unbuilt in `todo/`, so nothing about `#4` could have moved since the last run.
 
 `#4` is a dependency on `0028`, not open work here. Close this card at 3/4.
+
+**2026-09-05**
+RESULT: partial
+TESTS: +0 new, all green. All four criteria are `proves: none`. `node scripts/selftest.js`: 219
+passed, 0 failed. No `vendor\bin\pest.bat`, no `pint.bat`, no `composer.json` in this project.
+TOUCHED: docs/board/in-progress/0024-two-cards-are-over-the-line-budget.md
+OUT-OF-SCOPE: none - `0028` is open in `todo/` and is the whole of the `#4` blocker
+
+Sixth run, and the shortest, for the reason the fourth and fifth gave: this card is about cards that
+grew by append.
+
+Re-measured: `0018` is 100 lines, `0020` is 100 lines. `#4` reports the same one failure it has
+reported on every run, `0026 todo unexplained link: 0023`. `0028` is still unbuilt in `todo/`, so
+nothing about `#4` could have moved. `#4` is a dependency, not open work here.
+
+Six runs, one finding. Close this card at 3/4 rather than schedule a seventh.
