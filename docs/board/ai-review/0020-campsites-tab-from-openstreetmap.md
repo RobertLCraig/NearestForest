@@ -1,5 +1,6 @@
 ---
 needs: 0016
+no_outward_effect: "publishes" in criterion #2 is what OpenStreetMap holds about a campsite, not a deploy
 ---
 # A Campsites tab: where you can pull up a campervan, across England, Scotland and Wales
 
@@ -12,6 +13,23 @@ covers Great Britain rather than England.
 The app already answers "where is the nearest forest". It cannot answer "where can I sleep tonight",
 which is the question a campervan actually has, and the one that matters most in exactly the
 dead-signal places this app was built for.
+
+## Links
+
+**Blocked by**
+- `0016` - it measured that the Forestry and Land Scotland destinations index carries every
+  destination's coordinates in one HTML attribute, which is how the 44 Stay the Night car parks get
+  a position for two requests instead of forty-four.
+
+**Relates to**
+- `0004` - the 1,512 unnamed campsites are the same defect it fixes for car parks, and its
+  nearest-named-neighbour trick does not carry over, because a campsite's neighbour is not its
+  parent.
+- `0015` - the map credit this card adds sits in the same unreadable hint, so that card now carries
+  two licence obligations rather than one.
+- `0001` - its check 5 is the only place acceptance #8 below can be closed, because the precache
+  grew by about 650 KB and only a real device with no signal proves that still installs.
+- `0019` - fixed the "Personal use" line this card left standing next to the new ODbL credit.
 
 ## Where the data is, measured 2026-08-15
 

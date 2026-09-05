@@ -37,14 +37,18 @@ all three settle something that is currently unsettled:
 this card aside, and do not chase twice. A reply asking for the app to come down is **not** a fail
 and is not this card: it is an action with a deadline, and it gets its own card immediately.
 
-**Why it needs you.** Three reasons, and none of them are things an agent can settle.
+**Why it needs you.** This is yours on **a risk you own**, which is the third of the four reasons a
+decision belongs to a person rather than to an agent. Three ways it lands:
 
 - It is outward-facing correspondence to a public body, sent in your name.
 - It reveals the app's existence to the organisation whose data it uses. That is a risk you own, not
   one I can price.
 - **Ask 3 contradicts the PRD in writing.** Non-goals currently say "No App Store release, no Apple
   Developer account". Asking their permission to publish means intending to change that line, the
-  same way 0016 and 0017 mean changing the England-only line.
+  same way cards `0016` and `0017` mean changing the England-only line.
+
+The licence half of this card was *not* yours and was not surfaced as a question: it was researched
+on 2026-08-15, applied, and written into DECISIONS. See `## Why` below.
 
 **The review copy is not in the repo.** A `.docx` was generated for Cheryl to mark up at
 `docs/outreach/Forestry-England-enquiry-DRAFT.docx`, and `*.docx` is gitignored on purpose: an
@@ -80,6 +84,21 @@ Contact route confirmed 2026-08-14 on their own pages: `info@forestryengland.uk`
 [Ways to work together](https://www.forestryengland.uk/our-commercial-partnerships) as the route for
 business proposals and expressions of interest. There is no separate digital or partnerships inbox
 published.
+
+## Links
+
+**Relates to**
+- `0019` - it changed the footer to Forestry England's own published attribution wording. The email
+  claims that wording is in use, so it is better if that is already true when they read it. Built,
+  not yet deployed.
+- `0015` - the phone screenshots meant as attachments show the map attribution greyed out and
+  unreadable, which is the opposite of what this email argues. Its own phone check is still open.
+- `0016` - Scotland is already shipped, so the introduction ask on the menu below would be a warm
+  approach to an agency this app already carries data from.
+- `0017` - Wales is not shipped and needs a licence answer from Natural Resources Wales. An
+  introduction from Forestry England is the cheapest route to that answer.
+- `0010` - the reason this card looked blocked. Sending from `enhanceify.co.uk` was broken on
+  2026-08-14 and was unblocked on 2026-08-18; the measurement of the fault is written up there.
 
 ## Options
 

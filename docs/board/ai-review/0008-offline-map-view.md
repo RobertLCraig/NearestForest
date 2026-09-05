@@ -1,13 +1,21 @@
 # Map view with the bundled offline outline
 
 ## Why
-Decided on card 0007. A distance-sorted list answers "what is nearest" but not "what is over that
-way", and it cannot show that two of the top five sit behind the South Downs. This is the half that
-works with no signal, so it is the half the app's promise rests on, and it must be complete and
-usable on its own before any tile layer goes near it.
+A distance-sorted list answers "what is nearest" but not "what is over that way", and it cannot show
+that two of the top five sit behind the South Downs. This is the half that works with no signal, so
+it is the half the app's promise rests on, and it must be complete and usable on its own before any
+tile layer goes near it.
+
+## Links
+
+**Relates to**
+- `0007` - the decision card that settled that the app gets a map at all, and that the map is an
+  offline outline first with tiles layered on top. This card builds the first half of that answer.
+- `0009` - builds the second half, the optional tile layer. It is deliberately a separate card so
+  that this one has to look finished with no network at all.
 
 ## Not this card
-Not the tile layer, not a provider account, not a key: that is card 0009, and this must look
+Not the tile layer, not a provider account, not a key: that is card `0009`, and this must look
 finished without it. No routing, no directions, no offline search by area. Do not add a second
 dataset: the markers come from the existing `sites.json` and nothing else. Do not reproject the
 site coordinates in storage; they stay WGS84 per DATA-MODEL and are projected at draw time only.

@@ -62,14 +62,23 @@ leaked into the repository: a self-test greps every tracked file for a key and `
 the transcript, and the realistic worst case is someone spending the free tier's 150k tiles a month.
 
 **2026-08-10, and it cuts both ways.** A penetration test found the proxy would serve a tile to
-anyone who omitted a `Referer`, so until card 0012 landed, spending the quota needed no key at all
-and this rotation was not the control anyone thought it was. 0012 closed that. What is left here is
-the original point, undiminished: a key that has been in a transcript is not private, and only a
+anyone who omitted a `Referer`, so until card `0012` landed, spending the quota needed no key at all
+and this rotation was not the control anyone thought it was. `0012` closed that. What is left here
+is the original point, undiminished: a key that has been in a transcript is not private, and only a
 revocation makes it so.
+
+## Links
+
+**Relates to**
+- `0012` - closed the hole that made the quota spendable with no key at all, which is why this card
+  is hygiene rather than the only control. It is not a prerequisite: the key is still exposed
+  whether or not that card exists.
+- `0009` - installed the key this card replaces, and set the pattern of keeping it in a file above
+  the web root so a swap needs no redeploy.
 
 ## Not this card
 Not changing provider and not changing the proxy. Rate limiting and the access control that should
-have been on the endpoint are card 0012, which was built rather than deferred once the review
+have been on the endpoint are card `0012`, which was built rather than deferred once the review
 showed the endpoint was open in practice and not merely in theory. Not server-side tile caching.
 
 ## Acceptance

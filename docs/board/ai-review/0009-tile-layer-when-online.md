@@ -1,5 +1,22 @@
 # Optional tile layer over the offline map
 
+## Why
+The bundled outline is a coastline and nothing else. It answers "which way" but gives no roads, no
+towns and no woodland, so a person who has signal and wants to recognise where they are gets less
+than their phone could give them. Tiles buy that familiarity, and they must never be load-bearing,
+because the app exists for places with no signal.
+
+## Links
+
+**Relates to**
+- `0007` - the decision card that settled that the map gets real tiles when there is signal, over
+  the bundled outline, behind a toggle that is off by default. This card builds that half.
+- `0008` - built the outline these tiles layer over. That one must look finished without this, which
+  is why they are two cards.
+- `0012` - closed the hole this card's own verification missed, where the endpoint served tiles to
+  any page that suppressed its `Referer`.
+- `0010` - rotates the key installed here, because it was pasted into a chat transcript.
+
 ## What I need from you
 **Provider chosen 2026-08-08: Thunderforest.** One action left, and only you can do it:
 
@@ -27,15 +44,10 @@ Key handling follows the recommendation: **proxied through `api/tiles.php`**, ke
 the web root. The repo is public, so an embedded key would be readable by anyone; a proxy also means
 the key can be rotated without redeploying the app.
 
-## Why
-Card 0007 decided the map gets real tiles when there is signal, layered over the bundled outline
-from card 0008, behind a toggle that is off by default. Tiles buy familiarity and road context;
-they must never be load-bearing, because the app exists for places with no signal.
-
 ## Not this card
-Not the offline map itself (0008), which must already look finished without this. Do not make the
-map depend on tiles, do not enable them by default, and do not remove the outline underneath.
-Do not commit a key.
+Not the offline map itself, which is card `0008` and must already look finished without this. Do not
+make the map depend on tiles, do not enable them by default, and do not remove the outline
+underneath. Do not commit a key.
 
 ## Acceptance
 <!-- AC:BEGIN -->

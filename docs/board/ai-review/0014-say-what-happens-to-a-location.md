@@ -1,3 +1,6 @@
+---
+no_outward_effect: "sent" in criterion #1 is the footer promising that nothing leaves the phone, which is the opposite of an outward effect
+---
 # Say what happens to a location
 
 ## Why

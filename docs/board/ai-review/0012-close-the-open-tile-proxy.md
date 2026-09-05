@@ -1,10 +1,9 @@
 # Close the open tile proxy
 
 ## Why
-`api/tiles.php` was a free tile server for the internet, on our Thunderforest quota. Card 0009's
-Direction entry recorded that "a request carrying a foreign `Referer` is refused 403, so the
-endpoint is not a free tile server on our quota". The first half was true and the conclusion did
-not follow. A penetration test on 2026-08-10 got a real 256x256 PNG out of the live endpoint three
+`api/tiles.php` was a free tile server for the internet, on our Thunderforest quota. It was recorded
+as closed, in these words: "a request carrying a foreign `Referer` is refused 403, so the endpoint
+is not a free tile server on our quota". The first half was true and the conclusion did not follow. A penetration test on 2026-08-10 got a real 256x256 PNG out of the live endpoint three
 ways:
 
     curl "…/api/tiles.php?z=6&x=31&y=20"                          -> 200 image/png 15456 B
@@ -18,6 +17,16 @@ attribute on somebody else's page, no server of their own, nothing to trace.
 The ceiling is bounded and worth stating so nobody over-reacts: the free tier is 150k tiles a
 month, and when it is gone the tiles stop and **the map still works**, because the bundled outline
 is never removed and a self-test enforces that draw order. This costs a quota, not an outage.
+
+## Links
+
+**Relates to**
+- `0009` - built this endpoint and wrote the wrong conclusion quoted above. The sentence is on that
+  card's Direction thread, corrected in place on 2026-08-10.
+- `0010` - rotates the key this endpoint holds. The two are independent: after this card the quota
+  cannot be spent by a stranger, and the key is still one that has been in a transcript.
+- `0008` - built the bundled outline that keeps the map working when the quota is gone, which is
+  what bounds this defect to a cost rather than an outage.
 
 ## Not this card
 Not rate-limiting `api/nearest.php`. The same review measured it at ~65 ms a request with ten

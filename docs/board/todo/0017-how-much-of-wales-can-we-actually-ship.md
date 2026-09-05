@@ -48,9 +48,11 @@ since option 1 needs no permission from anyone.
 **On 2.** The choice is what Welsh coverage is worth to you, and the sizes differ by a factor of
 thirty. See the options below; my recommendation is there too.
 
-**Why it needs you.** The first part is a permission question with an outside party, and chasing
-them is not something an agent can do. The second is a judgement about how much offline payload a
-country you rarely drive to is worth, and nothing in the repo settles that.
+**Why it needs you.** Two of the four reasons a decision is a person's, and neither is a lookup.
+It is **a risk and a relationship you own**: the first part is correspondence with a public body,
+sent in your name, and chasing them is not something an agent can do. It is also **a cost you
+carry**: option 2 is about 2 MB of offline payload on your phone for a country you rarely drive to,
+and nothing in the repository prices that.
 
 ## Why
 Wales is the last gap after 0016. Natural Resources Wales manages the Welsh Government Woodland
@@ -73,6 +75,18 @@ Measured on 2026-08-14:
   `SURFACE_TYPE` come through as **bare integers with no decode in the service** — England's layer
   hands over `Gravel` and `Permanent - Official`, Wales hands over `1` and `2`. Its reference date
   is January 2022.
+
+## Links
+
+**Blocked by**
+- `0016` - it carries the scope call that gates both cards, because the PRD's non-goals ruled out
+  Wales and Scotland in one line. A no there discards this card unread.
+
+**Relates to**
+- `0004` - it exists because England's open dataset is full of unnamed assets, and option 2 here
+  would import the same problem from Wales at four times the scale.
+- `0018` - an introduction from Forestry England would turn the email in step 1 from a cold
+  approach into a warm one. That ask is listed on that card and has not been decided.
 
 ## Options
 1. **The 116 named sites only, coordinates derived on our side.** Take the names, postcodes,

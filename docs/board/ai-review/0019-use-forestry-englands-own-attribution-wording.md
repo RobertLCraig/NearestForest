@@ -1,3 +1,6 @@
+---
+no_outward_effect: "published" in criteria #1 and #4 is Forestry England's own wording on their copyright page, not a deploy
+---
 # Credit Forestry England the way they ask to be credited
 
 ## Why
@@ -31,10 +34,22 @@ licence question.
 The car park dataset keeps its own credit. Two sources, two acknowledgements, and they are not
 interchangeable.
 
+## Links
+
+**Relates to**
+- `0015` - the same obligation on the map rather than in the footer, where the text is unreadable
+  over tiles. Different surface, different defect, so it is a separate card.
+- `0018` - its email tells Forestry England that this wording is in use, so this should be true
+  before that is sent.
+- `0022` - raised by this card. The car park data has its own published copyright line naming the
+  Forestry Commission, and this card's acceptance asked only for the licence there.
+- `0016` - shipped Scotland, which put a third source in the same footer paragraph after this card
+  was written. The Scottish credit stays and takes the generic wording.
+
 ## Not this card
 Not the map's Thunderforest and OpenStreetMap attribution, which is a legibility defect over tiles
-and is card 0015. Not changing what data is collected or displayed. Not the app store listing text,
-which cannot be written until card 0018 has an answer on the name. Not adding a date to the
+and is card `0015`. Not changing what data is collected or displayed. Not the app store listing
+text, which cannot be written until card `0018` has an answer on the name. Not adding a date to the
 attribution: their wording has "(date of publication)" for a document, and the sensible equivalent
 here is the existing per-site "data checked" date rather than a second date in the footer, so leave
 that alone unless they ask.

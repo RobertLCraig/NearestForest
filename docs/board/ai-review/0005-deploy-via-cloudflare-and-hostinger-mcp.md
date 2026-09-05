@@ -1,10 +1,21 @@
+---
+not_for_the_loop: creates a live DNS record and deploys the app to a shared host, neither of which a deleted file undoes
+---
 # Deploy to the subdomain via the Cloudflare and Hostinger MCPs
 
 ## Why
 The app is built, tested and committed but has never been served. Rob has since connected Cloudflare
 (DNS) and Hostinger (shared hosting) MCP servers specifically so this can be done from a session
 rather than by hand. The infrastructure half of the old card 0001 became agent-doable at that point,
-so it was split out here; 0001 kept only the on-phone checks that genuinely need a person.
+so it was split out here; card `0001` kept only the on-phone checks that genuinely need a person.
+
+## Links
+
+**Relates to**
+- `0001` - this card was cut out of it. That one keeps the five checks that need a physical iPhone,
+  and none of them can run until this one has put the app on a real address.
+- `0002` - the Shortcut recipe calls `api/nearest.php`, which does not exist anywhere until this
+  card deploys it.
 
 **The MCP servers were not visible in the session that wrote this card**, checked three ways: tool
 search returned nothing for either, `ListMcpResourcesTool` found no such server, and there was no

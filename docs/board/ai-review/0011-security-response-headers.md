@@ -1,3 +1,6 @@
+---
+no_outward_effect: "send" in criterion #2 is the server emitting HTTP response headers, not a message anybody receives
+---
 # Security response headers
 
 ## Why
@@ -25,9 +28,22 @@ actually going out. Harmless in effect, since revalidation is what matters, but 
 lost hours to service-worker caching twice, and a file that lies about what it serves is how a
 third one starts.
 
+## Links
+
+**Relates to**
+- `0012` - the second finding of the same 2026-08-10 review: the tile proxy served anyone. Headers
+  and an open endpoint are different defects on different surfaces, so they are separate cards.
+- `0013` - the third finding of that review, on the scheme of a dataset's own URL. A strict CSP is
+  what stands behind `esc()` here; that card is what stands behind an `href`.
+- `0014` - the fourth finding, and the only one that is a statement to the reader rather than a
+  control. It goes in the footer, not in `.htaccess`.
+- `0015` - came out of the same phone screenshots that evidenced this card. It is a legibility
+  defect the tile layer always had and nothing the CSP introduced.
+- `0009` - built the tile layer that criterion #5 checks still draws under the policy.
+
 ## Not this card
-Not the tile proxy (0012), not the dataset URL scheme (0013), not the privacy note (0014). Not
-moving the DNS record behind the Cloudflare proxy: the record is unproxied by decision so Hostinger
+Not the tile proxy, which is card `0012`. Not the dataset URL scheme, which is card `0013`. Not the
+privacy note, which is card `0014`. Not moving the DNS record behind the Cloudflare proxy: the record is unproxied by decision so Hostinger
 can issue its own certificate, and putting a WAF in front is a different card with a different
 trade. Not adding `X-Frame-Options`; `frame-ancestors` supersedes it and every browser this app
 targets honours the CSP form.

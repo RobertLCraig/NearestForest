@@ -39,9 +39,22 @@ behaves on an actual iPhone is currently inference. iOS in particular is where t
 assumptions live: that it grants GPS only to HTTPS origins, that it honours the manifest for
 standalone launch, and that the service worker precache genuinely survives a cold offline start.
 
+## Links
+
+**Relates to**
+- `0005` - put the site on the subdomain these five checks are run against, so nothing here can be
+  checked until that card had landed. It has.
+- `0002` - the other way onto the same data, by Siri rather than by icon. Checking one says nothing
+  about the other, which is why they are two cards.
+- `0009` - the Tiles toggle check 5 asks you to run twice comes from that card, and the case where
+  tiles are left on with no signal is the one it could not verify itself.
+- `0020` - its acceptance #8, offline with the larger campsite dataset, is closed by check 5 here
+  and nowhere else.
+
 ## Not this card
-Not the Shortcut (card 0002). Not the deploy itself (0005). If a check fails, note the number here
-and move this card to `todo/` so an agent picks up the fix, rather than fixing it on the phone.
+Not the Shortcut, which is card `0002`. Not the deploy itself, which is card `0005`. If a check
+fails, note the number here and move this card to `todo/` so an agent picks up the fix, rather than
+fixing it on the phone.
 
 ## Acceptance
 <!-- AC:BEGIN -->

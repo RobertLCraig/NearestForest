@@ -33,6 +33,14 @@ strengths and only real use settles which is worth keeping. The Shortcut is hand
 signal; the PWA needs a tap and works with no connection at all. Keeping both forever is a
 maintenance cost for a personal app, so one should probably win.
 
+## Links
+
+**Relates to**
+- `0005` - deployed `api/nearest.php`, which is the endpoint step 3 of the recipe calls. This card
+  could not be built at all until that landed.
+- `0001` - checks the other half of the comparison, the PWA on the same phone. The verdict this
+  card asks for is a verdict about both.
+
 ## Not this card
 Not changing the endpoint or the PWA. If the recipe is wrong or an action name has changed in the
 current iOS Shortcuts app, note it here and move to `todo/` so the doc gets fixed.

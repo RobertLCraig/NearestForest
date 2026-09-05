@@ -17,9 +17,10 @@ My recommendation is **1**, leave it as straight-line, unless you have such an e
 against, and option 2 costs the thing the app is for: it needs a live connection, so it degrades
 exactly where the app is most needed.
 
-**Why it needs you** It depends on which roads you actually take and on whether a wrong ordering
-bothered you. Neither is measurable from here, which is why the PRD left it as an open question
-rather than assuming it away.
+**Why it needs you** This is yours on **local knowledge nobody wrote down**: which roads you
+actually take, and whether a wrong ordering bothered you when it happened. Neither is measurable
+from here, which is why the PRD left it as an open question rather than assuming it away. There is
+no established practice to look up, because the answer is about your roads and not about routing.
 
 ## Why
 The app ranks by great-circle distance (DECISIONS 2026-08-08). From Brighton the South Downs and the
@@ -27,6 +28,12 @@ coast can make the nearest-by-air site a materially longer drive, and the curren
 compass bearing specifically so a misleading result is visible rather than hidden. Whether that
 mitigation is enough is a real-use question, and it was flagged as an open question in the PRD
 rather than assumed away.
+
+## Links
+
+**Relates to**
+- `0001` - the on-phone checks are the first real trips, so the example this card needs comes out
+  of using the app after that card runs. That is what the `waiting_on:` date tracks.
 
 ## Options
 1. **Leave it as straight-line.** Cost: nothing. Keeps the app fully offline and free, which is its

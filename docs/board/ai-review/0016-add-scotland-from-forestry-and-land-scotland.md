@@ -1,10 +1,46 @@
+---
+no_outward_effect: "published" in criteria #1 and #4 is what Forestry and Land Scotland put on their own website, not a deploy
+---
 # Add Scotland's 278 forests from Forestry and Land Scotland
+
+## Why
+The app knows about England and nothing else, so it is wrong in the one situation it was built for:
+being somewhere unfamiliar with no signal. Drive north of the border and it names an English forest
+as your nearest one, confidently, with no hint that it has run out of data. Forestry and Land
+Scotland publishes the direct analogue of forestryengland.uk, and it is cheaper to scrape than the
+English source, not dearer.
+
+Verified against the live site on 2026-08-14:
+
+- [forestryandland.gov.scot/visit/destinations](https://forestryandland.gov.scot/visit/destinations)
+  carries **all 278 destinations in a single HTML attribute**, `data-forest-search-map`, as JSON:
+  `title`, `link`, `latitude`, `longitude`, `image`, `summary`, `alert`, `id`, `open`. The same full
+  array is on every page of the 31-page pager, so the whole index costs one request. There is no
+  equivalent of the per-row parsing `fetch.py` does against the English search page.
+- `sitemap.xml` independently lists 278 destination URLs, which is the cross-check that the
+  attribute is the complete set and not a filtered view.
+- Detail pages (`/visit/destinations/<slug>/visitor-information`) carry the fields `parse.py`
+  already models: **Facilities**, **Opening hours**, **Pricing**, **Parking information**,
+  **Parking notes**, **Accessibility**, **Getting here**, and **Using SatNav?**. The sat-nav versus
+  postal postcode distinction this project already respects exists on that site too.
+- `robots.txt` disallows only admin paths and `/search-results`. `/visit/` is fair game.
+
+## Links
+
+**Relates to**
+- `0017` - Wales is the other half of the same scope question, and the call asked for below settles
+  both. That card has its own licence problem and cannot be built on this one's answer alone.
+- `0020` - already shipped 44 Forestry and Land Scotland car parks in the Campsites tab, before any
+  licence for that site was recorded. That is why this card's licence task matters beyond itself.
+- `0018` - the licence position for Forestry and Land Scotland rests on general Crown copyright
+  policy rather than a first-party offer, so it is worth one email in the same batch as that card.
+- `0019` - rewrote the footer this card's attribution task changed, three sources later.
 
 ## What I need from you
 
 **One call: does the app leave England?**
 
-Say yes or no on this card. It gates 0017 as well, so a no discards both.
+Say yes or no on this card. It gates card `0017` as well, so a no discards both.
 
 ---
 
@@ -22,28 +58,8 @@ work is measured on this card. What I cannot answer is whether an app called "ne
 cover Britain or stay an England app you carry to Brighton. That is a product call and a maintenance
 commitment: two more scrapers to keep alive against two more sites that will change under us.
 
-## Why
-The app knows about England and nothing else, so it is wrong in the one situation it was built for:
-being somewhere unfamiliar with no signal. Forestry and Land Scotland publishes the direct analogue
-of forestryengland.uk, and it is cheaper to scrape than the English source, not dearer.
-
-Verified against the live site on 2026-08-14:
-
-- [forestryandland.gov.scot/visit/destinations](https://forestryandland.gov.scot/visit/destinations)
-  carries **all 278 destinations in a single HTML attribute**, `data-forest-search-map`, as JSON:
-  `title`, `link`, `latitude`, `longitude`, `image`, `summary`, `alert`, `id`, `open`. The same full
-  array is on every page of the 31-page pager, so the whole index costs one request. There is no
-  equivalent of the per-row parsing `fetch.py` does against the English search page.
-- `sitemap.xml` independently lists 278 destination URLs, which is the cross-check that the
-  attribute is the complete set and not a filtered view.
-- Detail pages (`/visit/destinations/<slug>/visitor-information`) carry the fields `parse.py`
-  already models: **Facilities**, **Opening hours**, **Pricing**, **Parking information**,
-  **Parking notes**, **Accessibility**, **Getting here**, and **Using SatNav?**. The sat-nav versus
-  postal postcode distinction this project already respects exists on that site too.
-- `robots.txt` disallows only admin paths and `/search-results`. `/visit/` is fair game.
-
 ## Not this card
-Not Wales: that has an unresolved licence question and its own card, **0017**. Not Scottish car
+Not Wales: that has an unresolved licence question and its own card, `0017`. Not Scottish car
 parks, because no current open dataset exists — the Forestry Commission hub now publishes England
 recreation Areas, Points and Routes only, the "National Forest Estate Recreation ... Scotland 2017"
 ArcGIS items return 403, and FLS's own ArcGIS org has boundaries, blocks and parking machines but no

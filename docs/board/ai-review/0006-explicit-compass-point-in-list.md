@@ -7,10 +7,17 @@ straight ahead." The arrow is a true-north compass bearing, not a heading-relati
 nothing on screen said so. The cardinal letter existed but lived in a `title` attribute, which a
 phone never renders.
 
+## Links
+
+**Relates to**
+- `0007` - the map is the other answer to the same complaint, "which way is it", and it is a
+  separate card so that the list stays useful to somebody who never opens the map.
+- `0001` - the phone test on 2026-08-08 that produced Rob's quote above. This card came out of it.
+
 ## Not this card
 Not a live compass that rotates with the phone's heading: that needs `deviceorientation`, a
 permission prompt, and it would be wrong the moment the phone is face-up in a cradle. Not road
-directions. Not the map (card 0007). Not changing how the bearing itself is calculated.
+directions. Not the map, which is card `0007`. Not changing how the bearing itself is calculated.
 
 ## Acceptance
 <!-- AC:BEGIN -->
