@@ -1,3 +1,6 @@
+---
+needs: 0025
+---
 # Rewrite this board's cards for the reader
 
 ## Why
@@ -22,6 +25,10 @@ that day, and nothing was applied to the cards, so this board is measured agains
 it was written to.
 
 ## Links
+
+**Blocked by**
+- `0025` - criterion #1 cannot be met while the convention requires the ask directly under the
+  title, and that call is Rob's. Everything else on this card is finished.
 
 **Relates to**
 - `progressboard#0065` - the estate-wide rewrite this card was seeded from; its pilot over
@@ -198,3 +205,46 @@ already recorded.
 can load, which is card `0023`. Cards `0018` at 325 lines and `0020` at 260 are two to three times
 the README's 100-line budget, which is card `0024`; that one is fenced out of this card by
 "Deleting anything", since cutting them needs deletion and this card only reorders.
+
+**2026-09-05** RESULT: blocked
+TESTS: +0 new, all green (218 passed, 0 failed)
+TOUCHED: docs/board/in-progress/0021-rewrite-this-board-s-cards-for-the-reader.md
+TOUCHED: docs/board/todo/0025-which-wins-when-the-ask-comes-before-the-problem.md (new)
+OUT-OF-SCOPE: 0025
+
+**A second run, resuming the entry above.** I re-read the six cards that carry the ask above
+`## Why` and re-ran the check. `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD`
+prints `NearestForest	0	23	0025`: still zero open cards failing, so criteria #2 to #6 hold
+against a fresh measurement rather than against the last run's word.
+
+**Criterion #1 is confirmed unmeetable, not merely unfinished, and it is now a card rather than a
+paragraph.** I checked what sits above `## Why` on each of the six, against the field list the
+README gives that section, which is the ask, `Pass`, `Fail`, `Why it needs you`, `What's wrong` and
+`Cause`:
+
+- **Forced by the README on five.** `0001` is five phone checks with a pass and a fail each. `0002`
+  is build the Shortcut and compare the two. `0010` is three steps that are themselves the fix.
+  `0017` is one email and one choice, with the draft email as the step's own text. `0018` is five
+  steps and a blockquote correcting a false premise. Nothing there is a candidate solution offered
+  for judgement; it is the action being asked for, which the README requires directly under the
+  title.
+- **Removable on one, and only one.** `0003` carries "My recommendation is **1**, leave it as
+  straight-line" above `## Why`, which is not a README field and which `## Recommendation` already
+  says four lines further down. That one line is the entire reducible part of the conflict, and it
+  moves only if the answer to `0025` is option 2 or 3, so I left it.
+
+So no rewording of any card closes #1. It is left unticked, and this card now carries `needs: 0025`
+with a matching `Blocked by` line, which is what stops a third session spending itself re-deriving
+the same wall. `0025` states the conflict, costs three ways out and recommends one, with the answer
+written ready to paste.
+
+**No test, and none is possible here.** All six criteria say `proves: none`, and #1 says why in as
+many words: it is about prose and no check on this board reads prose. The one runnable check is the
+convention command above, run again this session at 0 failing. `node scripts/selftest.js` is green
+at 218, unchanged, as expected from a run that changed no code. `.\vendor\bin\pest.bat` and
+`.\vendor\bin\pint.bat` still do not exist: I checked for `composer.json` and `vendor/` directly and
+this project has neither.
+
+**Assumed.** That raising `0025` in `todo/` is right even though it is a decision and the convention
+puts decisions in `human-review/`. The session rules put every new card in `todo/` and forbid me
+moving any card between lanes, so the lane is the scheduler's to correct.
