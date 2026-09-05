@@ -597,6 +597,21 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
      /Forestry England/.test(indexhtml) && /Forestry and\s+Land Scotland/.test(indexhtml));
   ok('the footer disclaims affiliation with both',
      /not affiliated with Forestry England or with Forestry and\s+Land Scotland/.test(indexhtml));
+
+  // Card 0019. Two obligations, so two separate strings, checked against a
+  // whitespace-flattened copy so re-wrapping the paragraph cannot break the test.
+  // OGL v3 says to use the provider's own attribution statement where one is published.
+  // Forestry England publish one (DECISIONS 2026-08-15), so the generic "contains public
+  // sector information" line is no longer the right credit for their data -- it is the
+  // fallback, and it still covers the car park dataset, which is a separate source.
+  const flat = indexhtml.replace(/\s+/g, ' ');
+  ok("the footer uses Forestry England's own published attribution wording",
+     flat.includes('Crown Copyright, courtesy Forestry England, licensed under the Open Government Licence'));
+  ok('the footer credits the Open Government Licence for the car park data',
+     flat.includes('Car park details contain public sector information licensed under the Open Government Licence v3.0'));
+  // The app is public and heading for a store listing, so a personal-use claim states a
+  // licence basis that does not match what is happening. OGL is the real basis.
+  ok('the footer makes no personal-use claim', !/personal use/i.test(indexhtml));
 }
 
 console.log('');
