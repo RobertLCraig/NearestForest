@@ -266,7 +266,48 @@ counted and printed by the parser rather than happening quietly:
 where a self-contained motorhome or campervan may park overnight, 6pm to 10am, no return within 48
 hours. The list page publishes no coordinates, so the 44 slugs are joined to the
 `data-forest-search-map` attribute on the destinations index, which carries all 278 destinations with
-`latitude`/`longitude`. The whole join costs two requests and matched 44 of 44 on 2026-08-15.
+`latitude`/`longitude`. The whole join costs two requests and matched 44 of 44 on 2026-08-15. The 44
+sit across 9 regions, and **9 of them take vehicles over 7 m or caravans**; the rest do not.
+
+### What the source actually publishes, measured 2026-08-15
+
+The Overpass extract behind all of the above was **8,496 elements** when the tag counts were taken
+(1,452 nodes, 6,908 ways, 136 relations; 4,657 `caravan_site`, 3,839 `camp_site`; 6,204 carrying a
+`name`; every one with a usable coordinate once way and relation centroids are taken; roughly 6,083
+England, 1,729 Wales, 684 Scotland), spanning lat 49.8916..60.6887 and lng -7.5378..1.7592, Scilly to
+Unst. The final build counted 8,501, three re-runs later. Tag coverage on that set is what decides
+how much the app may honestly say, and it is thin:
+
+```
+caravans        1,204 present   (yes 915, no 286)
+motorhome         151 present   (yes 121, no 29)
+tents           1,467 present   (yes 1,197, no 250, only 19)
+fee               813 present   (yes 746, no 52)
+addr:postcode   2,004 present
+website         2,068 present
+phone           1,345 present
+opening_hours      96 present   <-- effectively nothing
+toilets           610, shower 568, drinking_water 412, power_supply 680
+sanitary_dump_station 464 present (yes 337)
+access            482 present   (customers 212, private 173, permit 25, members 14)
+caravan_site       32 present   (motorhome_stopover 25)  <-- aires are barely mapped in GB
+```
+
+That is why `vehicles` is an explicit list rather than an inference, why `access_note` carries what
+stops you getting in, and why there is no opening badge. **2,859 of the 3,839 `camp_site` records
+carry neither a `caravans` nor a `motorhome` tag**, and that bucket was the one real judgement call:
+see DECISIONS 2026-08-15 for the call and the reasoning. **A wider filter was measured and not
+taken:** keep every `caravan_site` not marked `caravans=no`, drop `tents=only` (19),
+`backcountry=yes` (54), `access=private|no` (174), scout or group-only sites (164) and
+static-caravan parks (146), and 5,194 records survive at 628 KB raw and 150 KB gzipped. That is the
+size of the change if real use ever says the shipped list is too thin. A columnar encoding of the
+same set was measured at 509 KB raw and 146 KB gzipped, which does not pay for a decode step, so
+this file stays plain JSON.
+
+**The extract comes from Overpass and not from a Geofabrik `.pbf`**, because the query is ten lines
+and the response is 2.3 MB, where a `.pbf` would need an osmium toolchain on a Windows box that has
+no build step. The `out count` form is what the filter was developed against, so iterating on it cost
+no repeated downloads.
 
 ## `app/data/boundary.json` (generated)
 

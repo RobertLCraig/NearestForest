@@ -1,274 +1,49 @@
 # Do we write to Forestry England, and with which asks?
 
-> **This card is not blocked. Send it from an address that can send.** As of 2026-08-14 Rob cannot
-> send from `enhanceify.co.uk` (receiving is fine, outbound is not; see 0010 for the measurement).
-> Nothing about this card requires that domain, unlike 0010, where the sending address is the thing
-> being checked. So use whichever address works, and set the signature to match, because a reply is
-> the entire point of the card. Do not wait for the mail fix.
-
-## What I need from you
-
-**One choice, then one send.**
-
-1. **Confirm two facts the draft claims about you**, both marked `[confirm]` in it: that you are a
-   Forestry England member, and that you have visited more than twenty of their sites. Fix the
-   number or cut the sentence. **Do not send with either still unverified.** They are the two claims
-   in the email that are about you rather than about the app, and they are what make you a member who
-   built something rather than a stranger scraping a website. Worth having, and worth being exactly
-   right about.
-2. Read the draft at `docs/outreach/forestry-england-enquiry.md` and pick option 1, 2 or 3 below.
-3. Decide whether to add the ask nobody has considered yet: **an introduction to Forestry and Land
-   Scotland and Natural Resources Wales.** It is nearly free for them to give and it would turn cards
-   0016 and 0017 from cold approaches into warm ones. See the menu below.
-4. Fill in the `[phone]` and `[email]` placeholders in the signature and send it to
-   **info@forestryengland.uk**.
-5. Paste whatever comes back into this card.
-
----
-
-**Pass** is a written reply naming which of the asks they agree to. Any of these is a pass, because
-all three settle something that is currently unsettled:
-
-- a yes to the app staying public, which is the one that matters
-- a no to the app staying public, which is worth knowing now rather than later
-- a handoff to another team, which means it reached a person
-
-**Fail** is silence by **2026-09-11** (four weeks). Treat that as a soft yes to the status quo, set
-this card aside, and do not chase twice. A reply asking for the app to come down is **not** a fail
-and is not this card: it is an action with a deadline, and it gets its own card immediately.
-
-**Why it needs you.** This is yours on **a risk you own**, which is the third of the four reasons a
-decision belongs to a person rather than to an agent. Three ways it lands:
-
-- It is outward-facing correspondence to a public body, sent in your name.
-- It reveals the app's existence to the organisation whose data it uses. That is a risk you own, not
-  one I can price.
-- **Ask 3 contradicts the PRD in writing.** Non-goals currently say "No App Store release, no Apple
-  Developer account". Asking their permission to publish means intending to change that line, the
-  same way cards `0016` and `0017` mean changing the England-only line.
-
-The licence half of this card was *not* yours and was not surfaced as a question: it was researched
-on 2026-08-15, applied, and written into DECISIONS. See `## Why` below.
-
-**The review copy is not in the repo.** A `.docx` was generated for Cheryl to mark up at
-`docs/outreach/Forestry-England-enquiry-DRAFT.docx`, and `*.docx` is gitignored on purpose: an
-unsent draft addressed to a third party has no business in a public repository. The markdown is the
-source. If the Word copy comes back with edits, fold them into the markdown and regenerate.
-
 ## Why
 
-**This card was opened on a premise that turned out to be false, and the correction is the most
-useful thing on it.** It originally said the forest data "rests on nothing anyone has agreed to",
-and that the email was therefore a permission request. Researched on 2026-08-15 and written up in
-DECISIONS 2026-08-15 with every source linked:
+**This card opened on a false premise, and the correction is the most useful thing on it.** It said
+the forest data rested on nothing anyone had agreed to. Researched 2026-08-15, every source named in
+DECISIONS 2026-08-15: Forestry England offer their website's information under the Open Government
+Licence, OGL v3 permits adaptation and commercial exploitation and covers database right, and their
+robots.txt does not touch the forest pages. **No permission is needed for the data, or to charge for
+the result**, and the PRD constraint that said otherwise is superseded.
 
-- Forestry England's own Crown copyright page offers the website's information for reuse under the
-  Open Government Licence, excluding logos and images.
-- OGL v3 permits adaptation and **commercial** exploitation, and covers database right.
-- Their robots.txt does not touch the forest pages.
-
-**So no permission is needed for the data, or to charge for the result.** The old framing was
-over-cautious, and the PRD constraint it came from has been superseded.
-
-What the licence explicitly does **not** cover is trade marks. An app store listing that says
-"Forestry England" is precisely that, and no amount of reading settles it, because it is theirs to
-answer. That is now the only hard reason this card exists.
-
-The other two reasons are softer and still good. **It is a pitch, not a disclosure.** Forestry
-England's remit is getting people into forests, and this gets people into forests, including the
-quiet sites nobody searches for by name. And telling them beforehand costs nothing, while being
-found later costs goodwill Rob may want when he asks about the name.
-
-Contact route confirmed 2026-08-14 on their own pages: `info@forestryengland.uk` is given both on
-[Contact us](https://www.forestryengland.uk/contact-us) for general enquiries and on
-[Ways to work together](https://www.forestryengland.uk/our-commercial-partnerships) as the route for
-business proposals and expressions of interest. There is no separate digital or partnerships inbox
-published.
+What OGL does not cover is trade marks, and a store listing saying "Forestry England" is exactly
+that. Only they can settle it, and that is now the only hard reason this card exists. It is also a
+pitch: their remit is getting people into forests, and being found out later costs goodwill.
 
 ## Links
 
 **Relates to**
-- `0019` - it changed the footer to Forestry England's own published attribution wording. The email
-  claims that wording is in use, so it is better if that is already true when they read it. Built,
-  not yet deployed.
-- `0015` - the phone screenshots meant as attachments show the map attribution greyed out and
-  unreadable, which is the opposite of what this email argues. Its own phone check is still open.
-- `0016` - Scotland is already shipped, so the introduction ask on the menu below would be a warm
-  approach to an agency this app already carries data from.
-- `0017` - Wales is not shipped and needs a licence answer from Natural Resources Wales. An
-  introduction from Forestry England is the cheapest route to that answer.
-- `0010` - the reason this card looked blocked. Sending from `enhanceify.co.uk` was broken on
-  2026-08-14 and was unblocked on 2026-08-18; the measurement of the fault is written up there.
+- `0027` - the send itself, and three cold reviews of the draft that nobody has acted on. Whichever
+  option you pick here, that card is what carries it out.
+- `0019` - it put Forestry England's own attribution wording in the footer, which the email claims is
+  already in use, so it is better landed first.
+- `0016` and `0017` - Scotland is shipped and Wales is not, and question 2 below warms both.
 
 ## Options
 
-1. **Send it as drafted: a pitch, with the name question inside it.** Leads with what the app does
-   for Forestry England (gets people to forests, surfaces the sites nobody searches for, prevents
-   wasted trips to locked gates, drives traffic back to their own pages, costs them nothing), then
-   asks the three questions. Cost: a general inbox may still file it as sales, and it invites
-   conditions on naming that would mean real work.
+1. **Send it as drafted: a pitch with the name question inside it.** Cost: a general inbox may file
+   it as sales, and it invites conditions on naming that would mean real work.
+2. **Send a bare trade mark question.** Cost: it throws away the only chance to interest them, it is
+   the easiest kind of email to ignore, and it makes the name sound like the point, which invites a
+   cautious no.
+3. **Send nothing, and list it without using their name.** Viable now the data question is settled.
+   Cost: much harder to find and much less obviously useful, it looks evasive if noticed later, and
+   it throws away a relationship worth having before Scotland, Wales and Ireland each need one.
 
-2. **Send a bare trade mark question.** Two paragraphs: here is the app, may I use your name in an
-   app store listing. Cost: it throws away the only chance to interest them, and a bare licensing
-   question from a stranger is the easiest kind of email to ignore or refuse by default. It also
-   makes the name sound like the point, which invites a cautious no.
-
-3. **Send nothing and list it without using their name.** Genuinely viable now the data question is
-   settled: call it something generic, describe it as finding forest car parks, never say "Forestry
-   England" in the listing. Cost: the listing becomes much harder to find and much less obviously
-   useful, and it looks evasive if anyone at Forestry England notices later. It also throws away a
-   relationship worth having before Scotland, Wales and Ireland each need their own conversation.
+**Question 2, on options 1 and 2 only: also ask for an introduction to Forestry and Land Scotland
+and to Natural Resources Wales?** Nearly free for them to give, and it turns two cold approaches
+warm. Cost: one cold reviewer read that ask as spending a stranger's employer's relationships.
 
 ## Recommendation
 
-**Option 1.** The data question is answered, so this is no longer a request that can be refused into
-a problem. The worst realistic outcome is silence, which changes nothing, and the second worst is a
-condition on naming, which is an afternoon's work and better learned now than after a store listing.
-
-The pitch framing is the part that matters and it is Rob's own instruction, on 2026-08-15: the
-audience at `info@` is clerical and non-technical, so the email leads with what it does for them
-rather than how it works. **Any redraft that starts explaining the technology has lost the thread.**
-
-**Do not chase.** Public bodies are slow and a second email converts a low-priority enquiry into an
-irritation. One send, one recheck date, then move on.
-
-**Card 0019 should land first if it can.** The email says Rob will use their own attribution wording,
-and it is better if that is already true when they look.
-
-Note that the name question only matters for Android in the near term. An iOS release needs a Mac and
-an Apple Developer account, which the PRD lists as a hard constraint; Google Play will take a wrapped
-PWA built on Windows. Rob's position on 2026-08-14 was to worry about Apple later if approval comes.
-
-## The full menu of possible asks
-
-Rob asked what else he could be asking for. Everything below is a real option; the draft uses four
-of them, because a cold email with eight asks lands none.
-
-| Ask | Value to Rob | Odds of a yes | In the draft? |
-|---|---|---|---|
-| **Link to it, or mention it to members** | High. Distribution is the scarce thing, and an official mention settles the name question by implication | **Highest.** Costs them nothing, no budget, no procurement | Yes, and deliberately last, because last is where a reader's eye lands |
-| **Permission to use the name** | Necessary for a store listing | High | Yes, ask 3 |
-| **Bring him in to work on it, or on their own finder** | **Highest of all.** Paid work and a public-sector reference, worth more than an app sale | Low from a cold email, but nonzero and free to ask | Yes, ask 2 |
-| ~~**Buy it outright**~~ ~~**Licence them a version**~~ | Was high, and recurring | Medium | **No. Cut 2026-08-15**, see Direction. Rob does not want it |
-| **An introduction to Forestry and Land Scotland or Natural Resources Wales** | **High and underrated.** Nearly free for them, and it turns two cold approaches into warm ones for cards 0016 and 0017 | High | **No, and it should probably be added.** Rob has not considered it |
-| **An official data feed instead of scraping** | Medium. Makes the pipeline durable rather than hostage to a redesign | Medium | No. Adds a technical ask to a non-technical reader |
-| **A quote for the store listing** | Medium | Medium, but only after a relationship exists | No. Premature |
-| **Accuracy contact who can check the data** | Medium | Medium | No. Ask it in a reply, not a cold open |
-
-**The primary ask is a conversation, not a decision.** Nobody sells software or wins a contract from
-an unsolicited email to a general inbox. What a cold email can win is a reply from a named person.
-The draft therefore asks to talk to whoever it sits with and offers a menu, rather than demanding one
-answer.
-
-## Cold review, 2026-08-15
-
-Three reviewers were given the draft text and nothing else: no project context, no history, no
-knowledge of any decision on this card. The first was asked to roleplay the person who actually
-opens `info@forestryengland.uk`. Its verdict was **acknowledge and file**, and the reasoning is worth
-keeping whether or not the draft changes:
-
-- **Length is the disqualifier.** At ~700 words with six sections and a numbered list, it reads as a
-  proposal rather than an enquiry, and proposals are somebody else's job. Attention died at the
-  heading "Why I think it is worth your time".
-- **There is nobody obvious to forward it to.** Web, marketing, brand, legal, open data: five
-  candidate teams, no named contact. Forwarding an unsolicited pitch costs the forwarder something
-  every time, and this one carries a name-use request and an ask for introductions, so a misdirected
-  forward hands a colleague a mess rather than a curiosity.
-- **The name request is what stops the reader dealing with it.** It converts a pleasant email into a
-  brand and legal question above their authority, which guarantees escalation or a bland holding
-  reply. A bland holding reply is a worse outcome than silence, because it is on the record.
-- **The introductions ask reads as asking a stranger to spend their employer's relationships**, and
-  it reframes the whole email as step one of a rollout rather than an offer.
-- **"You bring me in" reads as a job application**, and once spotted it makes the free app look like
-  a portfolio piece and the goodwill look like positioning.
-- **The closed-gate benefit doubles as a threat.** It describes complaints landing in the reader's
-  own inbox, with nothing said about how the data stays current. **Arrived at independently, with no
-  knowledge that the freshness paragraph had been deliberately cut**, which is worth weighing.
-- **Three lines read as criticism of colleagues**, the sharpest being "the forest finder on your own
-  website, which is the problem I started with", which names a specific team's work as the problem.
-- **Unanswered and material:** who Rob is, whether `enhanceify.co.uk` is a business, how often the
-  data refreshes, what happens to the user's location, and accessibility obligations if their name
-  is attached.
-
-**Its recommendation contradicts two of Rob's explicit instructions**, so it is recorded rather than
-acted on: cut to about five sentences with a single ask, and hold back both the name question and the
-introductions request for a second conversation with whoever can actually say yes.
-
-The second reviewer, a cold-outreach copywriter, reached the same place by a different road:
-
-- **"Nothing in this email makes yes cheaper than no."** Every route on offer costs the reader
-  something: a licensing decision they would have to defend, a hire with no budget line, an
-  introduction that spends their relationships, a meeting. Silence costs nothing, so silence is what
-  the email will get. **The single most useful sentence any of the three produced.**
-- **It counted ten to twelve distinct asks**, including implicit ones. Multiple asks do not give the
-  reader a choice, they let the reader satisfy the email with the cheapest item on the list, which
-  here is "mention it to your members", after which the thread closes.
-- **The two strongest lines are buried**: the membership sentence, and the one showing he read the
-  licence and understood the trade mark carve-out. **The URL is in paragraph four.**
-- **No numbers anywhere.** "Everyone I have shown it to" is unquantified. If it is nine people, say
-  nine: an unquantified superlative costs more credibility than a small real number buys.
-- **One outright bug, since fixed:** "the first is the one I would prefer" was immediately followed by
-  "This is the one I would prefer", in an email whose subtext is that Rob is careful enough to be
-  trusted with their name.
-
-The third reviewer looked for the reasons the recipient's own risk, legal and brand people would say
-no. It found the two most important things on this card.
-
-**1. The pre-emptive concession may be strategically fatal, and the reviewers disagree about it.**
-
-> "I understand your name is not covered by the open licence, so I would not use it in that way
-> without your agreement."
-
-Reviewer two called this the most professionally impressive clause in the email. Reviewer three
-called it the most damaging sentence in it, and the argument is hard to fault: their preferred
-outcome is that a stranger does not put their name on a consumer app, **and this hands them that
-outcome for free, in writing, before they have spent a minute on it.** Replying costs staff time and
-creates a disclosable record. Silence costs nothing and delivers exactly what they want.
-
-**Both readings are right, about different audiences.** It reads well to a person and badly to a
-process. Rob has to decide which he is writing to.
-
-**2. Describing and badging are different requests, and the draft conflates them.**
-
-- **Describing**: "finds your nearest forest managed by Forestry England". A statement of fact about
-  what the app does, sits happily beside a disclaimer, does not normally need permission.
-- **Badging**: "clearly badged as a Forestry England forest finder". Makes their name the product's
-  identity, implies endorsement, and needs a licence with quality control and a termination right,
-  which no public body grants an individual by email.
-
-The draft leads with the strong version in its second sentence and the soft version later, as though
-they were one thing. **Reviewers resolve ambiguity conservatively and answer the largest version of
-the ask**, so the likely reply refuses both, in wording broad enough to chill the descriptive use Rob
-never needed to ask about. Having asked and been refused then leaves him worse off than never having
-asked, because he has actual notice.
-
-Also flagged, ranked by damage:
-
-- **The closed-gate bullet is a liability trigger, and all three reviewers hit it independently.** It
-  claims the app conveys access status, on data Forestry England cannot refresh, in a product bearing
-  their name, used in dead-signal areas where nobody can check. Replace it with the opposite, which
-  is true and free: the app shows no closure status and links to the official page.
-- **"the forest details come from your website" is a written, timestamped admission of scraping**,
-  sent to the party being scraped, and correspondence with a public body is disclosable under FOI.
-  Say "built on your published open data", name the dataset, stop.
-- **Option 2 is a procurement problem.** Staff are trained not to engage with unsolicited approaches
-  for paid work, because engaging can compromise a future tender. The safe response is no response.
-- **"yours is the first"** was meant as a compliment. It reads as: no peer body has agreed to this, so
-  all the precedent risk lands on us.
-- **Rob's own exposure, separate from theirs:** an app store listing carrying a third party's brand
-  without a licence is a standard takedown trigger on both stores, and contested complaints can put
-  the developer account at risk rather than just the listing. True whether or not they ever reply.
-- **The most reassuring sentence available, and it is not in the draft:** an unconditional withdrawal
-  offer. "If at any point you want the name removed or the app withdrawn, tell me and I will do it
-  within seven days, no discussion." It costs nothing and converts "we cannot control this" into "we
-  can stop it whenever we like".
-- Missing and expected by any public sector digital reviewer: accessibility, privacy stated precisely
-  rather than as "no tracking", refresh cadence, what happens if Rob stops maintaining it, coverage
-  numbers, and who he actually is.
-
-**Predicted outcome of sending the draft as it stands: no reply at all**, well ahead of every other
-branch. Then an automated acknowledgement and silence. Then a single refusal disposing of everything
-at once, which the current draft is close to optimised for producing.
+**Option 1, yes to question 2, and do not chase either way.** The data question is answered, so this
+is no longer a request that can be refused into a problem: the worst realistic outcome is silence,
+which changes nothing, and the second worst is a condition on naming, an afternoon's work. **Read
+`0027` first**: its reviews say the draft as it stands earns no reply at all. The name only matters
+for Android now, since an iOS release needs a Mac and an Apple Developer account.
 
 ## Direction
 

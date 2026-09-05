@@ -41,19 +41,19 @@ the option costs on `0018`, which the README names as the last things that may g
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `0018` is read, THE CARD SHALL be at or under 100 lines, or SHALL have been split into
+- [x] #1 WHEN `0018` is read, THE CARD SHALL be at or under 100 lines, or SHALL have been split into
       two cards each at or under 100 lines. proves: none - no check on this board reads card length
-- [ ] #2 WHEN `0020` is read, THE CARD SHALL be at or under 100 lines. proves: none - as #1
-- [ ] #3 WHEN either card is shortened, THE CARD SHALL keep every measurement, date, source and
+- [x] #2 WHEN `0020` is read, THE CARD SHALL be at or under 100 lines. proves: none - as #1
+- [x] #3 WHEN either card is shortened, THE CARD SHALL keep every measurement, date, source and
       recorded decision, moving anything cut into the doc or the card that owns it. proves: none - as #1
 - [ ] #4 WHEN the convention checks are re-run, THE BOARD SHALL still report zero open cards
       failing. proves: none - the command is in another repository, named in `## Plan`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Decide for `0018` whether it is one card that failed the cut test or two cards in one file
-- [ ] Move the three cold reviews and the full ask menu wherever they belong, or cut them
-- [ ] Cut `0020` back to the problem, the licence rule, the acceptance and the outcome
+- [x] Decide for `0018` whether it is one card that failed the cut test or two cards in one file
+- [x] Move the three cold reviews and the full ask menu wherever they belong, or cut them
+- [x] Cut `0020` back to the problem, the licence rule, the acceptance and the outcome
 - [ ] Re-run the convention check and confirm the board is still at zero
 
 ## Plan
@@ -79,3 +79,66 @@ yet. That move is the decision to make before any cutting starts.
 the filter derivation all fed a build that shipped, and the numbers that still matter are recorded
 in `docs/DECISIONS.md` and `docs/DATA-MODEL.md`. Check that before cutting: anything on the card and
 not in those two docs moves there first.
+
+## Comments
+**2026-09-05**
+RESULT: partial
+TESTS: +0 new, all green. Every criterion here is `proves: none`, so none of them gets a test. The
+repository's suite is `node scripts/selftest.js`: 219 passed, 0 failed, the same count as before this
+work, which is what a docs-only change should do. **There is no `vendor\bin\pest.bat` and no
+`pint.bat` here**, and no `composer.json` either: this project is plain HTML, CSS, JS and Python with
+no build step, per `CLAUDE.md`.
+TOUCHED: docs/board/todo/0018-write-to-forestry-england.md
+TOUCHED: docs/board/ai-review/0020-campsites-tab-from-openstreetmap.md
+TOUCHED: docs/board/todo/0027-send-the-forestry-england-enquiry.md (new)
+TOUCHED: docs/board/todo/0028-card-0026-links-0023-without-saying-why.md (new)
+TOUCHED: docs/outreach/forestry-england-enquiry-review.md (new)
+TOUCHED: docs/DATA-MODEL.md
+TOUCHED: docs/HANDOVER.md
+TOUCHED: docs/board/in-progress/0024-two-cards-are-over-the-line-budget.md
+OUT-OF-SCOPE: 0028
+
+**`0018` is both**, exactly as `## Why` predicted, and it took both remedies. 325 lines to 100.
+
+- The three cold reviews and the eight-row ask menu moved **verbatim** to
+  `docs/outreach/forestry-england-enquiry-review.md`, beside the draft they are about, which is what
+  `## Plan` said was likely the answer. Nothing was deleted and nothing was reworded. That file opens
+  by saying it is internal, never sent, and never rendered to Word with the draft.
+- The card then still would not fit, and the arithmetic is worth recording because it is the whole
+  reason for the split. `## Direction` and `## Decided` are 53 of the 100 lines and this card forbids
+  touching them, which leaves 47 for the title, the ask, the pass condition, the problem and three
+  costed options. That is not a card, it is a compression, and the README names compression as the
+  one way to pass this rule while failing it.
+- So the send became card **`0027`**, which carries the ask, the pass condition, the fail date, the
+  contact route and the `.docx` note, all lifted rather than rewritten. `0018` keeps the problem, the
+  costed options, the recommendation and its two append-only logs, untouched to the byte.
+
+**`0020` is 260 lines to 100**, cut to the problem, the licence rule, the acceptance and the outcome
+as asked. Before cutting, everything on it and not in a doc moved into `docs/DATA-MODEL.md`: the
+8,496-element measurement with its node/way/relation split and its bounding box, the full tag-coverage
+block, the 2,859 untagged `camp_site` records that were the judgement call, the wider filter that was
+measured and rejected (5,194 records, 628 KB, 150 KB gzipped), the columnar encoding that was measured
+and rejected, the nine Stay the Night sites taking vehicles over 7 m, and why the extract comes from
+Overpass rather than a `.pbf`. The acceptance block is byte-identical, including the open #8. The
+"do not reconcile campsites against the car park data" warning moved into `## Not this card`, where a
+scope fence belongs, rather than dying with `## Plan`.
+
+**Criterion #4 is not met and I could not meet it.** The convention check reports **one** open card
+failing, not zero, and it did so before I changed anything:
+
+    NearestForest   1   25   0027
+    0026    todo    unexplained link: 0023
+
+`0026` was raised on 2026-09-05, after this card was written, so the word "still" in #4 was already
+untrue when I picked this up. The fault is one line in another card's `## Links`, and a card session
+may not edit cards outside its own scope, so it is card **`0028`** rather than a fix. All four cards
+I did touch pass the check. Fix `0028` and #4 closes on the next run.
+
+**Assumed:** that a `## Links` reason is not a "measurement, date, source or decision" under #3, so
+the `0015` and `0010` link lines dropped from `0018` were allowed to go. Both facts survive anyway:
+the `0010` mail dates are on `0027`, and HANDOVER carries the `0015` screenshot connection.
+
+**Could not settle from the repository:** nothing that blocked the work. Worth a reader's eye,
+though: `0018` sits in `todo/` while HANDOVER counts it among the cards waiting on Rob, and `0027`
+was put in `todo/` beside it rather than in `human-review/`, because a card session does not choose
+lanes. Both carry the material a person needs whichever lane they end up in.

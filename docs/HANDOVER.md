@@ -13,10 +13,10 @@ one ranked list.** Car parks is still England only, because no open dataset of S
 parks exists. Map complete (bundled outline plus optional tiles).
 **Cards 0004 and 0015 were also built on 2026-08-29**: the 177 car parks with no usable upstream
 name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
-**One agent-ready card is open**, 0026, raised by 0023; fourteen cards await an adversarial pass in
+**Two agent-ready cards are open**, 0026 and 0028; fourteen cards await an adversarial pass in
 `ai-review/`; the last
 unevidenced PRD criterion is card **0001** check 5, and Scotland has added a third reason to run it.
-**Six cards wait on a person**, one fewer than before, because 0016 is answered and built.
+**Seven cards wait on a person**: 0018 split into the choice (0018) and the send (0027) on 2026-09-05.
 **None of 0004, 0015, 0016 or 0019 is deployed**, and they ship as one batch. 0004 and 0019 have
 still not been looked at on a screen; 0015 and 0016 both have.
 **Cards 0019 and 0022 were built on 2026-09-05**: the footer credits Forestry England in their own
@@ -24,7 +24,12 @@ published wording, credits the OGL *and* the Forestry Commission's own copyright
 car park data, and no longer claims personal use. `CACHE` and `BUILD` are at `v16-2026-09-05`.
 **A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
 done. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-05 (two unattended worktree runs. 0019: the footer credits Forestry England in
+_Last updated: 2026-09-05 (three unattended worktree runs. 0024: cards 0018 and 0020 were two and a
+half times the board's 100-line budget and are now 100 each. 0018's three cold reviews and its ask
+menu moved verbatim to `docs/outreach/forestry-england-enquiry-review.md`; its send became card 0027,
+because its two append-only logs are 53 of the 100 lines. 0020's measurements moved into DATA-MODEL.
+The convention check reports one failing card, 0026, which is card 0028 and not 0024's to fix. Earlier
+today: 0019: the footer credits Forestry England in
 their own published wording, credits the OGL separately for the car park data, drops the personal-use
 claim, and three self-tests keep all three true. It raised 0022, which a second run then built: the
 car park credit now also quotes the Forestry Commission's own copyright statement, which DECISIONS
@@ -268,8 +273,9 @@ sites on-device. That split is deliberate and is the thing the two-method compar
 - `docs/build/IOS-SHORTCUT.md` — the Shortcut recipe, since `.shortcut` files cannot be generated.
 - `docs/outreach/` — drafted correspondence to outside parties, in markdown, which is the source.
   **`*.docx` is gitignored**, so a Word review copy handed to a person will not be in the repo; if
-  one comes back marked up, fold the edits into the markdown and regenerate. Card 0018 holds the
-  Forestry England one; the Natural Resources Wales one is still inline on card 0017. Two files:
+  one comes back marked up, fold the edits into the markdown and regenerate. Cards 0018 and 0027 hold
+  the Forestry England one; the Natural Resources Wales one is still inline on card 0017. Three files:
+  `forestry-england-enquiry-review.md` is internal notes and is never sent;
   `forestry-england-enquiry.md` is the email itself, and `forestry-england-handover.md` is a
   **self-contained** briefing for a Claude session working in Word with no repo access, which is why
   it repeats the email in full rather than linking it. **Both are rendered to Word by one throwaway
@@ -367,8 +373,9 @@ The queue is [docs/board/](board/), one card per file. At the head:
    `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
    about 190 KB and the Forests tab doubled, so a cold offline launch is now testing more than it was.
-2. **Card 0026, the only agent-ready one**: `scraped_at` is stamped when the parser runs, so
-   re-parsing the cached scrape reports the data as fresher than it is. Raised by 0023.
+2. **Cards 0026 and 0028, the agent-ready ones.** 0026: `scraped_at` is stamped when the parser runs,
+   so re-parsing the cached scrape reports the data as fresher than it is. 0028: one line in 0026's
+   own `## Links`, which is the only thing keeping the board's convention check off zero.
 3. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
    still does not exist. The 2026-08-14 screenshots show it ("Bedgebury National Pi…" over "Hemsted
    Fores…"). Worth
@@ -394,10 +401,10 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **One agent-ready card is open**: 0026, raised
-by 0023, which makes `scraped_at` report the date a page was fetched rather than the date the parser
-ran. Otherwise what remains is the adversarial pass over `ai-review/`. Six cards need Rob, and they
-fit in one conversation:
+See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**: 0026, which
+makes `scraped_at` report the date a page was fetched rather than the date the parser ran, and 0028,
+which puts the board's convention check back to zero. Otherwise what remains is the adversarial pass
+over `ai-review/`. Seven cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
@@ -425,13 +432,14 @@ can go today from any working address, with the signature set to match. Do not l
 the mail fix. **That fix belongs on the enhanceify-V2 board, not this one**, and Rob asked on
 2026-08-14 that it be left alone for now.
 - **0002** — build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
-- **0018** — **do we write to Forestry England, and with which asks?** The email is drafted at
-  `docs/outreach/forestry-england-enquiry.md` and the address is confirmed on their own pages. The
-  ask Rob started from was commercial (would they buy it), but the load-bearing one is permission:
-  the app is public, the repo is public, and the forest data is scraped from their pages under a
-  PRD constraint that says "personal use; not redistributed as a dataset", which is no longer what
-  is happening. Three options on the card with a recommendation. **Its third ask contradicts the
+- **0018** — **do we write to Forestry England, and with which asks?** Three costed options and a
+  recommendation. The only hard reason left is the trade mark: OGL settles the data and permits
+  commercial use, but not the use of their name in a store listing. **Its third ask contradicts the
   PRD non-goal "No App Store release"**, the same way 0016 and 0017 contradict the England-only one.
+- **0027** — **the send**, split out of 0018 on 2026-09-05 because the two together were 325 lines.
+  It carries the two `[confirm]` claims only Rob can settle, the placeholders, the address and the
+  fail date. **Read `docs/outreach/forestry-england-enquiry-review.md` first**: three cold reviewers
+  all predicted the draft as written earns no reply, and nobody has acted on any of it.
 - ~~**0016**~~ — answered Yes on 2026-08-18 and built on 2026-08-29. **One thing it leaves for a
   person: the FLS licence.** They publish no copyright or re-use page anywhere, so the position rests
   on The National Archives' default rather than on a first-party offer. Worth an email in the same
