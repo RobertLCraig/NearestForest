@@ -13,21 +13,22 @@ one ranked list.** Car parks is still England only, because no open dataset of S
 parks exists. Map complete (bundled outline plus optional tiles).
 **Cards 0004 and 0015 were also built on 2026-08-29**: the 177 car parks with no usable upstream
 name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
-One agent-ready card is left, **0022**, raised by 0019; twelve cards await an adversarial pass in
+**No agent-ready card is left**; twelve cards await an adversarial pass in
 `ai-review/`; the last
 unevidenced PRD criterion is card **0001** check 5, and Scotland has added a third reason to run it.
 **Six cards wait on a person**, one fewer than before, because 0016 is answered and built.
 **None of 0004, 0015, 0016 or 0019 is deployed**, and they ship as one batch. 0004 and 0019 have
 still not been looked at on a screen; 0015 and 0016 both have.
-**Card 0019 was built on 2026-09-05**: the footer credits Forestry England in their own published
-wording, credits the OGL separately for the car park data, and no longer claims personal use.
-`CACHE` and `BUILD` are at `v15-2026-09-05`. It raised card **0022**.
+**Cards 0019 and 0022 were built on 2026-09-05**: the footer credits Forestry England in their own
+published wording, credits the OGL *and* the Forestry Commission's own copyright statement for the
+car park data, and no longer claims personal use. `CACHE` and `BUILD` are at `v16-2026-09-05`.
 **A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
 done. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-05 (one unattended worktree run. 0019: the footer credits Forestry England in
+_Last updated: 2026-09-05 (two unattended worktree runs. 0019: the footer credits Forestry England in
 their own published wording, credits the OGL separately for the car park data, drops the personal-use
-claim, and three self-tests keep all three true. Raised 0022, the same rule unapplied to the car park
-data's own copyright holder. Earlier:)_
+claim, and three self-tests keep all three true. It raised 0022, which a second run then built: the
+car park credit now also quotes the Forestry Commission's own copyright statement, which DECISIONS
+2026-08-15 had recorded and nobody had put in the footer. 219 self-tests pass. Earlier:)_
 _2026-08-29 (four unattended worktree runs. 0016: Scotland, 276 destinations from
 Forestry and Land Scotland, whose whole index arrives in one HTML attribute; the two published as
 "(closed)" are dropped, and cafe hours are never presented as a forest's access hours. 0004: the
@@ -396,14 +397,15 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 
 The queue is [docs/board/](board/), one card per file. At the head:
 
-1. **Look at 0004 and 0019 on a screen, then deploy 0004, 0015, 0016 and 0019 together.** **0019** is
-   four sentences of footer text, so the only thing to look at is how the paragraph wraps.
+1. **Look at 0004 and 0019 on a screen, then deploy 0004, 0015, 0016, 0019 and 0022 together.**
+   **0019 and 0022 are the same paragraph**, four sentences of footer text, so the only thing to look
+   at is how it wraps; 0022 added one clause to the car park sentence, so check that one first.
    For **0004**, check the dim italic
    against the **dark** theme, where it has the least contrast to spare, and check a map label, since
    "Car park near Bedgebury Nat…" truncates at 22 characters. **0015 no longer needs a desktop look**
    — it got one, and its layout and contrast both hold; what it still wants is the phone, which the
    0018 screenshots need anyway, so fold it into that rather than blocking the deploy on it.
-   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v15-2026-09-05`.
+   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v16-2026-09-05`.
    **Serving a worktree is a solved problem now** and is worth reusing on 0004:
    `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
@@ -415,10 +417,7 @@ The queue is [docs/board/](board/), one card per file. At the head:
    Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map truncates
    most derived names before the forest is reached. In the list this is fine, because each row still
    carries its own distance and bearing. On the map it is not.
-3. **0022** name the Forestry Commission on the car park credit (`todo/`) — one footer sentence plus
-   one self-test, raised by 0019 and the same rule 0019 applied. DECISIONS 2026-08-15 recorded a
-   required attribution for the car park data; the footer names its licence and not its holder.
-4. **An adversarial pass over `ai-review/`** — five cards now (0005 deploy, 0006 compass, 0008
+3. **An adversarial pass over `ai-review/`** — five cards now (0005 deploy, 0006 compass, 0008
    offline map, 0009 tile layer, and **0020 campsites**, which is the newest and the largest
    single change since the map). 0020 is worth real scepticism on three points: the filter that
    decides what a campervan can get into, whether the ODbL Collective Database argument holds, and
@@ -426,7 +425,7 @@ The queue is [docs/board/](board/), one card per file. At the head:
    to break it. **0008 deserves the most scepticism:** its gestures have only ever run against a
    stubbed canvas in node, never a real finger, and nobody has watched 630 car park markers render
    on a phone. `/code-review` is the tool.
-5. Everything else needs a person: see below.
+4. Everything else needs a person: see below.
 
 **Scotland is answered and built** (card 0016, answered Yes on 2026-08-18, built 2026-08-29). The
 forest tabs took on a second agency and a second scraper, knowingly. **Wales is still open**, card
@@ -436,7 +435,7 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **No agent-ready card is left**: 0016 was the
+See [docs/board/human-review/](board/human-review/). **No agent-ready card is left**: 0022 was the
 last one, and what remains is the adversarial pass over `ai-review/`. Six cards need Rob, and they
 fit in one conversation:
 
