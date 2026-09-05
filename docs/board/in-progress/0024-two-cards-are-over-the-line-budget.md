@@ -194,3 +194,44 @@ scope, because `#3` is a criterion of this card and was ticked while untrue.
 
 **Could not settle from the repository:** nothing. No browser check applies; nothing under `app/`
 changed.
+
+**2026-09-05**
+RESULT: partial
+TESTS: +0 new, all green. All four criteria are `proves: none`. `node scripts/selftest.js` reports
+219 passed, 0 failed. No `vendor\bin\pest.bat`, no `pint.bat`, no `composer.json` in this project.
+TOUCHED: docs/board/in-progress/0024-two-cards-are-over-the-line-budget.md
+OUT-OF-SCOPE: none - `0028` is open and still covers the whole of the `#4` blocker
+
+Third run. **No file outside this comment changed, and none should have.** The card's build work was
+finished by the first two runs; this run only checked it and found nothing left to do.
+
+**`#1`, `#2` and `#3` were re-verified rather than taken on trust.** `0018` and `0020` are 100 lines
+each. `#3` was checked mechanically, not by reading: every number and URL that commit `8295612`
+deleted from the two cards was extracted and grepped against the whole tracked tree. All five removed
+URLs survive - the Stay the Night destinations page is not in a doc but is built by
+`scripts/fetch_campsites.py:27`, so the fetcher owns it. Exactly one number lands nowhere, `3,682`,
+and the second run's entry above records discarding it on purpose as superseded by the 3,681 that
+shipped. So `#3` holds.
+
+**`#4` cannot be met from this card by any route, and this is the third run to say so.** The check
+still reports the same single failure, in a card this session may not edit:
+
+    NearestForest   1   27   0029
+    0026    todo    unexplained link: 0023
+
+`#4` is a dependency on card `0028`, not open work on `0024`. Build `0028` and `#4` closes with no
+work here at all.
+
+**Considered and rejected: adding `needs: 0028` to this card's frontmatter.** The README defines
+`needs:` as what a card cannot *start* without and warns against declaring an influence as a blocker,
+and the unattended loop will not start a card whose `needs:` is unresolved. It would freeze a card
+that has nothing left in it.
+
+**Assumed:** that a comment-only entry is the right output for a run that finds no work, rather than
+inventing some. **Could not settle from the repository:** nothing.
+
+**Worth a reader's eye, not a card.** `0021` is now 250 lines and this card 196, so `## Not this
+card`'s "everything else here is under 145 lines" is stale. Both grew only by append-only build logs
+that the process requires, and the budget rule lives in `docs/board/README.md`, which this card
+forbids changing and which is a copy of a file held outside this repository. There is nothing here a
+card could ask for.
