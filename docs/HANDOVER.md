@@ -24,10 +24,12 @@ published wording, credits the OGL *and* the Forestry Commission's own copyright
 car park data, and no longer claims personal use. `CACHE` and `BUILD` are at `v16-2026-09-05`.
 **A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
 done. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-05 (three unattended worktree runs. 0024: cards 0018 and 0020 were two and a
+_Last updated: 2026-09-05 (four unattended worktree runs. 0024: cards 0018 and 0020 were two and a
 half times the board's 100-line budget and are now 100 each. 0018's three cold reviews and its ask
 menu moved verbatim to `docs/outreach/forestry-england-enquiry-review.md`; its send became card 0027,
-because its two append-only logs are 53 of the 100 lines. 0020's measurements moved into DATA-MODEL.
+because its two append-only logs are 53 of the 100 lines. 0020's measurements moved into DATA-MODEL,
+except two a second run caught on the way out: the live brotli measurement that is the actual evidence
+for NFR3, and the 1,512 unnamed records in the wider filter. Both are in DATA-MODEL now.
 The convention check reports one failing card, 0026, which is card 0028 and not 0024's to fix. Earlier
 today: 0019: the footer credits Forestry England in
 their own published wording, credits the OGL separately for the car park data, drops the personal-use

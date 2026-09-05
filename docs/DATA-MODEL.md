@@ -300,9 +300,17 @@ see DECISIONS 2026-08-15 for the call and the reasoning. **A wider filter was me
 taken:** keep every `caravan_site` not marked `caravans=no`, drop `tents=only` (19),
 `backcountry=yes` (54), `access=private|no` (174), scout or group-only sites (164) and
 static-caravan parks (146), and 5,194 records survive at 628 KB raw and 150 KB gzipped. That is the
-size of the change if real use ever says the shipped list is too thin. A columnar encoding of the
-same set was measured at 509 KB raw and 146 KB gzipped, which does not pay for a decode step, so
-this file stays plain JSON.
+size of the change if real use ever says the shipped list is too thin, and **1,512 of those 5,194
+carry no `name`**, which is what it costs in quality: they are the same defect card 0004 fixed for
+car parks. The unfiltered 8,496 are 1,081 KB raw.
+
+**Payload is not the constraint, because the live server already compresses.** Measured 2026-08-15
+against `https://forestlocator.enhanceify.co.uk/data/sites.json`: it returns `Content-Encoding: br`
+at **52,064 bytes** for the 527,524-byte file. PRD NFR3 ("under 1 MB so it installs over a weak
+connection") is therefore met over the wire with room to spare. That is why a columnar encoding was
+rejected: measured at 509 KB raw and 146 KB gzipped on the same set, it does not pay for a decode
+step when brotli is already doing ten times better, so this file stays plain JSON. What does grow is
+the **offline cache footprint**, which is the thing to watch on a phone rather than transfer size.
 
 **The extract comes from Overpass and not from a Geofabrik `.pbf`**, because the query is ten lines
 and the response is 2.3 MB, where a `.pbf` would need an osmium toolchain on a Windows box that has

@@ -142,3 +142,55 @@ the `0010` mail dates are on `0027`, and HANDOVER carries the `0015` screenshot 
 though: `0018` sits in `todo/` while HANDOVER counts it among the cards waiting on Rob, and `0027`
 was put in `todo/` beside it rather than in `human-review/`, because a card session does not choose
 lanes. Both carry the material a person needs whichever lane they end up in.
+
+**2026-09-05**
+RESULT: partial
+TESTS: +0 new, all green. All four criteria are `proves: none`, so none of them gets a test and the
+paragraph about writing one first does not apply. `node scripts/selftest.js` reports 219 passed,
+0 failed, unchanged, which is what a docs-only change should do. There is still no
+`vendor\bin\pest.bat`, no `pint.bat` and no `composer.json` in this project.
+TOUCHED: docs/DATA-MODEL.md
+TOUCHED: docs/HANDOVER.md
+TOUCHED: docs/board/in-progress/0024-two-cards-are-over-the-line-budget.md
+OUT-OF-SCOPE: none - `0028` was already raised by the previous run and still covers the #4 blocker
+
+Resumed the card for its one open criterion, `#4`, and checked the three ticked ones rather than
+taking them on trust. `#1` and `#2` hold: `0018` and `0020` are 100 lines each.
+
+**`#3` did not hold, and now does.** The check was mechanical: take every number, date and URL the
+previous run deleted from each card, and ask whether it still appears anywhere in the repository.
+`0018` came back clean - the fail date, the contact address, the `~700 words` review finding and the
+cut buy-it-outright option are all on `0027` or in
+`docs/outreach/forestry-england-enquiry-review.md`. `0020` did not. Two load-bearing measurements
+had landed nowhere, and both are now in `docs/DATA-MODEL.md`, which is the doc that owns them:
+
+- **The live compression measurement.** `sites.json` served from
+  `https://forestlocator.enhanceify.co.uk/data/sites.json` returns `Content-Encoding: br` at 52,064
+  bytes for a 527,524-byte file. This is the *evidence* for PRD NFR3 and the real reason the columnar
+  encoding was rejected. DATA-MODEL had kept the rejection but justified it as "does not pay for a
+  decode step", which is the conclusion with the measurement removed from under it.
+- **1,512 of the wider filter's 5,194 records carry no `name`.** DATA-MODEL described that filter as
+  the change to make "if real use ever says the shipped list is too thin" without saying what it
+  costs, and the 1,512 are the same defect card `0004` fixed for car parks.
+
+Discarded as superseded rather than moved, on `## Not this card`'s own wording of "a fact that is
+still load bearing": the `3,682 / 516 KB / 125 KB` payload row, because the file that actually
+shipped is 3,681 records and 972 KB and HANDOVER carries those; and the `~550 KB to ~1.2 MB` cache
+figure, which HANDOVER now supersedes with `~1.7 MB`. The Overpass `ISO3166-2` area codes were not
+lost at all - `scripts/fetch_campsites.py` owns them.
+
+**`#4` is still not met and is still not this card's to meet.** The convention check reports the same
+single failure as before, and nothing this card touched is in it:
+
+    NearestForest   1   27   0029
+    0026    todo    unexplained link: 0023
+
+`0026` names card `0023` in its "How it came to be this way" paragraph and gives no reason for it in
+`## Links`. That is one line in a card outside this card's scope, so it stays card `0028`, which is
+open in `todo/`. Build `0028` and `#4` closes on the next run with no work here.
+
+**Assumed:** that restoring a cut measurement to DATA-MODEL is inside this card rather than new
+scope, because `#3` is a criterion of this card and was ticked while untrue.
+
+**Could not settle from the repository:** nothing. No browser check applies; nothing under `app/`
+changed.
