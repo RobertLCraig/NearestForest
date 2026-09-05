@@ -265,3 +265,19 @@ grew too long by appending. Nothing in `#4` can move until `0028` moves.
 
 **Assumed:** nothing new. **Could not settle from the repository:** nothing. No browser check applies;
 nothing under `app/` changed.
+
+**2026-09-05**
+RESULT: partial
+TESTS: +0 new, all green. All four criteria are `proves: none`. `node scripts/selftest.js`: 219
+passed, 0 failed. No `vendor\bin\pest.bat`, no `pint.bat`, no `composer.json` in this project.
+TOUCHED: docs/board/in-progress/0024-two-cards-are-over-the-line-budget.md
+OUT-OF-SCOPE: none - `0028` is open in `todo/` and is the whole of the `#4` blocker
+
+Fifth run, kept short on purpose: this card is about cards that grew by append, and four entries
+above already carry the reasoning.
+
+Re-measured: `0018` is 100 lines, `0020` is 100 lines. `#4` reports the same single failure it has
+reported on every run, `0026 todo unexplained link: 0023`, in a card this session may not edit.
+`0028` is still sitting unbuilt in `todo/`, so nothing about `#4` could have moved since the last run.
+
+`#4` is a dependency on `0028`, not open work here. Close this card at 3/4.
