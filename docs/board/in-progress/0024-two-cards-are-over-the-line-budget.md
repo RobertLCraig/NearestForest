@@ -235,3 +235,33 @@ card`'s "everything else here is under 145 lines" is stale. Both grew only by ap
 that the process requires, and the budget rule lives in `docs/board/README.md`, which this card
 forbids changing and which is a copy of a file held outside this repository. There is nothing here a
 card could ask for.
+
+**2026-09-05**
+RESULT: partial
+TESTS: +0 new, all green. All four criteria are `proves: none`. `node scripts/selftest.js` reports
+219 passed, 0 failed. No `vendor\bin\pest.bat`, no `pint.bat`, no `composer.json` in this project.
+TOUCHED: docs/board/in-progress/0024-two-cards-are-over-the-line-budget.md
+OUT-OF-SCOPE: none - `0028` is open in `todo/` and covers the whole of the `#4` blocker
+
+Fourth run, and it changed nothing but this entry, which is the correct output when the work is done.
+
+Re-measured rather than trusting the entries above. Every card on the board, counted from its file:
+`0018` is 100 lines and `0020` is 100 lines, so `#1` and `#2` hold. `#3` was proved mechanically by
+the two runs above, by grepping every deleted number and URL against the tracked tree, and nothing
+has touched either card since, so re-deriving it would measure the same bytes a third time.
+
+`#4` reports the same single failure it has reported on all three previous runs:
+
+    NearestForest   1   27   0029
+    0026    todo    unexplained link: 0023
+
+The failure is one missing line in `0026`'s `## Links`. That is a card this session may not edit, and
+it is already written up as `0028`, whose own `#2` is word-for-word this criterion. `#4` is therefore
+a dependency, not open work, and it closes on the run after `0028` is built.
+
+**This card should be closed at `3/4` rather than resumed a fifth time.** Four runs have now reached
+the same finding, and each one appends about thirty lines to a card whose whole subject is cards that
+grew too long by appending. Nothing in `#4` can move until `0028` moves.
+
+**Assumed:** nothing new. **Could not settle from the repository:** nothing. No browser check applies;
+nothing under `app/` changed.
