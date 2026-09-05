@@ -367,22 +367,24 @@ The queue is [docs/board/](board/), one card per file. At the head:
    `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
    about 190 KB and the Forests tab doubled, so a cold offline launch is now testing more than it was.
-2. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
+2. **Card 0026, the only agent-ready one**: `scraped_at` is stamped when the parser runs, so
+   re-parsing the cached scrape reports the data as fresher than it is. Raised by 0023.
+3. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
    still does not exist. The 2026-08-14 screenshots show it ("Bedgebury National Pi…" over "Hemsted
    Fores…"). Worth
    opening, and **0004 has raised the stakes**: 14 car parks now share the label "Car park near Dalby
    Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map truncates
    most derived names before the forest is reached. In the list this is fine, because each row still
    carries its own distance and bearing. On the map it is not.
-3. **An adversarial pass over `ai-review/`** — five cards now (0005 deploy, 0006 compass, 0008
-   offline map, 0009 tile layer, and **0020 campsites**, which is the newest and the largest
-   single change since the map). 0020 is worth real scepticism on three points: the filter that
+4. **An adversarial pass over `ai-review/`** — fourteen cards now, among them 0005 deploy, 0006
+   compass, 0008 offline map, 0009 tile layer, and **0020 campsites**, which is the largest
+   single change since the map. 0020 is worth real scepticism on three points: the filter that
    decides what a campervan can get into, whether the ODbL Collective Database argument holds, and
    whether 3,681 more markers have broken the map's clustering or its label collisions. Nothing reaches `done/` without somebody trying
    to break it. **0008 deserves the most scepticism:** its gestures have only ever run against a
    stubbed canvas in node, never a real finger, and nobody has watched 630 car park markers render
    on a phone. `/code-review` is the tool.
-4. Everything else needs a person: see below.
+5. Everything else needs a person: see below.
 
 **Scotland is answered and built** (card 0016, answered Yes on 2026-08-18, built 2026-08-29). The
 forest tabs took on a second agency and a second scraper, knowingly. **Wales is still open**, card
