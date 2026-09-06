@@ -11,8 +11,8 @@ agencies; Campsites covers England, Scotland and Wales; Car parks is England onl
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
 **The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 2.
 **Five built cards are not yet deployed** and ship as one batch; see "Current state".
-**One agent-ready card is open**, 0032; `ai-review/` holds the adversarial-pass queue.
-**Seven cards wait on a person**, and the last unevidenced PRD criterion is card **0001** check 5.
+**Two agent-ready cards are open**, 0033 and 0034; `ai-review/` holds the adversarial-pass queue.
+**Eight cards wait on a person**, and the last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
 checkout. See card 0015's second comment entry and card 0016's.
 _Last updated: 2026-09-06. What each card did is on its own comment thread under `docs/board/`, and
@@ -71,8 +71,9 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
 - **`postcode_satnav` is the one to navigate to, never `postcode_postal`.** They genuinely differ
   (Bedgebury publishes `TN17 2SJ` for sat nav and `TN17 2SL` as its postal code).
 - **`opening_summary.access`** is `always` / `dusk` / `hours` / `unknown` and is the primary opening
-  field, because most sites publish no clock time at all. Measured: 94 always, 104 dusk, 43 hours,
-  27 unknown. `dusk` deliberately stores no closing time; the app computes sunset per site at render.
+  field, because most sites publish no clock time at all. Measured over the 274 Forestry England
+  forests: 94 always, 104 dusk, 43 hours, 27 unknown. **It does not cover the rest of the dataset**:
+  269 of the 276 Scottish forests and all 630 car parks carry `opening_summary: null`. `dusk` deliberately stores no closing time; the app computes sunset per site at render.
 - **177 car park names are ours, not upstream's, and they are flagged.** 170 were published as
   `Unknown` and 7 as a bare `Car Park`. `scripts/parse.py` names each after its nearest forest
   point (`Car park near Friston Forest`) when one is within **5 miles**, a threshold taken from the
@@ -296,7 +297,9 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   `tiles.key` paths are unreachable, TLS is 1.2/1.3 with a valid certificate, and no key appears in
   any of the 20 commits. Cards 0011-0014 carry what was fixed. Two things are worth keeping in
   mind rather than re-deriving: `api/nearest.php` was measured at ~65 ms with ten concurrent and no
-  degradation, so its 515 KB re-parse per request is **not** a DoS lever and does not need caching;
+  degradation, so its re-parse per request is **not** a DoS lever and does not need caching. **That
+  timing was taken against a 515 KB `sites.json`, and card 0016 grew the file to 719 KB**, so the
+  conclusion holds on a 40% smaller file than the one shipping today and has not been re-timed;
   and the `%{HTTP_HOST}` open-redirect shape in `.htaccess` was tested and is not reachable, since
   an unknown `Host` 404s before the rewrite runs. It was replaced with a literal anyway.
 - **Built 2026-08-15:** the **Campsites** tab, card 0020, from OpenStreetMap plus Forestry and Land
@@ -304,8 +307,8 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 - **Built and not yet deployed, as one batch:** **0004** (177 car parks named after their nearest
   forest) and **0016** (Scotland in the Forests tab), both 2026-08-29; **0015** (the tile
   attribution pill), 2026-08-29, rendered and closed by a second run the same day; **0019** and
-  **0022** (the footer credits), both 2026-09-05. 219 self-tests pass and `CACHE` / `BUILD` are at
-  `v16-2026-09-05`. See "What's next" item 1 for what is still owed before they ship.
+  **0022** (the footer credits), both 2026-09-05. 225 self-tests pass (`node scripts/selftest.js`,
+  measured 2026-09-06) and `CACHE` / `BUILD` are at `v16-2026-09-05`. See "What's next" item 1 for what is still owed before they ship.
   **What each card measured, found and deliberately left alone is on its own comment thread** in
   `ai-review/`; the facts that outlived the build are in DATA-MODEL and DECISIONS, and the FLS
   licence gap 0016 left for a person is in Blockers below.
@@ -350,7 +353,8 @@ The queue is [docs/board/](board/), one card per file. At the head:
    Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map truncates
    most derived names before the forest is reached. In the list this is fine, because each row still
    carries its own distance and bearing. On the map it is not.
-4. **An adversarial pass over `ai-review/`** — eighteen cards now, among them 0005 deploy, 0006
+4. **An adversarial pass over `ai-review/`** — nineteen cards on 2026-09-06 (`ls docs/board/ai-review`,
+   which is the only honest count), among them 0005 deploy, 0006
    compass, 0008 offline map, 0009 tile layer, and **0020 campsites**, which is the largest
    single change since the map. 0020 is worth real scepticism on three points: the filter that
    decides what a campervan can get into, whether the ODbL Collective Database argument holds, and
@@ -368,12 +372,14 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **One agent-ready card is open**: 0032, a
-self-test count in this file that nothing re-measures. Card 0031 took this file back under its 40 KB
-budget on 2026-09-06 and raised 0032 on the way. Otherwise what remains is the adversarial pass over `ai-review/` and the
+See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**, both raised
+by 0032 on 2026-09-06 while it corrected the counts in this file: **0033**, an unanswered decision
+card sitting in `todo/` where nobody sweeping the person's queue can see it, and **0034**, the
+"`api/nearest.php` needs no caching" finding, which was timed on a `sites.json` 40% smaller than the
+one shipping today. Otherwise what remains is the adversarial pass over `ai-review/` and the
 re-fetch that card 0026 left. **Card 0030 is built and left one box open for a person**: the suite
 must be seen passing between 00:00 and 01:00 local while BST is in force. Five seconds, but only
-possible in that hour. Seven cards need Rob, and they fit in one conversation:
+possible in that hour. Eight cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
@@ -419,6 +425,9 @@ the mail fix. **That fix belongs on the enhanceify-V2 board, not this one**, and
   drafted on the card. Recheck 2026-09-11, so not due.
 - **0003** — a decision with options and a recommendation already on the card, waiting on real
   trips rather than analysis. Recheck 2026-09-19, so not due.
+- **0025** — when a card's ask must sit above `## Why`, does the ask win or the problem statement?
+  Three options and a recommendation on the card. **It sits in `todo/` rather than `human-review/`
+  and is still unanswered**, and card 0021 cannot close its last criterion until it is.
 
 ## How to pick up
 
@@ -455,7 +464,7 @@ pwsh ./scripts/deploy.ps1
 
 - `/handover resume` — to pick this up in a fresh session.
 - `/checkpoint` — after any work, to update the docs and commit in one step.
-- `/code-review` — the natural next move on the four cards sitting in `ai-review/`, and worth
+- `/code-review` — the natural next move on the cards sitting in `ai-review/`, and worth
   running over `scripts/parse.py` before trusting a re-scrape, since it is the one file that
   silently depends on someone else's HTML staying the same shape.
 - `/run` — to drive the app and actually look at the map, rather than inferring it from a stubbed
@@ -467,7 +476,7 @@ pwsh ./scripts/deploy.ps1
 |-----|---------|
 | [PRD.md](PRD.md) | Goal, success criteria, scope, non-goals, constraints |
 | [DATA-MODEL.md](DATA-MODEL.md) | The canonical `Site` shape and known divergences |
-| [DECISIONS.md](DECISIONS.md) | Eleven decisions with rationale, append-only |
+| [DECISIONS.md](DECISIONS.md) | Twenty-two decisions with rationale, append-only |
 | [build/IOS-SHORTCUT.md](build/IOS-SHORTCUT.md) | Shortcut build recipe and its known limits |
 | [../HUMAN_ACTIONS.md](../HUMAN_ACTIONS.md) | Historical record of the initial build's human actions, plus the recurring refresh. **Anything still open lives on the board, not there.** |
 | [../CLAUDE.md](../CLAUDE.md) | Orient tripwire and project conventions |
