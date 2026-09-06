@@ -43,7 +43,7 @@ is measured as faulty here. Not re-fetching `data/raw/`. Not the other 221 self-
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN the suite runs at any hour of any day, THE SELF-TEST SHALL compare the recorded fetch
+- [x] #1 WHEN the suite runs at any hour of any day, THE SELF-TEST SHALL compare the recorded fetch
       date against a date read from the same clock the fetcher used, so it does not depend on the
       time of day. proves: `fetch records a download date alongside every cached page`
 - [ ] #2 WHEN the machine's clock is set inside the failing window, THE SUITE SHALL still pass.
@@ -52,9 +52,9 @@ is measured as faulty here. Not re-fetching `data/raw/`. Not the other 221 self-
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Watch the test fail first: run the suite with the clock inside the window, and confirm it fails
+- [x] Watch the test fail first: run the suite with the clock inside the window, and confirm it fails
       naming two dates one day apart rather than for any other reason
-- [ ] Make the two sides read one clock
+- [x] Make the two sides read one clock
 - [ ] Re-run `node scripts/selftest.js` inside the window and confirm 222 pass
 
 ## Plan
@@ -91,3 +91,54 @@ printed `222 passed, 0 failed`. A suite that repairs itself on the hour is the w
 observation. The clocks were read directly too: at 00:57 local, node's `toISOString()` gave
 `2026-09-05` and both node's `toLocaleDateString('en-CA')` and Python's `date.today()` gave
 `2026-09-06`.
+
+**2026-09-06** RESULT: partial
+TESTS: +0 new, all green — 225 passed, 0 failed (the existing test is the one repaired)
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+#1 is met. #2 is left open, and the reason is the method it names rather than the fix.
+
+**The window was reproduced without touching the machine clock, and the failure was watched.** The
+fault is not really "after midnight"; it is "Python's local date and node's UTC date name different
+days", and midnight-to-01:00 under BST is only when this machine falls into that. Setting
+`TZ=XXX5` puts Python's `date.today()` a day behind UTC on demand, at any hour. Measured at 05:03
+local on 2026-09-06, well outside the natural window:
+
+    225 passed, 0 failed          # no TZ set
+    224 passed, 1 failed          # TZ=XXX5, before the fix
+      - fetch records a download date alongside every cached page — fetched.json =
+        {"fls/pages/a-glen-2.html":"2026-09-05", ...}, wanted all four pages dated 2026-09-06
+
+That is the reported failure verbatim: the same test, two dates one day apart, and the other 224
+untouched, so the shift is not disturbing anything else. After the fix the same command prints
+`225 passed, 0 failed`, and so does `TZ=XXX-14`, which throws the mismatch the other way.
+
+**What changed.** The expected date is no longer computed in node at all. The Python stub that
+drives `fetch.py` now prints `m.date.today().isoformat()` as its last line — literally the symbol
+`record_fetch` uses, in the process that just wrote the index — and node reads that back. So the two
+halves cannot read different clocks by construction, and there is no locale or ICU assumption in it.
+The Plan's `toLocaleDateString('en-CA')` would also have worked and is one line shorter, but it is a
+second clock that merely agrees with the first, and it keeps the midnight straddle the Plan's own
+point 1 raises. The stub runs twice, so both runs report their day and either is accepted; in an
+ordinary run they are the same date and the assertion is exact.
+
+**The repaired test still bites.** It reads its expectation from the process under test, so that was
+worth proving rather than assuming: `record_fetch` was mutated to write a literal `"1999-01-01"` and
+the suite went red naming all four pages, then `scripts/fetch.py` was restored with
+`git checkout --`. Nothing else in the tree was touched.
+
+**Why #2 is not ticked.** It asks for the clock *set* inside 00:00-01:00 local, or the suite run in
+that window. Neither happened: it was 05:03, and setting the system clock on Rob's machine
+unattended is not a change to make on my own — other worktree sessions may be running against it,
+and a clock jump reaches TLS, scheduled tasks and commit timestamps. The TZ reproduction above is
+the same divergence by a safer route, and I would accept it as the evidence; but it is not the check
+as written, so the box stays open for whoever is next at the keyboard between midnight and 01:00,
+where it costs five seconds.
+
+`toISOString` no longer appears in any assertion; the only remaining occurrence is the comment
+explaining why it was removed. `scripts/fetch.py` was not changed, so nothing about the pipeline's
+own local-versus-UTC question is settled here, as the card fenced out. There is no PHP suite in this
+repository — no `vendor/`, no `composer.json` — so `pest.bat` and `pint.bat` could not run; the
+suite is `node scripts/selftest.js`. Suite counts 225 rather than the card's 222 because card 0029
+added three tests after this card was written.

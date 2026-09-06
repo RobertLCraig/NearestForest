@@ -768,8 +768,9 @@ console.log('--- staleness: scraped_at is the fetch date, not the parse date (ca
   // No .pyc, or running the suite litters scripts/ with an untracked __pycache__.
   const PYENV = Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' });
   const tmp = fs.mkdtempSync(path.join(osmod.tmpdir(), 'nf-0026-'));
-  const today = new Date().toISOString().slice(0, 10);
   const write = (p, s) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); };
+  // Each stub run reports the day its own clock was on; this reads it back (card 0030).
+  const dayOf = (r) => ((r && r.stdout) || '').trim().split('\n').pop().trim();
 
   try {
     // ---- #1: the fetcher records a download date for each page it writes.
@@ -796,12 +797,22 @@ console.log('--- staleness: scraped_at is the fetch date, not the parse date (ca
       'n = sys.argv[2]',
       'print(m.fetch_page({"slug": "a-forest" + n, "url": "https://www.forestryengland.uk/x"}, 0, 1))',
       'print(m.fetch_fls_page({"slug": "a-glen" + n, "url": "https://forestryandland.gov.scot/visit/destinations/x"}))',
+      // Last line, and the whole point of card 0030: the expected date comes from the
+      // fetcher's own clock, in the process that just wrote the index, rather than from
+      // node. node has only toISOString(), which is UTC, and the fetcher stamps the LOCAL
+      // date, so between local midnight and 01:00 under BST the two named different days
+      // and this test went red for an hour a night with nothing broken. Reading it here
+      // also kills the midnight straddle: no gap for the day to turn in.
+      'print(m.date.today().isoformat())',
     ].join('\n');
     // Twice, in two processes, because the fetcher is resumable: the second run must add
     // to the index rather than replace it, or every page fetched before today loses its
     // date the next time somebody resumes an interrupted scrape.
     const r1 = spawnSync(PY, ['-c', stub, raw1, ''], { cwd: ROOT, encoding: 'utf8', env: PYENV });
-    spawnSync(PY, ['-c', stub, raw1, '-2'], { cwd: ROOT, encoding: 'utf8', env: PYENV });
+    const r1b = spawnSync(PY, ['-c', stub, raw1, '-2'], { cwd: ROOT, encoding: 'utf8', env: PYENV });
+    // Either run's day is acceptable, because the two are separate processes and midnight
+    // can fall between them. In every ordinary run they are the same date.
+    const days = [...new Set([dayOf(r1), dayOf(r1b)])].filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
     const idxPath = path.join(raw1, 'fetched.json');
     const wroteHtml = fs.existsSync(path.join(raw1, 'pages', 'a-forest.html')) &&
                       fs.existsSync(path.join(raw1, 'fls', 'pages', 'a-glen.html'));
@@ -810,10 +821,11 @@ console.log('--- staleness: scraped_at is the fetch date, not the parse date (ca
     const want = ['pages/a-forest.html', 'pages/a-forest-2.html',
                   'fls/pages/a-glen.html', 'fls/pages/a-glen-2.html'];
     ok('fetch records a download date alongside every cached page',
-       wroteHtml && idx !== null && want.every(k => idx[k] === today),
+       wroteHtml && idx !== null && days.length > 0 && want.every(k => days.includes(idx[k])),
        !wroteHtml ? `the stub fetch wrote no page: ${(r1.stderr || '').trim().split('\n').slice(-3).join(' / ')}`
        : idx === null ? 'the fetcher wrote the pages but left no data/raw/fetched.json to read a date back from'
-       : `fetched.json = ${JSON.stringify(idx)}, wanted all four pages dated ${today}`);
+       : !days.length ? 'the stub ran but never reported the fetcher\'s own date, so there is nothing sound to compare against'
+       : `fetched.json = ${JSON.stringify(idx)}, wanted all four pages dated ${days.join(' or ')}`);
 
     // ---- #2 and #3: the parser reads that date back, per page.
     // A copy of parse.py in a fixture tree, because parse.py derives its ROOT from
@@ -854,7 +866,7 @@ console.log('--- staleness: scraped_at is the fetch date, not the parse date (ca
        stamp('cp-1') === CP_DATE,
        !built ? `parse.py exited ${r2.status}: ${(r2.stdout || '').trim().split('\n').slice(-4).join(' / ')}`
        : `England ${stamp('fe-test-forest')} (wanted ${FE_DATE}), Scotland ${stamp('fls-test-glen')} ` +
-         `(wanted ${FLS_DATE}), car park ${stamp('cp-1')} (wanted ${CP_DATE}); today is ${today}`);
+         `(wanted ${FLS_DATE}), car park ${stamp('cp-1')} (wanted ${CP_DATE}); today is ${days[0] || '?'}`);
 
     // The migration case, and the one that must never be papered over: data/raw/ is
     // gitignored, so every page cached before this change carries no date and its age
