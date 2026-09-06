@@ -11,7 +11,7 @@ agencies; Campsites covers England, Scotland and Wales; Car parks is England onl
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
 **The pipeline is red on purpose** until `data/raw/` is re-fetched — see "What's next" 2.
 **Five built cards are not yet deployed** and ship as one batch — see "Current state".
-**One agent-ready card is open**, 0031; eighteen await an adversarial pass in `ai-review/`.
+**One agent-ready card is open**, 0032; `ai-review/` holds the adversarial-pass queue.
 **Seven cards wait on a person**, and the last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
 checkout. See card 0015's second comment entry and card 0016's.
@@ -368,8 +368,9 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **One agent-ready card is open**: 0031, this
-file over its budget again. Otherwise what remains is the adversarial pass over `ai-review/` and the
+See [docs/board/human-review/](board/human-review/). **One agent-ready card is open**: 0032, a
+self-test count in this file that nothing re-measures. Card 0031 took this file back under its 40 KB
+budget on 2026-09-06 and raised 0032 on the way. Otherwise what remains is the adversarial pass over `ai-review/` and the
 re-fetch that card 0026 left. **Card 0030 is built and left one box open for a person**: the suite
 must be seen passing between 00:00 and 01:00 local while BST is in force. Five seconds, but only
 possible in that hour. Seven cards need Rob, and they fit in one conversation:

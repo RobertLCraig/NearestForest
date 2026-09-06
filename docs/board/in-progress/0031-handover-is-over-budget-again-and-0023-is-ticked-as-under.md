@@ -113,7 +113,7 @@ plus a Status block that had become the same thing. Folding the whole preamble t
 took the file to **37,975** — under budget, but only 2,985 bytes of headroom. `0023` left 2,432 and
 four cards ate it in a day, so that would have reopened this card rather than closed it. The second
 fold was `## Current state`'s "Known bugs / broken", 1,900 bytes narrating five bugs fixed on
-2026-08-08 and 08-10 as though this session had just fixed them. Final: **37,430 bytes, 3,530 under
+2026-08-08 and 08-10 as though this session had just fixed them. Final: **37,545 bytes, 3,415 under
 budget**, longest line 187 characters against the hook's 400.
 
 **#2 was checked mechanically, not by eye.** Every numeric token in the removed text was extracted
@@ -138,9 +138,13 @@ a missing path (Deployment; the reason is in `scripts/selftest.js:494-502`). Nei
 then run against this worktree with a throwaway session id and printed the orient line with no budget
 warning.
 
-**One correction made in passing, and it was not free scope.** `## What's next` item 4 said "fourteen
-cards now" await an adversarial pass while `ai-review/` holds eighteen. The preamble I wrote asserts
-eighteen, so leaving item 4 alone would have shipped a file contradicting itself in one commit.
+**Three corrections made in passing, none of them free scope.** `## What's next` item 4 said
+"fourteen cards now" await an adversarial pass while `ai-review/` holds eighteen; the preamble I
+wrote asserts eighteen, so leaving item 4 alone would have shipped a file contradicting itself in one
+commit. The other two are statements this card's own work made false: the preamble and `## Blockers`
+both said the one open agent-ready card was 0031, "this file over its budget again", which stopped
+being true the moment the fold landed. Both now name 0032. Neither carries a card count any more,
+because that is the number 0032 exists to make checkable.
 
 **What I could not settle from the repository, and what I left.** The self-test count is the same
 class of fault and I did not fix it: `## Current state` says 219 self-tests pass and the suite prints
