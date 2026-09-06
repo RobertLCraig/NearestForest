@@ -15,7 +15,7 @@ parks exists. Map complete (bundled outline plus optional tiles).
 name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
 **Card 0026 was built on 2026-09-05**: `scraped_at` is now the date the page was downloaded, not the
 date the parser ran, and the pipeline is red until `data/raw/` is re-fetched. See "What's next" 2.
-**Three agent-ready cards are open**, 0029, 0030 and 0031; sixteen await an adversarial pass in
+**Two agent-ready cards are open**, 0030 and 0031; eighteen await an adversarial pass in
 `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5, and Scotland has added a
 third reason to run it.
 **Seven cards wait on a person**: 0018 split into the choice (0018) and the send (0027) on 2026-09-05.
@@ -26,8 +26,10 @@ published wording, credits the OGL *and* the Forestry Commission's own copyright
 car park data, and no longer claims personal use. `CACHE` and `BUILD` are at `v16-2026-09-05`.
 **A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
 done. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-06 (six unattended worktree runs. 0028: card 0026's link to 0023 now says
-what it is for; it raised 0030 and 0031. Earlier: 0026: `scraped_at` now comes from
+_Last updated: 2026-09-06 (seven unattended worktree runs. 0029: both parsers now report their
+problems and exit before writing, so a refused dataset no longer replaces the good one on disk.
+Earlier: 0028: card 0026's link to 0023 now says what it is for; it raised 0030 and 0031.
+Earlier: 0026: `scraped_at` now comes from
 `data/raw/fetched.json`, which `fetch.py` writes as it downloads, and a page cached before that index
 existed fails the build by name rather than being stamped with today. It raised 0029, because the
 failing parse that proved it also overwrote the good `sites.json` before exiting. Earlier:
@@ -390,10 +392,9 @@ The queue is [docs/board/](board/), one card per file. At the head:
    before that index existed has an age nobody can recover. So `python scripts/parse.py` names those
    552 pages and exits 1, which is the change working. Until somebody deletes `data/raw/` and re-runs
    `scripts/fetch.py`, `app/data/sites.json` keeps the stamps it has. **A re-fetch also refreshes the
-   data**, so it is a dataset change to look at, not a formality. Card **0029** is worth doing first:
-   a failing parse currently overwrites the good `sites.json` before it exits.
-   **0028** is still open: one line in 0026's own `## Links`, and the only thing keeping the board's
-   convention check off zero.
+   data**, so it is a dataset change to look at, not a formality. **Card 0029 is built**, so that
+   failing parse no longer costs the shipped dataset: both parsers now report and exit *before* they
+   write, and the last good file survives a refusal.
 3. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
    still does not exist. The 2026-08-14 screenshots show it ("Bedgebury National Pi…" over "Hemsted
    Fores…"). Worth
@@ -419,10 +420,10 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**: 0029, which
-stops a failing parse overwriting the good dataset, and 0028, which puts the board's convention check
-back to zero. Otherwise what remains is the adversarial pass over `ai-review/` and the re-fetch that
-card 0026 left. Seven cards need Rob, and they fit in one conversation:
+See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**: 0030, a
+UTC-versus-local date compare in the fetch-date test, and 0031, this file over its budget again.
+Otherwise what remains is the adversarial pass over `ai-review/` and the re-fetch that card 0026
+left. Seven cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the

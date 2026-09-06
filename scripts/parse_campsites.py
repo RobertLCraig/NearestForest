@@ -424,6 +424,20 @@ def main():
     fac = len([s for s in sites if s.get("facilities")])
     log("  %-14s %4d/%d present" % ("facilities", fac, len(sites)))
 
+    # Before the write, for the reason spelled out in parse.py: app/data/campsites.json is
+    # committed and is what the app ships, so refusing a dataset after replacing the last
+    # good one costs the only copy there was. See card 0029.
+    if problems:
+        log("")
+        log("PROBLEMS (%d):" % len(problems))
+        for p in problems[:40]:
+            log("  - %s" % p)
+        if len(problems) > 40:
+            log("  ... and %d more" % (len(problems) - 40))
+        log("Exiting non-zero: dataset is not trustworthy. Nothing written; %s is unchanged."
+            % OUT)
+        sys.exit(1)
+
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     payload = {
         "generated_at": max([v for v in scraped.values() if v] or ["unknown"]),
@@ -447,16 +461,6 @@ def main():
     log("")
     log("WROTE %s  (%d campsites, %.0f KB)" % (OUT, len(sites), kb))
     log("  by country: %s" % ", ".join("%s %d" % (k, v) for k, v in sorted(by_country.items())))
-
-    if problems:
-        log("")
-        log("PROBLEMS (%d):" % len(problems))
-        for p in problems[:40]:
-            log("  - %s" % p)
-        if len(problems) > 40:
-            log("  ... and %d more" % (len(problems) - 40))
-        log("Exiting non-zero: dataset is not trustworthy.")
-        sys.exit(1)
     log("Stage 2b complete, no problems.")
 
 

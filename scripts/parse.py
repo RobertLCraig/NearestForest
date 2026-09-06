@@ -729,6 +729,21 @@ def main():
     for s in sites:
         by_country[s["country"]] = by_country.get(s["country"], 0) + 1
 
+    # The gate comes before the write on purpose. app/data/sites.json is committed and is
+    # what the app ships, so the copy on disk is the only good copy; a build that has
+    # decided this dataset is not trustworthy must not destroy the last one that was.
+    # See card 0029: the write used to come first, and a correct refusal cost the dataset.
+    if problems:
+        log("")
+        log("PROBLEMS (%d):" % len(problems))
+        for p in problems[:40]:
+            log("  - %s" % p)
+        if len(problems) > 40:
+            log("  ... and %d more" % (len(problems) - 40))
+        log("Exiting non-zero: dataset is not trustworthy. Nothing written; %s is unchanged."
+            % OUT)
+        sys.exit(1)
+
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     payload = {
         "generated_at": TODAY,
@@ -742,16 +757,6 @@ def main():
     kb = os.path.getsize(OUT) / 1024
     log("")
     log("WROTE %s  (%d sites, %.0f KB)" % (OUT, len(sites), kb))
-
-    if problems:
-        log("")
-        log("PROBLEMS (%d):" % len(problems))
-        for p in problems[:40]:
-            log("  - %s" % p)
-        if len(problems) > 40:
-            log("  ... and %d more" % (len(problems) - 40))
-        log("Exiting non-zero: dataset is not trustworthy.")
-        sys.exit(1)
     log("Stage 2 complete, no problems.")
 
 

@@ -37,20 +37,20 @@ writes a cache rather than a shipped file.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `scripts/parse.py` finds problems, THE PARSER SHALL exit non-zero with the previous
+- [x] #1 WHEN `scripts/parse.py` finds problems, THE PARSER SHALL exit non-zero with the previous
       `app/data/sites.json` still on disk unchanged. proves: `a failed parse leaves the previous
       dataset untouched`
-- [ ] #2 WHEN `scripts/parse.py` finds no problems, THE PARSER SHALL write the dataset exactly as it
+- [x] #2 WHEN `scripts/parse.py` finds no problems, THE PARSER SHALL write the dataset exactly as it
       does now. proves: `a clean parse still writes the dataset`
-- [ ] #3 WHEN `scripts/parse_campsites.py` finds problems, THE PARSER SHALL exit non-zero with the
+- [x] #3 WHEN `scripts/parse_campsites.py` finds problems, THE PARSER SHALL exit non-zero with the
       previous `app/data/campsites.json` still on disk unchanged. proves: `a failed campsite parse
       leaves the previous dataset untouched`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Move the `if problems:` block ahead of the write in `scripts/parse.py`
-- [ ] Do the same in `scripts/parse_campsites.py`
-- [ ] Cover both in `scripts/selftest.js`, against a fixture tree rather than the real one
+- [x] Move the `if problems:` block ahead of the write in `scripts/parse.py`
+- [x] Do the same in `scripts/parse_campsites.py`
+- [x] Cover both in `scripts/selftest.js`, against a fixture tree rather than the real one
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. Only `scripts/parse.py`,
@@ -73,3 +73,26 @@ previous output byte-identical.
 **2026-09-05** Raised by card `0026`, which hit this on its own acceptance run: the parser correctly
 refused a cache with no download dates, and the refusal cost the committed `sites.json`. Recorded
 here rather than fixed, because a fix belongs to a card somebody reviewed.
+
+**2026-09-06** RESULT: done
+TESTS: +3 new, all green (225 passed, 0 failed)
+TOUCHED: scripts/parse.py, scripts/parse_campsites.py, scripts/selftest.js, docs/HANDOVER.md
+OUT-OF-SCOPE: none
+
+The `if problems:` block now sits ahead of `json.dump` in both parsers, and its last line names
+the file it did not touch. Every summary and coverage line is where it was; only the write moved.
+
+The two failure tests were watched red first, against a fixture tree in a temp directory, and both
+failed for the fault rather than for a missing anything: `parse.py exited 1 but had already
+replaced sites.json (1425 bytes -> 1417 bytes)` and the same for `campsites.json`. The forest
+fixture is broken the way the real tree broke, a cached page with no download date; the campsite
+one with a latitude of 12.3, which is what the Great Britain box exists to catch. #2 is a
+no-regression criterion and was green from the start, since nothing could have made a working
+write fail before the change.
+
+Checked and deliberately left alone: `scripts/build_boundary.py` has the same shape but is already
+safe, because `build()` returns `None` before its write when it has failures. No PHP suite exists
+here, so the suite is `node scripts/selftest.js`; there is no `vendor/bin/pest.bat` to run.
+
+HANDOVER touched for three lines this made false, and nothing else: it is over its 40 KB budget and
+card `0031` already carries that.

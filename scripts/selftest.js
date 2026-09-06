@@ -872,6 +872,125 @@ console.log('--- staleness: scraped_at is the fetch date, not the parse date (ca
   }
 }
 
+console.log('');
+console.log('--- a refused dataset does not overwrite the last good one (card 0029) ---');
+{
+  // Both parsers used to write their file and check `problems` afterwards, so a build
+  // that judged the dataset untrustworthy had already replaced the committed copy with
+  // it. Measured on 2026-09-05: parse.py exited 1 as it should and left 1,180 records
+  // reading "scraped_at": null in app/data/sites.json.
+  //
+  // Same fixture discipline as the staleness block above: a copy of each parser in a
+  // throwaway tree with a synthetic data/raw/. Running a deliberately failing parser
+  // against the real tree is the exact fault under test.
+  const osmod = require('os');
+  const { spawnSync } = require('child_process');
+  const PY = process.env.PYTHON || 'python';
+  const PYENV = Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' });
+  const tmp = fs.mkdtempSync(path.join(osmod.tmpdir(), 'nf-0029-'));
+  const write = (p, s) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); };
+  const tail = (r) => ((r.stdout || '') + (r.stderr || '')).trim().split('\n').slice(-3).join(' / ');
+
+  try {
+    // ---- parse.py -------------------------------------------------------------
+    const fx = path.join(tmp, 'forests');
+    fs.mkdirSync(path.join(fx, 'scripts'), { recursive: true });
+    fs.copyFileSync(path.join(ROOT, 'scripts', 'parse.py'), path.join(fx, 'scripts', 'parse.py'));
+    const rawf = path.join(fx, 'data', 'raw');
+    write(path.join(rawf, 'index.json'), JSON.stringify([{
+      id: '1', name: 'Test Forest', slug: 'test-forest',
+      url: 'https://www.forestryengland.uk/test-forest', lat: 51.0, lng: -1.0 }]));
+    write(path.join(rawf, 'pages', 'test-forest.html'), '<html><body>Test Forest</body></html>');
+    write(path.join(rawf, 'fls', 'index.json'), JSON.stringify([{
+      slug: 'test-glen', name: 'Test Glen',
+      url: 'https://forestryandland.gov.scot/visit/destinations/test-glen', lat: 56.5, lng: -4.0 }]));
+    write(path.join(rawf, 'fls', 'pages', 'test-glen.html'), '<html><body>Test Glen</body></html>');
+    write(path.join(rawf, 'carparks.json'), JSON.stringify({ features: [{
+      attributes: { OBJECTID: 1, asset_name: 'Beacon Hill', category: 'Car Parks',
+                    area_asset_type: 'Gravel', status: 'Permanent - Official', cots_district_id: 'X' },
+      centroid: { x: -1.1, y: 51.1 } }] }));
+    const dated = {
+      'pages/test-forest.html': '2026-08-08',
+      'fls/pages/test-glen.html': '2026-08-20',
+      'carparks.json': '2026-08-25',
+    };
+    write(path.join(rawf, 'fetched.json'), JSON.stringify(dated));
+
+    const runParse = () => spawnSync(PY, [path.join(fx, 'scripts', 'parse.py')],
+                                     { cwd: fx, encoding: 'utf8', env: PYENV });
+    const outPath = path.join(fx, 'app', 'data', 'sites.json');
+
+    const clean = runParse();
+    let built = null;
+    if (fs.existsSync(outPath)) { try { built = JSON.parse(fs.readFileSync(outPath, 'utf8')); } catch (e) { built = null; } }
+    ok('a clean parse still writes the dataset',
+       clean.status === 0 && !!built && built.sites.length === 3 &&
+       ['fe-test-forest', 'fls-test-glen', 'cp-1'].every(id => built.sites.some(s => s.id === id)),
+       !built ? `parse.py exited ${clean.status} and wrote no dataset: ${tail(clean)}`
+              : `exited ${clean.status}, wrote ${built.sites.length} sites: ` +
+                built.sites.map(s => s.id).join(', '));
+    const before = built ? fs.readFileSync(outPath) : null;
+
+    // Break it the way the real tree broke: a cached page with no recorded download
+    // date. Refusing that is correct (card 0026). Refusing it after overwriting the
+    // last good file is not.
+    delete dated['pages/test-forest.html'];
+    write(path.join(rawf, 'fetched.json'), JSON.stringify(dated));
+    const bad = runParse();
+    const after = fs.existsSync(outPath) ? fs.readFileSync(outPath) : null;
+    ok('a failed parse leaves the previous dataset untouched',
+       bad.status !== 0 && before !== null && after !== null && before.equals(after),
+       bad.status === 0 ? `parse.py exited 0 on a page with no download date: ${tail(bad)}`
+       : after === null ? 'parse.py exited non-zero and deleted the previous dataset'
+       : !before.equals(after)
+         ? `parse.py exited ${bad.status} but had already replaced sites.json ` +
+           `(${before.length} bytes -> ${after.length} bytes)`
+         : 'no clean dataset to compare against');
+
+    // ---- parse_campsites.py ---------------------------------------------------
+    const cx = path.join(tmp, 'campsites');
+    fs.mkdirSync(path.join(cx, 'scripts'), { recursive: true });
+    fs.copyFileSync(path.join(ROOT, 'scripts', 'parse_campsites.py'),
+                    path.join(cx, 'scripts', 'parse_campsites.py'));
+    const craw = path.join(cx, 'data', 'raw');
+    const goodEl = { type: 'node', id: 1, lat: 54.0, lon: -2.0,
+                     tags: { name: 'Test Campsite', tourism: 'camp_site', caravans: 'yes' } };
+    const writeOsm = (el) => {
+      const body = (els) => JSON.stringify({ osm3s: { timestamp_osm_base: '2026-08-15T00:00:00Z' },
+                                             elements: els });
+      write(path.join(craw, 'osm', 'campsites-gb-eng.json'), body([el]));
+      write(path.join(craw, 'osm', 'campsites-gb-sct.json'), body([]));
+      write(path.join(craw, 'osm', 'campsites-gb-wls.json'), body([]));
+    };
+    writeOsm(goodEl);
+    write(path.join(craw, 'fls', 'stay-the-night.json'), JSON.stringify([{
+      slug: 'test-stn', name: 'Test Car Park',
+      url: 'https://forestryandland.gov.scot/visit/x', lat: 56.0, lng: -4.5 }]));
+
+    const runCamp = () => spawnSync(PY, [path.join(cx, 'scripts', 'parse_campsites.py')],
+                                    { cwd: cx, encoding: 'utf8', env: PYENV });
+    const cOut = path.join(cx, 'app', 'data', 'campsites.json');
+    const cClean = runCamp();
+    const cBefore = fs.existsSync(cOut) ? fs.readFileSync(cOut) : null;
+
+    // An unprojected coordinate, which is what the Great Britain box exists to catch.
+    writeOsm(Object.assign({}, goodEl, { lat: 12.3 }));
+    const cBad = runCamp();
+    const cAfter = fs.existsSync(cOut) ? fs.readFileSync(cOut) : null;
+    ok('a failed campsite parse leaves the previous dataset untouched',
+       cClean.status === 0 && cBad.status !== 0 &&
+       cBefore !== null && cAfter !== null && cBefore.equals(cAfter),
+       cBefore === null ? `the clean run wrote no campsites.json (exit ${cClean.status}): ${tail(cClean)}`
+       : cClean.status !== 0 ? `the clean run exited ${cClean.status}: ${tail(cClean)}`
+       : cBad.status === 0 ? `parse_campsites.py exited 0 on a coordinate outside Great Britain: ${tail(cBad)}`
+       : cAfter === null ? 'parse_campsites.py exited non-zero and deleted the previous dataset'
+       : `parse_campsites.py exited ${cBad.status} but had already replaced campsites.json ` +
+         `(${cBefore.length} bytes -> ${cAfter.length} bytes)`);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 console.log('\n--- ranking from Brighton ---');
 const rankedF = NF.rank(sites, 'forest', BRIGHTON, '');
 const rankedC = NF.rank(sites, 'carpark', BRIGHTON, '');
