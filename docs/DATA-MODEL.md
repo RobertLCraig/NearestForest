@@ -165,7 +165,7 @@ shape, no new fields beyond `country`, and nothing in the app branches on where 
      ever displayed. It becomes harmful the moment anything starts trusting `closes` directly.
 - **The committed `sites.json` still carries parse-date stamps, and only a re-fetch clears them.**
   The generator was fixed by card 0026 (see Closed below), but the file in the repository was built
-  before that, so all 904 records still read `2026-08-29` while the English HTML behind them was
+  before that, so all 1,180 records still read `2026-08-29` while the English HTML behind them was
   downloaded on `2026-08-08`. It cannot be rebuilt from the cache that is on disk: those pages were
   cached before any date was recorded and their age is not recoverable, so `scripts/parse.py` now
   refuses them by name and exits non-zero. **The pipeline is therefore red until `data/raw/` is

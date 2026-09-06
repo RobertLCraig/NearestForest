@@ -1010,6 +1010,13 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
   // that lives in a comment. These read the number back out of the prose and check it
   // against the shipped file, so the next growth fails a run instead of a reader.
   const withUrl = sites.filter(s => s.url);
+  // Card 0039: DATA-MODEL's "Known divergences" claims how many records still carry a
+  // parse-date stamp rather than a fetch-date one. Read the date out of that same sentence
+  // and count the records carrying it, so both halves of the claim are checked. Keyed on
+  // "still read", which the correct 904 in the counts_by_country block cannot match.
+  const dataModel = fs.readFileSync(path.join(ROOT, 'docs', 'DATA-MODEL.md'), 'utf8');
+  const staleDate = (/still read `(\d{4}-\d{2}-\d{2})`/.exec(dataModel) || [])[1];
+  const staleCount = sites.filter(s => s.scraped_at === staleDate).length;
   const carried = [
     // file, pattern whose capture group is the claimed count, what it must equal
     ['app/api/nearest.php', /ranking ([\d,]+) sites/, sites.length],
@@ -1026,6 +1033,7 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
     ['docs/outreach/forestry-england-handover.md',
      /\| [\d,]+ locations, [\d,]+ forests, ([\d,]+) car parks \|/,
      sites.filter(s => s.source === 'carpark').length],
+    ['docs/DATA-MODEL.md', /all ([\d,]+) records still read/, staleCount],
   ];
   // One test, named as the cards cite it, so a run log shows it by that name. The detail
   // says which file and by how much, because "a count is wrong" is not actionable on its own.

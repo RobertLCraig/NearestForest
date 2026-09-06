@@ -34,14 +34,14 @@ stop being needed at all — that is item 2 of HANDOVER "What's next".
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] WHEN a reader opens `docs/DATA-MODEL.md`, THE FILE SHALL name the number of records that
+- [x] WHEN a reader opens `docs/DATA-MODEL.md`, THE FILE SHALL name the number of records that
       actually carry the stale `scraped_at` stamp. proves: `dataset counts in comments match sites.json`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the stamp counts out of `app/data/sites.json` rather than from any doc
-- [ ] Correct the count at `:168` and leave `:89` alone
-- [ ] Extend the `carried` table in the card 0036 block of `scripts/selftest.js` to cover this line,
+- [x] Read the stamp counts out of `app/data/sites.json` rather than from any doc
+- [x] Correct the count at `:168` and leave `:89` alone
+- [x] Extend the `carried` table in the card 0036 block of `scripts/selftest.js` to cover this line,
       keyed on wording specific enough that it cannot match `:89`
 
 ## Plan
@@ -62,3 +62,25 @@ back to 904.
 **2026-09-06** Raised by card `0036`, which was explicitly fenced out of this file by its own
 `## Not this card`. That fence named the correct 904 at `:89`; this stale one at `:168` was not
 known when the fence was written.
+
+**2026-09-06** RESULT: done
+TESTS: +1 new row on an existing test, all green (227 passed, 0 failed)
+TOUCHED: docs/DATA-MODEL.md, scripts/selftest.js, docs/board/in-progress/0039-data-model-counts-the-stale-date-stamps-as-904.md
+OUT-OF-SCOPE: none
+
+Measured the shipped file first: `{ '2026-08-29': 1180 }`, one stamp across all 1,180 records, so
+`:168` now reads 1,180. `:89` still reads `"England": 904` and was not touched.
+
+Test first, and it was watched red: the new `carried` row failed with
+`docs/DATA-MODEL.md: says 904, dataset holds 1180` before the doc was edited, which is the fault the
+criterion names. The row is keyed on `all ([\d,]+) records still read`, wording that appears only in
+that paragraph and cannot reach the JSON block at `:89`. It does not hard-code the date: a second
+regex reads `still read \`YYYY-MM-DD\`` out of the same sentence and the expected count is the number
+of records carrying *that* date, so the row checks both halves of the claim and follows a re-fetch
+rather than pinning 2026-08-29. If the paragraph is deleted after the re-fetch (HANDOVER "What's
+next" 2), the row reports `no count matching` and must be deleted with it — the same as every other
+row in that table.
+
+No PHP suite exists in this project; the suite is `node scripts/selftest.js`, so `.\vendor\bin\pest.bat`
+and `.\vendor\bin\pint.bat` were not run. Nothing under `app/` changed, so no `CACHE`/`BUILD` bump.
+Docs only, so nothing needs a browser look.
