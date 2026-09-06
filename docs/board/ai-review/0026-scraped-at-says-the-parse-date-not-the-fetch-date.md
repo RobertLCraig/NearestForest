@@ -22,6 +22,8 @@ scope; it sat in HANDOVER's prose until card 0023 moved it into DATA-MODEL's div
 
 **Relates to**
 - `0004` - found this while deriving car park names, and correctly left it alone as out of scope.
+- `0023` - it folded this note out of HANDOVER's prose into DATA-MODEL's divergences, which is what
+  turned it from a paragraph nobody owned into this card.
 
 ## Not this card
 Not `scripts/parse_campsites.py`, which takes its stamp from the Overpass response rather than from
