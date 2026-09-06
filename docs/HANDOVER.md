@@ -11,7 +11,8 @@ agencies; Campsites covers England, Scotland and Wales; Car parks is England onl
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
 **The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 2.
 **Five built cards are not yet deployed** and ship as one batch; see "Current state".
-**Two agent-ready cards are open**, 0033 and 0034; `ai-review/` holds the adversarial-pass queue.
+**One agent-ready card is open**, 0041, the stale `human-review/` and `ai-review/` counts in this
+file; `ai-review/` holds the adversarial-pass queue.
 **Eight cards wait on a person in `docs/board/human-review/`** (0001, 0002, 0003, 0010, 0017, 0018,
 0025, 0027).
 The last unevidenced PRD criterion is card **0001** check 5.
@@ -380,13 +381,13 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**, both raised
-by 0032 on 2026-09-06 while it corrected the counts in this file: **0033**, an unanswered decision
-card sitting in `todo/` where nobody sweeping the person's queue can see it, and **0034**, the
-"`api/nearest.php` needs no caching" finding, which had been timed on a `sites.json` 40% smaller than
-the one shipping today. **0034 re-took that measurement on 2026-09-06 and the conclusion held**; the
-figures, and the date and file size they were taken on, are in "Current state" above. Otherwise what
-remains is the adversarial pass over `ai-review/` and the
+See [docs/board/human-review/](board/human-review/). **One agent-ready card is open**, and
+`ls docs/board/todo` is the honest count: **0041**, raised by 0040 on 2026-09-06, which says the
+`human-review/` and `ai-review/` counts in this file are both under the folders they cite.
+**0033 and 0034 are where this paragraph used to point, and both are built**, sitting in
+`ai-review/` for the adversarial pass; **0034 re-took the "`api/nearest.php` needs no caching"
+measurement on 2026-09-06 and the conclusion held**, and the figures, with the date and file size
+they were taken on, are in "Current state" above. Otherwise what remains is the adversarial pass over `ai-review/` and the
 re-fetch that card 0026 left. **Card 0030 is built and left one box open for a person**: the suite
 must be seen passing between 00:00 and 01:00 local while BST is in force. Five seconds, but only
 possible in that hour. **Eight cards need Rob and they fit in one conversation**, and all eight are
