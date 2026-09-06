@@ -38,7 +38,7 @@ security, which `0011` to `0014` covered. Not the PWA, which never calls this en
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/HANDOVER.md` states that `api/nearest.php` does not need caching, THE FILE SHALL
+- [x] #1 WHEN `docs/HANDOVER.md` states that `api/nearest.php` does not need caching, THE FILE SHALL
       cite a response time measured against the `app/data/sites.json` that ships today, with the date
       and the file size it was measured on. proves: none - `scripts/selftest.js` has no timing test
       and a wall-clock assertion in it would be flaky by construction; the check is running the
@@ -46,9 +46,10 @@ security, which `0011` to `0014` covered. Not the PWA, which never calls this en
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Re-run the ten-concurrent measurement against the current 719 KB `app/data/sites.json`
-- [ ] Write the new figure, its date and the file size it was taken on into `## Current state`
-- [ ] If the figure has moved enough to change the conclusion, raise the caching card; do not build it here
+- [x] Re-run the ten-concurrent measurement against the current 719 KB `app/data/sites.json`
+- [x] Write the new figure, its date and the file size it was taken on into `## Current state`
+- [x] If the figure has moved enough to change the conclusion, raise the caching card; do not build it here
+      — it has not; no caching card raised, and why is in the thread below
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. Only `docs/HANDOVER.md` changes unless
@@ -84,3 +85,51 @@ re-taken.
 against the thing it counted. `0032` corrected the brief to record that the 515 KB the timing was
 taken on is now 719 KB and that nobody has re-timed it; taking the measurement is not what its
 acceptance asked for, so it left it here.
+
+**2026-09-06** RESULT: done
+TESTS: +0 new, all green — 225 passed, 0 failed (`node scripts/selftest.js`). No test was added
+because criterion #1 is `proves: none`: the check is the measurement itself, and this project has no
+PHP suite at all (no `vendor/`, no Pest, no Pint, contrary to the standard run instructions).
+TOUCHED: docs/HANDOVER.md; docs/board/todo/0036-the-904-record-count-outlived-card-0016.md;
+this card
+OUT-OF-SCOPE: 0036
+
+**The conclusion holds, and it holds more comfortably than it did.** Measured on the built-in server
+(`php -S 127.0.0.1:8792 -t app`) against the 736,457-byte, 1,180-record `app/data/sites.json`,
+asking from Brighton (`lat=50.8225&lng=-0.1372&n=5`), which returns Friston Forest first:
+
+| What was timed | Median | Worst |
+|---|---|---|
+| `file_get_contents` + `json_decode` of the whole file, 20 runs | 3.7 ms | 4.3 ms |
+| one warm request end to end, 10 sequential | 5.3 ms | 7.0 ms |
+| ten requests in flight at once, 3 batches | 35–47 ms | 53 ms |
+
+Ten at once all complete in ~55 ms **in total**. That per-request median of 35–47 ms is queueing, not
+work: `php -S` is single-threaded, so ten arrivals are served one after another and the tenth waits
+for the nine before it. The card's Plan says as much. Caching the parse would buy under 4 ms a
+request, so it is **not** a DoS lever and does not need caching.
+
+**I did not raise the caching card**, because the figure did not move enough to change the
+conclusion — it moved the other way.
+
+What I could not settle from the repository, and wrote into the brief rather than guessing past.
+**The 2026-08-10 measurement's harness is not recorded anywhere**, so the old ~65 ms and my numbers
+are not comparable and I have not claimed a speed-up. That matters more than it looks, because
+**this card's own measurement script over-reports**. `ForEach-Object -Parallel` charges PowerShell
+runspace start-up to its first batch, so run 1 printed a median of 65.9 ms and worst 107 ms, and runs
+2 and 3 printed 18.4 and 19.1 ms with nothing changed in between. The first number is the client
+starting up, not the endpoint. I re-timed with a warmed `HttpClient` in one runspace to get the table
+above, and put the warning in `## Current state` so the next person to re-run this is not fooled by
+the same 65 ms coincidence.
+
+I also corrected the second place in `docs/HANDOVER.md` that repeated the now-false "has not been
+re-timed" claim, in `## Blockers / open questions`. **I deliberately left the lane counts and the
+"two agent-ready cards are open" line alone**: those describe folder state, the scheduler owns it,
+and it changes the moment this session ends.
+
+**Raised `0036`.** While checking the dataset numbers I found three shipped files still describing it
+as 904 records — `app/api/nearest.php`, `docs/build/IOS-SHORTCUT.md` and `app/core.js` — where it now
+holds 1,180. The `core.js` one is wrong twice: it also says every dataset URL is a
+`forestryengland.uk` page, and 276 of the 550 are `forestryandland.gov.scot`. The `safeHref()` guard
+it sits above is fine, since it checks scheme and never host. Two other 904s in the tree are correct
+and must not be "fixed"; the card says which.

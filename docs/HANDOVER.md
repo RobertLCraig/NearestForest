@@ -296,10 +296,17 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   parameter and a clamp test on `n`. `.git`, `.htaccess`, `docs/`, `scripts/` and all three
   `tiles.key` paths are unreachable, TLS is 1.2/1.3 with a valid certificate, and no key appears in
   any of the 20 commits. Cards 0011-0014 carry what was fixed. Two things are worth keeping in
-  mind rather than re-deriving: `api/nearest.php` was measured at ~65 ms with ten concurrent and no
-  degradation, so its re-parse per request is **not** a DoS lever and does not need caching. **That
-  timing was taken against a 515 KB `sites.json`, and card 0016 grew the file to 719 KB**, so the
-  conclusion holds on a 40% smaller file than the one shipping today and has not been re-timed;
+  mind rather than re-deriving: `api/nearest.php` re-parses the whole dataset on every request, and
+  that is **not** a DoS lever and does not need caching. **Re-measured 2026-09-06 against the
+  736,457-byte (719 KB), 1,180-record `app/data/sites.json` that ships today** (card 0034), on the
+  PHP built-in server, `php -S 127.0.0.1:8792 -t app`, asking from Brighton: **one warm request is
+  5.3 ms end to end**, of which reading and `json_decode`-ing the whole file is **3.7 ms**; **ten in
+  flight at once all finish in ~55 ms**, worst single request 53 ms, which is queueing behind a
+  single-threaded `php -S` rather than degradation. Caching the parse would buy under 4 ms a
+  request. The 2026-08-10 figure was ~65 ms on a 515 KB file; **do not read the drop as a speed-up**,
+  because the two were not taken with the same client. **Card 0034's own script over-reports on its
+  first run**: `ForEach-Object -Parallel` charges runspace start-up to the first batch only, so it
+  prints ~65 ms once and ~19 ms on every run after. Re-time it with a warmed client, not that script;
   and the `%{HTTP_HOST}` open-redirect shape in `.htaccess` was tested and is not reachable, since
   an unknown `Host` 404s before the rewrite runs. It was replaced with a literal anyway.
 - **Built 2026-08-15:** the **Campsites** tab, card 0020, from OpenStreetMap plus Forestry and Land
@@ -375,8 +382,10 @@ before use in an internet application. The email is drafted on that card.
 See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**, both raised
 by 0032 on 2026-09-06 while it corrected the counts in this file: **0033**, an unanswered decision
 card sitting in `todo/` where nobody sweeping the person's queue can see it, and **0034**, the
-"`api/nearest.php` needs no caching" finding, which was timed on a `sites.json` 40% smaller than the
-one shipping today. Otherwise what remains is the adversarial pass over `ai-review/` and the
+"`api/nearest.php` needs no caching" finding, which had been timed on a `sites.json` 40% smaller than
+the one shipping today. **0034 re-took that measurement on 2026-09-06 and the conclusion held**; the
+figures, and the date and file size they were taken on, are in "Current state" above. Otherwise what
+remains is the adversarial pass over `ai-review/` and the
 re-fetch that card 0026 left. **Card 0030 is built and left one box open for a person**: the suite
 must be seen passing between 00:00 and 01:00 local while BST is in force. Five seconds, but only
 possible in that hour. Eight cards need Rob, and they fit in one conversation:
