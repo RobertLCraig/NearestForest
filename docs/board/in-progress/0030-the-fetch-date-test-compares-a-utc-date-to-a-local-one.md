@@ -95,6 +95,7 @@ observation. The clocks were read directly too: at 00:57 local, node's `toISOStr
 **2026-09-06** RESULT: partial
 TESTS: +0 new, all green — 225 passed, 0 failed (the existing test is the one repaired)
 TOUCHED: scripts/selftest.js
+TOUCHED: docs/HANDOVER.md (handover only - the two lines naming 0030 as open)
 OUT-OF-SCOPE: none
 
 #1 is met. #2 is left open, and the reason is the method it names rather than the fix.

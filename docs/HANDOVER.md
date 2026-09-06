@@ -15,7 +15,7 @@ parks exists. Map complete (bundled outline plus optional tiles).
 name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
 **Card 0026 was built on 2026-09-05**: `scraped_at` is now the date the page was downloaded, not the
 date the parser ran, and the pipeline is red until `data/raw/` is re-fetched. See "What's next" 2.
-**Two agent-ready cards are open**, 0030 and 0031; eighteen await an adversarial pass in
+**One agent-ready card is open**, 0031; eighteen await an adversarial pass in
 `ai-review/`; the last unevidenced PRD criterion is card **0001** check 5, and Scotland has added a
 third reason to run it.
 **Seven cards wait on a person**: 0018 split into the choice (0018) and the send (0027) on 2026-09-05.
@@ -26,7 +26,11 @@ published wording, credits the OGL *and* the Forestry Commission's own copyright
 car park data, and no longer claims personal use. `CACHE` and `BUILD` are at `v16-2026-09-05`.
 **A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
 done. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-06 (seven unattended worktree runs. 0029: both parsers now report their
+_Last updated: 2026-09-06 (eight unattended worktree runs. 0030: the fetch-date self-test took its
+expected date from node's UTC clock and the fetcher stamps the local one, so the suite was red for an
+hour a night under BST; the expected date now comes from the fetcher's own process. Its one manual
+criterion is still open, because the check wants the clock inside 00:00-01:00 local.
+Earlier: 0029: both parsers now report their
 problems and exit before writing, so a refused dataset no longer replaces the good one on disk.
 Earlier: 0028: card 0026's link to 0023 now says what it is for; it raised 0030 and 0031.
 Earlier: 0026: `scraped_at` now comes from
@@ -420,10 +424,11 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **Two agent-ready cards are open**: 0030, a
-UTC-versus-local date compare in the fetch-date test, and 0031, this file over its budget again.
-Otherwise what remains is the adversarial pass over `ai-review/` and the re-fetch that card 0026
-left. Seven cards need Rob, and they fit in one conversation:
+See [docs/board/human-review/](board/human-review/). **One agent-ready card is open**: 0031, this
+file over its budget again. Otherwise what remains is the adversarial pass over `ai-review/` and the
+re-fetch that card 0026 left. **Card 0030 is built and left one box open for a person**: the suite
+must be seen passing between 00:00 and 01:00 local while BST is in force. Five seconds, but only
+possible in that hour. Seven cards need Rob, and they fit in one conversation:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
