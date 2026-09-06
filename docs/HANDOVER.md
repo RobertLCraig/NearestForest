@@ -315,8 +315,8 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 - **Built and not yet deployed, as one batch:** **0004** (177 car parks named after their nearest
   forest) and **0016** (Scotland in the Forests tab), both 2026-08-29; **0015** (the tile
   attribution pill), 2026-08-29, rendered and closed by a second run the same day; **0019** and
-  **0022** (the footer credits), both 2026-09-05. 225 self-tests pass (`node scripts/selftest.js`,
-  measured 2026-09-06) and `CACHE` / `BUILD` are at `v16-2026-09-05`. See "What's next" item 1 for what is still owed before they ship.
+  **0022** (the footer credits), both 2026-09-05. 227 self-tests pass (`node scripts/selftest.js`,
+  measured 2026-09-06) and `CACHE` / `BUILD` are at `v17-2026-09-06`. See "What's next" item 1 for what is still owed before they ship.
   **What each card measured, found and deliberately left alone is on its own comment thread** in
   `ai-review/`; the facts that outlived the build are in DATA-MODEL and DECISIONS, and the FLS
   licence gap 0016 left for a person is in Blockers below.
@@ -341,7 +341,7 @@ The queue is [docs/board/](board/), one card per file. At the head:
    "Car park near Bedgebury Nat…" truncates at 22 characters. **0015 no longer needs a desktop look**
    — it got one, and its layout and contrast both hold; what it still wants is the phone, which the
    0018 screenshots need anyway, so fold it into that rather than blocking the deploy on it.
-   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v16-2026-09-05`.
+   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v17-2026-09-06`.
    **Serving a worktree is a solved problem now** and is worth reusing on 0004:
    `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
