@@ -1,5 +1,28 @@
 # Do we write to Forestry England, and with which asks?
 
+## What I need from you
+
+**Two answers.**
+
+1. Which option: send it as drafted (1), send a bare trade mark question (2), or send nothing and
+   list the app without their name (3)? The three are set out under `## Options`.
+2. On options 1 and 2 only: also ask them to introduce you to Forestry and Land Scotland and to
+   Natural Resources Wales? Yes / no.
+
+---
+
+**Pass** is both of:
+- one of the three options is named in `## Decided`, dated
+- question 2 is answered yes or no, unless the answer to 1 was option 3, which makes it moot
+
+**Fail** is leaving it on the fence again, as on 2026-08-18. The card cannot move and `0027`, the
+send, cannot start without both answers.
+
+**Why it needs you.** No lookup settles it. The data question is closed — OGL v3 covers adaptation
+and commercial use, researched 2026-08-15 — so what is left is a trade mark only they can grant, and
+a judgement about whether the pitch is worth the goodwill risk. `## Recommendation` says option 1,
+yes to question 2. Read `0027` first: three cold reviewers said the draft as it stands earns no reply.
+
 ## Why
 
 **This card opened on a false premise, and the correction is the most useful thing on it.** It said
