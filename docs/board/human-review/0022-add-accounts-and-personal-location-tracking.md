@@ -70,3 +70,8 @@ driving those external actions.
 site offline. With a connection, a new account can verify its email, mark a forest visited and a
 campsite favourite, see both after signing in on a second device, and see neither state after signing
 out. Confirm password reset and an attempted cross-account request fail safely.
+
+## Comments
+<!-- The card's thread, appended by ProgressBoard. Append-only: entries are added, never edited or removed. An entry beginning **Decided:** is an answer, and that is what a decision card exits on. -->
+
+**2026-09-06** The loop moved this card from todo/ to human-review/ WITHOUT trying it. All 7 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
