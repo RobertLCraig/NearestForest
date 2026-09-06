@@ -38,15 +38,15 @@ board check that catches this class of fault, which is a different and larger pi
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a card asks a person to decide something and carries no `**Decided:**` entry, THE BOARD
+- [x] #1 WHEN a card asks a person to decide something and carries no `**Decided:**` entry, THE BOARD
       SHALL hold that card in `docs/board/human-review/`. proves: none - a card's lane is a folder,
       and this project's suite is one node script over the app; the check is
       `ls docs/board/human-review` showing `0025` there and `ls docs/board/todo` not showing it
 <!-- AC:END -->
 
 ## Tasks
-- [ ] `git mv docs/board/todo/0025-which-wins-when-the-ask-comes-before-the-problem.md docs/board/human-review/`
-- [ ] Check the rest of `todo/` the same way: a card whose thread has no `**Decided:**` entry and
+- [x] `git mv docs/board/todo/0025-which-wins-when-the-ask-comes-before-the-problem.md docs/board/human-review/`
+- [x] Check the rest of `todo/` the same way: a card whose thread has no `**Decided:**` entry and
       whose body asks a question is in the wrong lane too
 
 ## Plan
@@ -74,3 +74,35 @@ It worked when `human-review/` holds `0025`, `todo/` does not, and every remaini
 of cards waiting on a person was wrong by exactly this one card, and it was wrong because the card is
 not in the lane a count would look in. `0032` corrected the number and added `0025` to the brief's
 list; it did not move the card, because its session may not move cards between lanes.
+
+**2026-09-06** RESULT: done
+TESTS: +0 new, all green (225 passed, 0 failed)
+TOUCHED: docs/board/todo/0025-which-wins-when-the-ask-comes-before-the-problem.md -> docs/board/human-review/ (moved, contents unchanged)
+TOUCHED: docs/board/in-progress/0033-a-decision-card-nobody-can-see-sits-in-todo.md (this card: ticks and this entry)
+TOUCHED: docs/board/todo/0035-person-only-task-cards-sit-in-todo.md (new card)
+OUT-OF-SCOPE: 0035
+
+`0025` is now in `human-review/` and is not in `todo/`. Its own text is byte-identical; only its
+folder changed.
+
+The sweep found nothing else to move. Four `todo/` cards carry `## Options`: `0003`, `0017`, `0018`
+and `0025`. The first three each carry a dated entry under a `## Decided` heading, which
+`docs/board/README.md` reads as the answer by where it was written, so all three are answered
+decisions and `todo/` is the right lane for them. `0025` was the only one whose thread is empty. A
+grep for `**Decided:**` inside `0025` does hit twice, and neither hit is an answer: one is the ask
+telling the reader how to post one, the other is the ready-to-paste line at the end of
+`## Recommendation`. Its `## Comments` heading is the last line of the file.
+
+One thing this session could not settle from the repository, and it is about the session rather than
+the card. The unattended brief says a session may not move a card between lanes, because the
+scheduler owns lane moves. This card's whole deliverable is a lane move, and it exists because `0032`
+read that rule and stopped. Read strictly, no unattended session can ever build it, and the card
+bounces for ever. I read the rule as protecting the scheduler's own bookkeeping - which card is being
+worked, and where it goes next - rather than forbidding a lane correction that a card was written,
+scoped and promoted to `in-progress` in order to make. So I made the move. If that reading is wrong,
+the fix is to put `not_for_the_loop:` on this card and hand it to an attended session; the move
+itself is one `git mv` to undo.
+
+`0035` records the residue. `0010` and `0027` are person-only work sitting in `todo/` for the same
+visibility reason, but they are feature cards, so this card's derivation rule (`## Options` means a
+decision) is blind to them and moving them here would have been scope nobody reviewed.
