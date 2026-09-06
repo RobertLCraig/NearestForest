@@ -5,64 +5,19 @@
 
 **Stage:** active
 **Category:** app, site
-**Status:** Deployed, installed to the Home Screen, and working on the device. **The app is now
-Great Britain minus Wales in two of its three tabs.** A Campsites tab covering England, Scotland and
-Wales was built on 2026-08-15, and **card 0016 was built on 2026-08-29: the Forests tab took on
-Forestry and Land Scotland as a second agency, so it is 550 sites, 274 English and 276 Scottish, in
-one ranked list.** Car parks is still England only, because no open dataset of Scottish forest car
-parks exists. Map complete (bundled outline plus optional tiles).
-**Cards 0004 and 0015 were also built on 2026-08-29**: the 177 car parks with no usable upstream
-name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
-**Card 0026 was built on 2026-09-05**: `scraped_at` is now the date the page was downloaded, not the
-date the parser ran, and the pipeline is red until `data/raw/` is re-fetched. See "What's next" 2.
-**One agent-ready card is open**, 0031; eighteen await an adversarial pass in
-`ai-review/`; the last unevidenced PRD criterion is card **0001** check 5, and Scotland has added a
-third reason to run it.
-**Seven cards wait on a person**: 0018 split into the choice (0018) and the send (0027) on 2026-09-05.
-**None of 0004, 0015, 0016 or 0019 is deployed**, and they ship as one batch. 0004 and 0019 have
-still not been looked at on a screen; 0015 and 0016 both have.
-**Cards 0019 and 0022 were built on 2026-09-05**: the footer credits Forestry England in their own
-published wording, credits the OGL *and* the Forestry Commission's own copyright statement for the
-car park data, and no longer claims personal use. `CACHE` and `BUILD` are at `v16-2026-09-05`.
-**A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
-done. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-06 (eight unattended worktree runs. 0030: the fetch-date self-test took its
-expected date from node's UTC clock and the fetcher stamps the local one, so the suite was red for an
-hour a night under BST; the expected date now comes from the fetcher's own process. Its one manual
-criterion is still open, because the check wants the clock inside 00:00-01:00 local.
-Earlier: 0029: both parsers now report their
-problems and exit before writing, so a refused dataset no longer replaces the good one on disk.
-Earlier: 0028: card 0026's link to 0023 now says what it is for; it raised 0030 and 0031.
-Earlier: 0026: `scraped_at` now comes from
-`data/raw/fetched.json`, which `fetch.py` writes as it downloads, and a page cached before that index
-existed fails the build by name rather than being stamped with today. It raised 0029, because the
-failing parse that proved it also overwrote the good `sites.json` before exiting. Earlier:
-0024: cards 0018 and 0020 were two and a
-half times the board's 100-line budget and are now 100 each. 0018's three cold reviews and its ask
-menu moved verbatim to `docs/outreach/forestry-england-enquiry-review.md`; its send became card 0027,
-because its two append-only logs are 53 of the 100 lines. 0020's measurements moved into DATA-MODEL,
-except two a second run caught on the way out: the live brotli measurement that is the actual evidence
-for NFR3, and the 1,512 unnamed records in the wider filter. Both are in DATA-MODEL now.
-Earlier today: 0019: the footer credits Forestry England in
-their own published wording, credits the OGL separately for the car park data, drops the personal-use
-claim, and three self-tests keep all three true. It raised 0022, which a second run then built: the
-car park credit now also quotes the Forestry Commission's own copyright statement, which DECISIONS
-2026-08-15 had recorded and nobody had put in the footer. 219 self-tests pass. Earlier:)_
-_2026-08-29 (four unattended worktree runs. 0016: Scotland, 276 destinations from
-Forestry and Land Scotland, whose whole index arrives in one HTML attribute; the two published as
-"(closed)" are dropped, and cafe hours are never presented as a forest's access hours. 0004: the
-unnamed car parks are named after the forest they are nearest to, on a threshold measured from the
-distance distribution rather than guessed. 0015: the tile attribution gets a dark pill and white
-text when, and only when, tiles are on, bounded at 9.29:1 against a pure white tile; a second run
-then rendered it and closed its last criterion. Nothing is deployed; see "What's next" item 1.
-Earlier:)_
-_2026-08-15 (two sessions. First: researched the licensing and the answer changed the
-project, since **both forest sources are OGL and commercial use is expressly permitted**, so the PRD
-constraint saying the forest list was personal-use-only was wrong and is superseded. See DECISIONS
-2026-08-15. The only thing not covered is the trade mark, which is now the one hard reason card 0018
-exists. Card 0019 opened for the attribution wording. Second: **built the Campsites tab** on Rob's
-instruction, card 0020, from OpenStreetMap plus Forestry and Land Scotland's Stay the Night scheme.
-That brought a third licence into the project, ODbL, and the file layout now carries that boundary)_
+**Status:** Deployed, installed to the Home Screen, and working on the device. **The app is Great
+Britain minus Wales in two of its three tabs.** Forests is one ranked list of 550 sites from two
+agencies; Campsites covers England, Scotland and Wales; Car parks is England only, because no open
+dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
+**The pipeline is red on purpose** until `data/raw/` is re-fetched — see "What's next" 2.
+**Five built cards are not yet deployed** and ship as one batch — see "Current state".
+**One agent-ready card is open**, 0031; eighteen await an adversarial pass in `ai-review/`.
+**Seven cards wait on a person**, and the last unevidenced PRD criterion is card **0001** check 5.
+**A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
+checkout. See card 0015's second comment entry and card 0016's.
+_Last updated: 2026-09-06. What each card did is on its own comment thread under `docs/board/`, and
+the commit log is the narrative; what outlived a build is in the sections below, in DATA-MODEL and
+in DECISIONS. Do not append a run report here._
 
 ## Goal & success criteria
 
@@ -157,7 +112,9 @@ The pieces, so a fresh session does not re-derive them:
 - **The Thunderforest key is a file on the server, not in this repo**, at `tiles.key` in the domain
   directory one level above `public_html`, mode 600. `api/tiles.php` reads it per request, so
   rotating it needs no redeploy. Never commit a key: a self-test greps every tracked file for one
-  and `.gitignore` refuses `*.key`.
+  and `.gitignore` refuses `*.key`. **That guard is line-scoped and skips a path that no longer
+  exists, both on purpose** — it once crashed mid-rename and once cried wolf on an unrelated 32-hex
+  string. Its own comments in `scripts/selftest.js` say why; do not widen it without reading them.
 
 **HTTPS is not cosmetic here.** iOS grants `navigator.geolocation` only to secure origins, so on
 plain HTTP the app loads and silently never locates you. That is also why a self-contained HTML file
@@ -233,7 +190,8 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   tiles until iOS evicts the whole thing, app included. Self-tests enforce both. See DECISIONS.
 - `app/.htaccess` — **the shell is deliberately `Cache-Control: no-cache`.** The service worker
   cache name already versions it, so HTTP-caching code and data buys nothing and breaks updates for
-  the reason above. Only images carry a long max-age. Do not "optimise" this back.
+  the reason above. Only images carry a long max-age (`604800`). Do not "optimise" this back: `.js`
+  was served `max-age=3600` until 2026-08-08, and that is what filled a fresh cache with old bytes.
 - `scripts/fetch.py` — resumable and cached; re-running costs zero requests for pages already held.
   **It records the download date of every file it saves into `data/raw/fetched.json`** (card 0026),
   rewritten after each page so an interrupted run still leaves dated HTML. That index is the only
@@ -285,7 +243,10 @@ sites on-device. That split is deliberate and is the thing the two-method compar
 - `app/data/boundary.json` — 32KB Great Britain outline, generated by `scripts/build_boundary.py`
   from Natural Earth. Generated, never hand-edited, and precached so the map works offline.
 - `scripts/deploy.ps1` / `scripts/deploy.sh` — the local trigger and the server-side half. The host
-  and username live in `~/.ssh/config`, not in this now-public repo.
+  and username live in `~/.ssh/config`, not in this now-public repo. **`deploy.sh` pulls in stage 1
+  and re-execs itself before doing anything else. Do not collapse that.** It is part of what the
+  pull updates, and bash reads a script incrementally, so carrying straight on runs a splice of the
+  old and new file. Its header comment explains it.
 - `.gitattributes` — pins LF on anything the Linux host executes. A CRLF `deploy.sh` dies with a
   `^M` interpreter error, which is a baffling way to meet a line ending.
 - `docs/build/IOS-SHORTCUT.md` — the Shortcut recipe, since `.shortcut` files cannot be generated.
@@ -349,30 +310,13 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   `ai-review/`; the facts that outlived the build are in DATA-MODEL and DECISIONS, and the FLS
   licence gap 0016 left for a person is in Blockers below.
 - **In progress:** nothing.
-- **Known bugs / broken:** none open, but the most serious one yet was found and fixed this
-  session, by Rob running the offline check rather than by anyone reading the code.
-  **The service worker was caching every map tile into the app's offline cache** (`api/tiles.php`
-  is same-origin), 6MB per pan session and unbounded. On iOS an over-quota Cache Storage is
-  evicted wholesale, so the *optional* tile layer could destroy the *mandatory* offline copy.
-  It presented as "drag-to-dismiss does not work in aeroplane mode, works once I go online,
-  breaks again next launch", i.e. the app silently running an old build. Fixed by holding only
-  ASSETS in the cache, skipping `/api/`, and reloading once on `controllerchange` so an update
-  lands on the first online launch instead of the second.
-  **The lesson is the one 0001 check 5 exists for: the offline path is not testable by
-  inspection, and both real offline bugs so far were invisible until someone ran it.**
-
-  Four earlier bugs were found while shipping the map, all by running things
-  rather than reading them, and all fixed: a fixed-length smoke-test compare that failed a working
-  endpoint; `deploy.sh` executing a splice of its old and new selves because the `git pull` it had
-  just run rewrote the file bash was reading; the service worker precaching stale bytes (below);
-  and a committed-key guard that both crashed on a pending rename and cried wolf on an unrelated
-  32-hex string.
-
-  **The stale-precache bug is the one worth remembering.** The map rendered on desktop and not on
-  the phone, which was not a map bug: `.htaccess` served `.js` with `max-age=3600` and
-  `cache.addAll()` fetches through the HTTP cache, so a new cache name was populated with old
-  bytes. Bumping `CACHE` could never have fixed it. See the do-not-undo notes on `sw.js` and
-  `.htaccess` above.
+- **Known bugs / broken:** none open. Five have been found and fixed here since 2026-08-08 and
+  **every one was found by running the thing, never by reading it.** The worst was the service
+  worker writing map tiles into the app's offline cache until iOS evicted the app along with them;
+  DECISIONS 2026-08-08 "The offline cache holds ASSETS and nothing else" carries it in full.
+  **That is what card 0001 check 5 exists for: the offline path is not testable by inspection.**
+  What each bug left behind is a do-not-undo note above — on `sw.js`, on `.htaccess`, on
+  `deploy.sh` and on the committed-key guard. Read those rules rather than re-deriving them.
 
 ## What's next (in order)
 
@@ -406,7 +350,7 @@ The queue is [docs/board/](board/), one card per file. At the head:
    Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map truncates
    most derived names before the forest is reached. In the list this is fine, because each row still
    carries its own distance and bearing. On the map it is not.
-4. **An adversarial pass over `ai-review/`** — fourteen cards now, among them 0005 deploy, 0006
+4. **An adversarial pass over `ai-review/`** — eighteen cards now, among them 0005 deploy, 0006
    compass, 0008 offline map, 0009 tile layer, and **0020 campsites**, which is the largest
    single change since the map. 0020 is worth real scepticism on three points: the filter that
    decides what a campervan can get into, whether the ODbL Collective Database argument holds, and

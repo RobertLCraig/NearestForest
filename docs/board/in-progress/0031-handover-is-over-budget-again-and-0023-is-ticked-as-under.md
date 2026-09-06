@@ -47,19 +47,19 @@ editing `0023`, which belongs to whoever reviews it.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/HANDOVER.md` is measured, THE FILE SHALL be under 40 KB with enough headroom that
+- [x] #1 WHEN `docs/HANDOVER.md` is measured, THE FILE SHALL be under 40 KB with enough headroom that
       an ordinary card's edits do not put it back over. proves: none - this project has no test that
       reads the docs; the check is `(Get-Item docs\HANDOVER.md).Length`
-- [ ] #2 WHEN a block is folded out, THE FILE SHALL keep every date, count and decision it carried,
+- [x] #2 WHEN a block is folded out, THE FILE SHALL keep every date, count and decision it carried,
       moving anything still true into the doc that owns it. proves: none - as #1
-- [ ] #3 WHEN the orient hook next fires in this repository, THE HOOK SHALL NOT report the file as
+- [x] #3 WHEN the orient hook next fires in this repository, THE HOOK SHALL NOT report the file as
       over budget. proves: none - as #1
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Measure which section carries the weight, rather than guessing
-- [ ] Fold one stale block out, into the doc that owns what is still true
-- [ ] Re-measure, and run the orient hook by hand to confirm it no longer complains
+- [x] Measure which section carries the weight, rather than guessing
+- [x] Fold one stale block out, into the doc that owns what is still true
+- [x] Re-measure, and run the orient hook by hand to confirm it no longer complains
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. `docs/HANDOVER.md` changes, plus
@@ -86,3 +86,66 @@ rather than by starting a session to see what it says.
 the HANDOVER budget, then checked before asserting it and found `0023` in `ai-review/` with the
 budget criteria ticked and the file 562 bytes over. The finding is the gap between those two facts,
 which is why this is a card rather than a line of prose in `0028`.
+
+**2026-09-06** RESULT: done
+TESTS: +0 new, all green (225 passed, 0 failed). All three criteria are `proves: none`, so per the
+board README no test was written for them, and there is nothing here a test could hold: the harness
+is `node scripts/selftest.js` over `app/`, and it neither reads `docs/` nor knows the byte budget.
+There is no `vendor/` in this project, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not
+exist; the suite is the node script and that is what was run.
+TOUCHED: docs/HANDOVER.md
+TOUCHED: docs/board/in-progress/0031-handover-is-over-budget-again-and-0023-is-ticked-as-under.md
+TOUCHED: docs/board/todo/0032-handover-carries-a-self-test-count-nothing-re-measures.md
+OUT-OF-SCOPE: 0032
+
+**The file was worse than the card measured.** The card said 41,522 bytes on 2026-09-06. It was
+**42,021** when this run opened, because 0030's own handover commit landed in between. Over by 1,061.
+
+**Measured first, and the measurement half-agreed with the Plan.** Bytes per `## ` section:
+Key files 9,570; the preamble 5,512; Current state 4,814; Blockers 4,417; Canonical data shape 4,080;
+What's next 3,972; everything else under 2,700. Key files is the heaviest and was **not** folded:
+it is do-not-undo notes about shipped code, which is the section a fresh session most needs. Heavy is
+not the same as stale, and the hook asks for a stale block.
+
+**Two blocks were folded, not one, and the second was needed to meet #1.** The Plan named the
+`_Last updated:_` stack and it was right: 3,337 bytes of per-card run narrative across three dates,
+plus a Status block that had become the same thing. Folding the whole preamble to what is true now
+took the file to **37,975** — under budget, but only 2,985 bytes of headroom. `0023` left 2,432 and
+four cards ate it in a day, so that would have reopened this card rather than closed it. The second
+fold was `## Current state`'s "Known bugs / broken", 1,900 bytes narrating five bugs fixed on
+2026-08-08 and 08-10 as though this session had just fixed them. Final: **37,430 bytes, 3,530 under
+budget**, longest line 187 characters against the hook's 400.
+
+**#2 was checked mechanically, not by eye.** Every numeric token in the removed text was extracted
+(41 of them) and grepped across `docs/`, `app/`, `scripts/`, `CLAUDE.md` and `HUMAN_ACTIONS.md`. All
+41 survive. One, `00:00-01:00`, survives only as prose ("between 00:00 and 01:00 local") in Blockers,
+which is the same fact. The same sweep was run over removed code spans and URLs and caught two:
+`cache.addAll()`, which survives as `addAll()` in the `sw.js` do-not-undo note, and **`max-age=3600`,
+which survived nowhere** and was put back into the `.htaccess` note, where it explains why that rule
+exists. `.js` is served `no-cache` today and images `max-age=604800`, both checked against
+`app/.htaccess`; 3600 is the value that caused the bug, so it belongs with the rule, not in a story.
+
+**Nothing was moved into another doc, because nothing needed to be.** DECISIONS 2026-08-08 already
+carries the tile-eviction bug in full, DATA-MODEL carries the 278/276 drop, the 1,512 records and the
+brotli/NFR3 measurement, and DECISIONS 2026-08-15 carries the OGL position. That is why the preamble
+was the stale block: it was a summary of summaries. Two lessons lived **only** in HANDOVER prose and
+were moved to the entries that own them: `deploy.sh` re-execing after its own pull (Key files; the
+reason is in that script's header comment) and the committed-key guard being line-scoped and skipping
+a missing path (Deployment; the reason is in `scripts/selftest.js:494-502`). Neither is a new fact.
+
+**#3 was proven by running the hook, not by reading it.** This session's own start-up message carried
+"HANDOVER.md IS 41 KB, over the ~40 KB a fresh session can afford to load". `orient-hook.ps1` was
+then run against this worktree with a throwaway session id and printed the orient line with no budget
+warning.
+
+**One correction made in passing, and it was not free scope.** `## What's next` item 4 said "fourteen
+cards now" await an adversarial pass while `ai-review/` holds eighteen. The preamble I wrote asserts
+eighteen, so leaving item 4 alone would have shipped a file contradicting itself in one commit.
+
+**What I could not settle from the repository, and what I left.** The self-test count is the same
+class of fault and I did not fix it: `## Current state` says 219 self-tests pass and the suite prints
+225. That is **card 0032**, raised rather than fixed. `## Key files` at 9,570 bytes remains the
+heaviest section and is the next candidate if the budget is lost again, but it is live rather than
+stale, so folding it means deciding which do-not-undo notes a fresh session can do without — a
+judgement this card did not have the standing to make. No browser check applies; nothing outside
+`docs/` was touched.
