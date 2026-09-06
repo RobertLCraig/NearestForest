@@ -297,3 +297,5 @@ reported on every run, `0026 todo unexplained link: 0023`. `0028` is still unbui
 nothing about `#4` could have moved. `#4` is a dependency, not open work here.
 
 Six runs, one finding. Close this card at 3/4 rather than schedule a seventh.
+
+**2026-09-06** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 1 of 4 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
