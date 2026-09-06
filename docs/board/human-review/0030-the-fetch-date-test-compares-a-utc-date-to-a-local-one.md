@@ -143,3 +143,5 @@ own local-versus-UTC question is settled here, as the card fenced out. There is 
 repository — no `vendor/`, no `composer.json` — so `pest.bat` and `pint.bat` could not run; the
 suite is `node scripts/selftest.js`. Suite counts 225 rather than the card's 222 because card 0029
 added three tests after this card was written.
+
+**2026-09-06** The loop moved this card from in-progress/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
