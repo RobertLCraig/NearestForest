@@ -297,16 +297,15 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   `tiles.key` paths are unreachable, TLS is 1.2/1.3 with a valid certificate, and no key appears in
   any of the 20 commits. Cards 0011-0014 carry what was fixed. Two things are worth keeping in
   mind rather than re-deriving: `api/nearest.php` re-parses the whole dataset on every request, and
-  that is **not** a DoS lever and does not need caching. **Re-measured 2026-09-06 against the
-  736,457-byte (719 KB), 1,180-record `app/data/sites.json` that ships today** (card 0034), on the
-  PHP built-in server, `php -S 127.0.0.1:8792 -t app`, asking from Brighton: **one warm request is
-  5.3 ms end to end**, of which reading and `json_decode`-ing the whole file is **3.7 ms**; **ten in
-  flight at once all finish in ~55 ms**, worst single request 53 ms, which is queueing behind a
-  single-threaded `php -S` rather than degradation. Caching the parse would buy under 4 ms a
-  request. The 2026-08-10 figure was ~65 ms on a 515 KB file; **do not read the drop as a speed-up**,
-  because the two were not taken with the same client. **Card 0034's own script over-reports on its
-  first run**: `ForEach-Object -Parallel` charges runspace start-up to the first batch only, so it
-  prints ~65 ms once and ~19 ms on every run after. Re-time it with a warmed client, not that script;
+  that is **not** a DoS lever and does not need caching. **Re-measured 2026-09-06 (card 0034) against
+  the 736,457-byte (719 KB), 1,180-record `app/data/sites.json` that ships today**, on the PHP
+  built-in server (`php -S`), asking from Brighton: **a warm request is 5.3 ms end to end**, of which
+  reading and `json_decode`-ing the whole file is **3.7 ms**, and **ten in flight at once all finish
+  in ~55 ms** — the 53 ms worst is queueing behind a single-threaded `php -S`, not degradation.
+  Caching the parse would buy under 4 ms. The 2026-08-10 figure was ~65 ms on a 515 KB file, but
+  **that is not a comparison**: its harness is unrecorded. **Card 0034's own script over-reports its
+  first run**, charging `ForEach-Object -Parallel` runspace start-up to it — ~65 ms once, ~19 ms
+  every run after. Re-time with a warmed client, not that script;
   and the `%{HTTP_HOST}` open-redirect shape in `.htaccess` was tested and is not reachable, since
   an unknown `Host` 404s before the rewrite runs. It was replaced with a literal anyway.
 - **Built 2026-08-15:** the **Campsites** tab, card 0020, from OpenStreetMap plus Forestry and Land

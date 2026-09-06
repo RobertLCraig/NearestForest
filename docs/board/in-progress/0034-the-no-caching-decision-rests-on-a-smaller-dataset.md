@@ -133,3 +133,9 @@ holds 1,180. The `core.js` one is wrong twice: it also says every dataset URL is
 `forestryengland.uk` page, and 276 of the 550 are `forestryandland.gov.scot`. The `safeHref()` guard
 it sits above is fine, since it checks scheme and never host. Two other 904s in the tree are correct
 and must not be "fixed"; the card says which.
+
+**`docs/HANDOVER.md` is still under its 40,960-byte budget, at 39,306 bytes.** Card `0031` governs
+that budget and left 2,985 bytes of headroom; this card's figures spent about half of it, so I went
+back and cut the passage to its facts rather than leaving it at first draft. **1,654 bytes remain**,
+which is less than `0031` handed over and worth knowing before the next HANDOVER edit. No new card:
+`0031` is already in `ai-review/` and covers this.
