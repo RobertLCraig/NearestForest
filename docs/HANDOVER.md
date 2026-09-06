@@ -426,8 +426,9 @@ the mail fix. **That fix belongs on the enhanceify-V2 board, not this one**, and
 - **0003** — a decision with options and a recommendation already on the card, waiting on real
   trips rather than analysis. Recheck 2026-09-19, so not due.
 - **0025** — when a card's ask must sit above `## Why`, does the ask win or the problem statement?
-  Three options and a recommendation on the card. **It sits in `todo/` rather than `human-review/`
-  and is still unanswered**, and card 0021 cannot close its last criterion until it is.
+  Three options and a recommendation on the card. **Still unanswered**, and card 0021 cannot close
+  its last criterion until it is. Card 0033 moved it out of `todo/` and into `human-review/` on
+  2026-09-06, so a sweep of that folder now finds it.
 
 ## How to pick up
 

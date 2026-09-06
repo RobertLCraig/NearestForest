@@ -80,7 +80,14 @@ TESTS: +0 new, all green (225 passed, 0 failed)
 TOUCHED: docs/board/todo/0025-which-wins-when-the-ask-comes-before-the-problem.md -> docs/board/human-review/ (moved, contents unchanged)
 TOUCHED: docs/board/in-progress/0033-a-decision-card-nobody-can-see-sits-in-todo.md (this card: ticks and this entry)
 TOUCHED: docs/board/todo/0035-person-only-task-cards-sit-in-todo.md (new card)
+TOUCHED: docs/HANDOVER.md (one sentence the move made false)
 OUT-OF-SCOPE: 0035
+
+`docs/HANDOVER.md` is outside the fence this card's `## Plan` drew ("nothing outside `docs/board/`
+changes"), and I crossed it for one sentence and no more. Its `0025` bullet read "It sits in `todo/`
+rather than `human-review/`", which my own move made untrue, and a truth doc left asserting the
+wrong lane is the exact fault this card is about. The count of cards waiting on a person did not
+change, so I did not touch it; `0035` owns that number if the two cards it names ever move.
 
 `0025` is now in `human-review/` and is not in `todo/`. Its own text is byte-identical; only its
 folder changed.
