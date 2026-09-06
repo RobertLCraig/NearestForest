@@ -15,9 +15,9 @@ parks exists. Map complete (bundled outline plus optional tiles).
 name are named after the forest they are nearest to, and the tile attribution sits on an opaque pill.
 **Card 0026 was built on 2026-09-05**: `scraped_at` is now the date the page was downloaded, not the
 date the parser ran, and the pipeline is red until `data/raw/` is re-fetched. See "What's next" 2.
-**Two agent-ready cards are open**, 0028 and 0029; fourteen cards await an adversarial pass in
-`ai-review/`; the last
-unevidenced PRD criterion is card **0001** check 5, and Scotland has added a third reason to run it.
+**Three agent-ready cards are open**, 0029, 0030 and 0031; sixteen await an adversarial pass in
+`ai-review/`; the last unevidenced PRD criterion is card **0001** check 5, and Scotland has added a
+third reason to run it.
 **Seven cards wait on a person**: 0018 split into the choice (0018) and the send (0027) on 2026-09-05.
 **None of 0004, 0015, 0016 or 0019 is deployed**, and they ship as one batch. 0004 and 0019 have
 still not been looked at on a screen; 0015 and 0016 both have.
@@ -26,7 +26,8 @@ published wording, credits the OGL *and* the Forestry Commission's own copyright
 car park data, and no longer claims personal use. `CACHE` and `BUILD` are at `v16-2026-09-05`.
 **A worktree can be rendered after all**: serve it yourself with `php -S`, which is how that was
 done. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-05 (five unattended worktree runs. 0026: `scraped_at` now comes from
+_Last updated: 2026-09-06 (six unattended worktree runs. 0028: card 0026's link to 0023 now says
+what it is for; it raised 0030 and 0031. Earlier: 0026: `scraped_at` now comes from
 `data/raw/fetched.json`, which `fetch.py` writes as it downloads, and a page cached before that index
 existed fails the build by name rather than being stamped with today. It raised 0029, because the
 failing parse that proved it also overwrote the good `sites.json` before exiting. Earlier:
@@ -36,8 +37,7 @@ menu moved verbatim to `docs/outreach/forestry-england-enquiry-review.md`; its s
 because its two append-only logs are 53 of the 100 lines. 0020's measurements moved into DATA-MODEL,
 except two a second run caught on the way out: the live brotli measurement that is the actual evidence
 for NFR3, and the 1,512 unnamed records in the wider filter. Both are in DATA-MODEL now.
-The convention check reports one failing card, 0026, which is card 0028 and not 0024's to fix. Earlier
-today: 0019: the footer credits Forestry England in
+Earlier today: 0019: the footer credits Forestry England in
 their own published wording, credits the OGL separately for the car park data, drops the personal-use
 claim, and three self-tests keep all three true. It raised 0022, which a second run then built: the
 car park credit now also quotes the Forestry Commission's own copyright statement, which DECISIONS

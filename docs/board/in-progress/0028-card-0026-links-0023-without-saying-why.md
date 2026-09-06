@@ -71,7 +71,8 @@ TESTS: +0 new, all green at commit (222 passed, 0 failed). Was red on
 not mine, raised as `0030`
 TOUCHED: docs/board/ai-review/0026-scraped-at-says-the-parse-date-not-the-fetch-date.md,
 docs/board/todo/0030-the-fetch-date-test-compares-a-utc-date-to-a-local-one.md,
-docs/board/todo/0031-handover-is-over-budget-again-and-0023-is-ticked-as-under.md, this card
+docs/board/todo/0031-handover-is-over-budget-again-and-0023-is-ticked-as-under.md,
+docs/HANDOVER.md, this card
 OUT-OF-SCOPE: 0030, 0031
 
 Both criteria met. `0026` moved from `todo/` to `ai-review/` after this card was written, so the
@@ -101,6 +102,14 @@ The only modified file throughout was one markdown card, and `scripts/selftest.j
 
 **There is no PHP suite here**, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` were not run.
 Neither exists and nor does `vendor/`; this project's suite is `node scripts/selftest.js`.
+
+`docs/HANDOVER.md` is one file more than the Plan listed, and it is **five bytes smaller** than it
+was. Three of its statements were made false by this work or were already false: it named 0028 as an
+open agent-ready card, it counted fourteen cards in `ai-review/` where there are sixteen, and it said
+"the convention check reports one failing card, 0026". All three are corrected in place, that last
+sentence is deleted, and the run itself is recorded here rather than in HANDOVER. A first attempt did
+write a run note there and grew the file by 152 bytes, which is exactly the fault `0031` describes,
+so it was taken back out.
 
 Raised `0031` as well. The orient hook reports `docs/HANDOVER.md` over the ~40 KB budget on every
 session start, and the first draft of this entry said no card carried that. Checking before asserting
