@@ -1015,6 +1015,17 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
     ['app/api/nearest.php', /ranking ([\d,]+) sites/, sites.length],
     ['docs/build/IOS-SHORTCUT.md', /rank ([\d,]+) sites on device/, sites.length],
     ['app/core.js', /Every one of the ([\d,]+) records/, withUrl.length],
+    // Card 0038: the Forestry England briefing is handed to a session with no repository
+    // access, so its counts cannot be checked by the person using them, and its row is
+    // marked Verified. All three numbers on that row, because it names each separately.
+    ['docs/outreach/forestry-england-handover.md',
+     /\| ([\d,]+) locations, [\d,]+ forests, [\d,]+ car parks \|/, sites.length],
+    ['docs/outreach/forestry-england-handover.md',
+     /\| [\d,]+ locations, ([\d,]+) forests, [\d,]+ car parks \|/,
+     sites.filter(s => s.source === 'forest').length],
+    ['docs/outreach/forestry-england-handover.md',
+     /\| [\d,]+ locations, [\d,]+ forests, ([\d,]+) car parks \|/,
+     sites.filter(s => s.source === 'carpark').length],
   ];
   // One test, named as the cards cite it, so a run log shows it by that name. The detail
   // says which file and by how much, because "a count is wrong" is not actionable on its own.

@@ -106,8 +106,13 @@ are visibly empty of markers. It makes the expansion point better than a sentenc
 - **The tiled map shots** render the Thunderforest and OpenStreetMap attribution as grey on a pale
   basemap, close to unreadable. That is an open defect and a licence obligation, and it would sit
   badly in an email that mentions crediting people properly.
-- **The car park views** show rows and markers reading "Unnamed car park". 170 of the 630 car parks
-  have no name in the published dataset. That is a known open task, and not a first impression.
+- **The car park views** show rows and markers reading "Unnamed car park". 196 of the 630 car parks
+  publish no usable name. **These two shots are from 2026-08-14 and predate the fix**: card 0004
+  now names 177 of those 196 after their nearest forest ("Car park near Friston Forest"), shown in
+  dim italic to mark them as ours rather than Forestry England's, and only **19** still read
+  "Unnamed car park". That work is built but not yet deployed, so a fresh screenshot must be taken
+  from a build that includes it, not from the live site. Either way, these three are not a first
+  impression.
 
 ## 6. Where things stand
 
@@ -186,7 +191,7 @@ language model:
 | OGL v3 excludes trade marks | **Verified** in the licence text, 2026-08-15 |
 | robots.txt does not block the forest pages | **Verified** by fetching it, 2026-08-15 |
 | info@forestryengland.uk is the right address | **Verified** on two of their own pages, 2026-08-14 |
-| 904 locations, 274 forests, 630 car parks | **Verified** against the generated dataset |
+| 1,180 locations, 550 forests, 630 car parks | **Verified** against the generated dataset, 2026-09-06. **Only 274 of the forests are Forestry England's**; the other 276 are Forestry and Land Scotland, and the car parks are all English. Do not quote 550 to Forestry England as a count of their sites |
 | Works fully offline after first load | **Verified** by measuring the shipped files |
 | "Forestry England" is a registered trade mark | **Not checked.** Assumed, and the reason ask 2 exists. Do not assert it as fact |
 | Google Play accepts a wrapped web app from Windows | **General knowledge, not checked.** Confirm before relying on it |

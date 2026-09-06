@@ -38,17 +38,17 @@ what the email asks for — that is card 0018 and card 0027.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] WHEN a reader opens `docs/outreach/forestry-england-handover.md`, THE FILE SHALL state the
+- [x] WHEN a reader opens `docs/outreach/forestry-england-handover.md`, THE FILE SHALL state the
       record, forest and car park counts `app/data/sites.json` holds today.
       proves: `dataset counts in comments match sites.json`
-- [ ] WHEN the briefing describes what a car park row shows, THE FILE SHALL account for the 177
+- [x] WHEN the briefing describes what a car park row shows, THE FILE SHALL account for the 177
       derived names card 0004 added. proves: `manual` — prose, not a number a test can read back.
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Re-read the counts out of `app/data/sites.json` rather than from any doc
-- [ ] Correct `:189` and `:109`, and check `forestry-england-enquiry.md` for the same numbers
-- [ ] Extend the `carried` table in the card 0036 block of `scripts/selftest.js` to cover this file,
+- [x] Re-read the counts out of `app/data/sites.json` rather than from any doc
+- [x] Correct `:189` and `:109`, and check `forestry-england-enquiry.md` for the same numbers
+- [x] Extend the `carried` table in the card 0036 block of `scripts/selftest.js` to cover this file,
       so the next dataset change fails a run
 
 ## Plan
@@ -66,3 +66,42 @@ It worked when the suite passes and no count in the outreach folder disagrees wi
 ## Comments
 **2026-09-06** Raised by card `0036` while correcting the same stale 904 in `app/api/nearest.php`,
 `docs/build/IOS-SHORTCUT.md` and `app/core.js`.
+
+**2026-09-06**
+RESULT: done
+TESTS: +3 rows in one existing test, all green (227 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/outreach/forestry-england-handover.md, docs/board/in-progress/0038-the-forestry-england-briefing-counts-predate-scotland.md
+OUT-OF-SCOPE: none
+
+Test first, and it went red for the right reason before the doc moved: three rows added to the
+`carried` table in the card 0036 block, one per number on the `:189` row, and the run said
+`docs/outreach/forestry-england-handover.md: says 904, dataset holds 1180 | says 274, dataset
+holds 550`. It reports as the same single named test the card cites, so the count of tests is
+unchanged at 227.
+
+Counts read straight out of `app/data/sites.json`, not out of any doc: **1,180 records, 550
+forests (274 `fe-`, 276 `fls-`), 630 car parks**.
+
+`:189` now reads `1,180 locations, 550 forests, 630 car parks` and carries a warning the old row
+had no need of: **only 274 of the 550 forests are Forestry England's**. The briefing is read by a
+session drafting an email *to* Forestry England, and a bare "550 forests" on a **Verified** row is
+exactly the number that would get quoted back to them as a count of their own sites.
+
+`:109` was wrong in two ways, not one. It said "170 of the 630 car parks have no name". Measured
+today: **196** publish no usable name (170 `Unknown` plus 7 bare `Car Park` — card 0004's 177 —
+plus 19 that were already `Unnamed car park`), and after 0004 only **19** still read that way. So
+the line now gives 196 and 19, says the two screenshots at `:104` are from 2026-08-14 and predate
+the fix, and says a replacement shot must come from a build containing 0004 rather than from the
+live site, since 0004 is built and not yet deployed.
+
+Checked `forestry-england-enquiry.md` as the card asked: it carries no dataset counts at all, so
+nothing to edit there and the two files stay in step. `cheryl-update.md`'s only large number is a
+word count.
+
+Not settled from the repository, and left for the reviewer rather than guessed: whether the
+**Verified** row should be re-dated. The old row carried no date while the rows above it are all
+stamped 2026-08-15. I stamped it 2026-09-06, which is when I measured it, on the reading that a
+`Verified` claim with no date is the weaker of the two forms.
+
+Nothing under `app/` changed, so no `CACHE` bump, per the card's Plan. No browser check applies —
+this card touches documentation and a test only.
