@@ -113,7 +113,7 @@ plus a Status block that had become the same thing. Folding the whole preamble t
 took the file to **37,975** — under budget, but only 2,985 bytes of headroom. `0023` left 2,432 and
 four cards ate it in a day, so that would have reopened this card rather than closed it. The second
 fold was `## Current state`'s "Known bugs / broken", 1,900 bytes narrating five bugs fixed on
-2026-08-08 and 08-10 as though this session had just fixed them. Final: **37,545 bytes, 3,415 under
+2026-08-08 and 08-10 as though this session had just fixed them. Final: **37,533 bytes, 3,427 under
 budget**, longest line 187 characters against the hook's 400.
 
 **#2 was checked mechanically, not by eye.** Every numeric token in the removed text was extracted

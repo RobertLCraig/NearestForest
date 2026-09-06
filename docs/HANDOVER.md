@@ -9,8 +9,8 @@
 Britain minus Wales in two of its three tabs.** Forests is one ranked list of 550 sites from two
 agencies; Campsites covers England, Scotland and Wales; Car parks is England only, because no open
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
-**The pipeline is red on purpose** until `data/raw/` is re-fetched — see "What's next" 2.
-**Five built cards are not yet deployed** and ship as one batch — see "Current state".
+**The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 2.
+**Five built cards are not yet deployed** and ship as one batch; see "Current state".
 **One agent-ready card is open**, 0032; `ai-review/` holds the adversarial-pass queue.
 **Seven cards wait on a person**, and the last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
@@ -113,7 +113,7 @@ The pieces, so a fresh session does not re-derive them:
   directory one level above `public_html`, mode 600. `api/tiles.php` reads it per request, so
   rotating it needs no redeploy. Never commit a key: a self-test greps every tracked file for one
   and `.gitignore` refuses `*.key`. **That guard is line-scoped and skips a path that no longer
-  exists, both on purpose** — it once crashed mid-rename and once cried wolf on an unrelated 32-hex
+  exists, both on purpose.** It once crashed mid-rename and once cried wolf on an unrelated 32-hex
   string. Its own comments in `scripts/selftest.js` say why; do not widen it without reading them.
 
 **HTTPS is not cosmetic here.** iOS grants `navigator.geolocation` only to secure origins, so on
@@ -315,7 +315,7 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   worker writing map tiles into the app's offline cache until iOS evicted the app along with them;
   DECISIONS 2026-08-08 "The offline cache holds ASSETS and nothing else" carries it in full.
   **That is what card 0001 check 5 exists for: the offline path is not testable by inspection.**
-  What each bug left behind is a do-not-undo note above — on `sw.js`, on `.htaccess`, on
+  What each bug left behind is a do-not-undo note above: on `sw.js`, on `.htaccess`, on
   `deploy.sh` and on the committed-key guard. Read those rules rather than re-deriving them.
 
 ## What's next (in order)
