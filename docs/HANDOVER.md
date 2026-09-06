@@ -12,7 +12,9 @@ dataset of Scottish forest car parks exists. Map complete (bundled outline plus 
 **The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 2.
 **Five built cards are not yet deployed** and ship as one batch; see "Current state".
 **Two agent-ready cards are open**, 0033 and 0034; `ai-review/` holds the adversarial-pass queue.
-**Eight cards wait on a person**, and the last unevidenced PRD criterion is card **0001** check 5.
+**Five cards wait on a person in `docs/board/human-review/`** (0001, 0002, 0010, 0025, 0027), and
+three more that also need one — 0003, 0017, 0018 — still sit in `docs/board/todo/`; see card 0037.
+The last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
 checkout. See card 0015's second comment entry and card 0016's.
 _Last updated: 2026-09-06. What each card did is on its own comment thread under `docs/board/`, and
@@ -387,7 +389,11 @@ figures, and the date and file size they were taken on, are in "Current state" a
 remains is the adversarial pass over `ai-review/` and the
 re-fetch that card 0026 left. **Card 0030 is built and left one box open for a person**: the suite
 must be seen passing between 00:00 and 01:00 local while BST is in force. Five seconds, but only
-possible in that hour. Eight cards need Rob, and they fit in one conversation:
+possible in that hour. Eight cards need Rob and they fit in one conversation, but **only five of them
+are in the lane**: `ls docs/board/human-review` gives 0001, 0002, 0010, 0025 and 0027, the last two
+put there on 2026-09-06 by cards 0033 and 0035. The other three — 0003, 0017 and 0018 — are decision
+cards still sitting in `docs/board/todo/`, so a sweep of the lane misses them. Card **0037** carries
+that, and until it is done the list below is longer than the folder:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the

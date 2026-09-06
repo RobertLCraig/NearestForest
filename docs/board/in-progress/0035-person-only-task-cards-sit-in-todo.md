@@ -34,16 +34,16 @@ of work. Not doing either card's actual task.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a card's only remaining work is a step a person must take by hand, THE BOARD SHALL hold
+- [x] #1 WHEN a card's only remaining work is a step a person must take by hand, THE BOARD SHALL hold
       that card in `docs/board/human-review/`. proves: none - a card's lane is a folder, and this
       project's suite is one node script over the app; the check is `ls docs/board/human-review`
       showing `0010` and `0027` there and `ls docs/board/todo` showing neither
 <!-- AC:END -->
 
 ## Tasks
-- [ ] `git mv docs/board/todo/0010-rotate-the-thunderforest-key.md docs/board/human-review/`
-- [ ] `git mv docs/board/todo/0027-send-the-forestry-england-enquiry.md docs/board/human-review/`
-- [ ] Correct the count of cards waiting on a person in `docs/HANDOVER.md`, and the lane it points at
+- [x] `git mv docs/board/todo/0010-rotate-the-thunderforest-key.md docs/board/human-review/`
+- [x] `git mv docs/board/todo/0027-send-the-forestry-england-enquiry.md docs/board/human-review/`
+- [x] Correct the count of cards waiting on a person in `docs/HANDOVER.md`, and the lane it points at
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. Nothing outside `docs/board/` and
@@ -61,3 +61,31 @@ It worked when `human-review/` holds `0010` and `0027`, `todo/` holds neither, a
 **2026-09-06** Raised by card `0033` while it moved `0025` out of `todo/`. `0033`'s sweep rule was
 the board's own derivation rule for a decision card, `## Options`, and it is blind to a feature card
 whose remaining work is a person's. These two are what it left behind.
+
+**2026-09-06** RESULT: done
+TESTS: +0 new, all green (225 passed, 0 failed, `node scripts/selftest.js`)
+TOUCHED: docs/board/todo/0010-rotate-the-thunderforest-key.md -> docs/board/human-review/
+TOUCHED: docs/board/todo/0027-send-the-forestry-england-enquiry.md -> docs/board/human-review/
+TOUCHED: docs/HANDOVER.md
+TOUCHED: docs/board/todo/0037-three-decision-cards-are-still-in-todo.md (new)
+TOUCHED: docs/board/in-progress/0035-person-only-task-cards-sit-in-todo.md (this card)
+OUT-OF-SCOPE: 0037
+
+Both moves done with `git mv`. `ls docs/board/human-review` now prints five files and
+`ls docs/board/todo` prints neither of the two. No test was written: criterion #1 says
+`proves: none`, and a card's lane is a folder that nothing in this repository's suite reads. The
+suite was run anyway to show nothing else broke.
+
+The count in `docs/HANDOVER.md` was the awkward part. The lane now holds five, and the file's own
+bulleted list under "Blockers / open questions" names eight cards that need Rob. Both numbers are
+true and they are about different things, so the file now states the lane count, names the five, and
+says the other three are `0003`, `0017` and `0018`, still in `todo/`. Those three carry `## Options`,
+which is the board's own rule for a decision card, so `0033`'s sweep should have taken them and did
+not. That is outside this card's fence, so it is raised as card `0037` rather than fixed here, and
+the note in `docs/HANDOVER.md` points at it. When `0037` is done that paragraph collapses back to
+"eight", which is one of its tasks.
+
+Not settled from the repository: why `0033` moved only `0025` when three more `todo/` cards matched
+its stated rule. `0003` and `0017` carry a `waiting_on:` recheck date that is not yet due, which may
+have read as "parked", but `0018` carries no key at all. `0037` records the question; it does not
+answer it.
