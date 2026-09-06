@@ -13,12 +13,13 @@ dataset of Scottish forest car parks exists. Map complete (bundled outline plus 
 **Five built cards are not yet deployed** and ship as one batch; see "Current state".
 **One agent-ready card is open**, 0041, the stale `human-review/` and `ai-review/` counts in this
 file; `ai-review/` holds the adversarial-pass queue.
-**Eight cards wait on a person in `docs/board/human-review/`** (0001, 0002, 0003, 0010, 0017, 0018,
-0025, 0027).
+**Eleven cards wait on a person in `docs/board/human-review/`** (0001, 0002, 0003, 0010, 0017, 0018,
+0022, 0024, 0025, 0027, 0030), counted 2026-09-07. **0022 there is the accounts and location-tracking
+card, not the footer-credits 0022 in `ai-review/`**: two different cards carry that number.
 The last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
 checkout. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-06. What each card did is on its own comment thread under `docs/board/`, and
+_Last updated: 2026-09-07. What each card did is on its own comment thread under `docs/board/`, and
 the commit log is the narrative; what outlived a build is in the sections below, in DATA-MODEL and
 in DECISIONS. Do not append a run report here._
 
@@ -362,7 +363,7 @@ The queue is [docs/board/](board/), one card per file. At the head:
    Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map truncates
    most derived names before the forest is reached. In the list this is fine, because each row still
    carries its own distance and bearing. On the map it is not.
-4. **An adversarial pass over `ai-review/`** — nineteen cards on 2026-09-06 (`ls docs/board/ai-review`,
+4. **An adversarial pass over `ai-review/`** — twenty-nine cards on 2026-09-07 (`ls docs/board/ai-review`,
    which is the only honest count), among them 0005 deploy, 0006
    compass, 0008 offline map, 0009 tile layer, and **0020 campsites**, which is the largest
    single change since the map. 0020 is worth real scepticism on three points: the filter that
@@ -388,12 +389,12 @@ See [docs/board/human-review/](board/human-review/). **One agent-ready card is o
 `ai-review/` for the adversarial pass; **0034 re-took the "`api/nearest.php` needs no caching"
 measurement on 2026-09-06 and the conclusion held**, and the figures, with the date and file size
 they were taken on, are in "Current state" above. Otherwise what remains is the adversarial pass over `ai-review/` and the
-re-fetch that card 0026 left. **Card 0030 is built and left one box open for a person**: the suite
-must be seen passing between 00:00 and 01:00 local while BST is in force. Five seconds, but only
-possible in that hour. **Eight cards need Rob and they fit in one conversation**, and all eight are
-in the lane: `ls docs/board/human-review` gives 0001, 0002, 0003, 0010, 0017, 0018, 0025 and 0027.
-The folder is the count; the list below covers those eight, plus the struck-through 0016, which is
-answered and kept only for the one licence question it left behind:
+re-fetch that card 0026 left. **Eleven cards need Rob**, and all eleven are in the lane:
+`ls docs/board/human-review` on 2026-09-07 gives 0001, 0002, 0003, 0010, 0017, 0018, 0022, 0024,
+0025, 0027 and 0030. The folder is the count; the list below covers those eleven, plus the
+struck-through 0016, which is answered and kept only for the one licence question it left behind.
+**Ten of them fit in one conversation; 0022 does not**, because it is a build the size of the
+Campsites tab and not a question:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
@@ -443,6 +444,19 @@ the mail fix. **That fix belongs on the enhanceify-V2 board, not this one**, and
   Three options and a recommendation on the card. **Still unanswered**, and card 0021 cannot close
   its last criterion until it is. Card 0033 moved it out of `todo/` and into `human-review/` on
   2026-09-06, so a sweep of that folder now finds it.
+- **0030** — **five seconds, but only possible in one hour.** The card is built and repaired the
+  fetch-date self-test; its remaining check asks for the suite to be seen passing between 00:00 and
+  01:00 local while BST is in force. Its build run reproduced the same divergence at 05:03 with a
+  `TZ` override and would accept that as evidence, but that is not the check as written.
+- **0024** — **built to 3 of 4 and asking to be closed there.** Six runs all reached the same
+  finding: its last criterion wants the convention check at zero, and the one failure is a missing
+  `## Links` reason in card 0026, which is card 0028's job. 0028 is built and sits in `ai-review/`,
+  so this may now close with no work on it; that call is Rob's, not a session's.
+- **0022 (accounts and personal location tracking)** — **unbuilt, and the loop will not start it.**
+  All seven of its criteria say `proves: manual`, so an unattended session can close none of them.
+  It also needs an authentication and data service that the current static Hostinger deployment
+  cannot host, and the card forbids creating a paid service without a person driving it. **Note the
+  number collides with the footer-credits 0022 in `ai-review/`.**
 
 ## How to pick up
 
