@@ -3,7 +3,7 @@
  * Nearest-site lookup for the iOS Shortcut.
  *
  * The PWA does this maths on the device and needs no server. The Shortcut cannot:
- * Shortcuts iterates roughly tens of items per second, so ranking 904 sites in-app would
+ * Shortcuts iterates roughly tens of items per second, so ranking 1,180 sites in-app would
  * take far too long to be useful in a car. This endpoint does it in one request instead.
  *
  * GET /api/nearest.php?lat=50.81&lng=-0.09[&n=5][&source=forest|carpark|all]

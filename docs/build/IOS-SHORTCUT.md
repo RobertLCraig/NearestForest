@@ -4,7 +4,7 @@ _Last updated: 2026-08-08_
 
 The second access method (see [DECISIONS](../DECISIONS.md), 2026-08-08). Siri-triggerable and
 therefore hands-free, which the PWA cannot be. It calls `api/nearest.php` because Shortcuts is far
-too slow to rank 904 sites on device.
+too slow to rank 1,180 sites on device.
 
 **Why this is a written recipe and not a file:** `.shortcut` files are a signed Apple format that
 cannot be generated off-device. Building it by hand takes about five minutes and you can then share

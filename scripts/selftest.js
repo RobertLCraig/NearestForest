@@ -1003,6 +1003,41 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
   }
 }
 
+console.log('\n--- dataset counts carried in prose (card 0036) ---');
+{
+  // Three files argue from a record count they wrote down by hand. Card 0016 grew the
+  // dataset from 904 to 1,180 and none of them moved, because nothing re-reads a number
+  // that lives in a comment. These read the number back out of the prose and check it
+  // against the shipped file, so the next growth fails a run instead of a reader.
+  const withUrl = sites.filter(s => s.url);
+  const carried = [
+    // file, pattern whose capture group is the claimed count, what it must equal
+    ['app/api/nearest.php', /ranking ([\d,]+) sites/, sites.length],
+    ['docs/build/IOS-SHORTCUT.md', /rank ([\d,]+) sites on device/, sites.length],
+    ['app/core.js', /Every one of the ([\d,]+) records/, withUrl.length],
+  ];
+  // One test, named as the cards cite it, so a run log shows it by that name. The detail
+  // says which file and by how much, because "a count is wrong" is not actionable on its own.
+  const wrong = carried.map(([rel, re, want]) => {
+    const m = re.exec(fs.readFileSync(path.join(ROOT, ...rel.split('/')), 'utf8'));
+    if (!m) return `${rel}: no count matching ${re} found`;
+    const got = Number(m[1].replace(/,/g, ''));
+    return got === want ? null : `${rel}: says ${got}, dataset holds ${want}`;
+  }).filter(Boolean);
+
+  // 276 of the 550 URLs are Scottish, so naming one agency is wrong however the count reads.
+  const core = fs.readFileSync(path.join(ROOT, 'app', 'core.js'), 'utf8');
+  if (!(/forestryengland\.uk/.test(core) && /forestryandland\.gov\.scot/.test(core))) {
+    wrong.push('app/core.js names only one upstream agency for its dataset URLs');
+  }
+  // Named exactly as card 0036 cites it, so the run log and the card agree.
+  ok('dataset counts in comments match sites.json', wrong.length === 0, wrong.join(' | '));
+
+  ok('both upstreams really are in the data',
+     withUrl.some(s => /forestryengland\.uk/.test(s.url)) &&
+     withUrl.some(s => /forestryandland\.gov\.scot/.test(s.url)));
+}
+
 console.log('\n--- ranking from Brighton ---');
 const rankedF = NF.rank(sites, 'forest', BRIGHTON, '');
 const rankedC = NF.rank(sites, 'carpark', BRIGHTON, '');

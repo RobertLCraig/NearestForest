@@ -44,22 +44,22 @@ the trap on this card: two of the 904s in the tree are right.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a reader opens `app/api/nearest.php`, `docs/build/IOS-SHORTCUT.md` or `app/core.js`,
+- [x] #1 WHEN a reader opens `app/api/nearest.php`, `docs/build/IOS-SHORTCUT.md` or `app/core.js`,
       THE FILE SHALL state the record count `app/data/sites.json` holds today rather than 904.
       proves: `dataset counts in comments match sites.json`
-- [ ] #2 WHEN `app/core.js` names the upstream that dataset URLs come from, THE FILE SHALL name both
+- [x] #2 WHEN `app/core.js` names the upstream that dataset URLs come from, THE FILE SHALL name both
       agencies, since 276 of the 550 URLs are `forestryandland.gov.scot`.
       proves: `dataset counts in comments match sites.json`
-- [ ] #3 WHEN a future card grows the dataset again, THE SUITE SHALL fail if one of these carried
+- [x] #3 WHEN a future card grows the dataset again, THE SUITE SHALL fail if one of these carried
       counts no longer matches `app/data/sites.json`, so the next drift is caught by a run rather
       than by somebody reading. proves: `dataset counts in comments match sites.json`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Write the failing self-test first: assert the counts named in those three files against the
+- [x] Write the failing self-test first: assert the counts named in those three files against the
       counts read out of `app/data/sites.json`, and watch it fail on today's 904s
-- [ ] Correct the three numbers, and the single-agency claim in `app/core.js`
-- [ ] Leave `docs/DECISIONS.md` and `docs/DATA-MODEL.md` alone; see `## Not this card`
+- [x] Correct the three numbers, and the single-agency claim in `app/core.js`
+- [x] Leave `docs/DECISIONS.md` and `docs/DATA-MODEL.md` alone; see `## Not this card`
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. From the repository root, the numbers
@@ -85,4 +85,51 @@ put back to 904, and no number outside those three files moved.
 ## Comments
 **2026-09-06** Raised by card `0034` while it re-timed `api/nearest.php` against the grown dataset.
 `0034` only changed `docs/HANDOVER.md`, so correcting comments in shipped files was outside it.
+
+**2026-09-06** RESULT: done
+TESTS: +2 new, all green (227 passed, 0 failed — `node scripts/selftest.js`)
+TOUCHED: scripts/selftest.js
+TOUCHED: app/api/nearest.php
+TOUCHED: docs/build/IOS-SHORTCUT.md
+TOUCHED: app/core.js
+TOUCHED: app/sw.js
+TOUCHED: docs/board/todo/0038-the-forestry-england-briefing-counts-predate-scotland.md
+TOUCHED: docs/board/todo/0039-data-model-counts-the-stale-date-stamps-as-904.md
+TOUCHED: docs/board/in-progress/0036-the-904-record-count-outlived-card-0016.md
+OUT-OF-SCOPE: 0038, 0039
+
+Test first, and it was red for the stated reason before any file moved: a new section
+`--- dataset counts carried in prose (card 0036) ---` reads the claimed number back out of each of
+the three files with a regex, and compares it to `app/data/sites.json`. On the unfixed tree it
+reported `nearest.php: says 904, dataset holds 1180`, the same for `IOS-SHORTCUT.md`,
+`core.js: says 904, dataset holds 550`, and `core.js names only one upstream agency`. After the
+fix I put 904 and the single-agency wording back into `core.js` and watched it go red again, so
+the test catches the drift rather than merely agreeing with today's file.
+
+The regexes are deliberately loose about the digits and tight about the surrounding words
+(`ranking ([\d,]+) sites`, `rank ([\d,]+) sites on device`, `Every one of the ([\d,]+) records`),
+so a future count change is caught and a reworded sentence that drops the number fails too. It is
+one `ok()` named exactly as the acceptance cites it, with the per-file detail in its failure
+message, because three separately named checks would not match the name the card asked for.
+
+Measured, not assumed: 1,180 records, 550 with a `url` (274 `www.forestryengland.uk`, 276
+`forestryandland.gov.scot`), 630 car parks with no `url` at all. The `core.js` comment now says all
+of that, and also says out loud that `safeHref()` checks the scheme and never the host — the point
+the card makes in `## Why` and the thing a reader could not otherwise tell.
+
+`CACHE` in `app/sw.js` and `BUILD` in `app/core.js` bumped `v16-2026-09-05` -> `v17-2026-09-06`, as
+`## Plan` requires: two shipped files changed, `deploy.ps1` refuses an unbumped `app/` change, and a
+self-test enforces that the two strings match.
+
+There is no PHP suite in this project, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not
+exist and `vendor/` is absent; the suite is `node scripts/selftest.js`, run from this worktree.
+
+`docs/DECISIONS.md` and `docs/DATA-MODEL.md:89` untouched, per `## Not this card`. Two other stale
+904s turned up outside the three files and are raised rather than fixed: `0038` for the outward-facing
+Forestry England briefing, which lists `904 locations, 274 forests` in a table marked **Verified**,
+and `0039` for `docs/DATA-MODEL.md:168`, which says 904 records carry the stale `2026-08-29` stamp
+when 1,180 do. Both cards ask for a row added to this card's `carried` table rather than a new test.
+
+Not checked in a browser: this is a worktree and Herd serves `C:\Dev\NearestForest`. Nothing visual
+changed — the diff under `app/` is two comments and two version strings.
 </content>
