@@ -102,3 +102,46 @@ blocking a tile.
 Everything on this card is now evidenced on the device. Card 0015 came out of the same
 screenshots, and is a legibility defect the tile layer has always had rather than anything the
 CSP introduced.
+
+### 2026-09-07 review (v20260907113904-f98e)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I traced each criterion to real code.
+
+**#1 CSP** ÔÇö `app/.htaccess`, "Security headers" block: `Header always set Content-Security-Policy` with `script-src 'self'`, no `unsafe-inline`, no `unsafe-eval`. The app stays inside it: `loadJson()` in `app/app.js` and the boundary fetch in `app/map.js` use relative URLs (same origin, so `connect-src 'self'` holds); the grain is a `data:` SVG in `app/app.css`, covered by `img-src data:`. No `style=` and no `on*=` handler anywhere in `app/*.js` or `app/index.html` (grep found none).
+
+**#2** ÔÇö same block sets `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, all with `always`.
+
+**#3** ÔÇö `frame-ancestors 'none'` inside the same CSP.
+
+**#4** ÔÇö the `sw\.js$` `FilesMatch` now sits after the general `.(html|css|js|json|webmanifest)$` block, so `no-store` is the last write and wins. `scripts/selftest.js` (hardening section) asserts the index order.
+
+**#5** ÔÇö tiles come from `app/api/tiles.php`, same origin, so `img-src 'self'` serves them.
+
+Self-tests back #1ÔÇô#4 in `scripts/selftest.js`. I tried to find a criterion with no code behind it and could not.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Scope: what grew.** Nothing. This card's own footprint is `app/.htaccess` and the hardening block in `scripts/selftest.js`. The other files in commit `de37fb2` (`app/api/tiles.php`, `NF.safeHref` in `app/core.js`, the footer in `app/index.html`) are cards 0012ÔÇô0014, not this one. Nothing crossed the fence: no `X-Frame-Options`, no Cloudflare proxy change, no tile-proxy or `href` work attributable here. The `%{HTTP_HOST}` literal is an explicit task on the card, not creep.
+
+**Scope: what was left half done.** The task asked for self-tests that the app "stays CSP-satisfiable (no inline script, no inline handler, no `style=` in markup, no `eval`)". In `scripts/selftest.js`, the hardening block (`--- hardening (adversarial review, 2026-08-10) ---`) runs three of those four against `indexhtml` only. Just the `eval` check uses the `shipped` join of `app.js`, `core.js`, `map.js`, `sw.js`. But the card's own **Why** names `app.js` building HTML strings as the reason for the strict policy, and `app.js` writes `innerHTML` in three places. An inline `onclick=` or `style=` added inside those template strings passes node and fails only as dead UI on a phone ÔÇö the exact failure the Plan says these tests exist to stop.
+
+VERDICT: defect
+
+**breakage: defect**
+
+I tried to break the header work. Here is what I found.
+
+**Checked and it holds:** the CSP allows everything the app actually loads ÔÇö the three `<script src>` tags in `app/index.html`, the `data:` grain in the `--grain` variable in `app/app.css`, the same-origin tile URL built in `map.js` (`api/tiles.php?z=...`), and the service worker. No `<form>`, `<base>`, `<iframe>`, inline `<style>` or inline handler exists, so `form-action`/`base-uri`/`object-src 'none'` break nothing. `Referrer-Policy: strict-origin-when-cross-origin` still sends a same-origin `Referer`, so the `Referer` fallback in `app/api/tiles.php` keeps working. The `sw.js` block order and the literal-host redirect are both asserted in `scripts/selftest.js`.
+
+**One gap.** In `scripts/selftest.js`, the hardening block checks "no inline event handlers in index.html" and "no style attributes in index.html markup" against `index.html` only. But the markup the CSP exists to defend is built in `app/app.js` (`renderList`'s `listEl.innerHTML = sites.map(...)` and the sheet's `$('#sheet-body').innerHTML = h`). The `eval` check already scans all four shipped files; these two do not. A future `style="` or `onclick=` in one of those template strings passes the suite and fails only on a phone. The `.htaccess` comment claiming "no inline event handler anywhere in the app" is therefore not what the tests check.
+
+VERDICT: defect
+
