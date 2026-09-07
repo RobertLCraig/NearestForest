@@ -11,8 +11,8 @@ agencies; Campsites covers England, Scotland and Wales; Car parks is England onl
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
 **The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 2.
 **Five built cards are not yet deployed** and ship as one batch; see "Current state".
-**One agent-ready card is open**, 0041, the stale `human-review/` and `ai-review/` counts in this
-file; `ai-review/` holds the adversarial-pass queue.
+**Three agent-ready cards are open** on 2026-09-07: 0045 in `todo/`, and 0021 and 0044 in
+`in-progress/`; `ai-review/` holds the adversarial-pass queue.
 **Eleven cards wait on a person in `docs/board/human-review/`** (0001, 0002, 0003, 0010, 0017, 0018,
 0024, 0025, 0027, 0030, 0043), counted 2026-09-07. **The accounts and location-tracking card is
 `0043`**: it was renumbered from `0022` by card `0042`, because two different cards carried that
@@ -383,9 +383,11 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **One agent-ready card is open**, and
-`ls docs/board/todo` is the honest count: **0041**, raised by 0040 on 2026-09-06, which says the
-`human-review/` and `ai-review/` counts in this file are both under the folders they cite.
+See [docs/board/human-review/](board/human-review/). **Three agent-ready cards are open**, and
+`ls docs/board/todo` plus `ls docs/board/in-progress` are the honest count: on 2026-09-07 they give
+**0045** in `todo/`, the three `human-review/` cards that carry no "What I need from you" section,
+and **0021** and **0044** in `in-progress/` — 0021, the card-rewrite pass, whose last criterion
+waits on decision 0025, and 0044, the card correcting this very paragraph.
 **0033 and 0034 are where this paragraph used to point, and both are built**, sitting in
 `ai-review/` for the adversarial pass; **0034 re-took the "`api/nearest.php` needs no caching"
 measurement on 2026-09-06 and the conclusion held**, and the figures, with the date and file size

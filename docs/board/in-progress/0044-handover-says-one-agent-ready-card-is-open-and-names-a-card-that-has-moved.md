@@ -36,17 +36,17 @@ belongs on its own card.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] WHEN `docs/HANDOVER.md` names the open agent-ready cards, THE FILE SHALL name exactly the cards
+- [x] WHEN `docs/HANDOVER.md` names the open agent-ready cards, THE FILE SHALL name exactly the cards
       that `ls docs/board/todo` and `ls docs/board/in-progress` return on the day it is written.
       proves: none - this project's suite is one node script over the app and cannot read the board;
       the check is listing both folders and reading the two paragraphs against them
 <!-- AC:END -->
 
 ## Tasks
-- [ ] List `docs/board/todo/` and `docs/board/in-progress/` and write down what they hold
-- [ ] Correct the status block near the top of `docs/HANDOVER.md`
-- [ ] Correct the same claim in "Blockers / open questions"
-- [ ] Re-read both paragraphs against the folders before committing
+- [x] List `docs/board/todo/` and `docs/board/in-progress/` and write down what they hold
+- [x] Correct the status block near the top of `docs/HANDOVER.md`
+- [x] Correct the same claim in "Blockers / open questions"
+- [x] Re-read both paragraphs against the folders before committing
 
 ## Plan
 Work in the NearestForest repository. Only `docs/HANDOVER.md` changes; nothing under `app/` or
@@ -67,3 +67,23 @@ neither paragraph names a card that is in `ai-review/`, `human-review/` or `done
 **2026-09-07** Raised by card `0042` while it renumbered the duplicate `0022`. `0042` edited the
 neighbouring lines of both paragraphs, so the stale sentence was read but deliberately not touched:
 its scope was the id collision.
+
+**2026-09-07** RESULT: done
+TESTS: +0 new, all green (227 passed, 0 failed)
+TOUCHED: docs/HANDOVER.md, docs/board/in-progress/0044-handover-says-one-agent-ready-card-is-open-and-names-a-card-that-has-moved.md
+OUT-OF-SCOPE: none
+
+`ls docs/board/todo` on 2026-09-07 returns one card, `0045`. `ls docs/board/in-progress` returns
+`0021` and `0044`. Both paragraphs now name that set and nothing else, each carrying the date the
+listing was taken. `0041` no longer appears anywhere in `docs/HANDOVER.md`.
+
+The one judgement call: `0044` is this card, and it names itself while it sits in `in-progress/`.
+That is what the criterion asks for - the folders are the source, and the folder held it today - but
+the scheduler will move it on this session's end, so the sentence goes stale for the same reason
+`0040` and `0041` did. This card was told not to build a mechanism that stops that; the question
+belongs on its own card and is already named in "Not this card".
+
+The criterion's `proves:` is `none`, so no test was written for it. `node scripts/selftest.js` ran
+green as the Plan asked, purely to show the edit broke nothing; it reads `app/` and `data/` and
+cannot see the board. There is no PHP suite in this repository - no `vendor/`, so no
+`vendor\bin\pest.bat` or `pint.bat` to run.
