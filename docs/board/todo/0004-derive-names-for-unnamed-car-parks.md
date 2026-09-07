@@ -95,3 +95,51 @@ self-tests assert all three, and `CACHE` / `BUILD` are bumped to `v12-2026-08-29
 - `node scripts/selftest.js` passes 186/186. The `pest` and `pint` suites named in the card runner do
   not exist in this project. There is no `vendor/` and no PHP dependency set, and the suite here is
   the node self-test.
+
+### 2026-09-07 review (v20260907034325-498a)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each box against real code.
+
+**AC #1 ÔÇö derived name.** `name_after_nearest_forest()` in `scripts/parse.py` picks the nearest forest point with `haversine_mi()` and writes `"Car park near <Forest>"`. The shipped `app/data/sites.json` has 177 derived car parks; 158 carry a forest name. The Brighton one reads "Car park near Friston Forest".
+
+**AC #2 ÔÇö marked as ours.** Three places, all real:
+- list row: `render()` in `app/app.js` adds `row__derived`, styled in `app/app.css`.
+- detail sheet: `openSheet()` in `app/app.js` adds `sheet__name--derived` and the subtitle "our name for it, not a published one".
+- map label: the label draw in `app/map.js` uses italic when `name_is_derived`.
+
+**AC #3 ÔÇö too far, no claim.** `name_after_nearest_forest()` skips any car park past `NEAR_FOREST_MI = 5.0`, so the name stays "Unnamed car park". The data shows exactly 19 left that way. The 5.0 is documented in `parse.py` from the measured quartiles, not guessed.
+
+I ran the suite: `node scripts/selftest.js` gives **227 passed, 0 failed**. It re-derives the join itself, so the data cannot drift from the code.
+
+I tried to break it and could not.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Scope review of card 0004**
+
+**1. The map is half done, and it got worse.** The change added italic to derived labels in `app/map.js`, in the label loop inside `NFMap`'s draw routine. That same loop cuts a label at 22 characters. 154 of the 158 new names are now cut. 4 lose the forest completely: `Main car park near Delamere Forest` draws as `Main car park near DeÔÇª`. Before this change the map read `Unnamed car park` in full. So AC #1 is met in the list and the sheet, but not on the map, which this card touched. The card comment says a follow-up card should exist. It does not: `docs/board/todo/` holds only 0044 and 0045.
+
+**2. It crossed the fence, but that part is already fixed.** The rebuild moved `scraped_at` forward on 274 forest records, which `app/app.js` `renderSheet` shows as "Data checked". "Not this card" fences the Forests tab. Commit b3f5297 later corrected this, so no action now.
+
+**What to do:** send 0004 back and fix the map label, or raise the label card.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**1. The Shortcut says the made-up name like it is real.** `app/api/nearest.php`, the `array_map` that shapes the response, sends `name` and builds `label` as `name - miles`. It does not send `name_is_derived`. So Siri reads "Car park near Friston Forest" with nothing to say the name is ours. Before this card the same field read "Unnamed car park", which marked itself. AC #2 is met in the list, the sheet and the map, and missed here. The Shortcut is an app surface: `docs/build/IOS-SHORTCUT.md` step 5 says it shows `label` directly.
+
+**2. A doc the change made false.** `docs/build/IOS-SHORTCUT.md`, the "Car parks instead of named forests" bullet, still says "170 car parks are unnamed, so the list reads poorly aloud". It is 19 now.
+
+**3. Two rules, two different forest sets.** `parse.py` `main()` passes only English forests to `name_after_nearest_forest()`. `selftest.js` `nearestForest` in the derived-names block reduces over every forest in `sites.json`, Scotland included. I re-derived the join: zero mismatches today, so it passes. One Scottish point nearer a border car park and the test goes red while the parser is the thing that is wrong.
+
+VERDICT: defect
+
