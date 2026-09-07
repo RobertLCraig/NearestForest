@@ -141,3 +141,52 @@ anyway, so that look is already owed.
 The suite the card names still does not exist here: no `vendor/`, no `pest.bat`, no `pint.bat`, and
 this project has no PHP test suite. `node scripts/selftest.js` is the suite per CLAUDE.md, and it
 passes at **190, 0 failed**, unchanged from the last run because no code changed.
+
+### 2026-09-07 review (v20260907194508-ea14)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Checked all three boxes against real code.
+
+**#1 legible over tiles** ÔÇö `.map__hint--attrib` in `app/app.css` gives white text on `rgba(0,0,0,.72)`, and `setTiles` in `app/map.js` adds that class on the same line it swaps in the attribution text. So the pill and the text can never disagree. 72% black under a pure white tile is about 9:1 contrast, well over the 4.5:1 bar, and no tile can be brighter than white, so it holds at every zoom.
+
+**#2 off state unchanged** ÔÇö the change is a modifier class only. `.map__hint` in `app/app.css` still has its `color:var(--dim)` and `text-shadow`. With tiles off `setTiles` removes the class, so nothing applies.
+
+**#3 clear of the safe area** ÔÇö `bottom:calc(var(--safe-b) + 10px)` lives on the base `.map__hint`, and the modifier sets no `bottom`. Both states get the inset from one rule, so they cannot drift apart. The pill grows upward when the text wraps, not down.
+
+I tried to break #2 and #3 by looking for a `bottom` or a colour inside the modifier that would override the base. There is none.
+
+The unticked task is the phone check, which is a person's job, not code.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check on card 0015.**
+
+What the card asked for, and only that, is what the code does. `.map__hint--attrib` in `app/app.css` adds the pill. `setTiles` in `app/map.js` toggles that class on the same line that swaps the text, so the two states cannot disagree. `CACHE` in `app/sw.js` and `BUILD` in `app/core.js` are bumped, which an installed copy needs.
+
+The fence holds. Nothing touches marker labels. `.map__btn` is unchanged, so the map controls were not restyled. The attribution is still on the map, not moved to a sheet or a credits screen. No new element was added.
+
+Other things in the diff (`.tab` sizing, `.sheet__name--derived`, campsites, Scotland, `.gitignore`) belong to other cards' files, not to `map.js`, `.map__hint` or the tile toggle.
+
+Left open: Task 2, the phone check. It is written on the card, and no build session can close it ÔÇö it needs a real phone and a real Thunderforest tile. The desktop check used a synthetic white tile, which bounds the contrast but does not sample the live basemap.
+
+That is a person's job, not a build defect.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I tried to break the change. The shipped behaviour holds: `.map__hint--attrib` comes after `.map__hint`, same specificity, so `left:50%`/`right:auto` win; `--pad` is a `:root` variable; `.map` is `position:fixed; inset:0`, so the absolute pill has a containing block; `setTiles` in `app/map.js` sets the text and the class on adjacent lines, so the two states cannot disagree; `app.css` is in the `ASSETS` list in `app/sw.js` and `CACHE` matches `BUILD` in `app/core.js`. Tiles-off is untouched.
+
+One defect, in the guard itself.
+
+In `scripts/selftest.js`, the tile-layer block, the check "the attribution style exists and is opaque enough to read on white" uses `/background:rgba\(0,0,0,\.(7[2-9]|[89]\d)\)/`. It says "floor" but it is not one. `.8` fails (`[89]\d` demands two digits) and `0.72` fails (leading zero). Both are legal CSS and `.8` is *more* opaque than the value the card justified. So the next session that makes the pill darker gets a red suite for a correct change, and the stated rule is not the rule that is enforced.
+
+VERDICT: defect
+
