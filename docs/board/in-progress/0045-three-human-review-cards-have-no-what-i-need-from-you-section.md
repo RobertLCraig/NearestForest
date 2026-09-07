@@ -146,3 +146,47 @@ deliberately not touched**, although raising `0046` changes its open-card count 
 wait on a person" line is now thirteen. Card `0044` is open in `in-progress/` to correct that very
 paragraph, so editing it here would be two sessions writing the same lines. No browser check applies;
 nothing under `app/` changed.
+
+**2026-09-07**
+RESULT: partial
+TESTS: +0 new, all green. Criterion 1 is `proves: none` and criterion 2 is `proves: manual`, so
+neither gets a test and the write-it-failing-first rule does not apply. `node scripts/selftest.js`
+reports **227 passed, 0 failed**, unchanged, which is what a board-only change should do. There is
+still no `vendor\bin\pest.bat`, no `pint.bat` and no `composer.json` in this project.
+TOUCHED: docs/board/todo/0047-card-0008-entered-human-review-without-the-required-section.md (new)
+TOUCHED: docs/board/in-progress/0045-three-human-review-cards-have-no-what-i-need-from-you-section.md
+OUT-OF-SCOPE: 0047
+
+Second run. **The work this card names was already done by the first run** and I changed none of it:
+`0024`, `0030` and `0043` each still carry `## What I need from you` directly under the title, with
+the ask, a Pass and a Fail inside the first three lines. I re-read all three to check that rather
+than trusting the previous entry.
+
+**Criterion 1 still cannot close, and the lane has moved again.** Grepping the heading across
+`docs/board/human-review/*.md` now returns three cards without it, not two:
+
+    docs/board/human-review/0004-derive-names-for-unnamed-car-parks.md
+    docs/board/human-review/0006-explicit-compass-point-in-list.md
+    docs/board/human-review/0008-offline-map-view.md
+
+`0004` and `0006` are card `0046`, raised by the first run. `0008` is new: it went `ai-review/` ->
+`todo/` -> `human-review/` in commits `d938da5` and `54ae3c6`, **after `0046` was written**. So it is
+covered by no card, and `0046` is append-only in the sense that matters here - it is another card and
+I may not edit it. It is card **`0047`** in `todo/`. The lane is fourteen now, not eleven and not
+thirteen.
+
+**The same fault has now been raised three times in one day, and that is the real finding.** Every
+one of these six cards was authored for `todo/`, built, and then moved into `human-review/` by the
+scheduler. The move never adds the section, so the lane will keep producing this card for as long as
+cards keep being promoted into it. I wrote that on `0047` rather than acting on it, because the fix
+sits at the move in `C:\Dev\ProgressBoard` and this card's own `## Not this card` puts that outside
+the repository.
+
+**Criterion 2 stays open on purpose**, unchanged from the first run: it is `proves: manual`, and
+whether the three asks read as legible to somebody not holding this repository in their head is a
+reader's judgement. One person opening `0024`, `0030` and `0043` closes it.
+
+**Could not settle from the repository:** nothing that blocked the work. `docs/HANDOVER.md` was again
+not touched, for the reason the first entry gives - card `0044` owns that paragraph and is now in
+`ai-review/` - but note that its counts are further out of date: it says eleven cards wait on a
+person and the folder holds fourteen. No browser check applies; nothing under `app/` changed.
