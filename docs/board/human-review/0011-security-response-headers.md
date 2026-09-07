@@ -3,6 +3,30 @@ no_outward_effect: "send" in criterion #2 is the server emitting HTTP response h
 ---
 # Security response headers
 
+## What I need from you
+
+**One call.** A reviewer says one task on this card was left half done, and no session may untick a
+box. Either untick criterion #1 and send this card back to `todo/`, or write here why the reviewer is
+wrong and leave it ticked.
+
+**Pass** is either of those, written as one dated line in `## Comments` below.
+
+**Fail** is leaving all five boxes ticked with nothing written. The card then reads as finished, the
+loop finds no work on it, and it comes straight back to this lane. That is what has happened so far.
+
+**Why it needs you.** The reviewer's finding sits under task 4, not under a criterion, and it graded
+the acceptance itself `sound`. So which box, if any, is untrue is a judgement, and only a person may
+change a tick.
+
+**What's wrong.** `scripts/selftest.js` checks "no inline handler" and "no `style=`" against
+`app/index.html` only. The markup the strict policy exists to defend is built by `innerHTML` inside
+`app/app.js`, which those two checks never read. A future `onclick=` or `style=` in one of those
+strings passes the suite and fails only as dead buttons on a phone.
+
+**Cause.** The card was built, reviewed, and returned with the finding. A reviewer is forbidden from
+editing acceptance, so it came back with 5 of 5 ticked; every unattended session since has read the
+boxes, found nothing open, and promoted it again.
+
 ## Why
 An adversarial review and penetration test on 2026-08-10 (prompted by the app being shared with
 other people) found the live site serving exactly one security header, and it was not ours:

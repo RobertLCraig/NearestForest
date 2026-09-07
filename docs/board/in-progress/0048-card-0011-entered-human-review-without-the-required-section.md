@@ -43,23 +43,23 @@ card's. Not a check that refuses a card entering the lane without the section: t
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0011-security-response-headers.md` is searched for the heading
+- [x] #1 WHEN `docs/board/human-review/0011-security-response-headers.md` is searched for the heading
       `## What I need from you`, THE CARD SHALL return a hit directly under its title. proves: none -
       this project's suite is one node script over the app and cannot read the board; the check is
       `grep -rL "## What I need from you" docs/board/human-review/*.md` not naming `0011`
-- [ ] #2 WHEN a reader opens `0011`, THE CARD SHALL state the ask, what a pass is and what a fail is,
+- [x] #2 WHEN a reader opens `0011`, THE CARD SHALL state the ask, what a pass is and what a fail is,
       within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the two `defect` verdicts above it, and use the ask
+- [x] Read the card's last comment entry and the two `defect` verdicts above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget after the section is added, and say on the
+- [x] Check the card is still inside the 100-line budget after the section is added, and say on the
       card if it is not
-- [ ] Re-grep the lane and report which cards still miss the heading
+- [x] Re-grep the lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository. Only `docs/board/human-review/0011-security-response-headers.md`
@@ -96,3 +96,40 @@ title.
 **2026-09-07** Raised by card `0046` on its second run. `0045` named three cards, `0046` named two
 more that arrived after it was written, `0047` named `0008`, and `0011` arrived after `0047` was
 written. The lane keeps changing under an open card, which is the finding rather than a miscount.
+
+**2026-09-07** RESULT: done
+TESTS: +0 new, all green (227 passed, 0 failed)
+TOUCHED: docs/board/human-review/0011-security-response-headers.md
+TOUCHED: docs/board/todo/0051-cards-0012-0013-0014-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/in-progress/0048-card-0011-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: 0051
+
+No test was written, and neither criterion asked for one: #1 says `proves: none` and #2 says
+`proves: manual`. This project's suite is `node scripts/selftest.js`, a node script over `app/` and
+`scripts/`; it cannot read `docs/board/`, so there is no harness here that could go red on a missing
+heading. Writing one would mean building a board reader this card explicitly does not want, since the
+card says the real fix lives at the lane move in `C:\Dev\ProgressBoard`. The check is the grep on the
+criterion, run before and after: before, it named `0011`; after, it does not.
+
+Wrote `## What I need from you` into `0011` directly under the title and above `## Why`, using the
+ask already on the card - untick what the reviewer disproved and send it back to `todo/`, or say why
+the finding is wrong - with Pass, Fail, Why it needs you, What's wrong and Cause underneath. The
+reviewer's two `defect` verdicts name the same single gap, so What's wrong states it once: the
+hardening block in `scripts/selftest.js` runs its inline-handler and `style=` checks against
+`index.html` only, while the markup the CSP defends is built by `innerHTML` in `app/app.js`. I did
+not say which criterion to untick. The reviewer graded `acceptance: sound` and put the gap under task
+4, not under a criterion, so that is part of the call, and the card forbids me making it.
+
+**`0011` is over the 100-line budget and this card cannot fix it.** It was 153 lines and is now 176.
+Everything above the new section is build detail plus two append-only threads that may not be cut, so
+the only lever was keeping the section tight, which is what I did. Same position `0045` recorded for
+`0043` and `0046` for `0004`.
+
+Re-grepped the lane, which is task 4. `0011` no longer misses the heading; `0012`, `0013` and `0014`
+now do. All three arrived on 2026-09-07, after this card was written, with the same shape and the
+same cause: built, returned with a finding a builder could not act on, promoted on ticked boxes.
+Raised as `0051` rather than fixed here. One card for the three, following `0045` and `0046`, which
+each carried a batch found in one sweep of one lane - the finding is the batch, not each file.
+
+Nothing under `app/` or `scripts/` changed, so the suite could not see this either way. Ran it to
+show nothing broke: 227 passed, 0 failed. No browser check applies; no served file changed.
