@@ -146,3 +146,37 @@ nobody asked this card for, and the card's own `## Not this card` says the enfor
 `0046` two more, `0047` one, `0048` one - and every one arrived by a scheduler move that adds the
 lane's obligation without adding the lane's shape. Each card fixes the cards it can see and #1
 reopens behind it. That pattern is recorded on `0048`; the repository holds no way to fix it here.
+
+**2026-09-07** RESULT: partial
+TESTS: +0 new, all green (227 passed, 0 failed - `node scripts/selftest.js`)
+TOUCHED: docs/board/todo/0049-card-0012-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/in-progress/0046-cards-0004-and-0006-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: 0049
+
+Third run. **This card's own scope is complete and I changed neither `0004` nor `0006`.** Both still
+carry `## What I need from you` directly under the title, with the ask first, then Pass, Fail and Why
+it needs you, so #2 stays ticked on the evidence the first run left.
+
+**#1 is still open, and the lane has grown again.**
+`grep -rL "## What I need from you" docs/board/human-review/*.md` now names three files, not two:
+`0008-offline-map-view.md`, which is card `0047`, open in `todo/`; `0011-security-response-headers.md`,
+which is card `0048`, open in `todo/`; and `0012-close-the-open-tile-proxy.md`, which is new to the
+lane since the second run and had no card. `0012` is raised as card `0049`, the next free number in
+any lane. #1 is lane-wide and cannot close until `0047`, `0048` and `0049` are all built.
+
+`0012` is the same shape as `0011`: built, deployed, phone-verified, all five criteria ticked, and a
+`breakage: defect` verdict at the bottom of `## Direction` that the builder could not act on, because
+a reviewer may not untick a criterion. Its ask - untick what the reviewer disproved, or say why the
+finding is wrong - is the last line of the file rather than the first.
+
+**No test was written, and there is nothing here a test could hold.** #1 is `proves: none` and #2 is
+`proves: manual`; this project's suite is `node scripts/selftest.js`, one node script over `app/` and
+`scripts/`, and it cannot read `docs/board/`. There is no PHP suite in this repository - no `vendor/`,
+no Pest, no Pint - so the requested `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist
+here. The node suite was run instead, and only to show that nothing under `app/` or `scripts/` moved.
+
+**Five raisings in two days is the finding.** `0045` named three cards, `0046` two, `0047` one,
+`0048` one, `0049` one. Every one arrived by a scheduler move that adds the lane's obligation without
+adding the lane's shape, and every one of these cards fixes what it can see while #1 reopens behind
+it. The fix belongs at the move, in `C:\Dev\ProgressBoard`, which this card's own `## Not this card`
+puts outside this repository.
