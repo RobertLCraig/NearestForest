@@ -1,5 +1,27 @@
 # The fetch-date self-test compares a UTC date to a local one, so it goes red after midnight
 
+## What I need from you
+
+**One five-second job, but only between midnight and 01:00.** Next time you are at the keyboard in
+that hour, run the test suite from `C:\Dev\NearestForest` and say what it printed:
+
+    node scripts/selftest.js
+
+**Pass** is `0 failed` (227 tests passed on 2026-09-07; the total grows as cards add tests). That is
+the hour the suite used to go red on its own, so a clean
+run in it is the whole check. Tick the last box and the card is done.
+
+**Fail** is any failing test, or a line naming two dates one day apart. Copy the failure into this
+thread and send the card back to `todo/`.
+
+**Why it needs you.** The fix is built and the fault was reproduced by another route, but the check
+as written asks for that one real hour. The only other way is to move the machine's system clock, and
+a session will not do that unattended: other worktree sessions run against the same clock, and a jump
+reaches certificates, scheduled tasks and commit timestamps.
+
+**If you would rather not wait up**, say in this thread that the clock-override reproduction already
+recorded here is evidence enough, and the box can be ticked on that.
+
 ## Why
 `node scripts/selftest.js` fails between local midnight and 01:00 while British Summer Time is in
 force, and passes again at 01:00. Nothing in the repository changes in between. The failure reads:

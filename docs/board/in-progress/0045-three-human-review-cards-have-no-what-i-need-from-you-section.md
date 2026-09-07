@@ -84,3 +84,65 @@ lines under the title.
 **2026-09-07** Raised by card `0042` while it renumbered the duplicate `0022` to `0043`. Reading that
 card end to end is what surfaced the gap, and grepping the whole lane found two more. `0042`'s scope
 was the id collision, so this was recorded rather than fixed in passing.
+
+**2026-09-07**
+RESULT: partial
+TESTS: +0 new, all green. Both criteria are `proves: none` and `proves: manual`, so neither gets a
+test and the write-it-failing-first rule does not apply to either. `node scripts/selftest.js` reports
+**227 passed, 0 failed**, unchanged, which is what a docs-only change should do. There is no
+`vendor\bin\pest.bat`, no `pint.bat` and no `composer.json` in this project: it is plain HTML, CSS, JS
+and Python with no build step, per `CLAUDE.md`.
+TOUCHED: docs/board/human-review/0024-two-cards-are-over-the-line-budget.md
+TOUCHED: docs/board/human-review/0030-the-fetch-date-test-compares-a-utc-date-to-a-local-one.md
+TOUCHED: docs/board/human-review/0043-add-accounts-and-personal-location-tracking.md
+TOUCHED: docs/board/todo/0046-cards-0004-and-0006-entered-human-review-without-the-required-section.md (new)
+TOUCHED: docs/board/in-progress/0045-three-human-review-cards-have-no-what-i-need-from-you-section.md
+OUT-OF-SCOPE: 0046
+
+All three cards named in `## Why` now carry `## What I need from you` directly under the title, and
+in every case the ask was lifted out of the card rather than invented, as `## Plan` required:
+
+- **`0024`** asks the one thing its last four comment entries all ask: close it at three of four, or
+  send it back because `0028` is now built in `ai-review/` and its `#4` may close on its own.
+- **`0030`** asks for the suite run once between 00:00 and 01:00, and offers the second route its own
+  thread already offered - accept the `TZ` reproduction instead. Its Pass names `0 failed` rather
+  than a test count, because the count has moved from 222 to 225 to 227 as other cards added tests.
+- **`0043`** asks whether accounts are wanted at all, and if so which sign-in service and who pays.
+
+**The line budget bit, and it was the interesting part.** `0043` went from 77 to 103 lines, which is
+the exact failure `## Plan` warned about: passing criterion 1 while breaking the rule underneath it.
+I shortened my own new section rather than the card, and it is now **97**. `0030` is 169 and `0024`
+is 322, both far over 100, and both were already over before I touched them purely from append-only
+`## Comments` build logs that this board forbids editing. Neither can be brought under budget by this
+card, and `0024` says so about itself in its own last three entries. I did not cut card prose to make
+room anywhere.
+
+**Criterion 1 is not met and could not be met inside this card's scope.** The grep over the whole
+lane still returns two cards:
+
+    docs/board/human-review/0004-derive-names-for-unnamed-car-parks.md
+    docs/board/human-review/0006-explicit-compass-point-in-list.md
+
+Both were moved into the lane on 2026-09-07, **after this card was written** - commits `a9f3b9e` and
+`9e7aa6c`, both built with every criterion ticked and moved for a browser check. So the "eleven cards
+in the lane" this card counted is now thirteen, and criterion 1 is worded lane-wide rather than about
+the three files `## Why` names. Fixing two cards this card does not name is scope nobody reviewed, so
+it is card **`0046`** in `todo/` rather than a fix in passing. Build `0046` and criterion 1 closes
+here with no further work.
+
+**Criterion 2 is left open on purpose, because it is `proves: manual`.** What I can state is
+structural and I checked it on all three: the heading is the first thing under the title, the ask is
+imperative and inside three lines, and Pass, Fail and "Why it needs you" all follow. Whether the ask
+actually reads as legible to somebody who is not holding this repository in their head is a reader's
+judgement, and the criterion says so. One person opening the three cards closes it.
+
+**Assumed:** that `## What I need from you` goes above `## Why` on all three, per
+`docs/board/README.md` "directly under the title". Card `0025` asks exactly this question - ask first
+or problem first - and is still unanswered in this same lane. If the answer comes back the other way,
+all three sections move down one heading and nothing else changes.
+
+**Could not settle from the repository:** nothing that blocked the work. **`docs/HANDOVER.md` was
+deliberately not touched**, although raising `0046` changes its open-card count and its "eleven cards
+wait on a person" line is now thirteen. Card `0044` is open in `in-progress/` to correct that very
+paragraph, so editing it here would be two sessions writing the same lines. No browser check applies;
+nothing under `app/` changed.

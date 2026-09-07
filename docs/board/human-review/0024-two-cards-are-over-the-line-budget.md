@@ -1,5 +1,26 @@
 # Cards 0018 and 0020 are two to three times the reader's line budget
 
+## What I need from you
+
+**One answer. Close this card at three of its four checks, or send it back to `todo/`?**
+
+Six unattended runs have all reached the same finding, so nothing new will come from a seventh.
+
+**Pass** is either of:
+- you close it. The shortening work is done and checked: `0018` and `0020` are 100 lines each, and
+  every number, date and URL cut out of them was re-found somewhere else in the repository.
+- you send it back to `todo/`, because the last check now passes on its own. That check wants the
+  estate-wide card-format checker to report zero failing cards. The one failure it reports is a
+  missing "why" line in card `0026`, which is card `0028`'s job, and `0028` is now built and sitting
+  in `ai-review/`. One run of the checker would say which.
+
+**Fail** is closing it while the checker still reports that failure and nobody has said so out loud.
+Then the board records a green card over an open fault. Say so in this thread instead.
+
+**Why it needs you.** A session may not tick a check it did not meet, and it may not decide that
+three of four is enough. That is a call about what this board counts as finished, and only you make
+it.
+
 ## Why
 `docs/board/README.md` sets a whole card at 100 lines, measured off the estate's own habit: a median
 of 63 lines over 108 cards on 22 boards, nine in ten under 104. Two open cards here are far past it,

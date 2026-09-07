@@ -1,5 +1,25 @@
 # Add accounts and personal location tracking
 
+## What I need from you
+
+**Two answers.**
+
+1. Do you want log-ins at all? The app has never had them and stores nothing about anyone today.
+2. If yes, which sign-in service, and will you pay for it and create the account yourself?
+
+**On 1.** Today the app is a bundled list on your phone that works with no signal. Accounts mean it
+talks to a server to remember who you are, so "visited" and "favourite" follow you to another device.
+
+**On 2.** A sign-in service is somebody else's server holding the email addresses and passwords and
+deciding who may read which rows. Hostinger serves plain files here, so it cannot do that job. Most
+services charge past a free tier, and this card forbids a session opening a paid account in your name.
+
+**Pass** is you naming a service and creating its account, or saying no and closing this card.
+
+**Fail** is nobody deciding. All seven checks need a person at a screen, so the card just sits here.
+
+**Why it needs you.** A cost, a privacy choice and a supplier choice. No reading settles any of them.
+
 ## Why
 **The app cannot remember a place once somebody has been there.** A regular visitor has to keep a
 separate mental or paper list of forests, car parks and campsites they have already used, and has no
