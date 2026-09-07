@@ -1,5 +1,35 @@
 # Show the cardinal point, not just a bearing arrow
 
+## What I need from you
+
+**Two answers.**
+
+1. Did the reviewer disprove criterion #3? Untick it, or say here why the finding is wrong.
+2. Do the compass letters still fit on the narrowest phone in portrait?
+
+---
+
+**On 1.** Criterion #3 says a screen reader must speak "north-east", because VoiceOver reads the
+letters `NE` as the word "nee". A reviewer found the spoken word is set as `aria-label` on a plain
+`<div>`, and browsers throw a label there away, so VoiceOver still says "nee". A reviewer is not
+allowed to untick a box, so the card came back with all four ticked, every session found nothing
+open to do, and the loop promoted it again.
+
+- **Pass:** #3 is unticked so the card can go back to `todo/`, **or** a comment here says why the
+  finding is wrong.
+- **Fail:** the box stays ticked with no reason written. The loop then promotes it on the boxes a
+  second time, which is the exact thing that already happened.
+
+**On 2.** The letters widened the distance column from 74px to 84px, which squeezes the name beside
+it. Nobody has looked. Open the list on your phone in portrait and find the row for **Kings Wood and
+Challock Forest**, which is the longest name in the data.
+
+- **Pass:** the name is not cut short, and the row does not wrap.
+- **Fail:** it is cut or it wraps. Say so in this thread.
+
+**Why it needs you.** 1 is a call about the accessibility standard you want for your own app. 2
+needs a real phone; nothing here can see a layout.
+
 ## Why
 Rob's first real phone test, 2026-08-08: the arrow alone is ambiguous in a car. "I might be
 travelling south, but the arrow would be pointing north, while I in the car would think it's

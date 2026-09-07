@@ -3,6 +3,40 @@ no_outward_effect: "published" in criterion #2 is the upstream dataset's own nam
 ---
 # Give the unnamed car parks a useful name
 
+## What I need from you
+
+**Two answers.**
+
+1. Did the reviewer disprove criterion #2? Untick it, or say here why the finding is wrong.
+2. Do the made-up car park names look right on a screen?
+
+---
+
+**On 1.** Criterion #2 says a name we invented must be marked so nobody takes it for an official
+one. It is marked in the list, in the detail sheet and on the map. A reviewer found one place it is
+not: the iPhone Shortcut, the spoken answer served by `app/api/nearest.php`, sends the name with no
+"this is ours" flag, so Siri says "Car park near Friston Forest" as if it were published. A reviewer
+is not allowed to untick a box, so the card came back with all three ticked, every session found
+nothing open to do, and the loop promoted it again.
+
+- **Pass:** #2 is unticked so the card can go back to `todo/`, **or** a comment here says the
+  Shortcut is not a surface #2 covers, and why.
+- **Fail:** the box stays ticked with no reason written. The loop then promotes it on the boxes a
+  second time, which is the exact thing that already happened.
+
+**On 2.** Herd only serves `C:\Dev\NearestForest`, so serve it yourself and open
+`http://127.0.0.1:8791/`:
+
+    php -S 127.0.0.1:8791 -t app
+
+- **Pass:** in the **dark** theme the dim italic name is still readable, and a map label still shows
+  which forest it is near.
+- **Fail:** the italic is too dim, or the map label is cut before the forest name. Map labels cut at
+  22 characters, so expect `Car park near Bedgebury Nat…`. Say which in this thread.
+
+**Why it needs you.** Whether Siri counts as a surface criterion #2 covers is a call about your own
+app. Whether dim italic is readable is your eyes on your screen. No test here settles either.
+
 ## Why
 170 of the 630 car parks in the open dataset are named "Unknown" upstream and a further six are
 generic. They currently render as "Unnamed car park", which is honest but useless when the list is

@@ -38,17 +38,17 @@ lane without the section: that lives in `C:\Dev\ProgressBoard`, not in this repo
       `## What I need from you`, THE BOARD SHALL return no card without it. proves: none - this
       project's suite is one node script over the app and cannot read the board; the check is
       `grep -rL "## What I need from you" docs/board/human-review/*.md` returning nothing
-- [ ] #2 WHEN a reader opens `0004` or `0006`, THE CARD SHALL state the ask, what a pass is and what
+- [x] #2 WHEN a reader opens `0004` or `0006`, THE CARD SHALL state the ask, what a pass is and what
       a fail is, within the first three lines under the title. proves: manual - whether an ask is
       legible in three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read each card and find the check already in it, rather than inventing one
-- [ ] Write `## What I need from you` under the title of each, with the ask first and Pass / Fail /
+- [x] Read each card and find the check already in it, rather than inventing one
+- [x] Write `## What I need from you` under the title of each, with the ask first and Pass / Fail /
       Why it needs you underneath
-- [ ] Check each card is still inside the 100-line budget after the section is added
-- [ ] Re-grep the lane and confirm no card is missing the heading
+- [x] Check each card is still inside the 100-line budget after the section is added
+- [x] Re-grep the lane and confirm no card is missing the heading
 
 ## Plan
 Work in the NearestForest repository. Only card files under `docs/board/human-review/` change;
@@ -83,3 +83,37 @@ under the title.
 **2026-09-07** Raised by card `0045`, whose scope named the three cards missing this section when it
 was written. Re-grepping the lane while building it found two more, moved in later the same day. The
 build ran after the move, so this is the lane changing under an open card rather than a miscount.
+
+**2026-09-07** RESULT: partial
+TESTS: +0 new, all green (227 passed, 0 failed - `node scripts/selftest.js`)
+TOUCHED: docs/board/human-review/0004-derive-names-for-unnamed-car-parks.md
+TOUCHED: docs/board/human-review/0006-explicit-compass-point-in-list.md
+TOUCHED: docs/board/in-progress/0046-cards-0004-and-0006-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: none
+
+Wrote `## What I need from you` directly under the title of `0004` and `0006`, each with the ask
+first as two numbered lines, then Pass, Fail and Why it needs you. Neither criterion here carries a
+test name - #1 is `proves: none` and #2 is `proves: manual` - so there was nothing to write
+test-first, and the suite was run only to show nothing under `app/` or `scripts/` moved.
+
+**The ask on both cards is not the one this card's `## Plan` predicted, and I took the card's own.**
+The Plan says `0004` wants a browser look at its derived names and `0006` wants the compass letter
+looked at, both from HANDOVER "What's next" item 1. Each card's own last comment, dated 2026-09-07,
+carries a second and more pressing ask: a reviewer disproved a ticked criterion, a reviewer may not
+untick a box, so both cards came back with every criterion ticked and the loop promoted them again
+on the boxes. That is the ask that has already cost a wasted cycle, so on both cards it is ask 1 and
+the browser look is ask 2. Both were already on the card; neither was invented.
+
+**#2 is ticked, #1 is not.** On both cards the ask is the first thing under the title and Pass and
+Fail follow immediately, so #2 is met as far as anything here can judge; whether it reads as legible
+is still Rob's call, which is what `proves: manual` says. #1 is lane-wide and cannot close from this
+card: `grep -rL "## What I need from you" docs/board/human-review/*.md` still names
+`0008-offline-map-view.md`. That is card `0047`, already open in `todo/`, so no new card was raised
+for it. #1 closes when `0047` is built and not before.
+
+**Both cards are now over the 100-line budget and this card cannot bring them back under.**
+`0004` went 147 to 181 lines and `0006` went 100 to 130. The overage on `0004` is its own build log
+and two full review verdicts; on `0006` it is one review verdict. Neither may be cut here: the
+`## Comments` thread is append-only, and the review text under `## Direction` is the evidence the
+new section's ask 1 points at. The new sections are 34 and 30 lines, which is as tight as the ask,
+Pass, Fail and Why it needs you fit. Card `0045` recorded the same wall on `0043`.
