@@ -98,3 +98,50 @@ The lesson is narrower than "test more". Every check in that list was a test of 
 handles. None of them tested the case the code *skips*, and the skip was written down, in a comment,
 directly above the check. A verification pass that only exercises the guarded path will confirm any
 guard, including one with a hole its own author documented.
+
+### 2026-09-07 review (v20260907094908-67b5)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break all four criteria. I could not.
+
+**#1 ÔÇö Toggle off, zero requests.** `app/map.js`, `draw()` calls `drawTiles()` only inside `if (tilesOn)`, and `getTile()` is the only place an image URL is set. Startup in the init block reads `localStorage 'nf.tiles'` and defaults `tilesOn = false`. No preconnect or prefetch: the only external URLs in `app/` are the navigation links in `core.js` `dirUrl`, and a person must tap those. `app/sw.js` fetch handler explicitly refuses to cache `api/tiles.php`.
+
+**#2 ÔÇö Tiles under markers, over outline.** `app/map.js`, `draw()`: sea fill, boundary `ctx.fill()`/`ctx.stroke()`, then `drawTiles()`, then the marker loop. Order is right.
+
+**#3 ÔÇö Failed tile leaves no hole.** `getTile()` sets `failed` on `onerror`; `drawTiles()` skips any tile with `!t.ok`. The outline is already painted underneath every frame, so a miss shows coastline, not grey. A hung image never draws either.
+
+**#4 ÔÇö No key in the repo.** `app/api/tiles.php`, `readKey()` loads from `../../../tiles.key` or an env var. `.gitignore` lists `tiles.key`. A repo-wide grep for `apikey=` and 32-hex tokens found only a Cloudflare record id.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Two things over the fence, one thing half done.**
+
+**1. "Cancellation on pan" was ticked but never built.** In `getTile` (`app/map.js`) each tile is a bare `new Image()` with a `src`; nothing ever clears `img.src` or aborts it. `pruneTiles` (`app/map.js`) drops the map object, so in-flight requests keep running to completion and land in no cache. A fast pan across the country still spends every tile it started. The suite never checks this (`scripts/selftest.js`, tile-layer block). Task box ticked, code absent.
+
+**2. `readKey` (`app/api/tiles.php`) invents key sources the card forbids.** The card says one file, above the web root. `readKey` also accepts `getenv('THUNDERFOREST_KEY')` and a second path `__DIR__ . '/../../tiles.key'`, which is the repository root. That fallback makes a key inside the repo a working configuration, against "Do not commit a key".
+
+**3. Ten-style whitelist and the `s=` parameter (`app/api/tiles.php`, `STYLES` and the `$style` check).** The card picked Outdoors. `app/map.js` `getTile` never sends `s`. Nine unused styles are extra public input surface, added speculatively.
+
+Attribution work I read as licence obligation, not creep.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Findings (breakage lens)**
+
+**1. Failed tiles are cached forever ÔÇö `app/map.js`, `getTile`.**
+A tile that fails is kept in `tiles` under its key with `ok:false`. The `failed` flag is written and never read anywhere, and nothing removes the entry. So: open the map offline with the toggle on, every visible tile fails, then signal returns ÔÇö those tiles never retry. The map stays plain with no sign why. `setTiles` does not clear the cache either, so toggling off and on does not recover it. Only a reload, or 300 new tile keys tripping `pruneTiles`, clears it. The same trap swallows a temporary `502`, a `429` from `CAP_PER_DAY`, and a `503` from `readKey` in `app/api/tiles.php`. This is exactly the case HANDOVER's "0001 check 5, tiles on" was left to a person to test.
+
+**2. "Cancellation on pan" does not exist ÔÇö `app/map.js`, `getTile` / `drawTiles`.**
+No request is ever aborted; `img.src` is set once and left. Panning keeps every in-flight tile running against the metered quota. The task is ticked, so the next session will read it as built.
+
+VERDICT: defect
+
