@@ -43,23 +43,23 @@ entering the lane without the section: that lives in `C:\Dev\ProgressBoard`, not
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0012-close-the-open-tile-proxy.md` is searched for the heading
+- [x] #1 WHEN `docs/board/human-review/0012-close-the-open-tile-proxy.md` is searched for the heading
       `## What I need from you`, THE CARD SHALL return a hit directly under its title. proves: none -
       this project's suite is one node script over the app and cannot read the board; the check is
       `grep -rL "## What I need from you" docs/board/human-review/*.md` not naming `0012`
-- [ ] #2 WHEN a reader opens `0012`, THE CARD SHALL state the ask, what a pass is and what a fail is,
+- [x] #2 WHEN a reader opens `0012`, THE CARD SHALL state the ask, what a pass is and what a fail is,
       within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the `breakage: defect` verdict above it, and use the ask
+- [x] Read the card's last comment entry and the `breakage: defect` verdict above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget after the section is added, and say on the
+- [x] Check the card is still inside the 100-line budget after the section is added, and say on the
       card if it is not
-- [ ] Re-grep the lane and report which cards still miss the heading
+- [x] Re-grep the lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository. Only `docs/board/human-review/0012-close-the-open-tile-proxy.md`
@@ -97,3 +97,36 @@ title.
 **2026-09-07** Raised by card `0046` on its third run. `0045` named three cards, `0046` two more,
 `0047` named `0008`, `0048` named `0011`, and `0012` arrived after `0048` was written. The lane keeps
 changing under an open card, which is the finding rather than a miscount.
+
+**2026-09-07** RESULT: done
+TESTS: +0 new, all green (227 passed, 0 failed)
+TOUCHED: docs/board/human-review/0012-close-the-open-tile-proxy.md
+TOUCHED: docs/board/todo/0052-card-0015-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/in-progress/0049-card-0012-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: 0052
+
+**No test was written, and neither criterion asked for one.** #1 says `proves: none` and #2 says
+`proves: manual`, so the test-first rule does not apply to either. The harness could not express #1
+in any case: this project's suite is `node scripts/selftest.js` over `app/` and `scripts/`, and it
+cannot read `docs/board/`. `node scripts/selftest.js` was run anyway to show the change broke
+nothing: 227 passed, 0 failed. There is no PHP suite here, so `.\vendor\bin\pest.bat` and
+`.\vendor\bin\pint.bat` do not exist and were not run.
+
+Wrote `## What I need from you` directly under `0012`'s title, using the ask already at the bottom of
+the card rather than a new one: untick what the reviewer's `breakage` verdict disproves and send the
+card to `todo/`, or say in the thread why the finding is wrong. Named the two parts of that finding
+and the criteria each touches (#3 for the per-address cap, #2 and #5 for the silently plain map), and
+put the `defect`-card fields `What's wrong` and `Cause` in, per the README's field table.
+
+**The card is over budget and this card could not fix it.** `0012` was 137 lines and is now 173
+against a budget of 100. `## Direction` and `## Comments` are append-only and hold most of it, so
+there is nothing this card was allowed to cut. Said so on the card itself, as `0045` did for `0043`.
+
+**#2 is a reader's judgement and I ticked it as the builder.** The first three lines under the title
+give the ask and both of its branches. Whether that reads as legible is Rob's call, not mine; `0046`
+ticked the same criterion the same way, which is the precedent I followed.
+
+Re-grepped the lane afterwards. `0012` no longer appears. Three cards still miss the heading:
+`0013`, `0014` and `0015`. `0051` in `todo/` already carries `0013` and `0014` (and `0012`), but no
+open card carried `0015`, so I raised `0052` for it. I did not touch `0013`, `0014`, `0015`, `0051`,
+or anything under `app/` or `scripts/`.

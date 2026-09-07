@@ -1,5 +1,41 @@
 # Close the open tile proxy
 
+## What I need from you
+
+**One decision.** A reviewer says this card is not finished, but only you can untick a box. Either
+untick the criteria the finding disproves and send the card back to `todo/`, or say in the thread
+below that the finding is wrong and the card closes as it stands.
+
+---
+
+**What's wrong.** The card is ticked 5 of 5 and reads as done, and the reviewer's `breakage: defect`
+verdict at the end of `## Direction` says two things are not:
+
+1. **The cap counts per address, but the sizing argument was per user.** `rateLimit()` in
+   `app/api/tiles.php` keys on `REMOTE_ADDR`, and UK mobile carriers put many subscribers behind one
+   address. So "a real user is nowhere near 2000/day" may not hold for a whole carrier. Criterion #3.
+2. **A 429 or 403 blanks the tiles for the rest of the session, silently.** `getTile()` in
+   `app/map.js` stores the failed tile and nothing retries or tells the user. This card added the new
+   ways to get a non-200, so it created the path. Criteria #2 and #5.
+
+**Cause.** A reviewer is forbidden from editing acceptance, so the card came back with every box
+still ticked. Every unattended session since has found nothing open to do and promoted it again on
+those boxes. Only a person can break that loop.
+
+**Pass** is either one of:
+- one or more of #2, #3 and #5 unticked, and the card moved to `todo/` for the fix; or
+- an entry in the thread saying which part of the finding is wrong and why, with the card left ticked.
+
+**Fail** is leaving it as it is. The card returns to this lane on the next sweep and nothing changes.
+
+**Why it needs you.** The reviewer graded `acceptance: sound` and `scope: sound`, so the finding is
+about a risk the card accepted rather than work it skipped. Whether a shared carrier address is worth
+the code, and whether a silently plain map is a defect or a bounded cost, is a judgement about your
+quota and your users, not a lookup.
+
+**Note on length.** This card is now 173 lines against a 100-line budget. The `## Direction` and
+`## Comments` threads are append-only and hold most of it, so this card could not bring it under.
+
 ## Why
 `api/tiles.php` was a free tile server for the internet, on our Thunderforest quota. It was recorded
 as closed, in these words: "a request carrying a foreign `Referer` is refused 403, so the endpoint
