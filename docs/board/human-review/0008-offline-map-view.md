@@ -1,5 +1,34 @@
 # Map view with the bundled offline outline
 
+## What I need from you
+
+**One answer. Untick `#1` and `#2` and send this card back to `todo/`, or say on this thread why the
+reviewer's finding is wrong?**
+
+**Pass** is either of:
+- you untick `#1` and `#2` and the card returns to `todo/`, so a session can fix the latch and prove
+  it with a test.
+- you leave all six ticked and add a `## Comments` entry saying why the finding does not disprove
+  them. Then the card can close on the record rather than on the boxes.
+
+**Fail** is the card staying here with six ticks and nothing written. That is the loop it is already
+in: the reviewer returned it, every unattended session since found nothing open to do, and the loop
+promoted it again on the ticked boxes.
+
+**What's wrong.** One failed fetch of `data/boundary.json` blanks the map for the rest of the page's
+life. No coastline, no site markers, no own-position dot, no retry, and no test covers the case.
+Closing and reopening the map repaints the same error. That is `#1` and `#2` as they are written.
+
+**Cause.** `loadBoundary` in `app/map.js` latches on `loadError`, and `draw()` returns before the
+marker block, so markers that never needed the boundary die with it.
+
+**Why it needs you.** A reviewer may not edit acceptance and a builder may not overrule a review
+verdict. Unticking a criterion somebody else ticked is a person's call.
+
+**Note on length.** This card is now 151 lines against a 100-line budget. `## Direction` and
+`## Comments` are append-only, so nothing here can cut it back; the section above was kept tight
+instead.
+
 ## Why
 A distance-sorted list answers "what is nearest" but not "what is over that way", and it cannot show
 that two of the top five sit behind the South Downs. This is the half that works with no signal, so

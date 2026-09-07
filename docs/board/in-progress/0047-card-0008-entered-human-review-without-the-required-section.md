@@ -38,23 +38,23 @@ asking Rob for. Not a check that refuses a card entering the lane without the se
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0008-offline-map-view.md` is searched for the heading
+- [x] #1 WHEN `docs/board/human-review/0008-offline-map-view.md` is searched for the heading
       `## What I need from you`, THE CARD SHALL return a hit directly under its title. proves: none -
       this project's suite is one node script over the app and cannot read the board; the check is
       `grep -rL "## What I need from you" docs/board/human-review/*.md` not naming `0008`
-- [ ] #2 WHEN a reader opens `0008`, THE CARD SHALL state the ask, what a pass is and what a fail is,
+- [x] #2 WHEN a reader opens `0008`, THE CARD SHALL state the ask, what a pass is and what a fail is,
       within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the review verdict above it, and use the ask already
+- [x] Read the card's last comment entry and the review verdict above it, and use the ask already
       there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget after the section is added, and say on the
+- [x] Check the card is still inside the 100-line budget after the section is added, and say on the
       card if it is not
-- [ ] Re-grep the lane and report which cards still miss the heading
+- [x] Re-grep the lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository. Only `docs/board/human-review/0008-offline-map-view.md`
@@ -89,3 +89,43 @@ title.
 **2026-09-07** Raised by card `0045` on its second run. `0045` named three cards, `0046` named two
 more that arrived after it was written, and `0008` arrived after `0046` was written. The lane keeps
 changing under an open card, which is the finding rather than a miscount.
+
+**2026-09-07** RESULT: done
+TESTS: +0 new, all green (227 passed, 0 failed)
+TOUCHED: docs/board/human-review/0008-offline-map-view.md
+TOUCHED: docs/board/todo/0050-card-0013-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/in-progress/0047-card-0008-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: 0050
+
+**No test was written, and both criteria say so.** `#1` is `proves: none` and `#2` is
+`proves: manual`, so neither is prose that a test could carry. The harness genuinely cannot express
+the case: `scripts/selftest.js` is one node script over `app/`, it never reads `docs/board/`, and
+adding board-reading to it would be scope this card did not decide. The check is the grep the
+criterion names, and **it was watched failing first**:
+`grep -rL "## What I need from you" docs/board/human-review/*.md` listed `0008` before the edit and
+does not list it after.
+
+**The ask was already on the card and was not invented.** Its last comment entry says the reviewer
+returned it, that a reviewer may not untick a criterion, and that every session since promoted it
+again on the six ticked boxes. The `breakage: defect` verdict at the end of `## Direction` names the
+fault: `loadBoundary` in `app/map.js` latches `loadError`, and `draw()` returns before the marker
+block, so one failed fetch of `data/boundary.json` kills the outline, every marker and the
+own-position dot for the page's whole life, with no retry and no test. That is `#1` and `#2` of
+`0008`, so the new section asks Rob to untick those two and send it back to `todo/`, or to say why
+the finding is wrong. Nothing on `0008` was unticked here and the card was not moved; that is the
+call the section asks for.
+
+**The card is over budget and the card says so.** `0008` went from 122 lines to 151 against a
+100-line limit. `## Direction` and `## Comments` are append-only, so this card could not bring it
+under; the new section was kept tight and a "Note on length" line records the overrun, as `0045` did
+for `0043`.
+
+**Re-grep of the lane, after the edit.** Three cards still miss the heading: `0011`, `0012` and
+`0013`. `0011` is card `0048` and `0012` is card `0049`, both open in `todo/`. **`0013` carried no
+card**, having reached the lane in commit `5f8f86f` after `0049` was written, so it is raised here as
+`0050`. That makes this the sixth raising of the same fault in two days, which keeps saying the fix
+belongs at the lane move in `C:\Dev\ProgressBoard`, not in this repository.
+
+**On the suite.** There is no `vendor/`, no Pest and no Pint in this project; the suite is
+`node scripts/selftest.js`, and it reports 227 passed, 0 failed. Nothing under `app/` or `scripts/`
+was touched, so it could not have seen this change either way.
