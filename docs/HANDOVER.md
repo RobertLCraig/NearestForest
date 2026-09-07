@@ -14,8 +14,9 @@ dataset of Scottish forest car parks exists. Map complete (bundled outline plus 
 **One agent-ready card is open**, 0041, the stale `human-review/` and `ai-review/` counts in this
 file; `ai-review/` holds the adversarial-pass queue.
 **Eleven cards wait on a person in `docs/board/human-review/`** (0001, 0002, 0003, 0010, 0017, 0018,
-0022, 0024, 0025, 0027, 0030), counted 2026-09-07. **0022 there is the accounts and location-tracking
-card, not the footer-credits 0022 in `ai-review/`**: two different cards carry that number.
+0024, 0025, 0027, 0030, 0043), counted 2026-09-07. **The accounts and location-tracking card is
+`0043`**: it was renumbered from `0022` by card `0042`, because two different cards carried that
+number. `0022` now means only the footer-credits card in `ai-review/`.
 The last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
 checkout. See card 0015's second comment entry and card 0016's.
@@ -390,10 +391,10 @@ See [docs/board/human-review/](board/human-review/). **One agent-ready card is o
 measurement on 2026-09-06 and the conclusion held**, and the figures, with the date and file size
 they were taken on, are in "Current state" above. Otherwise what remains is the adversarial pass over `ai-review/` and the
 re-fetch that card 0026 left. **Eleven cards need Rob**, and all eleven are in the lane:
-`ls docs/board/human-review` on 2026-09-07 gives 0001, 0002, 0003, 0010, 0017, 0018, 0022, 0024,
-0025, 0027 and 0030. The folder is the count; the list below covers those eleven, plus the
+`ls docs/board/human-review` on 2026-09-07 gives 0001, 0002, 0003, 0010, 0017, 0018, 0024, 0025,
+0027, 0030 and 0043. The folder is the count; the list below covers those eleven, plus the
 struck-through 0016, which is answered and kept only for the one licence question it left behind.
-**Ten of them fit in one conversation; 0022 does not**, because it is a build the size of the
+**Ten of them fit in one conversation; 0043 does not**, because it is a build the size of the
 Campsites tab and not a question:
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
@@ -452,11 +453,11 @@ the mail fix. **That fix belongs on the enhanceify-V2 board, not this one**, and
   finding: its last criterion wants the convention check at zero, and the one failure is a missing
   `## Links` reason in card 0026, which is card 0028's job. 0028 is built and sits in `ai-review/`,
   so this may now close with no work on it; that call is Rob's, not a session's.
-- **0022 (accounts and personal location tracking)** — **unbuilt, and the loop will not start it.**
+- **0043 (accounts and personal location tracking)** — **unbuilt, and the loop will not start it.**
   All seven of its criteria say `proves: manual`, so an unattended session can close none of them.
   It also needs an authentication and data service that the current static Hostinger deployment
-  cannot host, and the card forbids creating a paid service without a person driving it. **Note the
-  number collides with the footer-credits 0022 in `ai-review/`.**
+  cannot host, and the card forbids creating a paid service without a person driving it. **It was
+  `0022` until 2026-09-07**, when card `0042` renumbered it off the footer-credits `0022`.
 
 ## How to pick up
 
