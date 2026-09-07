@@ -180,3 +180,5 @@ here. The node suite was run instead, and only to show that nothing under `app/`
 adding the lane's shape, and every one of these cards fixes what it can see while #1 reopens behind
 it. The fix belongs at the move, in `C:\Dev\ProgressBoard`, which this card's own `## Not this card`
 puts outside this repository.
+
+**2026-09-07** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 1 of 2 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
