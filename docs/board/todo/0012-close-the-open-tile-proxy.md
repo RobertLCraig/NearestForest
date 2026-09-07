@@ -79,3 +79,54 @@ must never become a new way for the map to break.
 **2026-08-10** Built and deployed, and re-tested against the live endpoint with the same three
 requests that broke it. Cap set at 2000/address/day: a whole-country pan at every zoom is a few
 hundred, and the app caps itself at 300 tiles in memory, so a real user is nowhere near it.
+
+### 2026-09-07 review (v20260907141410-d567)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each box against the code in `app/api/tiles.php` and `scripts/selftest.js`.
+
+**#1 cross-origin refused, even with no Referer** ÔÇö top-level guard in `app/api/tiles.php` (the `$fetchSite` check before `rateLimit()`): any `Sec-Fetch-Site` that is not `same-origin` returns 403. A page cannot set that header, so `referrerpolicy="no-referrer"` does not help it. The old `Referer` check is kept below it, comparing host without port.
+
+**#2 own map still served** ÔÇö `app/map.js` `tile()` sets `t.img.src = 'api/tiles.php?...'`, a relative same-origin URL, so the header is `same-origin` and passes. `app/sw.js` `fetch` handler returns early for `/api/`, so the request reaches the server unchanged.
+
+**#3 429 without calling upstream** ÔÇö `rateLimit()` runs before `readKey()` and `curl_init`, and `fail(429, ÔÇª)` exits there.
+
+**#4 counter failure still serves** ÔÇö every path in `rateLimit()` (`mkdir` fail, unreadable file, suppressed `file_put_contents`) returns or continues; none refuse.
+
+**#5 draws as before** ÔÇö draw order and default-off are unchanged; `selftest.js` still asserts tiles draw after `ctx.fill()`.
+
+I tried the no-referrer hotlink, a spoofed `Referer`, and `curl`; only the last gets through, and the cap bounds it.
+
+VERDICT: sound
+
+**scope: sound**
+
+I attacked the scope of card 0012.
+
+**Inside the fence.** In `app/api/tiles.php`, the only new code is `rateLimit()`, the `CAP_PER_DAY` constant, the `Sec-Fetch-Site` gate and the host-without-port fix in the `Referer` gate. Every item under "## Not this card" is untouched: `nearest.php` gets no limiter, the `STYLES` whitelist still holds all ten entries, `app/.htaccess` gains no WAF, deny or tile rule, no server-side tile cache exists, and the provider is unchanged. The other files in commit `de37fb2` (`NF.safeHref` in `app/core.js`, the CSP block in `app/.htaccess`) belong to cards 0013 and 0011, not this one.
+
+**Both layers land.** `rateLimit()` runs before `readKey()` and `curl_init`, so the 429 path spends nothing upstream. Live check just now: no headers ÔåÆ 200, `Sec-Fetch-Site: cross-site` ÔåÆ 403, foreign `Referer` ÔåÆ 403.
+
+**One quiet growth, small.** `rateLimit()` also sweeps old counter files with `glob`/`unlink`, which the Plan said was not needed ("the OS clears it up"). It is scoped to its own directory and cannot break a request. Not worth a bounce.
+
+Nothing left half done that I can cite.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Breakage review ÔÇö card 0012**
+
+**1. The cap keys on an address, but the users share one.** `rateLimit()` in `app/api/tiles.php` counts per `REMOTE_ADDR`. This app's main case is a phone on mobile data, and UK carriers put many subscribers behind one public address (CGNAT). The card sizes 2000/day as "a real user is nowhere near it" ÔÇö that reasoning is per user, the code enforces per address. The two are not the same rule, and nothing in the code or `docs/DECISIONS.md` records the gap.
+
+**2. A 429 or 403 blanks tiles for the whole session, with no sign.** `getTile()` in `app/map.js` stores the failed tile in `tiles` with `ok:false`, and `failed` is never read. Nothing retries, and `setTiles()` does not clear `tiles`. This card adds a new way to get a non-200 (`fail(429, ÔÇª)` and `fail(403, ÔÇª)` in `app/api/tiles.php`), so the cap can leave the map permanently plain until reload. The user is told nothing. `scripts/selftest.js` asserts the PHP text only; no test builds the 429 path or the client's reaction to it.
+
+Everything else held: callers, docs, card 0009's correction, and the `X-Forwarded-For` rule all agree.
+
+VERDICT: defect
+
