@@ -1005,7 +1005,7 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     const writeOsm = (el) => {
       const body = (els) => JSON.stringify({ osm3s: { timestamp_osm_base: '2026-08-15T00:00:00Z' },
                                              elements: els });
-      write(path.join(craw, 'osm', 'campsites-gb-eng.json'), body([el]));
+      write(path.join(craw, 'osm', 'campsites-gb-eng.json'), body([].concat(el)));
       write(path.join(craw, 'osm', 'campsites-gb-sct.json'), body([]));
       write(path.join(craw, 'osm', 'campsites-gb-wls.json'), body([]));
     };
@@ -1060,6 +1060,42 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
                  : blankKeys.filter(k => typeof blankRec[k] === 'string' &&
                                          (!blankRec[k].trim() || blankRec[k] !== blankRec[k].trim()))
                             .map(k => `${k}=${JSON.stringify(blankRec[k])}`).join(', '));
+
+    // Acceptance #6 of card 0020, the half the shipped file cannot prove. The check over
+    // app/data/campsites.json reads access_note text, so it catches only the failure that
+    // actually happened: access=members labelled instead of dropped. If the scout, private
+    // or static-caravan drop were removed, those records would ship with access_note null
+    // and every existing assertion would stay green -- a dropped record leaves no text to
+    // match on. This feeds the parser one of each kind and requires them gone.
+    const excluded = [
+      { type: 'node', id: 11, lat: 54.1, lon: -2.1, tags: {
+          name: 'Private Field', tourism: 'camp_site', caravans: 'yes', access: 'private' } },
+      { type: 'node', id: 12, lat: 54.2, lon: -2.2, tags: {
+          name: 'Club Site', tourism: 'camp_site', caravans: 'yes', access: 'members' } },
+      { type: 'node', id: 13, lat: 54.3, lon: -2.3, tags: {
+          name: 'Scout Camp', tourism: 'camp_site', caravans: 'yes', scout: 'yes' } },
+      { type: 'node', id: 14, lat: 54.4, lon: -2.4, tags: {
+          name: 'Group Field', tourism: 'camp_site', caravans: 'yes', group_only: 'yes' } },
+      { type: 'node', id: 15, lat: 54.5, lon: -2.5, tags: {
+          name: 'Statics Park', tourism: 'caravan_site', caravans: 'yes',
+          permanent_camping: 'only' } },
+      { type: 'node', id: 16, lat: 54.6, lon: -2.6, tags: {
+          name: 'Seaside Holiday Park', tourism: 'caravan_site', caravans: 'yes',
+          operator: 'Parkdean Resorts' } },
+    ];
+    writeOsm([goodEl].concat(excluded));
+    const cExcl = runCamp();
+    let exclIds = null;
+    if (cExcl.status === 0 && fs.existsSync(cOut)) {
+      try { exclIds = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites.map(s => s.id); }
+      catch (e) { exclIds = null; }
+    }
+    const shipped = exclIds && excluded.map(e => `os-n${e.id}`).filter(id => exclIds.includes(id));
+    ok('a members-only, private, scout or static-caravan site never reaches the file',
+       !!exclIds && exclIds.includes('os-n1') && shipped.length === 0,
+       !exclIds ? `the run exited ${cExcl.status} and wrote no dataset: ${tail(cExcl)}`
+       : !exclIds.includes('os-n1') ? 'the parser dropped the ordinary campsite too'
+       : `these should not be listed as somewhere to pull up for the night: ${shipped.join(', ')}`);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

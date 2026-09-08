@@ -428,3 +428,53 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (235 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the three-quarters of criterion #6 that nothing was watching.** #6 names four kinds of
+site: members-only, private, scout and static-caravan. The only assertion covering it, `no campsite
+is members-only, private, scout or a static-caravan park`, reads `access_note` text out of the
+shipped `app/data/campsites.json`. That catches exactly one failure — the one that happened here on
+2026-09-08, where `access=members` was labelled rather than dropped — and it is blind to the other
+three by construction: **a record the parser correctly drops leaves no text to match on, so a record
+it wrongly keeps ships with `access_note: null` and matches nothing either.** Removing the scout
+drop or `looks_static()` would put scout camps and Parkdean holiday parks in the list under green.
+
+**Watched red, and watched the old assertion stay green beside it.** The new assertion `a
+members-only, private, scout or static-caravan site never reaches the file` goes in the temp-tree
+block beside `a blank OSM tag becomes null`. It feeds the parser six sites the criterion forbids —
+`access=private`, `access=members`, `scout=yes`, `group_only=yes`, `permanent_camping=only` and a
+`Parkdean Resorts` operator — plus one ordinary campsite, and requires only the ordinary one in the
+written file. I ran it against a parser with the scout and static drops collapsed to `if False:`.
+The old assertion reported **PASS**; the new one failed naming `os-n13, os-n14, os-n15, os-n16`.
+That is the criterion's own failure and the proof the gap was real, not a missing symbol. Restored
+the two drops and re-ran: 235 passed, 0 failed.
+
+**Why a fixture rather than the shipped file.** Today's extract holds none of these records, because
+the parser drops them, so any assertion over `campsites.json` for scout or static is green from
+birth — the thing this thread has refused four times. The parser is the only place the guarantee can
+be made, so the parser is where it is tested. `access=members` is kept in the fixture on purpose so
+the new assertion covers all four kinds the criterion names, not just the three the old one missed.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started (`git diff --stat` shows `scripts/selftest.js` only) and nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 235 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 228 self-tests pass, measured
+2026-09-08; three runs on this card have added assertions since and it is 235. Not a run report —
+HANDOVER's header forbids those — just a fact that had drifted.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+
