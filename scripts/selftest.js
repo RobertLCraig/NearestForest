@@ -431,6 +431,15 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
      'listing one without its rules invites someone to break them');
   ok('every Stay the Night record is in Scotland', stn.every(s => s.country === 'Scotland'));
 
+  // The data carrying the rules is only half of "THE APP SHALL say". The sheet holds them
+  // in `parking`, which on every other campsite is a price, and the field label is the only
+  // thing telling the two apart. Under "Charges", the sentence saying no tents are allowed
+  // is the kind of line somebody reads past at 9pm; that mislabel shipped once already.
+  const appjs020 = fs.readFileSync(path.join(ROOT, 'app', 'app.js'), 'utf8');
+  ok('the detail sheet gives a Stay the Night car park its own rules heading, not "Charges"',
+     /site\.stay_the_night \? field\('Overnight rules', site\.parking\)/.test(appjs020),
+     'listing the scheme rules under a price heading invites someone to break them');
+
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
   ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
   ok('campsite ranking is sorted ascending',

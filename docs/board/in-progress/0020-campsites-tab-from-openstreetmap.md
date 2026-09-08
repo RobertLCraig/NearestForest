@@ -377,3 +377,54 @@ hook's budget; card `0031` in `ai-review/` already carries it.
 The change is parser-side and shipped no bytes, so there is nothing new to look at, but #8's device
 check is unchanged and still owed.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (234 passed, 0 failed)
+TOUCHED: scripts/selftest.js,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the untested half of criterion #7.** The criterion is "WHEN an FLS Stay the Night car park
+is listed, THE APP SHALL say that it is overnight-only between 6pm and 10am and that it requires a
+self-contained vehicle." `every Stay the Night record carries the scheme rules` asserts that the
+*data* holds both sentences, in `parking`. Nothing asserted that the *app* says them, which is what
+the criterion is about. `openSheet` in `app/app.js` renders them, and this card's own "Answered, and
+built" section records that they first shipped under the heading "Charges" and were relabelled
+"Overnight rules" — so the failure is not hypothetical, it happened here, and after the fix nothing
+guarded it.
+
+**Why the label is the whole thing.** On every other campsite `parking` is a price. On a Stay the
+Night car park it is the rule that gets somebody fined. The field text is identical either way; the
+heading is the only thing that tells a reader which they are looking at, so a regression is silent
+in the data and invisible to every existing assertion.
+
+**Watched red first, and made red honestly.** The new assertion `the detail sheet gives a Stay the
+Night car park its own rules heading, not "Charges"` reads `app/app.js` and requires the
+`site.stay_the_night` branch. I ran it against a deliberately reverted `openSheet` — the ternary
+collapsed back to the single `field('Charges', ...)` line the card had before the relabel — and
+watched it fail on that, which is the criterion's own failure rather than a missing symbol. Then I
+restored the line and re-ran: 234 passed, 0 failed. It reads source text, the same shape card 0004's
+`the detail sheet marks a derived name` uses, because `app.js` is DOM-only and this suite has no
+DOM.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started; the only
+file changed is `scripts/selftest.js`, which is not served.
+
+**What I checked and did not act on.** I traced two paths that could have dropped an STN record's
+rules and both are already safe: `dedupe_same_site` runs over the OSM list *before* `build_stn`'s
+records are added (`main`, `scripts/parse_campsites.py`), so the "richest record wins" sort can
+never discard a Stay the Night record; and `dedupe` keeps the FLS record over an OSM twin on
+purpose, with the reason in its docstring. `field()` renders a row even for a null value, so there
+is no silent-omission path either. No card raised, because there is no fault.
+
+**Suite:** `node scripts/selftest.js`, 234 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+
