@@ -129,3 +129,56 @@ belongs at the lane move in `C:\Dev\ProgressBoard`, not in this repository.
 **On the suite.** There is no `vendor/`, no Pest and no Pint in this project; the suite is
 `node scripts/selftest.js`, and it reports 227 passed, 0 failed. Nothing under `app/` or `scripts/`
 was touched, so it could not have seen this change either way.
+
+### 2026-09-08 review (v20260908145232-d507)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Reviewed with the acceptance lens.
+
+**Criterion #1** ÔÇö the heading. `docs/board/human-review/0008-offline-map-view.md` has `## What I need from you` as the first heading, directly under the title `# Map view with the bundled offline outline`. My own run of `grep -rL "## What I need from you" docs/board/human-review/*.md` does not name `0008`. Traced and met.
+
+**Criterion #2** ÔÇö the ask readable in three lines. Under the title, the first text is the bold one-line ask: untick `#1` and `#2` and return the card to `todo/`, or say why the finding is wrong. `**Pass**`, `**Fail**`, `**Why it needs you**` and `**Cause**` follow underneath, which is the shape `docs/board/README.md` gives in "The one section a card in `human-review/` must have". A `**Note on length**` records the 151-line overrun, as the tasks required. Traced and met.
+
+Nothing in the card unticked a criterion of `0008` or moved it, which the "Not this card" section forbade.
+
+One thing outside the criteria, so it does not change the verdict: the card's comment says only `0011`, `0012` and `0013` still miss the heading. My grep of the lane now lists 13 files missing it, including `0015`, `0019`, `0023` and `0026`. That report is stale.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked only the scope question.
+
+**What the work really touched** (commit `2b94c98`, not the big branch diff above): three files.
+
+- `docs/board/human-review/0008-offline-map-view.md` ÔÇö the new `## What I need from you` block sits right under the title. Nothing in `## Acceptance` was unticked, the card was not moved out of the lane, and nothing under `app/` or `scripts/` was touched. The fence in "Not this card" holds.
+- `docs/board/in-progress/0047-...md` ÔÇö its own card log.
+- `docs/board/todo/0050-card-0013-...md` ÔÇö a new card for `0013`.
+
+**The one thing that grew:** task 4 asked to *report* the lane re-grep; the session also *raised* `0050`. It labelled it `OUT-OF-SCOPE: 0050` on the thread, one card per finding is the board's own rule, and `0047` itself was born the same way from `0045`'s run. Declared and consistent, so not a defect.
+
+**Half done:** nothing found. I re-ran the lane grep at that commit: it listed exactly `0011`, `0012`, `0013`, which is what the card reports. `0008` is 151 lines and the card says so, as asked.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this card's work. I could not.
+
+What I checked:
+
+- `docs/board/human-review/0008-offline-map-view.md` now has `## What I need from you` directly under the title, with the ask, Pass and Fail. Criterion #1's own grep no longer names `0008`.
+- The ask matches the finding already on the card. `loadBoundary` in `app/map.js` still returns early on `loadError`, and `draw()` still paints the error and returns before the marker block. So the section does not claim a fault that has since been fixed.
+- The "Note on length" says 151 lines. `wc -l` says 151. True.
+- Card `0045`'s two acceptance boxes are still unticked, so nothing this card touched marks a lane-wide claim as done that is not done.
+- The re-grep report on the card names `0011`, `0012`, `0013`. At the commit that made the edit (`2b94c98`) the lane held exactly those, and `0011`/`0012`/`0013` now carry the heading. Thirteen other cards in the lane lack it today, but every one of them entered the lane in a later commit (`8be3a6f`, `a88dc88`, `b75c92d` and others). That drift is the fault the card names, not a fault the card made.
+
+Nothing under `app/` or `scripts/` was touched by this card, so no caller moved.
+
+VERDICT: sound
+
