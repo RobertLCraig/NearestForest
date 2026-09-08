@@ -451,6 +451,28 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
      /DATA\.sites = DATA\.sites\.concat\(CAMP\.sites\)/.test(appjs020),
      'without both lines the Campsites tab loads empty and nothing else here notices');
 
+  // Acceptance #2 has two clauses and only one was watched. "SHALL NOT show an open/closed
+  // badge" is covered below; "SHALL state only what its source publishes, and say not known
+  // for every field the source is silent on" was covered only as far as the parser — a silent
+  // tag becomes null rather than "". Nothing asserted what the SHEET does with that null.
+  // 3,675 campsites carry mostly nulls, so a `field()` that renders an empty <dd> leaves a
+  // reader with a blank line beside "Charges", which reads as "free", not as "not known".
+  // Run the real function rather than grep it: it depends only on `esc`, so both lift out of
+  // app.js source cleanly and the assertion tests behaviour instead of spelling.
+  const field020 = new Function(
+    appjs020.match(/function esc\(s\) \{[\s\S]*?\r?\n\}\r?\n/)[0] +
+    appjs020.match(/function field\(label, value, opts\) \{[\s\S]*?\r?\n\}\r?\n/)[0] +
+    'return field;')();
+  ok('a field the source is silent on is named as unknown, never left blank',
+     ['<dd></dd>', '<dd> </dd>'].every(blank =>
+       ![field020('Charges', null), field020('Charges', ''),
+         field020('Sat nav postcode', null, { missing: 'No sat nav postcode published' })]
+         .some(h => h.includes(blank))) &&
+     /<dd class="is-missing">Not listed<\/dd>/.test(field020('Charges', null)) &&
+     /<dd class="is-missing">No sat nav postcode published<\/dd>/
+       .test(field020('Sat nav postcode', null, { missing: 'No sat nav postcode published' })),
+     'a blank value beside a label reads as a published answer, not as silence');
+
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
   ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
   ok('campsite ranking is sorted ascending',

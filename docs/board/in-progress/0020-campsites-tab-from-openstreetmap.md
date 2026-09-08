@@ -574,3 +574,59 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (238 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the last unwatched clause of criterion #2, the rendering half.** #2 has two clauses. The
+badge clause is covered twice over. The first clause — "state only what its source publishes, and
+say `not known` for every field the source is silent on" — was covered as far as the **parser** by
+`a blank OSM tag becomes null, never an empty string`, added on this thread. That proves the data is
+null. **Nothing asserted what the detail sheet does with a null.** `field()` in `app/app.js` is the
+only place the promise is kept, and no assertion reached it: `is-missing` appeared nowhere in the
+suite, only in `app/app.css`. Campsite records are mostly nulls, so this is the field the criterion
+is about, not an edge.
+
+**Why a blank is worse than it sounds.** A `<dd></dd>` under "Charges" is a blank line beside a
+label, and a reader takes that for a published answer — free — rather than for silence. That is the
+exact failure #2 names, and it is one line of diff away in a function nothing was watching.
+
+**Behaviour, not spelling.** The two source-text assertions already on this card grep `app.js`
+because it is DOM-only. `field()` is not: it depends on `esc` alone, so the new assertion `a field
+the source is silent on is named as unknown, never left blank` lifts both functions out of the
+`app.js` source with `new Function` and **runs the shipped code**, over three cases — a null, an
+empty string, and a null with a per-field `missing:` message.
+
+**Watched red, and watched the rest stay green beside it.** I replaced the missing branch of
+`field()` with `'<dd></dd>'` and ran the suite: **237 passed, 1 failed**, the one failure being the
+new assertion. Every other campsite assertion reported PASS with the sheet rendering blanks, which
+is the proof the gap was real rather than a missing symbol. Restored the line and re-ran: 238
+passed, 0 failed.
+
+**One limit of the harness, said plainly.** The extraction regex first ended `\n\}\n` and threw on a
+null match rather than failing an assertion, because `app/app.js` is CRLF; fixed to `\r?\n\}\r?\n`
+before the red run above, so the red I watched was the criterion's own failure and not that. The
+assertion is coupled to `field()` keeping its exact signature line: rename it and the suite throws
+rather than fails, which is loud but not informative.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started —
+`git status` shows `scripts/selftest.js` and the two documents only — and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 238 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 237 self-tests, which this run
+made 238. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+
