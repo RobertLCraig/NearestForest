@@ -226,3 +226,42 @@ where a tab change lands.
 so the new pill wants the same phone look the 0004 and 0015 checks want. The wording is asserted by
 the suite; how it wraps on a narrow screen is not.
 
+**2026-09-08** RESULT: partial
+TESTS: +0 new, all green (232 passed, 0 failed)
+TOUCHED: docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**I built nothing, because there was nothing on this card left to build.** Every task is ticked and
+every criterion an agent can close is closed. Writing a test here would have been a test first seen
+green, which is the thing this card's own thread has twice argued against.
+
+**What I checked rather than assumed.** I re-ran `node scripts/selftest.js` — 232 passed, 0 failed —
+and then traced each ticked criterion to a named assertion in `scripts/selftest.js` rather than
+taking the two entries above at their word:
+- #1 `the Campsites tab exists in the shell` (`data-tab="campsite"` in `index.html`), plus
+  `ranking the campsite tab returns only campsites` and `campsite ranking is sorted ascending`.
+- #2 `no campsite carries a parsed opening summary` and `no campsite is ever reported open or closed`.
+- #3 the `openstreetmap.org/copyright` assertion in the shell block, plus `the campsite file states
+  its own licence and attribution`.
+- #4 `the OGL file holds no campsite record`.
+- #5 is the one worth naming, because it is a *build-fails* criterion and a shipped-data check would
+  not prove it. `a failed campsite parse leaves the previous dataset untouched` runs
+  `parse_campsites.py` twice in a temp tree, the second time with `lat: 12.3`, and requires a
+  non-zero exit with `campsites.json` byte-identical to the clean run. That is the criterion as
+  written, not a restatement of it.
+- #6 `no campsite is members-only, private, scout or a static-caravan park`.
+- #7 `every Stay the Night record carries the scheme rules`.
+
+**The suite is `node scripts/selftest.js`.** There is no `vendor/` in this repository, so
+`.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run. No PHP suite is
+missing; this project has never had one.
+
+**Nothing raised.** The one fault I found outside the card is that `docs/HANDOVER.md` is 41,505 bytes,
+over the ~40 KB the orient hook allows, which the hook reported at session start. Card `0031` in
+`ai-review/` already carries exactly that, so raising a second card would have been the duplicate the
+board has been cleaning up, not a finding.
+
+**Still open. #8 needs a person**, unchanged and unchangeable from here: aeroplane mode, relaunched
+cold from the Home Screen icon, with the Campsites tab tapped into while offline. That is card 0001
+check 5 and no run of this loop can close it.
+
