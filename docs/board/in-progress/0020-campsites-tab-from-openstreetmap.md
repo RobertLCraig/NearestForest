@@ -1704,3 +1704,59 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (258 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the licence obligation on the front end nobody had looked at.** Every #3 and #4 assertion
+this thread has accumulated watches the PWA — the footer credit and its anchor, the map pill, the
+`licence` / `attribution` / `attribution_url` header the parser writes. **`app/api/nearest.php` is a
+second way this data leaves the machine**, it already accepts `source=all`, and its JSON response
+carries no attribution of any kind. It does not need one *today*, because it reads `sites.json` and
+nothing else — and that, rather than any rule, was the entire guarantee.
+
+**Why it is not a hypothetical.** HANDOVER records the split in plain words: "`api/nearest.php` and
+the iOS Shortcut cover the forest tabs only ... the two front ends no longer cover the same ground."
+Closing that gap is an obvious next card, and the way anybody would close it is to load
+`campsites.json` beside `sites.json` in that file. That redistributes the Derivative Database over
+HTTP with no credit, no licence name and no link — all three of #3's obligations missed at once, in
+the one place a reader never sees a footer, and the notice would have to travel in a JSON body
+nobody renders.
+
+**Watched red, and watched both directions.** The new assertion `the Shortcut endpoint never serves
+campsite data without the ODbL notice` reads `app/api/nearest.php` and requires either that it does
+not mention `campsites.json` at all, or that its response carries an `'attribution'` key naming
+`OpenStreetMap contributors` and the copyright URL. I added the campsite path to `nearest.php` with
+no notice and ran the suite: **257 passed, 1 failed**, the one failure being the new assertion, while
+every other campsite and licence assertion reported PASS with an unattributed ODbL endpoint sitting
+in the tree. That is the criteria's own failure, not a missing symbol. Then I added the attribution
+line as well and re-ran — **PASS** — so the rule lets the endpoint grow rather than freezing it,
+which is the point. Restored `nearest.php` with `git checkout --`; it ends the run byte-identical to
+how it started.
+
+**One limit of the harness, said plainly.** This is source text, not behaviour. There is no PHP in
+this suite, and running `php -S` for one assertion would make the whole suite depend on Herd being on
+PATH, which it is not from Git Bash. The cost is that the assertion reads the *shape* of the response
+rather than a response: a `nearest.php` that carried its attribution under a different key would fail
+it loudly but unhelpfully.
+
+**No `CACHE` / `BUILD` bump.** `git status` shows `scripts/selftest.js` and the two documents only;
+nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 258 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 257 self-tests, which this run
+made 258. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

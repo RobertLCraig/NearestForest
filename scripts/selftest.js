@@ -499,6 +499,28 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
      && /could not be loaded/.test(appjs020),
      'an uncaught second fetch loses all three tabs, and an unexplained empty tab reads as "no campsites near you"');
 
+  // Acceptance #3 and #4 on the OTHER front end. Every licence assertion on this card watches
+  // the PWA: the footer credit, the map pill, the campsites.json header. api/nearest.php is a
+  // second way this data can leave the machine, it already takes source=all, and its response
+  // carries no attribution of any kind -- it does not need one today, because it reads
+  // sites.json and nothing else. That is the whole guarantee, and nothing was watching it.
+  // Adding `campsites.json` here is the obvious next move on the Shortcut (HANDOVER says the
+  // two front ends no longer cover the same ground), and it would redistribute a Derivative
+  // Database over HTTP with no credit, no licence name and no link -- #3's three obligations,
+  // missed in the one place a reader never sees a footer. So: serve campsite data if somebody
+  // decides to, but not without the notice travelling with it.
+  {
+    const php = fs.readFileSync(path.join(ROOT, 'app', 'api', 'nearest.php'), 'utf8');
+    const servesCamps = /campsites\.json/.test(php);
+    const credits = /'attribution'\s*=>/.test(php)
+                 && /OpenStreetMap contributors/.test(php)
+                 && /openstreetmap\.org\/copyright/.test(php);
+    ok('the Shortcut endpoint never serves campsite data without the ODbL notice',
+       !servesCamps || credits,
+       'api/nearest.php reads campsites.json but its JSON response carries no attribution key ' +
+       'crediting OpenStreetMap, naming the Open Database License and linking to the copyright page');
+  }
+
   // Acceptance #2 has two clauses and only one was watched. "SHALL NOT show an open/closed
   // badge" is covered below; "SHALL state only what its source publishes, and say not known
   // for every field the source is silent on" was covered only as far as the parser — a silent
