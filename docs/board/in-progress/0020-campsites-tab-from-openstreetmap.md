@@ -831,3 +831,49 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +0 new, all green (242 passed, 0 failed)
+TOUCHED: docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Nothing was built, and this time that is a finding rather than a shrug.** Every clause of every
+criterion #1 to #7 now has **two** assertions: one over the shipped artefact, and one that runs the
+parser or the shipped app code. I re-walked all seven clause by clause against `scripts/selftest.js`
+before concluding it, and the last runs on this thread closed the last gaps — #5's longitude, #3 and
+#4's parser-written notice, #7's pipeline guarantee. There is no clause left whose test could be
+written and watched fail. Writing one anyway would be a test first seen green, which this thread has
+now refused five times.
+
+**What I checked that the suite cannot check, and that no entry above had checked.** Nothing in the
+suite proves the committed `app/data/campsites.json` is what today's `scripts/parse_campsites.py`
+actually produces. `data/raw/` is gitignored, so a reproducibility check cannot live in a suite that
+has to run from a clean clone. Every assertion over the shipped file therefore trusts that the file
+and the parser have not drifted apart — and three runs on this thread have edited that parser. So I
+did it by hand: hashed `app/data/campsites.json`, ran `python scripts/parse_campsites.py` against
+the cached Overpass responses, and hashed again. **Byte-identical** — SHA-256 `44AD13FB...FBA3FC`
+before and after, 3,675 records, England 2,606 / Scotland 505 / Wales 564. So the file the app ships
+is the file the tested parser makes, and the seven ticked criteria hold on the artefact as well as
+on the code.
+
+**I did not turn that into an assertion, deliberately, and this is the harness limit stated
+plainly.** The check needs the three Overpass responses under `data/raw/osm/`, which are gitignored
+by design — 142 MB of scrape cache stays out of a repo the server pulls on every deploy. A suite
+assertion would either fail on any clean checkout or skip itself silently, and a self-skipping test
+is exactly the blindness this board keeps finding. It belongs in the refresh procedure, not in
+`selftest.js`, and "What's next" item 2 already sends a re-fetch through both parsers.
+
+**No `CACHE` / `BUILD` bump.** The parser re-run left `app/data/campsites.json` byte-identical, so
+nothing under `app/` changed and `git status` shows this card only.
+
+**Suite:** `node scripts/selftest.js`, 242 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — and this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+
