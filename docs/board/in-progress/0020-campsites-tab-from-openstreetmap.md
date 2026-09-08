@@ -302,3 +302,32 @@ Card `0031` in `ai-review/` already carries exactly that, so no second card was 
 
 **Nothing here has been seen in a browser.** This is a worktree and Herd serves the main checkout.
 
+**2026-09-08** RESULT: partial
+TESTS: +0 new, all green (232 passed, 0 failed)
+TOUCHED: docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Nothing was built.** Seven criteria are met, every task is ticked, and #8 needs a person on a
+phone. A new test here would be one first seen green, which this thread has now refused three times.
+
+**What I went after instead of restating the runs above.** Criterion #8 is "still works fully
+offline with the larger dataset". Only a person can close it, but it has a mechanical half — the
+campsite file has to be *in* the precache before any device check can succeed — and I checked
+whether the suite actually asserts that rather than assuming the earlier entries covered it. It
+does: `./data/campsites.json` is in `ASSETS` in `app/sw.js` (line 18), `scripts/selftest.js` asserts
+`the campsite dataset is precached`, and the `precached file exists:` loop reads the parsed `ASSETS`
+list, so the file is proved present on disk as well as named. So the failure mode where the tab
+works on the sofa and dies in a car park is already fenced. What is *not* fenced, and cannot be, is
+whether iOS keeps 1.7 MB of cache across a cold relaunch — which is the exact bug 2026-08-08 found
+by running it, and the reason #8 exists as a human check.
+
+**Suite:** `node scripts/selftest.js`, 232 passed, 0 failed, tree clean. There is no `vendor/` in
+this repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not
+run. This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. No run of this loop can close it.
+
