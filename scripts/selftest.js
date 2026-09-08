@@ -1355,8 +1355,11 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     const craw = path.join(cx, 'data', 'raw');
     const goodEl = { type: 'node', id: 1, lat: 54.0, lon: -2.0,
                      tags: { name: 'Test Campsite', tourism: 'camp_site', caravans: 'yes' } };
-    const writeOsm = (el, sctEl) => {
-      const body = (els) => JSON.stringify({ osm3s: { timestamp_osm_base: '2026-08-15T00:00:00Z' },
+    // `stamp` is optional and defaults to the snapshot every fixture below assumes; only
+    // the data-checked assertion at the end of this block passes one, because it is the
+    // only thing here that cares what OpenStreetMap said the extract's date was.
+    const writeOsm = (el, sctEl, stamp) => {
+      const body = (els) => JSON.stringify({ osm3s: { timestamp_osm_base: stamp || '2026-08-15T00:00:00Z' },
                                              elements: els });
       write(path.join(craw, 'osm', 'campsites-gb-eng.json'), body([].concat(el)));
       write(path.join(craw, 'osm', 'campsites-gb-sct.json'), body([].concat(sctEl || [])));
@@ -2129,6 +2132,37 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
          : `the merge kept ${dupKept[0].id} but lost the published postcode ` +
            `(postcode_satnav=${JSON.stringify(dupKept[0].postcode_satnav)}), so the ` +
            'poorer of the two records won');
+
+    // Acceptance #2 of card 0020, on the one claim the detail sheet makes that is not about
+    // the place at all: "Data checked". NF.dataChecked() takes a campsite's date from its
+    // own `scraped_at`, falling back to the file's `generated_at`, and BOTH come from one
+    // line of parse_campsites.py -- OpenStreetMap's own snapshot time, `timestamp_osm_base`,
+    // read out of the extract. Replace that line with today's date and all 272 assertions
+    // still pass. The two that read this field, `a Stay the Night car park is not given
+    // OpenStreetMap's data-checked date` and `an OSM campsite still reports the snapshot it
+    // came from`, exercise NF.dataChecked over hand-written objects and the committed
+    // app/data/campsites.json, whose dates are already right and do not move until somebody
+    // rebuilds. So the app would tell a reader the data was checked the day the build ran --
+    // a freshness claim no source made, on records OSM may not have touched in years. That
+    // is card 0026's fault exactly, in the half of the pipeline card 0026 never reached.
+    //
+    // The fixture's snapshot is deliberately a date nobody could be running this on, so a
+    // parser that reads the extract and a parser that invents a date cannot look the same.
+    writeOsm(goodEl, null, '2011-03-04T00:00:00Z');
+    const cStamp = runCamp();
+    let stampFile = null;
+    if (cStamp.status === 0 && fs.existsSync(cOut)) {
+      try { stampFile = JSON.parse(fs.readFileSync(cOut, 'utf8')); } catch (e) { stampFile = null; }
+    }
+    const stampRec = stampFile && stampFile.sites.find(s => s.id === 'os-n1');
+    ok("a campsite is dated by OpenStreetMap's snapshot, never by the day the parser ran",
+       !!stampRec && stampRec.scraped_at === '2011-03-04' &&
+       stampFile.generated_at === '2011-03-04',
+       !stampRec ? `the run exited ${cStamp.status} and wrote no os-n1: ${tail(cStamp)}`
+       : "the extract's snapshot is 2011-03-04, but the file reports scraped_at=" +
+         `${JSON.stringify(stampRec.scraped_at)} and generated_at=` +
+         `${JSON.stringify(stampFile.generated_at)}, so the sheet dates this data from the ` +
+         'day the build ran rather than from what OpenStreetMap published');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

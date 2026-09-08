@@ -2603,3 +2603,60 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (273 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one claim the campsite half makes that is not about a place at all: its date.**
+`NF.dataChecked()` fills the sheet's "Data checked" row from a record's `scraped_at`, falling back
+to the file's `generated_at`, and both come from a single line of `scripts/parse_campsites.py` --
+`timestamp_osm_base`, OpenStreetMap's own snapshot time, read out of the extract. Two assertions on
+this thread read that field, `a Stay the Night car park is not given OpenStreetMap's data-checked
+date` and `an OSM campsite still reports the snapshot it came from`. **Neither runs the parser.**
+They exercise `NF.dataChecked` over hand-written objects and the **committed**
+`app/data/campsites.json`, whose dates are already correct and do not move until somebody rebuilds.
+
+**Measured, not argued.** I replaced that line with `datetime.date.today()` and ran the suite: **272
+passed, 0 failed.** A parser that dates every campsite from the day it happened to run is fully
+green today. The consequence is not a withheld answer but a false one: the sheet tells a reader the
+data was checked today, on records OpenStreetMap may not have been edited in for years, and
+`generated_at` carries the same claim into the footer. That is card 0026's fault exactly -- a parse
+date passed off as a source date -- in the half of the pipeline card 0026 never reached.
+
+**Watched red first.** The new assertion `a campsite is dated by OpenStreetMap's snapshot, never by
+the day the parser ran` goes in the temp-tree block. Against the broken parser it failed with `the
+extract's snapshot is 2011-03-04, but the file reports scraped_at="2026-09-08" and
+generated_at="2026-09-08"`, while 272 passed beside it. That is the fault's own failure, not a
+missing symbol. Restored the line and re-ran: 273 passed, 0 failed.
+
+**Why 2011-03-04, and why both fields.** The fixture's snapshot is deliberately a date nobody could
+be running this on, so a parser that reads the extract and a parser that invents a constant cannot
+look the same -- a hard-coded date fails as loudly as today's does. `writeOsm()` took an optional
+third argument for it, defaulted to the snapshot every other fixture in that block already assumed,
+so no existing assertion moved. Both `scraped_at` and `generated_at` are asserted, because
+`dataChecked` reads whichever is available and pinning one alone leaves the other free to drift.
+
+**Which criterion this belongs to.** #2 -- "state only what its source publishes". Its tick does not
+move: it was already true, and the last unwatched field the sheet draws is now watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started; `git status` shows `scripts/selftest.js` and the two documents only, and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 273 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 272 self-tests, which this run
+made 273. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.
