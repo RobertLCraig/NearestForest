@@ -1253,6 +1253,51 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
                                          (!blankRec[k].trim() || blankRec[k] !== blankRec[k].trim()))
                             .map(k => `${k}=${JSON.stringify(blankRec[k])}`).join(', '));
 
+    // Acceptance #2 of card 0020: "state ONLY what its source publishes". `facilities` is
+    // the one campsite field that is a list of positive claims -- the sheet draws each as a
+    // chip reading "toilets", "drinking water", "chemical disposal" -- and nothing anywhere
+    // in this suite reads it. FACILITY_TAGS in parse_campsites.py pairs each OSM key with
+    // the values that mean yes, and that pairing is the whole guarantee: relax it to a
+    // truthiness test and `toilets=no` becomes a "toilets" chip, because "no" is a
+    // non-empty string. That states the OPPOSITE of what OSM publishes, on the field a
+    // campervanner picks a site by. Measured: with `in good` replaced by a truthiness test
+    // the whole suite passed, 255 of 255. Today's extract carries the correct chips, so an
+    // assertion over the shipped file would be green from birth; this feeds the parser a
+    // site that publishes "no" to everything.
+    const facsNo = { type: 'node', id: 30, lat: 55.1, lon: -3.1, tags: {
+      name: 'Bare Field', tourism: 'camp_site', caravans: 'yes',
+      toilets: 'no', shower: 'no', drinking_water: 'no', power_supply: 'no',
+      sanitary_dump_station: 'no', waste_disposal: 'no', internet_access: 'no',
+      laundry: 'no', bbq: 'no', openfire: 'no', dog: 'no' } };
+    const facsYes = { type: 'node', id: 31, lat: 55.2, lon: -3.2, tags: {
+      name: 'Full Facilities Park', tourism: 'camp_site', caravans: 'yes',
+      toilets: 'yes', shower: 'hot', drinking_water: 'yes', dog: 'leashed' } };
+    writeOsm([goodEl, facsNo, facsYes]);
+    const cFacs = runCamp();
+    let facsRecs = null;
+    if (cFacs.status === 0 && fs.existsSync(cOut)) {
+      try {
+        const all = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites;
+        facsRecs = { no: all.find(s => s.id === 'os-n30'), yes: all.find(s => s.id === 'os-n31') };
+      } catch (e) { facsRecs = null; }
+    }
+    // compact() drops an empty list before writing, so "no facilities" is an ABSENT key
+    // rather than an empty array. DATA-MODEL states that contract; both readings are
+    // accepted here so this assertion fails on the chips and not on the encoding.
+    const wantYes = ['toilets', 'showers', 'drinking water', 'dogs welcome'];
+    const facsOf = (r) => (r && r.facilities) || [];
+    ok('a facility the source says the site has NOT is never listed as one',
+       !!facsRecs && !!facsRecs.no && !!facsRecs.yes &&
+       facsOf(facsRecs.no).length === 0 &&
+       wantYes.every(f => facsOf(facsRecs.yes).includes(f)),
+       !facsRecs || !facsRecs.no || !facsRecs.yes
+         ? `the run exited ${cFacs.status} and wrote no os-n30/os-n31: ${tail(cFacs)}`
+       : facsOf(facsRecs.no).length
+         ? 'a site publishing "no" to every facility was listed as having: ' +
+           facsOf(facsRecs.no).join(', ')
+         : 'a site publishing these facilities lost them: ' +
+           wantYes.filter(f => !facsOf(facsRecs.yes).includes(f)).join(', '));
+
     // Acceptance #6 of card 0020, the half the shipped file cannot prove. The check over
     // app/data/campsites.json reads access_note text, so it catches only the failure that
     // actually happened: access=members labelled instead of dropped. If the scout, private

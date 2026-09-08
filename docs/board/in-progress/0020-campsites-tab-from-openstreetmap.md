@@ -1592,3 +1592,62 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (256 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one campsite field nothing in the suite had ever read.** #2 is "state **only** what its
+source publishes". Every assertion this thread has accumulated for it watches a field that can be
+*silent* — a postcode, a phone, an opening time — and proves silence becomes null and renders as "not
+known". **`facilities` is the opposite shape: it is a list of positive claims**, drawn on the sheet
+as chips reading "toilets", "drinking water", "chemical disposal", "electric hook-up". Nothing
+anywhere in `scripts/selftest.js` reads it on a campsite. The only `facilities` assertion in the file
+is `most Scottish sites list facilities`, which is card 0016's and reads forests.
+
+**Measured, not argued.** `FACILITY_TAGS` in `scripts/parse_campsites.py` pairs each OSM key with the
+values that mean yes, and that pairing is the entire guarantee. I replaced `if tags.get(key) in good`
+with `if tags.get(key)` and the `dog` value list with a truthiness test, and ran the suite: **255
+passed, 0 failed**. `"no"` is a non-empty string, so with those two words changed a site publishing
+`toilets=no shower=no drinking_water=no dog=no` ships chips claiming it has all of them — the app
+stating the **opposite** of what OSM published, on the field somebody picks a site by at dusk, and
+the whole suite green.
+
+**Watched red, and watched everything else stay green beside it.** The new assertion `a facility the
+source says the site has NOT is never listed as one` goes in the temp-tree block beside `a blank OSM
+tag becomes null`. It feeds the parser two sites: one publishing `no` to all eleven facility tags,
+one publishing `toilets=yes shower=hot drinking_water=yes dog=leashed`. It requires the first to
+carry none and the second to carry all four labels, so it fails on a rule that is too loose *and* on
+one that is too tight. Against the broken parser it failed naming all eleven wrongly-claimed chips;
+against the correct parser, 256 passed, 0 failed.
+
+**Why a fixture and not the shipped file.** Today's extract carries correct chips, so an assertion
+over `app/data/campsites.json` would have been green from birth — what this thread has refused six
+times. The guarantee belongs to the pairing in the parser, so the parser is where it is tested.
+
+**One thing the harness taught me, said plainly.** The first run of the new assertion threw rather
+than failed: `compact()` drops an empty list before writing, so "no facilities" is an **absent key**,
+not an empty array. That is correct and is the contract DATA-MODEL states. I made the assertion
+accept both readings — via one `facsOf()` helper — and then re-broke the parser and re-ran, to
+confirm the *corrected* assertion still goes red for the criterion's own reason rather than trusting
+the red I had watched before the edit. It does, naming the same eleven chips.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started; `git status` shows `scripts/selftest.js` and `docs/` only, and nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 256 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 255 self-tests, which this run
+made 256. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
