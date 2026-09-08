@@ -2545,3 +2545,61 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (272 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one drop rule in the parser that nothing had ever read: the unnamed campsite.**
+`build_osm` in `scripts/parse_campsites.py` has five drop rules. This thread has pinned four of
+them in the temp-tree block -- members-only, private, scout, static-caravan, and the no-van filter
+beside them. The fifth, `if not name: continue`, had no assertion of its own. The only check that
+touches naming, `every campsite has a real name`, reads the **committed**
+`app/data/campsites.json`, so it is a statement about a file already in the repository and cannot
+speak until somebody rebuilds.
+
+**Measured, not argued.** I collapsed the drop to `if False:` -- one word -- and ran the suite:
+**271 passed, 0 failed.**
+
+**And the failure that break causes is worth naming exactly, because it is not the obvious one.**
+`validate()` rejects a record with no `name`, so nothing blank ever *ships*. What happens instead is
+that the next re-fetch exits 1 on a rule no assertion mentions, with the whole campsite half of the
+pipeline down and the reason buried in a validator. OSM carries several hundred unnamed caravan
+sites, so this is not a hypothetical input. The rule the criterion actually states -- Rob's call on
+2026-08-15, "named and explicitly caravan or motorhome capable, or not listed" -- is that the
+parser *drops* them and builds cleanly, and that is what is now asserted.
+
+**Watched red first.** The new assertion `a campsite OpenStreetMap never named is dropped, not
+shipped with a blank name` feeds the parser three nameless caravan sites -- no `name` tag, `name:
+''`, and `name: '   '` -- plus one ordinary campsite, and requires exit 0 with the ordinary one
+written and nothing blank in the file. Against the broken parser it failed reporting the run exiting
+1 and naming `os-n81` and `os-n82` as missing a required field, which is the break's own failure and
+not a missing symbol. Restored the line and re-ran: 272 passed, 0 failed. Both ends are pinned: a
+drop widened to discard everything fails on the missing `os-n1` as well.
+
+**Which criterion this belongs to.** #2 -- "state only what its source publishes" -- on the field a
+reader meets first. `name_is_derived` is `False` on every campsite on purpose: card 0004's
+nearest-forest naming deliberately does not carry over, because a campsite's neighbour is not its
+parent. Its tick does not move; it was already true, and the last unwatched drop rule is now
+watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started -- checked with `diff` against a copy taken before the break -- and `git status` shows
+`scripts/selftest.js` and the two documents only, so nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 272 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 271 self-tests, which this run
+made 272. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.

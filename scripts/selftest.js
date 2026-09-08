@@ -1461,6 +1461,43 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
                                          (!blankRec[k].trim() || blankRec[k] !== blankRec[k].trim()))
                             .map(k => `${k}=${JSON.stringify(blankRec[k])}`).join(', '));
 
+    // Acceptance #2 of card 0020, on the field a reader meets first: the name. Rob's call on
+    // 2026-08-15 was "named and explicitly caravan or motorhome capable, or not listed", and
+    // an OSM campsite carrying no name tag is dropped rather than shipped or invented for --
+    // card 0004's nearest-forest trick deliberately does not carry over, because a campsite's
+    // neighbour is not its parent. `every campsite has a real name` reads the committed
+    // app/data/campsites.json, so it only speaks after a rebuild, and the parser's drop was
+    // otherwise unwatched: collapse `if not name` to `if False` and all 271 assertions still
+    // pass. Measured, not argued -- and the failure that break causes is worth naming
+    // exactly: validate() rejects a nameless record, so nothing blank SHIPS. What happens
+    // instead is that the whole campsite build exits 1 on the next re-fetch, on a rule the
+    // suite never mentioned, and OSM carries several hundred unnamed caravan sites. So this
+    // asserts the drop itself: nameless in, clean build out, and the ordinary site kept.
+    const nameless = [
+      { type: 'node', id: 80, lat: 54.1, lon: -2.1, tags: {
+          tourism: 'caravan_site', caravans: 'yes' } },
+      { type: 'node', id: 81, lat: 54.2, lon: -2.2, tags: {
+          name: '', tourism: 'caravan_site', caravans: 'yes' } },
+      { type: 'node', id: 82, lat: 54.3, lon: -2.3, tags: {
+          name: '   ', tourism: 'caravan_site', caravans: 'yes' } },
+    ];
+    writeOsm([goodEl].concat(nameless));
+    const cName = runCamp();
+    let nameSites = null;
+    if (cName.status === 0 && fs.existsSync(cOut)) {
+      try { nameSites = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites; }
+      catch (e) { nameSites = null; }
+    }
+    const namelessShipped = nameSites &&
+      nameSites.filter(s => !s.name || !String(s.name).trim()).map(s => s.id);
+    ok('a campsite OpenStreetMap never named is dropped, not shipped with a blank name',
+       !!nameSites && namelessShipped.length === 0 &&
+       nameSites.some(s => s.id === 'os-n1'),
+       !nameSites ? `the nameless run exited ${cName.status} and wrote no dataset: ${tail(cName)}`
+       : namelessShipped.length
+         ? `shipped with no name a reader could read: ${namelessShipped.join(', ')}`
+         : 'the parser dropped the ordinary campsite too');
+
     // Acceptance #2 of card 0020: "state ONLY what its source publishes". `facilities` is
     // the one campsite field that is a list of positive claims -- the sheet draws each as a
     // chip reading "toilets", "drinking water", "chemical disposal" -- and nothing anywhere
