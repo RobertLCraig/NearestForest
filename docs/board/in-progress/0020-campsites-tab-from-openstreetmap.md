@@ -1950,3 +1950,62 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (262 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one fault this card found by RUNNING the tab, which nothing was watching.** The card's
+own "Answered, and built" section records it: "the same site mapped twice, as an OSM node and as the
+surrounding area, fixed by merging same-name records within 0.5 mi **and self-tested**". Housedean
+Farm Campsite came back as both the nearest and the second nearest site to Brighton. The fix is
+`dedupe_same_site()` in `scripts/parse_campsites.py`. The self-test is `no campsite is listed twice
+under one name in one place`, and it reads the `app/data/campsites.json` **already committed here** --
+a file the parser has already cleaned -- so it is green from birth on this question.
+
+**Measured, not argued.** I reduced `dedupe_same_site()` to `return sites` and ran the suite: **261
+passed, 0 failed.** The entire de-duplication can be deleted and every assertion on this card,
+including the one written for this exact fault, reports PASS.
+
+**Watched red on both of its clauses.** The new assertion `one campsite mapped twice by OpenStreetMap
+is listed once, and keeps its postcode` goes in the temp-tree block beside `a site the source never
+says takes a van is not listed as somewhere to pull up`. Against the deleted merge it failed with
+`the same site 0.1 mi apart under one name ships 2 times (os-n61, os-n60)`. I then restored the merge
+and deleted only its "richest record wins" sort -- one line, whose own comment says it exists "so the
+merge never loses a postcode or a website" -- and it failed again, separately, with `the merge kept
+os-n61 but lost the published postcode`. Both are the fault's own failure, not a missing symbol, and
+every other campsite assertion reported PASS beside each. Restored both and re-ran: 262 passed, 0
+failed.
+
+**Both ends pinned, and the fixture ordered to make the red honest.** The 0.5 mi threshold is a
+measured gap in the distribution rather than taste, so a control pair shares a name 6.9 mi apart and
+both must survive -- two different farms called the same thing are two campsites, and a merge widened
+into uselessness would pass without it. The poorer of the twins is listed **first** in the extract, so
+a merge that simply keeps whatever OSM returned first fails on the postcode instead of passing by
+luck. Same shape as the scout, Stay the Night and `takes_a_van()` fixtures on this card.
+
+**Which criteria this belongs to.** #1's ranked list, because two rows for one place push a real
+alternative off the top of a list read in a moving vehicle; and #2, because two entries claim two
+places to sleep where the source published one. Neither tick moves: both were already true, and are
+now watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started -- `git status` shows `scripts/selftest.js` and the two documents only -- and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 262 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 261 self-tests, which this run
+made 262. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

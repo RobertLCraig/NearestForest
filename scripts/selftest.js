@@ -1752,6 +1752,65 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
            `for ${vanWrong.join(', ')}, and they are listed as somewhere to pull up`
          : `the filter is too tight: it dropped ${vanLost.join(', ')}, which the source ` +
            'does say takes a van');
+
+    // Card 0020's own "Answered, and built" records this as one of two faults found by
+    // RUNNING the tab rather than reading it: OSM maps a lot of campsites twice, once as a
+    // node and once as the area around it, and Housedean Farm Campsite came back as both
+    // the nearest and the second nearest site to Brighton. dedupe_same_site() in
+    // parse_campsites.py is the fix, and the card says it was "self-tested" -- but the only
+    // assertion is `no campsite is listed twice under one name in one place`, which reads
+    // the app/data/campsites.json ALREADY COMMITTED here. The parser has already cleaned
+    // that file, so it is green from birth on this question. Measured on 2026-09-08: with
+    // dedupe_same_site() reduced to `return sites`, the whole suite passed, 261 of 261.
+    //
+    // This is acceptance #1's ranked list -- two rows for one place pushes a real
+    // alternative off the top of a list read in a moving vehicle -- and it is acceptance
+    // #2's rule as well, because two entries claim two places to sleep where the source
+    // published one.
+    //
+    // Both ends are pinned, the way the Stay the Night and takes_a_van fixtures above are.
+    // The 0.5 mi threshold is a measured gap in the distribution, not taste (see the
+    // function's docstring), so a control pair shares a name 6.9 mi apart and must BOTH
+    // survive: two genuinely different farms called the same thing are two campsites.
+    // The third requirement is the merge's own promise, "richest record wins, so the merge
+    // never loses a postcode or a website" -- drop that sort and the survivor is whichever
+    // record OSM happened to list first, and a published postcode silently becomes
+    // "not known" on the one field this app exists to hand to a sat nav.
+    const dupRich = { type: 'node', id: 60, lat: 50.8700, lon: -0.0300, tags: {
+      name: 'Housedean Farm Campsite', tourism: 'camp_site', caravans: 'yes',
+      'addr:postcode': 'BN7 3JW', website: 'https://example.org/housedean',
+      phone: '01273 000000' } };
+    const dupPoor = { type: 'node', id: 61, lat: 50.8715, lon: -0.0300, tags: {
+      name: 'Housedean Farm Campsite', tourism: 'camp_site', caravans: 'yes' } };
+    const farA = { type: 'node', id: 62, lat: 53.0000, lon: -1.0000, tags: {
+      name: 'Oak Tree Farm', tourism: 'camp_site', caravans: 'yes' } };
+    const farB = { type: 'node', id: 63, lat: 53.1000, lon: -1.0000, tags: {
+      name: 'Oak Tree Farm', tourism: 'camp_site', caravans: 'yes' } };
+    // The poor twin is listed FIRST, so a merge that keeps whatever came first rather than
+    // whatever is richest fails on the postcode instead of passing by luck.
+    writeOsm([dupPoor, dupRich, farA, farB]);
+    const cDup = runCamp();
+    let dupSites = null;
+    if (cDup.status === 0 && fs.existsSync(cOut)) {
+      try { dupSites = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites; }
+      catch (e) { dupSites = null; }
+    }
+    const dupKept = dupSites && dupSites.filter(s => /^os-n6[01]$/.test(s.id));
+    const farKept = dupSites && dupSites.filter(s => /^os-n6[23]$/.test(s.id));
+    ok('one campsite mapped twice by OpenStreetMap is listed once, and keeps its postcode',
+       !!dupSites && dupKept.length === 1 && farKept.length === 2 &&
+       dupKept[0].postcode_satnav === 'BN7 3JW',
+       !dupSites ? `the run exited ${cDup.status} and wrote no dataset: ${tail(cDup)}`
+       : dupKept.length !== 1
+         ? `the same site 0.1 mi apart under one name ships ${dupKept.length} times ` +
+           `(${dupKept.map(s => s.id).join(', ') || 'none at all'}), so it takes the top ` +
+           'two rows of the list from anywhere nearby'
+       : farKept.length !== 2
+         ? 'the merge is too wide: it swallowed one of two real campsites 6.9 mi apart ' +
+           `that happen to share a name (kept ${farKept.map(s => s.id).join(', ')})`
+         : `the merge kept ${dupKept[0].id} but lost the published postcode ` +
+           `(postcode_satnav=${JSON.stringify(dupKept[0].postcode_satnav)}), so the ` +
+           'poorer of the two records won');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
