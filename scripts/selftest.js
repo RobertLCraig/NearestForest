@@ -1206,6 +1206,27 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
        !!farIds && missing.length === 0,
        !farIds ? `the parser refused a British campsite (exit ${cFar.status}): ${tail(cFar)}`
                : `inside Great Britain but rejected or dropped: ${missing.join(', ')}`);
+
+    // Acceptance #7 of card 0020, the half nothing was watching. `every Stay the Night
+    // record carries the scheme rules` reads the COMMITTED app/data/campsites.json, so it
+    // is a statement about a file already in the repository, not about the code that makes
+    // one. Set `parking` to None in build_stn and the whole suite stays green -- measured,
+    // 241 passed -- because that assertion never re-runs the parser and the sheet assertion
+    // only greps app.js for the heading. The rules would vanish on the next re-fetch, in a
+    // dataset nobody re-reads, and the first sign would be somebody fined in a car park.
+    // #7 is a promise about what the pipeline produces, so it is tested on what the
+    // pipeline produces: the STN fixture already in this temp tree, read back out.
+    let stnRec = null;
+    if (cFar.status === 0 && fs.existsSync(cOut)) {
+      try { stnRec = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites
+                        .find(s => s.stay_the_night); } catch (e) { stnRec = null; }
+    }
+    ok('the parser puts the Stay the Night rules on every record it builds',
+       !!stnRec && /6pm to 10am/.test(stnRec.parking || '') &&
+       /[Ss]elf-contained/.test(stnRec.parking || ''),
+       !stnRec ? `the parser wrote no Stay the Night record at all (exit ${cFar.status})`
+               : `parking=${JSON.stringify(stnRec.parking)} -- it must state the ` +
+                 '6pm to 10am window and the self-contained-vehicle rule');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

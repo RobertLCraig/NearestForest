@@ -779,3 +779,55 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (242 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the half of criterion #7 that watched a file rather than the pipeline.** #7 has two
+assertions on this thread. `every Stay the Night record carries the scheme rules` reads the
+**committed** `app/data/campsites.json`, so it is a statement about a file already in the
+repository, not about the code that makes one. `the detail sheet gives a Stay the Night car park its
+own rules heading` greps `app/app.js` for the label. **Neither runs the parser.** Every other
+criterion on this card has had its parser guarantee pinned in the temp-tree block — #2, #3, #4, #5
+and #6 all now do — and #7 was the last one left resting on today's output.
+
+**Measured, not argued.** I set `"parking"` to `None` in `build_stn` (`scripts/parse_campsites.py`)
+and ran the suite: **241 passed, 0 failed**. A parser that ships Stay the Night car parks with no
+overnight window and no self-contained-vehicle rule is fully green today. The rules would vanish on
+the next re-fetch, in a file nobody re-reads, and the first sign of it would be somebody fined in a
+car park at 11am.
+
+**Watched red, and watched the three old ones stay green beside it.** The new assertion `the parser
+puts the Stay the Night rules on every record it builds` goes in the temp-tree block and reads the
+`test-stn` fixture back out of the file the parser wrote there. Against the broken `build_stn` it
+failed with `parking=undefined -- it must state the 6pm to 10am window and the self-contained-vehicle
+rule`, which is the criterion's own failure and not a missing symbol, while `the Stay the Night car
+parks are present`, `every Stay the Night record carries the scheme rules` and the sheet-heading
+assertion all reported **PASS**. Restored `FLS_STN_NOTE` and re-ran: 242 passed, 0 failed.
+
+**Why the fixture already existed and nothing read it.** The temp tree has written a
+`stay-the-night.json` with one car park since the first parser test on this card, so the STN record
+has been built on every run of that block and simply never asserted on. This adds no fixture; it
+reads the one that was already there.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started — `git status` shows `scripts/selftest.js` and the two documents only — and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 242 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 241 self-tests, which this run
+made 242. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+
