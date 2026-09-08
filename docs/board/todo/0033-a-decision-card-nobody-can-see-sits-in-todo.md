@@ -113,3 +113,58 @@ itself is one `git mv` to undo.
 `0035` records the residue. `0010` and `0027` are person-only work sitting in `todo/` for the same
 visibility reason, but they are feature cards, so this card's derivation rule (`## Options` means a
 decision) is blind to them and moving them here would have been scope nobody reviewed.
+
+### 2026-09-08 review (v20260908112821-2549)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked the one thing the card promises.
+
+**Criterion #1 ÔÇö the card must sit in `human-review/`, not `todo/`.**
+- `docs/board/human-review/0025-which-wins-when-the-ask-comes-before-the-problem.md` exists.
+- `docs/board/todo/` does not hold it.
+- Inside `0025`, the two `**Decided:**` hits are not answers: one is the ask telling the reader how to post one, one is the paste-ready line at the end of `## Recommendation`. `## Comments` is the last line of the file, so the thread is empty. It is an unanswered decision, so `human-review/` is the correct lane.
+
+**The sweep task.** I re-ran it. No file in `docs/board/todo/` carries a `## Options` heading now, so no unanswered decision card is left in that lane. The four cards there today (`0032`, `0052`, `0053`, `0054`) are not decisions.
+
+This lens is acceptance only, so I did not judge the `HANDOVER.md` edit, the new card `0035`, or the lane-move rule the session wrote about. Those are for another lens.
+
+I tried to break the one criterion and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+Checked the two commits this card made (`0bfcb1d`, `1522164`), not the stale diff above. The big app changes (`mapHint` in `app/core.js`, `scripts/selftest.js`, `app/data/campsites.json`) are already on `main` from other cards ÔÇö not this session's work.
+
+What this session actually changed:
+
+- `docs/board/todo/0025-ÔÇª` ÔåÆ `docs/board/human-review/` ÔÇö pure rename, zero content bytes changed. Fence "not editing 0025's text" held.
+- `docs/board/in-progress/0033-ÔÇª` ÔÇö its own ticks and log entry.
+- `docs/board/todo/0035-person-only-task-cards-sit-in-todo.md` ÔÇö a new card for the residue. Declared `OUT-OF-SCOPE` in the entry. Raising a card changes nothing else, so it does not cross the fence.
+- `docs/HANDOVER.md` ÔÇö 5 lines, in a separate commit 50 seconds later, only to stop the brief saying `0025` is in `todo/`. This IS over the `## Plan` fence ("nothing outside `docs/board/`"), but the session named it, kept it to the sentence its own move made false, and left the person-count alone.
+
+Nothing half done. The sweep task ran: `0003`, `0017`, `0018` carry `## Options` and each carries an answer, so they stay; `todo/` today holds no `## Options` card at all.
+
+The lane-move-rule tension is written on the card, which is the local practice, not an owner question.
+
+VERDICT: sound
+
+**breakage: defect**
+
+Reviewed the move and its ripple.
+
+**What holds.** `docs/board/human-review/` holds `0025`, `todo/` does not. Its body is unchanged and it carries `## What I need from you`, so it does not join the family of cards (`0045`, `0046`, `0051`) that entered that lane without it. No code reads lane folders ÔÇö `scripts/selftest.js` and the app never touch `docs/board/`, so nothing outside docs can break. The one `docs/HANDOVER.md` sentence the move falsified was corrected.
+
+**What breaks.** The card's second task, the `todo/` sweep, reaches a false conclusion.
+
+- `docs/board/ai-review/0033-a-decision-card-nobody-can-see-sits-in-todo.md`, `## Comments`, final result entry: it says `0003`, `0017` and `0018` "each carry a dated entry under a `## Decided` heading ... so all three are answered decisions". `docs/board/README.md`, "Two kinds of card, and the kind is derived", states the exit condition as an entry **marked `**Decided:**`**. None of the three has one. `0018`'s only entry reads "I am still on the fence about what to ask them for" ÔÇö the opposite of answered. So "the sweep found nothing else to move" is wrong, and card `0037` had to move all three later.
+
+The move itself is right; the sweep signed off a lane that was still wrong.
+
+VERDICT: defect
+
