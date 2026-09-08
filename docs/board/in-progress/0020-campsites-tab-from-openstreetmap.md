@@ -525,3 +525,52 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (237 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the gap in criteria #3 and #4 that nothing was watching.** #3 names three things — credit
+OpenStreetMap, state the Open Database License, and **link to `openstreetmap.org/copyright`** — and
+#4 says each file carries its own licence statement. One assertion covered the campsite file: `the
+campsite file states its own licence and attribution`, which matches `/ODbL/` on `licence` and
+`/OpenStreetMap/` on `attribution` in the shipped `app/data/campsites.json`. **It never looks at
+`attribution_url` at all**, so #3's third clause was untested on the artefact that most needs it,
+and it reads a file that already happens to be right, so it is green from birth.
+
+**Why the file, and not just the footer.** The `index.html` credit is asserted and holds. But
+`campsites.json` *is* the Derivative Database, and the whole Collective Database argument this card
+rests on is that the two files travel independently. A copy of `campsites.json` on its own has to
+carry its own notice; the shell's footer does not follow it anywhere.
+
+**Watched red, and watched the old assertion stay green beside it.** The new assertion `every
+campsite file the parser writes carries the full ODbL notice` goes in the temp-tree block beside `a
+members-only, private, scout or static-caravan site never reaches the file`, because the guarantee
+belongs to the parser rather than to today's output. It reads the header back out of a file the
+parser wrote in the temp tree and requires `ODbL` in `licence`, `© OpenStreetMap contributors` and
+`Open Database License` in `attribution`, and `attribution_url` to be exactly the copyright URL. I
+ran it against a `parse_campsites.py` with `attribution_url` deleted and the wording shortened to
+"OSM data": **236 passed, 1 failed**, and the old assertion reported **PASS**. That is the
+criterion's own failure and the proof the gap was real rather than a missing symbol. Restored the
+two lines and re-ran: 237 passed, 0 failed.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started — `git status` shows `scripts/selftest.js` and the two documents only — and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 237 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 236 self-tests, which this run
+made 237. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+

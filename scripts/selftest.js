@@ -1107,6 +1107,29 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
        !exclIds ? `the run exited ${cExcl.status} and wrote no dataset: ${tail(cExcl)}`
        : !exclIds.includes('os-n1') ? 'the parser dropped the ordinary campsite too'
        : `these should not be listed as somewhere to pull up for the night: ${shipped.join(', ')}`);
+
+    // Acceptance #3 and #4 of card 0020, the half the shipped file cannot prove. The check
+    // over app/data/campsites.json only matches /ODbL/ and /OpenStreetMap/, and it reads a
+    // file that already happens to be right, so it is green from birth. #3 names three
+    // things and the third is a LINK to openstreetmap.org/copyright; #4 says each file
+    // carries its own licence statement. This file is the Derivative Database itself and
+    // travels on its own -- that is the whole point of the Collective Database argument --
+    // so the notice has to be written by the parser into every file it produces, not be a
+    // property of the one in the repo. Drop attribution_url, or shorten the wording to
+    // "OSM data", and today every campsite assertion stays green.
+    let hdr = null;
+    if (cExcl.status === 0 && fs.existsSync(cOut)) {
+      try { hdr = JSON.parse(fs.readFileSync(cOut, 'utf8')); } catch (e) { hdr = null; }
+    }
+    ok('every campsite file the parser writes carries the full ODbL notice',
+       !!hdr && /ODbL/.test(hdr.licence || '') &&
+       /©\s*OpenStreetMap contributors/.test(hdr.attribution || '') &&
+       /Open Database License/.test(hdr.attribution || '') &&
+       /^https:\/\/(www\.)?openstreetmap\.org\/copyright$/.test(hdr.attribution_url || ''),
+       !hdr ? `the run exited ${cExcl.status} and wrote no dataset: ${tail(cExcl)}`
+            : `licence=${JSON.stringify(hdr.licence)} ` +
+              `attribution=${JSON.stringify(hdr.attribution)} ` +
+              `attribution_url=${JSON.stringify(hdr.attribution_url)}`);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
