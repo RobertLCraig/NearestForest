@@ -105,3 +105,56 @@ stamped 2026-08-15. I stamped it 2026-09-06, which is when I measured it, on the
 
 Nothing under `app/` changed, so no `CACHE` bump, per the card's Plan. No browser check applies —
 this card touches documentation and a test only.
+
+### 2026-09-08 review (v20260908123456-4d89)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked both boxes against the real code and data.
+
+**AC1 ÔÇö counts match the shipped file.**
+`app/data/sites.json` gives `1180 550 630`. The **Verified** row in `docs/outreach/forestry-england-handover.md` now reads `1,180 locations, 550 forests, 630 car parks`. The `carried` table inside the card-0036 block of `scripts/selftest.js` has three new rows, one per number, each reading the count back out of that row and comparing it to a live filter of `sites.json`. So the next dataset change fails a run.
+
+**AC2 ÔÇö the 177 derived names.**
+The car-park bullet in the same file now says 196 of 630 publish no usable name, that card 0004 names 177 of them, and only 19 still read "Unnamed car park". I counted in `sites.json`: `name_is_derived` is true on **177** car parks, and **19** still match an unnamed pattern. 177 + 19 = 196. The prose is right.
+
+I ran the suite myself: `node scripts/selftest.js` ÔåÆ **239 passed, 0 failed**. The card said 227; the number grew because other cards landed since, not because a test was lost.
+
+I could not break it.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope check done. I looked at the real commit, not the big mixed diff.
+
+The card's commit is `45fb941` and it touches only three files: `docs/outreach/forestry-england-handover.md`, `scripts/selftest.js`, and the card itself. Everything else in the diff you were shown (campsites, `mapHint` in `app/core.js`, `parse_campsites.py`, the board moves) belongs to other commits, not this one.
+
+Over the fence: nothing. `docs/outreach/forestry-england-enquiry.md` is untouched, which the card allowed only if a count was wrong; a grep of `docs/outreach/` for `904`, `274` and `170` finds hits in the handover row only, so there was nothing to change there. No ask of the email was changed, so cards 0018 and 0027 are untouched.
+
+Half done: nothing I can cite. The `carried` table in `scripts/selftest.js` gains three rows, one per number on the counts row. The new 196/19 prose at the car park bullet is not machine-checked, but the card marked that criterion `manual` on purpose.
+
+Growth I did weigh: the counts row now carries an extra warning that only 274 of the 550 forests are Forestry England's, and the car park bullet gains the screenshot-age note. Both sit inside the two lines the card named and serve the stated purpose, so I do not call them scope creep.
+
+VERDICT: sound
+
+**breakage: defect**
+
+Found a real break.
+
+**`docs/outreach/forestry-england-handover.md`, the "car park views" bullet in the screenshots section** now says: *196 of the 630 car parks publish no usable name*, and *card 0004 now names 177 of those 196 after their nearest forest*. Both halves disagree with the repository.
+
+- `scripts/parse.py`, the comment above `GENERIC_NAME` where the 5-mile threshold is set, says **177** car parks had no usable name, and that the rule *"names 158 of the 177; the 19 beyond it keep GENERIC_NAME"*.
+- `docs/DATA-MODEL.md`, the `name_is_derived` row and the "Known divergences" note, say the same: 177 = 170 `Unknown` + 7 bare `Car Park`.
+- The shipped file agrees: 177 records carry `name_is_derived`, 158 read `Car park near ÔÇª`, 19 read `Unnamed car park`.
+
+So 196 double-counts the 19 (they are inside the 177, not extra), and "names 177" should be 158. The briefing now contradicts the two files a reader would check it against, and it is the file handed to a session that cannot check anything.
+
+Nothing catches this: the `carried` table in `scripts/selftest.js` only reads the `:189` pipe-table row, so these prose numbers are untested and were wrong the day they were written.
+
+VERDICT: defect
+
