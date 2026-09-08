@@ -1321,3 +1321,58 @@ deploy checks want.
 
 **Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
 icon, Campsites tab tapped into while offline. Card 0001 check 5.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (251 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the render half of criterion #2 against the shape the file actually ships.** An entry above
+added `a field the source is silent on is named as unknown, never left blank`, which runs the real
+`field()` out of `app/app.js` over a `null` and an empty string. **`app/data/campsites.json` contains
+neither.** `compact()` in `scripts/parse_campsites.py` deletes every null key before writing — that
+is deliberate and documented, it saved 60% of the file — so a silent field reaches the sheet as an
+**absent key**, which is `undefined`, not `null`.
+
+**Measured, not argued.** Counting the shipped file: 3,124 records carry no `parking` key, 2,333 no
+`postcode_satnav`, 2,685 no `phone`, 2,399 no `address`, 3,477 no `opening_times` — and **zero
+records carry an explicit null in any of them**. So the only assertion covering #2's rendering clause
+proves a contract this dataset never exercises. The parser-side assertion `a blank OSM tag becomes
+null, never an empty string` does not cover it either: it reads the record before `compact()` runs.
+
+**Watched red, and watched the old assertion stay green beside it.** The new assertion `a field the
+shipped record simply does not carry is named as unknown, not left blank` picks a real record out of
+`camps` for each of four fields the sheet renders unconditionally, and requires the `is-missing` cell.
+I ran it against `field()` with `value == null` tightened to `value === null` — one character, the
+edit a linter or a "be explicit" cleanup makes: **250 passed, 1 failed**, the one failure being the
+new assertion, while `a field the source is silent on is named as unknown, never left blank` reported
+**PASS** with every absent field on every campsite rendering as an empty `<dd>`. That is the
+criterion's own failure, not a missing symbol. Restored the operator and re-ran: 251 passed, 0 failed.
+
+**Why an empty `<dd>` is the failure #2 names.** A blank line beside "Charges" is read as free, and
+beside "Sat nav postcode" as none needed. #2 requires the app to say "not known" where the source is
+silent, and on a campsite record silence is the normal case rather than an edge.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started;
+`git status` shows `scripts/selftest.js` and the two documents only, and nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 251 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**What I checked and did not act on.** I re-read the shipped names for the #6 kinds the four
+name-based rules were added for — dotted `C.L.`/`C.S.`, `CAMC`, `C&CC`, `certificated`, `members`,
+`private` — and the file holds none. The only `scout` matches are `Scoutscroft` and `Scoutscroft
+Touring`, which an entry above records as commercial parks that must survive. No fault, so no card.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 250 self-tests, which this run
+made 251. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

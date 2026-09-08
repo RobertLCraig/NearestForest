@@ -489,6 +489,25 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
        .test(field020('Sat nav postcode', null, { missing: 'No sat nav postcode published' })),
      'a blank value beside a label reads as a published answer, not as silence');
 
+  // ...and that one feeds `null` and `''`, which is a shape this file never ships. `compact()`
+  // in parse_campsites.py DELETES every null key before writing, so a silent field arrives at
+  // the sheet as `undefined`, not as null: 3,124 records carry no `parking` key at all and not
+  // one carries an explicit null. So the assertion above proves a contract the data does not
+  // use. Feed it the real records instead — tighten `value == null` to `value === null` and it
+  // stays green while every absent field renders as an empty <dd>, which is #2's own failure.
+  {
+    const silent = (k, label, opts) => {
+      const rec = camps.find(s => !(k in s));
+      return rec && field020(label, rec[k], opts).includes('<dd class="is-missing">');
+    };
+    ok('a field the shipped record simply does not carry is named as unknown, not left blank',
+       silent('parking', 'Charges', { missing: 'Not stated' }) &&
+       silent('postcode_satnav', 'Sat nav postcode', { missing: 'No sat nav postcode published' }) &&
+       silent('address', 'Address') &&
+       silent('opening_times', 'Opening times', { missing: 'Not published' }),
+       'campsites.json holds no nulls at all; every silence is an absent key');
+  }
+
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
   ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
   ok('campsite ranking is sorted ascending',
