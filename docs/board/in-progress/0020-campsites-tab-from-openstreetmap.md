@@ -2435,3 +2435,59 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (270 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the `Access` row on the detail sheet, the last line of the campsite branch of
+`openSheet` that nothing had ever read.** Earlier runs on this thread took `access_note` at the
+parser end (`the access rule a campsite ships is the one its source published`) and at the list-row
+end (`a campsite restriction is drawn on its row, and outranks the Free badge`). Neither reaches
+the sheet. `app/app.js` line 195 is the only place the restriction appears on the screen a reader
+opens to decide whether the drive is worth making, and it sat beside three sibling lines -- `Takes`,
+`Charges` and the `More` label -- that this thread has already pinned one by one.
+
+**Measured, not argued.** I collapsed the line to `if (false)` and ran the suite: **269 passed, 0
+failed.** Every restricted campsite's sheet then says nothing at all about the gate, while its
+`Charges` row still reads `Free`. It also takes #7's self-contained-vehicle rule off the sheet as a
+field of its own, since that is what a Stay the Night car park's `access_note` holds.
+
+**Watched red twice, on both halves separately.** The new assertion `the detail sheet states a
+published access restriction, and invents none` failed against the deleted line with `a site the
+source restricts reads its access as null`, and against the condition loosened to `if (true)` with
+`a site the source is silent on invents an access rule: "Not listed"` -- a row telling a reader an
+unrestricted site's access is unknown, which is #2's other failure. **269 passed, 1 failed** each
+time, the one failure being the new assertion. Restored the line and re-ran: 270 passed, 0 failed.
+
+**Behaviour, not spelling, and both ends pinned.** It reuses the `sheetCamp020` harness the `Takes`
+assertion built -- the campsite branch is lifted out of `app.js` source with `new Function` and
+**run** -- so it carries the same coupling that block already names: the extraction regex is
+anchored on the branch's opening line and its two-space closing brace, so re-indenting it makes the
+suite throw rather than fail. Loud, but not informative.
+
+**Which criteria this belongs to.** #2, both ways: a silent field must not invent an answer, and a
+published restriction must not be swallowed. #6 and #7 in part, because this is where a restricted
+site and a Stay the Night car park state their rules on the sheet. No tick moves: all three were
+already true, and this last line of the branch is now watched.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started -- checked
+with `diff` against a copy taken before the break -- and `git status` shows `scripts/selftest.js`
+and the two documents only, so nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 270 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 269 self-tests, which this run
+made 270. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

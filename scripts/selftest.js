@@ -653,6 +653,33 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
        `a site published as motorhomes-only reads "${only}", ` +
        `a site published as all three reads "${all}", ` +
        `a site the source is silent on reads "${takes({})}"`);
+
+    // The other half of that same branch, and the last line in it nothing has ever read: the
+    // `Access` row. `the access rule a campsite ships is the one its source published` pins the
+    // string ACCESS_NOTE writes, and `a campsite restriction is drawn on its row, and outranks
+    // the Free badge` pins the LIST ROW. Neither reaches the SHEET, which is the screen a
+    // reader opens to decide whether the drive is worth making. Measured: with this line
+    // collapsed to `if (false)` the whole suite still reported 269 passed, 0 failed, and every
+    // restricted campsite's sheet went silent about the gate while its `Charges` row still
+    // read `Free`. It also carries #7: a Stay the Night car park's `access_note` is where the
+    // self-contained-vehicle rule reaches this sheet as a field of its own.
+    const access = (s) => {
+      const m = /<dt>Access<\/dt><dd[^>]*>([^<]*)<\/dd>/
+        .exec(sheetCamp020(Object.assign({ source: 'campsite' }, s), field020));
+      return m ? m[1] : null;
+    };
+    const permit = access({ access_note: 'Permit needed', parking: 'Free' });
+    const selfContained = access({ stay_the_night: true, access_note: 'Self-contained vehicles only' });
+    ok('the detail sheet states a published access restriction, and invents none',
+       permit === 'Permit needed' &&
+       selfContained === 'Self-contained vehicles only' &&
+       access({}) === null && access({ parking: 'Free' }) === null,
+       permit !== 'Permit needed'
+         ? `a site the source restricts reads its access as ${JSON.stringify(permit)}`
+         : (selfContained !== 'Self-contained vehicles only'
+            ? `a Stay the Night car park reads its access as ${JSON.stringify(selfContained)}`
+            : `a site the source is silent on invents an access rule: ` +
+              JSON.stringify(access({}) || access({ parking: 'Free' }))));
   }
 
   // `More` is a link, and its LABEL is a claim about who published the page behind it. A
