@@ -608,6 +608,33 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
             : 'an unrestricted free site lost its badge'));
   }
 
+  // `vehicles` has the same two halves the fee and the access note had, and only the parser
+  // half is watched: `a vehicle the source says the site does NOT take is never listed as one`
+  // pins what parse_campsites.py writes. Nothing read the line that puts it on the SHEET, which
+  // is the one field this whole tab exists for -- "can I get a van in". A `Takes` row naming a
+  // vehicle the source never published is #2's own failure, stated on the screen a driver reads
+  // before committing to the drive. Lift the campsite branch of openSheet out of app.js source
+  // and run it: it depends only on `field`, which is already lifted above.
+  {
+    const sheetCamp020 = new Function('site', 'field',
+      "var h = '';\n" +
+      appjs020.match(/ {2}if \(site\.source === 'campsite'\) \{[\s\S]*?\r?\n {2}\}/)[0] +
+      '\nreturn h;');
+    const takes = (s) => {
+      const m = /<dt>Takes<\/dt><dd[^>]*>([^<]*)<\/dd>/
+        .exec(sheetCamp020(Object.assign({ source: 'campsite' }, s), field020));
+      return m ? m[1] : null;
+    };
+    const only = takes({ vehicles: ['motorhomes'] });
+    const all = takes({ vehicles: ['caravans', 'motorhomes', 'tents'] });
+    ok('the detail sheet names the vehicles the source published, and no others',
+       only === 'motorhomes' && all === 'caravans, motorhomes, tents' &&
+       takes({}) === 'Not stated',
+       `a site published as motorhomes-only reads "${only}", ` +
+       `a site published as all three reads "${all}", ` +
+       `a site the source is silent on reads "${takes({})}"`);
+  }
+
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
   ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
   ok('campsite ranking is sorted ascending',

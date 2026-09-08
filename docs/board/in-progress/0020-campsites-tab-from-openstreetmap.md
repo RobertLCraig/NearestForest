@@ -2198,3 +2198,61 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (266 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the render half of `vehicles`, the last of the four translated campsite fields with only
+one half watched.** `fee` and `access_note` each got both halves on this thread; `facilities` and
+`vehicles` got the parser half only. `vehicles` is the load-bearing one: `app/app.js` renders it as
+the `Takes` row on the detail sheet, and it answers the single question this tab exists for, which
+is whether a van can get in.
+
+**Measured, not argued.** I changed the fallback on that line from `[]` to
+`['caravans', 'motorhomes']` -- an ordinary "sensible default" slip -- and ran the suite: the 265
+existing assertions all reported PASS. Every campsite the source is silent on then claims it takes
+a caravan and a motorhome, on the sheet, and nothing said a word. The parser assertion `a vehicle
+the source says the site does NOT take is never listed as one` cannot see it: it reads what
+`parse_campsites.py` writes, and the parser was still right.
+
+**Watched red first.** The new assertion `the detail sheet names the vehicles the source published,
+and no others` failed against that break with `a site the source is silent on reads "caravans,
+motorhomes"` -- #2's own failure, not a missing symbol -- while 265 passed beside it. Restored the
+line and re-ran: 266 passed, 0 failed.
+
+**Behaviour, not spelling, and both ends pinned.** The campsite branch of `openSheet` is lifted out
+of `app.js` source with `new Function` and **run**, reusing the `field020` harness already in that
+block, because the branch depends on `field` alone. A motorhomes-only site must read exactly
+`motorhomes`, a site publishing all three must keep all three, and a site with no `vehicles` key at
+all must read `Not stated` -- so a render tightened into naming nothing fails as well as one
+inventing a default.
+
+**One limit of the harness, said plainly.** The extraction regex is anchored on the branch's exact
+opening line and its two-space closing brace, so re-indenting that block makes the suite throw
+rather than fail. Loud, but not informative. It is the same coupling the `field()` and row-badge
+assertions above it already carry and name.
+
+**Which criterion this belongs to.** #2 -- "state only what its source publishes". Its tick does not
+move: it was already true, and the sheet end is now watched as well as the parser end.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started;
+`git status` shows `scripts/selftest.js` and the two documents only, and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 266 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 265 self-tests, which this run
+made 266. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
