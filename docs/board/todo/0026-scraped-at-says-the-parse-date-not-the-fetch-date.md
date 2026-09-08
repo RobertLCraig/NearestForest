@@ -124,3 +124,51 @@ Raised `0029`: running the failing parse to check criterion 3 overwrote `app/dat
 `"scraped_at": null` on every record before the exit, because both parsers write their output and
 check `problems` afterwards. It was restored with `git checkout`. `parse_campsites.py` has the same
 ordering, so the card covers both.
+
+### 2026-09-08 review (v20260908100929-77e0)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Checked each criterion against the code.
+
+**#1 ÔÇö fetcher records a download date.** `record_fetch()` in `scripts/fetch.py` writes `data/raw/fetched.json`, keyed by path relative to `data/raw/` with forward slashes, via a temp file and `os.replace`. It merges the existing index under a lock before writing, so a second run does not drop earlier dates. Called from `fetch_index`, `fetch_page`, `fetch_fls_index`, `fetch_fls_page` and `fetch_carparks` ÔÇö every place a file is actually downloaded, and correctly not on the cached branches.
+
+**#2 ÔÇö `scraped_at` is the page's date.** `fetched_on()` in `scripts/parse.py` reads that index. `build_forests`, `build_fls` and `build_carparks` each set `"scraped_at": fetched_on(...)` with the same relative key the fetcher writes (`pages/<slug>.html`, `fls/pages/<slug>.html`, `carparks.json`). No `TODAY` is left on any record; `TODAY` now only fills `generated_at`, which is honest.
+
+**#3 ÔÇö missing date fails loudly.** `fetched_on()` appends a named problem and returns `None`; `main()` prints the problem list and `sys.exit(1)` before writing, so the shipped `sites.json` is not clobbered. No fallback to today anywhere. `validate()` also flags `scraped_at` as a missing required field, so a null cannot slip out.
+
+Tried to break it on the resume path, the cache path and the null path; each holds.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope check done. I read the card's own commit (`b3f5297`), not the whole branch diff ÔÇö the branch bundle includes other cards' commits (`cd3263a`, `42876cf`, `1892a97`), which is why `parse_campsites.py`, `core.js` and `campsites.json` appear. Those are not this card.
+
+What the card's commit touched: `scripts/fetch.py` (`record_fetch`, plus the five call sites), `scripts/parse.py` (`fetched_on`, `build_forests`, `build_fls`, `build_carparks`), `scripts/selftest.js`, `docs/DATA-MODEL.md`, `docs/HANDOVER.md`, its own card, and new card `0029`. That is the Plan's list plus HANDOVER, and HANDOVER is declared on the card.
+
+Fences held:
+- `scripts/parse_campsites.py` is untouched by this commit.
+- No app-side staleness warning was added.
+- Nothing was re-fetched; `app/data/sites.json` is unchanged by this commit.
+
+Nothing crept: every page write in `fetch.py` is paired with `record_fetch`, and `TODAY` survives only for `generated_at` in `write_out`, which is honestly the build date.
+
+Half done, and said out loud: task 4. `fetched_on` makes `parse.py` refuse the old cache, so the pipeline exits 1 until `data/raw/` is re-fetched. That is written into `docs/DATA-MODEL.md` as an open divergence and into HANDOVER's "How to pick up". Leaving it is what `## Not this card` demanded.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I traced fetch ÔåÆ parse ÔåÆ sites.json, the self-tests, and every reader of `scraped_at`.
+
+**What holds.** `record_fetch()` keys relative to `data/raw/` with forward slashes, and `fetched_on()` in `parse.py` looks up exactly those keys (`pages/ÔÇª`, `fls/pages/ÔÇª`, `carparks.json`) ÔÇö the three build sites match. The merge-on-first-write makes a resumed run keep older dates. `app.js` `openSheet()` already falls back when `scraped_at` is null, so the new null path shows nothing wrong. `validate()` still requires the field, so a null cannot ship.
+
+**What broke.** `CLAUDE.md` "Conventions" still tells every fresh session: *"Run the pipeline: `python scripts/fetch.py && python scripts/parse.py && ÔÇª`, then `node scripts/selftest.js`."* After this change that command exits 1 on Rob's machine for all 552 undated cached pages, and `fetch.py`'s `fetch_page()`/`fetch_fls_page()` skip anything already over 20,000 bytes, so re-running `fetch.py` cannot repair it ÔÇö only deleting `data/raw/` can. `HANDOVER.md` got four warning edits; the file that is auto-loaded into every session got none. A session follows it, sees a red pipeline, and reads a broken repository.
+
+VERDICT: defect
+
