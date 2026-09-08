@@ -733,3 +733,49 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (241 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the half of criterion #5 that is a second number.** #5 says "WHEN a record's
+**coordinates** fall outside Great Britain" — and a coordinate is a latitude *and* a longitude.
+Every assertion this card has accumulated watches the latitude only: `a failed campsite parse
+leaves the previous dataset untouched` feeds `lat: 12.3`, and `the box reaches the whole of Great
+Britain, not just England` proves the lat box is not too tight. **`LNG_RANGE` was checked by
+`validate()` and by nothing else.**
+
+**Why it is not a hypothetical.** An unprojected British National Grid easting is a large number and
+the latitude box catches it, which is the failure the box was written for. The failure it does *not*
+catch is a record at a perfectly British latitude and a continental longitude — what an Overpass
+`area` id resolving to the wrong relation returns. Nothing in the pipeline would have said a word.
+
+**Watched red, and watched everything else stay green beside it.** The new assertion `a longitude
+outside Great Britain fails the build as well as a latitude` goes in the temp-tree block beside the
+latitude one. It feeds the parser `lon: 10.0` at `lat: 54.0` and requires a non-zero exit with the
+previous `campsites.json` byte-identical. I ran it against a `parse_campsites.py` whose `LNG_RANGE`
+branch was collapsed to `if False:`: **240 passed, 1 failed**, the one failure being the new
+assertion, reporting `parse_campsites.py exited 0 on lng 10.0, which is Germany`. Every other
+assertion on this card reported PASS with the longitude guard deleted, which is the proof the gap
+was real rather than a missing symbol. Restored the branch and re-ran: 241 passed, 0 failed.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started — `git status` shows `scripts/selftest.js` and the two documents only — and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 241 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 240 self-tests, which this run
+made 241. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+

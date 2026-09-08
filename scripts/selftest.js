@@ -1075,6 +1075,24 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
        : `parse_campsites.py exited ${cBad.status} but had already replaced campsites.json ` +
          `(${cBefore.length} bytes -> ${cAfter.length} bytes)`);
 
+    // Acceptance #5 of card 0020 says "a record's COORDINATES", and a coordinate is two
+    // numbers. Every check on this card watches the latitude: the run above feeds lat 12.3,
+    // and the far-north run below proves the lat box is not too tight. Delete the LNG_RANGE
+    // branch from validate() in parse_campsites.py and the whole suite stays green, because
+    // nothing anywhere feeds a longitude outside the box. It is not hypothetical: an
+    // Overpass area id that resolves to the wrong relation returns continental Europe at
+    // perfectly British latitudes, which the lat box waves straight through.
+    writeOsm(Object.assign({}, goodEl, { lon: 10.0 }));
+    const cEast = runCamp();
+    const cEastAfter = fs.existsSync(cOut) ? fs.readFileSync(cOut) : null;
+    ok('a longitude outside Great Britain fails the build as well as a latitude',
+       cEast.status !== 0 && cEastAfter !== null && cBefore !== null &&
+       cBefore.equals(cEastAfter),
+       cEast.status === 0
+         ? `parse_campsites.py exited 0 on lng 10.0, which is Germany: ${tail(cEast)}`
+         : cEastAfter === null ? 'parse_campsites.py exited non-zero and deleted the dataset'
+         : 'parse_campsites.py exited non-zero but had already replaced campsites.json');
+
     // Acceptance #6 of card 0020, the half the shipped file cannot prove: "say not known
     // for every field the source is silent on". Null renders as "not known"; an empty or
     // whitespace-only string renders as blank space, which reads as a published answer.
