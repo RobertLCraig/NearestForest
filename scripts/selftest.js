@@ -1054,6 +1054,19 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
                 built.sites.map(s => s.id).join(', '));
     const before = built ? fs.readFileSync(outPath) : null;
 
+    // Acceptance #4 of card 0020: two files, "each carrying its own licence statement".
+    // The ODbL half is pinned on the PARSER (`every campsite file the parser writes
+    // carries the full ODbL notice`); the OGL half was pinned only on the file already
+    // committed here (`attribution present`, above). So deleting the attribution line
+    // from parse.py runs fully green -- and the real pipeline is red on purpose pending
+    // a re-fetch, so no rebuild would surface it for weeks. A copy of sites.json travels
+    // without index.html's footer, and the Collective Database argument rests on each
+    // file naming its own licence, so the statement belongs to the parser.
+    ok('every OGL file the parser writes carries its own licence statement',
+       !!built && /Open Government Licence/.test(built.attribution || ''),
+       !built ? 'the clean parse wrote no dataset'
+              : `attribution=${JSON.stringify(built.attribution)}`);
+
     // Break it the way the real tree broke: a cached page with no recorded download
     // date. Refusing that is correct (card 0026). Refusing it after overwriting the
     // last good file is not.

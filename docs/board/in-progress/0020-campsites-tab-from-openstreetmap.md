@@ -1376,3 +1376,56 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (252 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the half of criterion #4 that was pinned to a file rather than to the code.** #4 is "keep
+OSM-derived records in a file separate from the OGL-derived `sites.json`, **each carrying its own
+licence statement**." The ODbL half is pinned on the parser by `every campsite file the parser
+writes carries the full ODbL notice`, added earlier on this thread for exactly this reason. **The
+OGL half was pinned only on the committed file**, by `attribution present`, which reads
+`app/data/sites.json` as it stands in the repository. Delete the attribution line from
+`scripts/parse.py` and nothing says a word.
+
+**Why the gap is not academic here.** HANDOVER's "What's next" item 2 records that the forest
+pipeline is red on purpose pending a re-fetch, so nobody rebuilds `sites.json` on an ordinary day.
+A parser that stopped writing its own licence statement would run green for weeks and surface only
+when somebody finally cleared `data/raw/` — at which point the 719 KB OGL database ships anonymous.
+A copy of `sites.json` also travels without `index.html`'s footer, and the whole Collective Database
+argument this card rests on is that each of the two files names its own licence on its own.
+
+**Watched red, and watched the old assertion stay green beside it.** The new assertion `every OGL
+file the parser writes carries its own licence statement` goes in the existing `parse.py` temp-tree
+block, reading the header back out of the dataset the clean run wrote. I deleted the `attribution`
+line from `scripts/parse.py` and ran the suite: **251 passed, 1 failed**, the one failure being the
+new assertion, reporting `attribution=undefined`, while `attribution present` reported **PASS** with
+the parser emitting an unlicensed file. That is the criterion's own failure, not a missing symbol.
+Restored the line and re-ran: 252 passed, 0 failed.
+
+**Why the wording match and not the exact string.** The assertion requires `Open Government Licence`
+to appear, not the full sentence. The full sentence is already pinned where it is a *rendered*
+obligation, by `the footer uses Forestry England's own published attribution wording`; pinning it
+twice would make one line of prose fail the suite in two places for one edit.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse.py` ends the run byte-identical to how it started —
+`git status` shows `scripts/selftest.js` and the two documents only — and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 252 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 251 self-tests, which this run
+made 252. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
