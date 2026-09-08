@@ -133,3 +133,54 @@ each carried a batch found in one sweep of one lane - the finding is the batch, 
 
 Nothing under `app/` or `scripts/` changed, so the suite could not see this either way. Ran it to
 show nothing broke: 227 passed, 0 failed. No browser check applies; no served file changed.
+
+### 2026-09-08 review (v20260908150115-e6b7)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Checked both criteria against the actual file.
+
+**Criterion #1** ÔÇö traced. `docs/board/human-review/0011-security-response-headers.md` carries `## What I need from you` immediately after the `# Security response headers` title (only the YAML frontmatter sits above the title). `grep -rL "## What I need from you" docs/board/human-review/*.md` does not name `0011`. Satisfied.
+
+**Criterion #2** ÔÇö the ask ("**One call.** ... untick criterion #1 and send this card back to `todo/`, or write here why the reviewer is wrong") is the first prose under the heading and is legible in three lines. Strictly, "what a pass is" and "what a fail is" are the two paragraphs after that, not inside three lines. I tried to call that a miss and could not make it stick: the criterion's own `proves:` field says the test is a reader's judgement, and a reader meets ask, Pass and Fail in one screen before `## Why`. The strain is in the criterion's wording, not in the file.
+
+Note on the over-budget declaration: the file is 176 lines, exactly as the card's comment states, and the card said so rather than hiding it. No criterion demanded the budget.
+
+One thing outside this lens, for the record: task 4's re-grep result is already stale ÔÇö `0012`, `0013` and `0014` now carry the heading, and thirteen other cards in the lane do not. Tasks are not criteria, so it does not change this verdict.
+
+VERDICT: sound
+
+**scope: defect**
+
+Findings, scope lens only.
+
+The commit `0e507d6` touches exactly three files: `0011`, `0048` itself, and a new card `0051`. Nothing under `app/` or `scripts/` moved. The big diff shown to me is the whole branch, not this card. Raising `0051` instead of fixing `0012`ÔÇô`0014` stays inside the fence and matches `0045` and `0046`.
+
+One thing went over the fence.
+
+`docs/board/human-review/0011-security-response-headers.md`, in the new `## What I need from you` section, says: "Either untick criterion #1 and send this card back to `todo/`". The card's `## Not this card` says the choice is "the very call the section will be asking Rob for", and its own `## Plan` says "which criterion to untick, if any, is part of what a person has to decide". Naming `#1` makes that call for him. It is also the wrong box on its face: `#1` is about the CSP header the app sends, while the reviewer's gap is a self-test that does not read `app/app.js`.
+
+The same commit's `## Comments` entry on `0048` states "I did not say which criterion to untick." The section does say it. So the log does not describe the change.
+
+Fix: change that sentence to name no criterion.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding ÔÇö the new section names a criterion the card says it must not name.**
+
+In `docs/board/human-review/0011-security-response-headers.md`, `## What I need from you` opens with "Either untick **criterion #1** and send this card back to `todo/`". Three paragraphs later the same section says "which box, if any, is untrue is a judgement, and only a person may change a tick." The section contradicts itself.
+
+It also contradicts the build log for card 0048, which states "I did not say which criterion to untick... the card forbids me making it." So the recorded work and the shipped text disagree.
+
+And #1 is the wrong box. In the same file, `### 2026-09-07 review`, `acceptance: sound` traces #1 to the `Header always set Content-Security-Policy` line in `app/.htaccess` and confirms the app renders, locates, lists and maps. The reviewer's `scope` and `breakage` verdicts both put the gap under **task 4** (self-tests reading `app/index.html` only, not `app/app.js`). Criterion #1 is not what was disproved.
+
+A reader who follows the ask unticks a true box, and the real gap in `scripts/selftest.js` stays unrecorded.
+
+VERDICT: defect
+
