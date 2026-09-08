@@ -1567,6 +1567,43 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
        !stnRec ? `the parser wrote no Stay the Night record at all (exit ${cFar.status})`
                : `parking=${JSON.stringify(stnRec.parking)} -- it must state the ` +
                  '6pm to 10am window and the self-contained-vehicle rule');
+
+    // Acceptance #7 of card 0020, the way it fails without anyone touching build_stn.
+    // #7 is about a piece of tarmac, not about a record: "WHEN an FLS Stay the Night car
+    // park is listed, THE APP SHALL say that it is overnight-only between 6pm and 10am and
+    // that it requires a self-contained vehicle". OSM maps some of those same car parks
+    // itself, as ordinary campsites carrying none of the scheme's rules, and dedupe() in
+    // parse_campsites.py is the only thing that stops the OSM twin shipping alongside the
+    // FLS record. Both assertions above are blind to it: they read the FLS record, which
+    // is still there and still correct. The twin sits beside it in the same ranked list,
+    // under OSM's name for the place, and somebody taps that one and parks at 2pm.
+    // Measured: with dedupe() reduced to `return osm`, the whole suite passed, 256 of 256.
+    // The line that must not move is the radius -- a real campsite a mile from a Stay the
+    // Night car park is a different place and has to survive -- so a control record sits
+    // just outside it.
+    const stnTwin = { type: 'node', id: 40, lat: 56.0005, lon: -4.5, tags: {
+      name: 'Glenmore Forest Camping', tourism: 'camp_site', caravans: 'yes' } };
+    const stnNeighbour = { type: 'node', id: 41, lat: 56.02, lon: -4.5, tags: {
+      name: 'Loch Side Caravan Park', tourism: 'camp_site', caravans: 'yes' } };
+    writeOsm(goodEl, [stnTwin, stnNeighbour]);
+    const cTwin = runCamp();
+    let twinSites = null;
+    if (cTwin.status === 0 && fs.existsSync(cOut)) {
+      try { twinSites = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites; }
+      catch (e) { twinSites = null; }
+    }
+    const twinIds = twinSites && twinSites.map(s => s.id);
+    const twinStn = twinSites && twinSites.find(s => s.stay_the_night);
+    ok('an OSM copy of a Stay the Night car park never ships beside it without the rules',
+       !!twinIds && !twinIds.includes('os-n40') && twinIds.includes('os-n41') &&
+       !!twinStn && /6pm to 10am/.test(twinStn.parking || ''),
+       !twinIds ? `the run exited ${cTwin.status} and wrote no dataset: ${tail(cTwin)}`
+       : twinIds.includes('os-n40')
+         ? 'the OSM record 55m from the Stay the Night car park is listed too, and it ' +
+           'carries no 6pm-10am window and no self-contained-vehicle rule'
+       : !twinIds.includes('os-n41')
+         ? 'the merge is too wide: it swallowed a campsite 1.4 mi from the car park'
+         : 'the Stay the Night record itself was dropped or lost its rules');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

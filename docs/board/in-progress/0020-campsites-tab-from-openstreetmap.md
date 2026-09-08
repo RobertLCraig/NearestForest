@@ -1651,3 +1651,56 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (257 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the way criterion #7 fails without anybody touching `build_stn`.** #7 already carries three
+assertions on this thread, and all three watch the **FLS record**: that it holds both rules in the
+shipped file, that the parser puts them there, and that the sheet gives them their own heading. #7 is
+not about a record, though — it is about a piece of tarmac. "WHEN an FLS Stay the Night car park is
+listed, THE APP SHALL say that it is overnight-only between 6pm and 10am and that it requires a
+self-contained vehicle." **OSM maps some of those same car parks itself**, as ordinary campsites
+carrying none of the scheme's rules, and `dedupe()` in `scripts/parse_campsites.py` is the only thing
+standing between the two. An earlier entry on this thread traced `dedupe` by reading it and recorded
+it as safe. Reading is not watching.
+
+**Measured, not argued.** I reduced `dedupe` to `return osm` and ran the suite: **256 passed, 0
+failed**. With that one line, every Stay the Night car park OSM also maps ships **twice** — once as
+the FLS record with its rules, and once beside it under OSM's name for the place, with no overnight
+window and no self-contained-vehicle rule. Both records rank next to each other, because they are the
+same tarmac. A reader taps the nearer-looking one and parks at 2pm. The three older #7 assertions all
+reported PASS, because the FLS record they read is still there and still correct.
+
+**Watched red, and watched the three older ones stay green beside it.** The new assertion `an OSM copy
+of a Stay the Night car park never ships beside it without the rules` goes in the temp-tree block. It
+puts two OSM campsites in the Scotland extract — one 55 m from the fixture car park, one 1.4 mi away
+— and requires the near one gone, the far one kept, and the FLS record still carrying its rules.
+Against the broken `dedupe` it failed naming the twin; restored, 257 passed, 0 failed.
+
+**Why the control record.** The merge radius is 160 m and the test would pass just as well with
+`dedupe` swallowing everything within ten miles, which would silently delete real campsites near
+Scottish forest car parks. The far fixture pins that end of the rule too, the same shape the scout and
+static assertions on this card use.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started — `git status` shows `scripts/selftest.js` and the two documents only — and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 257 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 256 self-tests, which this run
+made 257. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
