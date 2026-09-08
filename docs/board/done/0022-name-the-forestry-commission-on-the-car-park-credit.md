@@ -110,3 +110,61 @@ document lays out wider than 390 and clips at the right edge -- the tab strip an
 the same way, on unchanged markup, so it is the harness and not this change. **The paragraph's real
 wrap on a phone is still owed**, and it is the same look HANDOVER already owes for 0019 on this same
 paragraph, so it folds into that rather than needing its own trip.
+
+### 2026-09-08 review (v20260908095129-1382)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked both boxes on the card.
+
+**#1 ÔÇö footer names the holder.** In `app/index.html`, the third `<p>` in `<footer class="foot">` now reads "...Open Government Licence v3.0; ┬® Forestry Commission copyright and/or database right 2025. All rights reserved." The OGL clause is kept, as the card asked.
+
+**#2 ÔÇö self-test fails if the string goes.** In `scripts/selftest.js`, the `--- hardening ---` block, the check `the footer names the copyright holder of the car park data`. It uses the existing `flat` const (whitespace flattened), so the sentence wrapping across two lines in the HTML still matches. Deleting the sentence makes it red.
+
+I tried to break it:
+- The string wraps mid-sentence in the HTML ("All rights / reserved."). The `flat` flattening handles that.
+- The test skips the `&copy;` entity on purpose, so it cannot go red for a non-attribution edit. That is a weaker test but it still fails on the real fault.
+- `BUILD` in `app/core.js` and `CACHE` in `app/sw.js` are kept in step by the existing test in `--- update path ---`.
+
+I could not run the suite (no runner ran before me), but the assertion and the string are both really there and they match.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked the card's own commit, not the whole branch.
+
+**What this card actually changed** (`040a526`): `app/index.html` (the footer `<p>` and the comment above it), `scripts/selftest.js` (one `ok()` in the card 0019 hardening block), `app/core.js` `BUILD`, `app/sw.js` `CACHE`, and its own card file. That is exactly the four files the tasks list.
+
+**The big diff you pasted is not this card.** The `mapHint` function in `app/core.js`, the campsite regeneration, and the parser changes come from other commits on the branch (`1892a97` "credit OpenStreetMap on the map itself", `cd3263a` members-only sites). None of them are in `040a526`, so the "Not the OpenStreetMap lines" fence was not crossed by this card.
+
+**Fence check:** the string in the footer matches DECISIONS.md line 120 word for word, year included. No refetch, no other credit touched, no date added elsewhere.
+
+**Half done:** the only open thread is the phone-width render, and the card says so out loud and folds it into what 0019 already owes. That is declared, not hidden.
+
+I tried to find growth and could not.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I read the change and ran the suite.
+
+**What I checked**
+
+- `app/index.html`, the footer paragraph: the new clause is appended after `...Open Government Licence v3.0;`, so the older card-0019 assertion in `scripts/selftest.js` (`the footer credits the Open Government Licence for the car park data`) still matches. No test was silently broken.
+- `scripts/selftest.js`, the card 0022 block: it reuses the existing `flat` const in the same scope, and skips the `┬®` spelling, so an entity swap cannot make it red for the wrong reason.
+- The HTML comment above that paragraph was corrected; it no longer says the car park dataset publishes no statement. No stale docblock left.
+- `app/sw.js` `CACHE` and `app/core.js` `BUILD` match, so `service worker cache name embeds the build string` still passes.
+- Other places the credit could live: `app/api/nearest.php` and the iOS Shortcut doc emit no attribution, and the `attribution` field in `sites.json` (from `parse.py`) is not read by any app code, so nothing else duplicates this rule.
+
+Suite: `node scripts/selftest.js` ÔåÆ **232 passed, 0 failed**.
+
+I could not find a caller, comment or sibling assertion this breaks.
+
+VERDICT: sound
+
