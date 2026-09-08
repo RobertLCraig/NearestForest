@@ -133,3 +133,55 @@ just renamed. Renaming `0043` is what put it in front of me; grepping the lane f
 
 **Could not settle from the repository:** nothing that blocked the work.
 
+### 2026-09-08 review (v20260908141651-9e6d)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Checked both criteria myself.
+
+**#1 ÔÇö no id used twice.** Grouping every `docs/board/**/0*.md` by its first four characters gives no repeated group. `0022` now exists once, as `docs/board/done/0022-name-the-forestry-commission-on-the-car-park-credit.md`; the accounts card is `docs/board/human-review/0043-add-accounts-and-personal-location-tracking.md`.
+
+**#2 ÔÇö references name the new id.** `docs/HANDOVER.md` names `0043` in the top status block, in the `human-review/` list, and in its own bullet, each saying it was renumbered from `0022`. The four surviving `0022` mentions in that file (the built-batch line, the "What's next" deploy item and its two follow-on clauses) all mean the footer-credits card, which is the one that kept the number. `0019`, `0023`, `0029` and `0041` mention `0022` only inside dated `## Comments` entries, which `docs/board/README.md` makes append-only, so leaving them is the rule, not a miss.
+
+One thing a reader should know, and it is not a fault of this card: HANDOVER says `0022` is "in `ai-review/`", but that card has since moved to `done/`. That lane moved after this work, so it is not a criterion failure.
+
+I tried to find a stray old id and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+What I checked, and what I found:
+
+The huge diff you were shown is the whole branch, not this card. This card's own commits are `207050c..417ab93` (`fd6be8c` is the work). They touch only six files. Nothing in `app/`, `scripts/` or `data/` is in them, so `core.js` `mapHint`, `parse_campsites.py` and `selftest.js` are other cards' work, not scope creep here.
+
+Against the fence in `## Not this card`:
+- No second card was renumbered. `docs/board/done/0022-name-the-forestry-commission-on-the-car-park-credit.md` keeps its number; only the accounts card moved, to `docs/board/human-review/0043-add-accounts-and-personal-location-tracking.md`.
+- No duplicate-id check was added anywhere in this repository.
+
+Half done: nothing I could find. The two extra cards (`0044`, `0045`) are new files, not edits to other people's cards, and the comment entry names them as out of scope. `0045`'s "three cards" count was true at commit `417ab93` ÔÇö I re-ran the grep over that tree and got exactly `0024`, `0030`, `0043`.
+
+The added explainer lines in `docs/HANDOVER.md` serve criterion #2, so they are inside the card, not over it.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break it. I could not.
+
+What I checked:
+
+- **No duplicate ids left.** Grouping every `docs/board/**/0*.md` by its first four characters returns nothing.
+- **The rename was clean.** `git log --follow` on `docs/board/human-review/0043-add-accounts-and-personal-location-tracking.md` shows commit `fd6be8c` as a pure rename, 0 insertions, 0 deletions. The "+20" in the branch diff comes from a later commit (`45e47c6`), not this card.
+- **No dead path.** Nothing in the tree names the old `human-review/0022-...` filename.
+- **Every surviving `0022` resolves to one card.** In `docs/HANDOVER.md` the four remaining hits (lines in "Current state" and "What's next") all mean the footer-credits card. The hits in `0019`, `0023`, `0041` and `0021` are dated `## Comments` entries, which `docs/board/README.md` makes append-only.
+- **The residual the agent declared is real and is the only one**: `docs/board/in-progress/0021-rewrite-this-board-s-cards-for-the-reader.md`, its 2026-09-05 entry, "0003, 0013, 0021 and 0022". It reads as the footer card today. Ambiguous, but a record, not an error.
+
+One thing that has gone stale since: `docs/HANDOVER.md` says `0022` is "in `ai-review/`", and that card now sits in `done/`. A later lane move did that, not this work.
+
+VERDICT: sound
+
