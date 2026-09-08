@@ -1429,3 +1429,58 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (253 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the unwatched half of the map credit, which is criterion #3 on the map rather than in the
+footer.** Five assertions cover the hint. Three of them call `NF.mapHint` directly, which is a pure
+function the suite hands its own arguments to, so they prove the wording and not the map. The fourth,
+`the map asks core.js what the hint should say`, greps `NF.mapHint(tilesOn,` — **it stops at the
+comma, so the second argument is unwatched.** `updateHint()` in `app/map.js` computes that argument
+from the list being drawn, and nothing looked at it.
+
+**Measured, not argued.** I set `var osm` in `updateHint` to a literal `false` and ran the suite:
+**252 passed, 0 failed**. With that one word changed, the Campsites tab draws 3,574 ODbL markers with
+the tile layer off under the hint "Tap a marker for details. Pinch to zoom." — no credit anywhere on
+the map, which is the exact obligation this card added `NF.mapHint` for, and the whole suite green.
+
+**Watched red, and watched all five older hint assertions stay green beside it.** The new assertion
+`the map reads its own markers to decide whether OpenStreetMap needs crediting` lifts the real
+`updateHint` out of `app/map.js` with `new Function` and runs it against a stub hint element, once
+with a campsite in the drawn list and once with only a forest. It requires the OSM credit and the
+readable pill in the first case and the plain hint with no pill in the second. Against the broken
+`osm` it failed reporting both cases as the plain hint, while `the map asks core.js what the hint
+should say`, `the hint gets its solid backing exactly when it is a credit`, `with the layer on the
+hint credits the tile provider`, `a map with no OSM markers and no tiles keeps the plain hint` and
+`the map recomputes the hint when the list it draws changes` all reported **PASS**. That is the
+criterion's own failure, not a missing symbol. Restored the line and re-ran: 253 passed, 0 failed.
+
+**Behaviour, not spelling, and why it could be.** `updateHint` reads `document`, `hooks`, `tilesOn`
+and `NF` from its closure and touches no canvas, so it lifts out cleanly and takes all four as
+factory arguments — the same shape this card already uses for `field()` out of `app/app.js`. One
+limit of the harness, said plainly: the assertion is coupled to `updateHint` keeping its exact
+signature line and its two-space closing brace, because that is what the extraction regex matches.
+Rename or re-indent it and the suite throws rather than fails, which is loud but not informative.
+
+**No `CACHE` / `BUILD` bump.** `app/map.js` ends the run byte-identical to how it started —
+`git status` shows `scripts/selftest.js` and the two documents only — and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 253 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 252 self-tests, which this run
+made 253. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

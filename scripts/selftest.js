@@ -573,6 +573,30 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
      !/OpenStreetMap/.test(NF.mapHint(false, false).text));
   ok('the map recomputes the hint when the list it draws changes',
      /refresh: function \(\) \{ if \(open\) \{ updateHint\(\);/.test(map));
+  // The three assertions above prove NF.mapHint, which is a pure function the suite calls
+  // itself, and `the map asks core.js what the hint should say` only greps `NF.mapHint(tilesOn,`
+  // — so the SECOND argument is unwatched. Hardcode it to false and every one of them stays
+  // green while the Campsites tab draws 3,574 ODbL markers under the plain hint, with tiles
+  // off and no credit anywhere on the map. That is #3's own failure. Run the real updateHint
+  // out of map.js source over a stub hint element, the way field() is lifted out of app.js
+  // above, so what is asserted is the decision and not the spelling of the call.
+  {
+    const make020 = new Function('document', 'hooks', 'tilesOn', 'NF',
+      map.match(/function updateHint\(\) \{[\s\S]*?\r?\n  \}\r?\n/)[0] + 'return updateHint;');
+    const run = (tilesOn, drawn) => {
+      const el = { textContent: '', attrib: null,
+                   classList: { toggle: (c, on) => { el.attrib = on; } } };
+      make020({ getElementById: id => (id === 'map-hint' ? el : null) },
+              { getSites: () => drawn }, tilesOn, NF)();
+      return el;
+    };
+    const forest = { source: 'forest' }, camp = { source: 'campsite' };
+    const withCamps = run(false, [forest, camp]), forestsOnly = run(false, [forest]);
+    ok('the map reads its own markers to decide whether OpenStreetMap needs crediting',
+       /OpenStreetMap/.test(withCamps.textContent) && withCamps.attrib === true &&
+       !/OpenStreetMap/.test(forestsOnly.textContent) && forestsOnly.attrib === false,
+       `campsites drawn: "${withCamps.textContent}" | forests only: "${forestsOnly.textContent}"`);
+  }
   {
     const css = fs.readFileSync(path.join(ROOT, 'app', 'app.css'), 'utf8');
     const attrib = /\.map__hint--attrib \{([^}]*)\}/.exec(css);
