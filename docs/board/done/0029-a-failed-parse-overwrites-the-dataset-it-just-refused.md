@@ -96,3 +96,63 @@ here, so the suite is `node scripts/selftest.js`; there is no `vendor/bin/pest.b
 
 HANDOVER touched for three lines this made false, and nothing else: it is over its 40 KB budget and
 card `0031` already carries that.
+
+### 2026-09-08 review (v20260908102947-daf0)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I traced all three criteria to real code.
+
+**#1** ÔÇö `main()` in `scripts/parse.py`: the `if problems:` block, ending in `sys.exit(1)`, now sits above `os.makedirs`/`open(OUT, "w")`. `OUT` is opened in exactly one place, so a failing run cannot touch `app/data/sites.json`.
+
+**#2** ÔÇö same function: the clean path still builds `payload` and does `json.dump` with every summary and coverage `log()` line kept.
+
+**#3** ÔÇö `main()` in `scripts/parse_campsites.py`: same order, same single write of `OUT`.
+
+Tests: `scripts/selftest.js`, block `--- a refused dataset does not overwrite the last good one (card 0029) ---`. It copies each parser into a temp tree with a synthetic `data/raw/`, runs it clean, saves the bytes with `readFileSync`, breaks the fixture (missing `fetched.json` date for the forests; `lat: 12.3` for the campsites), re-runs, and asserts `before.equals(after)` plus non-zero exit. The real tree is never parsed, which is what the card asked.
+
+I tried to break it by looking for a second, earlier write of either output file. There is none in either script.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope check on the real card commit (`42876cf`), not the branch-wide diff shown to me ÔÇö the rest of that diff belongs to other cards (0020, 0022, 0026, 0028).
+
+What that commit touched: `scripts/parse.py` (`main`), `scripts/parse_campsites.py` (`main`), `scripts/selftest.js` (the new `card 0029` block), `docs/HANDOVER.md`, and the card file. Nothing else.
+
+Fence check against "## Not this card":
+- No change to `scripts/fetch.py`.
+- No change to `scraped_at` or `data/raw/`.
+- No check softened: in both `main` functions the `problems` list is built by the same `validate` calls as before; only the `if problems:` block moved above `os.makedirs`/`json.dump`.
+- `scripts/build_boundary.py` was read and left alone.
+
+Half-done check: the self-test runs copies of both parsers in a temp tree, never the real one, and asserts byte equality. `build_boundary.py`'s `build` already returns before its write.
+
+One small thing, declared not quiet: `docs/HANDOVER.md` was edited although the plan said only three scripts. The three edits all correct statements this work made false, and the card comment says so.
+
+Nothing crossed the fence.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I read both parsers and the new tests.
+
+**What I checked**
+
+- `main()` in `scripts/parse.py`: `validate()` and every `problems.append` site run before the gate, and the gate sits above `os.makedirs`/`json.dump`. No append happens after it, so nothing is judged too late.
+- `main()` in `scripts/parse_campsites.py`: same shape; `validate()` and the two "missing raw file" appends all run before the gate.
+- The only other `sys.exit` in the pipeline is in `build()` in `scripts/build_boundary.py`, which already returns before its own write.
+- Callers: nothing runs the parsers except `scripts/deploy.ps1` and the run line in `CLAUDE.md`, and neither depends on a file being written on a failed run.
+- Comments made false: the docstring of `scripts/parse.py` ("fails loudly and exits non-zero rather than emitting a partial dataset") is now more true, not less. The `# Rebuild the dataset` block in `docs/HANDOVER.md` and item 2 above it both name the new behaviour.
+- The two new checks in `scripts/selftest.js` build their own temp tree and copy the parser in, so they never touch `app/data/`. Failure messages distinguish "wrote too early" from "deleted the file".
+
+I tried to find a path that writes before the gate, or a caller expecting a file after a refusal. There is none.
+
+VERDICT: sound
+
