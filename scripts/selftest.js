@@ -1388,6 +1388,51 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
                             `parking=${JSON.stringify(feeRecs[k].parking)}, ` +
                             `not ${JSON.stringify(feeWant[k])}`).join('; '));
 
+    // Acceptance #2 of card 0020: "state ONLY what its source publishes". `vehicles` is the
+    // second list of positive claims on a campsite record, and unlike `facilities` it is the
+    // reason the tab exists: app/app.js renders it as "Takes: caravans, motorhomes" on the
+    // detail sheet, and it is the field that answers "can I get my van in". vehicles_for()
+    // in parse_campsites.py pairs each OSM key with the values that mean yes, exactly as
+    // FACILITY_TAGS does, and that pairing is the whole guarantee: relax it to a truthiness
+    // test and `caravans=no` becomes "caravans", because "no" is a non-empty string.
+    // The site is still correctly LISTED in that case -- takes_a_van() reads motorhome=yes --
+    // so the filter assertions cannot see it; the record simply claims a vehicle the source
+    // says it does not take. Measured: with all three checks replaced by truthiness the whole
+    // suite passed, 262 of 262. `every campsite names at least one vehicle it takes` and
+    // `every campsite takes a caravan or a motorhome` read the shipped file and only ever
+    // ask for MORE, so an added claim passes both. Today's extract is correct, so an
+    // assertion over app/data/campsites.json would be green from birth; this feeds the
+    // parser a site that publishes "no" to one vehicle and "yes" to another.
+    const vehNo = { type: 'node', id: 70, lat: 55.6, lon: -3.6, tags: {
+      name: 'No Caravans Farm', tourism: 'camp_site',
+      caravans: 'no', motorhome: 'yes', tents: 'no' } };
+    // The other end, so a vehicles_for() tightened into uselessness fails too: every value
+    // the parser accepts as a yes, including motorhome=designated.
+    const vehYes = { type: 'node', id: 71, lat: 55.7, lon: -3.7, tags: {
+      name: 'Three Ways Site', tourism: 'camp_site',
+      caravans: 'yes', motorhome: 'designated', tents: 'yes' } };
+    writeOsm([goodEl, vehNo, vehYes]);
+    const cVeh = runCamp();
+    let vehRecs = null;
+    if (cVeh.status === 0 && fs.existsSync(cOut)) {
+      try {
+        const all = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites;
+        vehRecs = { no: all.find(s => s.id === 'os-n70'), yes: all.find(s => s.id === 'os-n71') };
+      } catch (e) { vehRecs = null; }
+    }
+    const vehWant = { no: ['motorhomes'], yes: ['caravans', 'motorhomes', 'tents'] };
+    const vehSame = (r, want) => r && Array.isArray(r.vehicles) &&
+                                 r.vehicles.length === want.length &&
+                                 want.every(v => r.vehicles.includes(v));
+    ok('a vehicle the source says the site does NOT take is never listed as one',
+       !!vehRecs && vehSame(vehRecs.no, vehWant.no) && vehSame(vehRecs.yes, vehWant.yes),
+       !vehRecs || !vehRecs.no || !vehRecs.yes
+         ? `the vehicles run exited ${cVeh.status} and wrote no os-n70/os-n71: ${tail(cVeh)}`
+         : ['no', 'yes'].filter(k => !vehSame(vehRecs[k], vehWant[k]))
+                        .map(k => `${vehRecs[k].name} takes ` +
+                                  `${JSON.stringify(vehRecs[k].vehicles)}, ` +
+                                  `not ${JSON.stringify(vehWant[k])}`).join('; '));
+
     // Acceptance #6 of card 0020, the half the shipped file cannot prove. The check over
     // app/data/campsites.json reads access_note text, so it catches only the failure that
     // actually happened: access=members labelled instead of dropped. If the scout, private
