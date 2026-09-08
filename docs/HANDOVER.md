@@ -323,7 +323,7 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 - **Built and not yet deployed, as one batch:** **0004** (177 car parks named after their nearest
   forest) and **0016** (Scotland in the Forests tab), both 2026-08-29; **0015** (the tile
   attribution pill), 2026-08-29, rendered and closed by a second run the same day; **0019** and
-  **0022** (the footer credits), both 2026-09-05. 259 self-tests pass (`node scripts/selftest.js`,
+  **0022** (the footer credits), both 2026-09-05. 260 self-tests pass (`node scripts/selftest.js`,
   measured 2026-09-08) and `CACHE` / `BUILD` are at `v24-2026-09-08`, bumped seven times by card 0020:
   when it dropped six members-only campsites, when it gave the map its own ODbL credit, when it
   stopped a Stay the Night car park borrowing OpenStreetMap's data-checked date, when it dropped two

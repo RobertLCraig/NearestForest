@@ -1320,6 +1320,49 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
          : 'a site publishing these facilities lost them: ' +
            wantYes.filter(f => !facsOf(facsRecs.yes).includes(f)).join(', '));
 
+    // Acceptance #2 of card 0020: "state ONLY what its source publishes". `fee` is the
+    // last campsite field nothing in this suite reads. It is not one more free-text
+    // string: fee_text() in parse_campsites.py TRANSLATES it -- fee=no becomes the word
+    // "Free" and fee=yes becomes "Charges apply" -- and `app/app.js` line 57 turns the
+    // exact string 'Free' into a badge on the list row, which is the one campsite claim
+    // a reader sees without opening anything. An unrecognised value is passed through as
+    // published, because plenty of records carry a real price.
+    // Measured: with the two return values swapped, so a site publishing fee=yes ships
+    // parking "Free" and wears the badge, the whole suite passed, 259 of 259. The two
+    // assertions that look like they cover money -- the Stay the Night ones -- read
+    // `parking` on FLS records, which never go through fee_text at all. Today's extract
+    // carries the correct wording, so an assertion over app/data/campsites.json would be
+    // green from birth; this feeds the parser the three shapes of fee tag instead.
+    const feeYes = { type: 'node', id: 60, lat: 55.3, lon: -3.3, tags: {
+      name: 'Paid Pitch Park', tourism: 'camp_site', caravans: 'yes', fee: 'yes' } };
+    const feeNo = { type: 'node', id: 61, lat: 55.4, lon: -3.4, tags: {
+      name: 'Free Pitch Park', tourism: 'camp_site', caravans: 'yes', fee: 'no' } };
+    const feePrice = { type: 'node', id: 62, lat: 55.5, lon: -3.5, tags: {
+      name: 'Priced Pitch Park', tourism: 'camp_site', caravans: 'yes',
+      fee: '£20 per night' } };
+    writeOsm([goodEl, feeYes, feeNo, feePrice]);
+    const cFee = runCamp();
+    let feeRecs = null;
+    if (cFee.status === 0 && fs.existsSync(cOut)) {
+      try {
+        const all = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites;
+        feeRecs = { yes: all.find(s => s.id === 'os-n60'),
+                    no: all.find(s => s.id === 'os-n61'),
+                    price: all.find(s => s.id === 'os-n62') };
+      } catch (e) { feeRecs = null; }
+    }
+    const feeWant = { yes: 'Charges apply', no: 'Free', price: '£20 per night' };
+    const feeTag = { yes: 'yes', no: 'no', price: '£20 per night' };
+    const feeKeys = ['yes', 'no', 'price'];
+    ok('a site the source says you pay for is never shown as free',
+       !!feeRecs && feeKeys.every(k => feeRecs[k] && feeRecs[k].parking === feeWant[k]),
+       !feeRecs || feeKeys.some(k => !feeRecs[k])
+         ? `the fee run exited ${cFee.status} and wrote no os-n60/61/62: ${tail(cFee)}`
+         : feeKeys.filter(k => feeRecs[k].parking !== feeWant[k])
+                  .map(k => `fee=${JSON.stringify(feeTag[k])} shipped ` +
+                            `parking=${JSON.stringify(feeRecs[k].parking)}, ` +
+                            `not ${JSON.stringify(feeWant[k])}`).join('; '));
+
     // Acceptance #6 of card 0020, the half the shipped file cannot prove. The check over
     // app/data/campsites.json reads access_note text, so it catches only the failure that
     // actually happened: access=members labelled instead of dropped. If the scout, private

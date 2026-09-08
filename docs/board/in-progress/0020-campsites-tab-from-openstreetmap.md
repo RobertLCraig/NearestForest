@@ -1825,3 +1825,65 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (260 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the last campsite field nothing in this suite had ever read.** #2 is "state ONLY what its
+source publishes". Ten runs on this thread have watched the fields that can be *silent* -- postcode,
+phone, opening hours, facilities -- and proved silence becomes null and renders as "not known".
+`fee` is neither silent nor a plain string: `fee_text()` in `scripts/parse_campsites.py`
+**translates** it. `fee=no` becomes the word **"Free"**, `fee=yes` becomes "Charges apply", and
+anything else is passed through as published, because plenty of records carry a real price.
+
+**Why it is the sharpest one left.** `app/app.js` line 57 turns the exact string `'Free'` into a
+badge on the **list row**. Every other campsite claim needs a tap to reach; this one is on the
+screen a driver reads. A wrong "Free" is not a missing answer, it is the app stating the opposite of
+what OSM published, about money, on the row somebody chooses by.
+
+**Measured, not argued.** I swapped the two return values in `fee_text()`, so a site publishing
+`fee=yes` ships `parking: "Free"` and wears the badge, and ran the suite: **259 passed, 0 failed.**
+The two assertions that look like they cover money are the Stay the Night ones, and they read
+`parking` on **FLS** records, which are built by `build_stn` and never go through `fee_text` at all.
+Nothing else in `scripts/selftest.js` mentions `fee` or the word `Free`.
+
+**Watched red, and watched everything else stay green beside it.** The new assertion `a site the
+source says you pay for is never shown as free` goes in the temp-tree block beside `a facility the
+source says the site has NOT is never listed as one`. It feeds the parser the three shapes of the
+tag -- `fee=yes`, `fee=no` and `fee=GBP 20 per night` -- and requires all three exact strings, so it
+fails on an inverted mapping *and* on a mapping that swallows a published price. Against the broken
+parser it failed naming both: `fee="yes" shipped parking="Free"` and `fee="no" shipped
+parking="Charges apply"`. That is the criterion's own failure, not a missing symbol. Restored and
+re-ran: 260 passed, 0 failed.
+
+**Why a fixture and not the shipped file.** Today's extract carries the correct wording, so an
+assertion over `app/data/campsites.json` would have been green from birth -- what this thread has
+refused seven times. The translation lives in the parser, so the parser is where it is tested.
+
+**What I did not test, said plainly.** The badge itself, in `app/app.js`, is still unwatched: this
+assertion pins the string the badge keys off, not the branch that draws it. I judged the parser the
+load-bearing half, because the badge cannot be wrong about a site the data is right about, and one
+assertion is what a run adds. A later run could take the render half the way `a field the source is
+silent on is named as unknown` took `field()`.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started -- `git status` shows `scripts/selftest.js` and the two documents only -- and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 260 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 259 self-tests, which this run
+made 260. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
