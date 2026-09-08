@@ -2064,3 +2064,72 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (264 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the last translated campsite field nothing in this suite had ever read.** Earlier runs on
+this thread took `facilities`, `vehicles` and `fee`. `access_note` is the fourth of that family and
+the only one left. Like `fee_text()`, it is not a pass-through: `ACCESS_NOTE` in
+`scripts/parse_campsites.py` is a three-entry map, and each entry is a *different answer* to the
+question a driver is asking -- `customers` means customers only, `permit` means arrange it in
+advance, `permissive` means anyone may use it.
+
+**Why it is the sharpest one left.** `app/app.js` line 56 draws `access_note` on the **list row**,
+in the `row__closed` style, and it **outranks** the Free badge on the line below it. So it is the
+one campsite restriction a reader sees without opening anything, and a mistranslation does not
+withhold an answer -- it sends somebody to a gate they cannot open.
+
+**Measured, not argued.** I swapped the `permit` and `permissive` entries, so a site OSM says needs
+a permit ships as somewhere anyone may turn up, and ran the suite: **263 passed, 0 failed.** The
+only assertion that reads `access_note` at all is `no campsite is members-only, private, scout or a
+static-caravan park`, and it greps for four words this map never produces, so it is blind to every
+value the map does produce.
+
+**Watched red, and watched everything else stay green beside it.** The new assertion `the access
+rule a campsite ships is the one its source published` goes in the temp-tree block beside `a site
+the source says you pay for is never shown as free`. Against the swapped map it failed naming both:
+`access="permit" shipped access_note="Permissive access"` and `access="permissive" shipped
+access_note="Permit needed"`. That is the criterion's own failure, not a missing symbol. Restored
+the two lines and re-ran: 264 passed, 0 failed.
+
+**Both ends pinned.** A fourth fixture carries no `access` tag at all and must gain no note, so a
+map widened into labelling everything fails this as well as a map that mistranslates. `compact()`
+drops a null before writing, so "no note" is an absent key, and the assertion accepts absent and
+null alike -- it fails on the wording, not on the encoding. Same shape as the scout, static,
+`takes_a_van()`, fee and `vehicles` fixtures on this card.
+
+**Why a fixture and not the shipped file.** Today's extract carries the correct wording, so an
+assertion over `app/data/campsites.json` would have been green from birth -- what this thread has
+refused nine times. The translation lives in the parser, so the parser is where it is tested.
+
+**What I did not test, said plainly.** The *render* half is still unwatched: this pins the string,
+not the branch on the row that draws it, nor the fact that it outranks the Free badge. That is the
+same split the fee assertion made and a later run closed, so a later run can close this one the
+same way.
+
+**Which criteria this belongs to.** #2, because a wrong access rule states something OSM never
+published; and #6, which is about who can actually get through the gate. Neither tick moves: both
+were already true, and are now watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started -- `git status` shows `scripts/selftest.js` and the two documents only -- and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 264 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 263 self-tests, which this run
+made 264. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

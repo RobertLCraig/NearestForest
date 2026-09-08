@@ -1388,6 +1388,59 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
                             `parking=${JSON.stringify(feeRecs[k].parking)}, ` +
                             `not ${JSON.stringify(feeWant[k])}`).join('; '));
 
+    // Acceptance #2 of card 0020: "state ONLY what its source publishes", and #6, which is
+    // about who may actually get through the gate. `access_note` is the last translated
+    // campsite field nothing in this suite reads. ACCESS_NOTE in parse_campsites.py is a
+    // three-entry map, and every entry is a different answer to "can I turn up tonight":
+    // customers only, a permit needed in advance, or permissive access anyone may use.
+    // It outranks the Free badge on the LIST ROW (app/app.js line 56) and draws in the
+    // `row__closed` style, so it is the one campsite restriction a reader sees without
+    // opening anything -- and mistranslating it sends somebody to a gate they cannot open.
+    // Measured: with the `permit` and `permissive` entries swapped, so a site OSM says
+    // needs a permit is shown as somewhere anyone may use, the whole suite passed, 263 of
+    // 263. The only assertion that reads access_note at all is `no campsite is
+    // members-only, private, scout or a static-caravan park`, which greps for four words
+    // this map never produces. Today's extract carries the correct wording, so an
+    // assertion over app/data/campsites.json would be green from birth; this feeds the
+    // parser the three access values the map recognises, plus one site carrying none.
+    const accCust = { type: 'node', id: 70, lat: 55.6, lon: -3.6, tags: {
+      name: 'Customer Gate Farm', tourism: 'camp_site', caravans: 'yes', access: 'customers' } };
+    const accPermit = { type: 'node', id: 71, lat: 55.7, lon: -3.7, tags: {
+      name: 'Permit Gate Farm', tourism: 'camp_site', caravans: 'yes', access: 'permit' } };
+    const accPermissive = { type: 'node', id: 72, lat: 55.8, lon: -3.8, tags: {
+      name: 'Permissive Gate Farm', tourism: 'camp_site', caravans: 'yes', access: 'permissive' } };
+    // Both ends pinned: a site the source says nothing about must gain no restriction
+    // either, so a map widened into labelling everything fails this too. compact() drops
+    // a null before writing, so "no note" is an absent key.
+    const accNone = { type: 'node', id: 73, lat: 55.9, lon: -3.9, tags: {
+      name: 'Open Gate Farm', tourism: 'camp_site', caravans: 'yes' } };
+    writeOsm([goodEl, accCust, accPermit, accPermissive, accNone]);
+    const cAcc = runCamp();
+    let accRecs = null;
+    if (cAcc.status === 0 && fs.existsSync(cOut)) {
+      try {
+        const all = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites;
+        accRecs = { customers: all.find(s => s.id === 'os-n70'),
+                    permit: all.find(s => s.id === 'os-n71'),
+                    permissive: all.find(s => s.id === 'os-n72'),
+                    none: all.find(s => s.id === 'os-n73') };
+      } catch (e) { accRecs = null; }
+    }
+    const accWant = { customers: 'Customers only', permit: 'Permit needed',
+                      permissive: 'Permissive access', none: null };
+    const accKeys = ['customers', 'permit', 'permissive', 'none'];
+    ok('the access rule a campsite ships is the one its source published',
+       !!accRecs && accKeys.every(k => accRecs[k] &&
+                                       (accRecs[k].access_note == null ? null
+                                        : accRecs[k].access_note) === accWant[k]),
+       !accRecs || accKeys.some(k => !accRecs[k])
+         ? `the access run exited ${cAcc.status} and wrote no os-n70/71/72/73: ${tail(cAcc)}`
+         : accKeys.filter(k => (accRecs[k].access_note == null ? null : accRecs[k].access_note)
+                               !== accWant[k])
+                  .map(k => `access=${JSON.stringify(k === 'none' ? null : k)} shipped ` +
+                            `access_note=${JSON.stringify(accRecs[k].access_note || null)}, ` +
+                            `not ${JSON.stringify(accWant[k])}`).join('; '));
+
     // Acceptance #2 of card 0020: "state ONLY what its source publishes". `vehicles` is the
     // second list of positive claims on a campsite record, and unlike `facilities` it is the
     // reason the tab exists: app/app.js renders it as "Takes: caravans, motorhomes" on the
