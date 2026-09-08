@@ -123,3 +123,57 @@ most of the file. Shortening it means moving those verdicts, and that is not thi
 Re-grepped the lane. **Two cards still miss the heading: `0014` and `0015`.** Both already have a
 card, so no new one was raised: `0051` in `todo/` covers `0012`, `0013` and `0014`, and `0052` in
 `todo/` covers `0015`. Note `0051` overlaps this card and `0049` on `0013` and `0012`.
+
+### 2026-09-08 review (v20260908160857-9dd7)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Checked both boxes against the file.
+
+**#1** ÔÇö `## What I need from you` is on line 3 of `docs/board/human-review/0013-scheme-allow-list-for-dataset-urls.md`, directly under the `# Scheme allow-list for dataset URLs` title. Hit confirmed. No code function is involved; the criterion says `proves: none` and is a text check, which the file passes.
+
+**#2** ÔÇö The ask, the pass and the fail all sit in the three lines under the heading: "Untick criterion `#2` ÔÇª so the card returns to `todo/`" is the ask, "**or** write on the thread that the reviewer is wrong, and the card stands as done" is the second pass route, and "Doing neither is the fail: the card comes straight back here, unchanged" names the fail. Both pass routes are stated, not implied.
+
+I tried to break it two ways. First, the ask names `#2`, and `#2` is the criterion the reviewer's `breakage` verdict is about (`validate()` in `scripts/parse.py`), so the section does not point at the wrong box. Second, the section is above `## Why`, so a reader who stops early now reads the ask, not the ticked boxes ÔÇö which was the defect.
+
+The 117-line overrun is real and the agent said so on the card. No criterion covers line count, so it is not an acceptance failure.
+
+VERDICT: sound
+
+**scope: sound**
+
+Checked the real commit (`0189179`), not the whole branch diff. It touched two files only: `0013` and its own card `0050`.
+
+- Fence held. It did not untick a box, did not move `0013`, did not touch `scripts/selftest.js` or `scripts/parse.py`. The three criteria in `0013`'s `## Acceptance` are unchanged.
+- The lane re-grep was right at the time. Running the grep against that commit's tree gives exactly `0014` and `0015`, which is what the card reported. (Today the tree shows more, because more cards moved in after.)
+- Over-budget was declared, not hidden: `0013` is 117 lines and the comment on `0050` says so, which the task asked for.
+- Nothing left half done that this card owned. The four tasks all landed inside the two files.
+
+The big file list in the review packet is other cards' work on the same branch, not this change.
+
+VERDICT: sound
+
+**breakage: defect**
+
+Reviewed with the `breakage` lens.
+
+**Finding ÔÇö the change's own re-grep report is false.**
+
+In `docs/board/in-progress/0050-card-0013-entered-human-review-without-the-required-section.md`, the `2026-09-08` comment entry says: "Re-grepped the lane. **Two cards still miss the heading: `0014` and `0015`.**"
+
+Running the card's own stated check now:
+
+`grep -rL "## What I need from you" docs/board/human-review/*.md`
+
+returns **13** files, not two. `0014` is not among them (it has the heading). The ones missing it are `0015`, `0019`, `0023`, `0026`, `0028`, `0031`, `0032`, `0034`, `0036`, `0038`, `0040`, `0041`, `0044`.
+
+Why this is breakage, not nitpicking: task 4 of this card is "Re-grep the lane and report which cards still miss the heading", and the entry then reasons off that wrong number ÔÇö it concludes no new card is needed because `0051` and `0052` cover it. Eleven lane cards are left uncovered by an entry that says the lane is accounted for. The next scheduler run reads that entry, not the lane.
+
+The `0013` edit itself holds: the heading sits directly under the title, states ask / pass / fail in the first three lines, and its cause paragraph matches the `breakage: defect` verdict in `0013`'s own `## Comments`.
+
+VERDICT: defect
+
