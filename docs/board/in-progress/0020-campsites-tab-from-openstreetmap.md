@@ -630,3 +630,51 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (239 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the unwatched half of criterion #5.** #5 says two things: fail the build on a coordinate
+outside Great Britain, **and** do it "with the bounding box widened from England to GB rather than
+removed". The first half is proved by `a failed campsite parse leaves the previous dataset
+untouched`, which feeds the parser `lat: 12.3`. **Nothing proved the second half.** A box that is
+too *narrow* fails in the opposite direction, and every assertion on this card is blind to it: a
+build that wrongly refuses a real Scottish campsite writes no file, and every check over
+`app/data/campsites.json` reads the last good file, which is already inside whatever box you like.
+
+**Watched red, and watched the rest stay green beside it.** The new assertion `the box reaches the
+whole of Great Britain, not just England` goes in the temp-tree block. It feeds the parser the two
+corners the widening exists for — Shetland at 60.15N and the Outer Hebrides at −7.0E — in the
+Scotland extract, and requires exit 0 with both records written. I ran it against `LAT_RANGE`
+narrowed to `(49.5, 57.0)`: **238 passed, 1 failed**, the one failure being the new assertion,
+naming `os-n21 lat 60.15 outside Great Britain` and `os-n22 lat 57.9 outside Great Britain`. That
+is the criterion's own failure, not a missing symbol. Restored `(49.5, 61.2)` and re-ran: 239
+passed, 0 failed.
+
+**Why 57.0 and not the real England box.** Narrowing to England proper (about 56.2N) would also
+have failed the *existing* Stay the Night fixture at 56.0N, so the red would have been noisy and
+would not have shown that the new assertion is the only thing watching. 57.0 leaves every older
+fixture inside the box and isolates the failure to the far north, which is the point.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started; `git status` shows `scripts/selftest.js` and the two documents only, and nothing under
+`app/` changed. `writeOsm()` in the harness took an optional second argument so a fixture can be
+placed in the Scotland extract, since a campsite's `country` comes from which query returned it.
+
+**Suite:** `node scripts/selftest.js`, 239 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 238 self-tests, which this run
+made 239. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+

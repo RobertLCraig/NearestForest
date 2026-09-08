@@ -1035,11 +1035,11 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     const craw = path.join(cx, 'data', 'raw');
     const goodEl = { type: 'node', id: 1, lat: 54.0, lon: -2.0,
                      tags: { name: 'Test Campsite', tourism: 'camp_site', caravans: 'yes' } };
-    const writeOsm = (el) => {
+    const writeOsm = (el, sctEl) => {
       const body = (els) => JSON.stringify({ osm3s: { timestamp_osm_base: '2026-08-15T00:00:00Z' },
                                              elements: els });
       write(path.join(craw, 'osm', 'campsites-gb-eng.json'), body([].concat(el)));
-      write(path.join(craw, 'osm', 'campsites-gb-sct.json'), body([]));
+      write(path.join(craw, 'osm', 'campsites-gb-sct.json'), body([].concat(sctEl || [])));
       write(path.join(craw, 'osm', 'campsites-gb-wls.json'), body([]));
     };
     writeOsm(goodEl);
@@ -1152,6 +1152,34 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
             : `licence=${JSON.stringify(hdr.licence)} ` +
               `attribution=${JSON.stringify(hdr.attribution)} ` +
               `attribution_url=${JSON.stringify(hdr.attribution_url)}`);
+
+    // Acceptance #5 of card 0020 has two halves and only one was watched. "Fail the build"
+    // is proved above by the lat 12.3 run. "WITH THE BOUNDING BOX WIDENED FROM ENGLAND TO
+    // GB RATHER THAN REMOVED" is the other half, and nothing tested it: narrow LAT_RANGE
+    // back towards England and every assertion here stays green, because the shipped file
+    // is only ever read for records already inside the box, and a build that wrongly
+    // REFUSES a real Scottish campsite writes no file to be checked. The failure is silent
+    // in the data and loud only on the day somebody re-fetches. So this feeds the parser
+    // the two corners the widening exists for -- Shetland in the north, the Outer Hebrides
+    // in the west -- and requires the build to accept them.
+    const farNorth = [
+      { type: 'node', id: 21, lat: 60.15, lon: -1.15, tags: {
+          name: 'Shetland Campsite', tourism: 'camp_site', caravans: 'yes' } },
+      { type: 'node', id: 22, lat: 57.9, lon: -7.0, tags: {
+          name: 'Outer Hebrides Campsite', tourism: 'camp_site', caravans: 'yes' } },
+    ];
+    writeOsm(goodEl, farNorth);
+    const cFar = runCamp();
+    let farIds = null;
+    if (cFar.status === 0 && fs.existsSync(cOut)) {
+      try { farIds = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites.map(s => s.id); }
+      catch (e) { farIds = null; }
+    }
+    const missing = farIds && farNorth.map(e => `os-n${e.id}`).filter(id => !farIds.includes(id));
+    ok('the box reaches the whole of Great Britain, not just England',
+       !!farIds && missing.length === 0,
+       !farIds ? `the parser refused a British campsite (exit ${cFar.status}): ${tail(cFar)}`
+               : `inside Great Britain but rejected or dropped: ${missing.join(', ')}`);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
