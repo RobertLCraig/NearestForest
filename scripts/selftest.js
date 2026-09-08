@@ -1058,8 +1058,33 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     const runCamp = () => spawnSync(PY, [path.join(cx, 'scripts', 'parse_campsites.py')],
                                     { cwd: cx, encoding: 'utf8', env: PYENV });
     const cOut = path.join(cx, 'app', 'data', 'campsites.json');
+
+    // Acceptance #4 of card 0020, and the one thing on that card that is a licence
+    // boundary rather than a modelling choice: the OGL and ODbL databases must stay in
+    // two files. The only guard was `the OGL file holds no campsite record`, which reads
+    // the sites.json ALREADY COMMITTED here -- so a parse_campsites.py that appended its
+    // records to sites.json would run fully green until somebody rebuilt and committed
+    // the result, which is exactly the "tidy the two files into one" change the card
+    // forbids. This puts an OGL file in the temp tree and requires the campsite build to
+    // leave it alone, byte for byte.
+    const cSites = path.join(cx, 'app', 'data', 'sites.json');
+    write(cSites, JSON.stringify({
+      generated_at: '2026-08-29',
+      attribution: 'Contains public sector information licensed under the Open Government Licence v3.0.',
+      sites: [{ id: 'fe-test', name: 'Test Forest', source: 'forest',
+                country: 'England', lat: 54.0, lng: -2.0 }] }));
+    const oglBefore = fs.readFileSync(cSites);
+
     const cClean = runCamp();
     const cBefore = fs.existsSync(cOut) ? fs.readFileSync(cOut) : null;
+
+    const oglAfter = fs.existsSync(cSites) ? fs.readFileSync(cSites) : null;
+    ok('a campsite build never writes into the OGL file',
+       cClean.status === 0 && oglAfter !== null && oglBefore.equals(oglAfter),
+       cClean.status !== 0 ? `the clean run exited ${cClean.status}: ${tail(cClean)}`
+       : oglAfter === null ? 'parse_campsites.py deleted app/data/sites.json'
+       : 'parse_campsites.py rewrote app/data/sites.json, merging two licences into one file ' +
+         `(${oglBefore.length} bytes -> ${oglAfter.length} bytes)`);
 
     // An unprojected coordinate, which is what the Great Britain box exists to catch.
     writeOsm(Object.assign({}, goodEl, { lat: 12.3 }));

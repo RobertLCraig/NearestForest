@@ -877,3 +877,54 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (243 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the half of criterion #4 that is the licence boundary itself.** #4 says the build must
+"keep OSM-derived records in a file separate from the OGL-derived `sites.json`". Two assertions
+were traced to it. `the campsite file states its own licence and attribution` and the parser-side
+`every campsite file the parser writes carries the full ODbL notice` both cover the *second* clause,
+the licence statements. The **separation** clause had one guard, `the OGL file holds no campsite
+record`, and it reads the `app/data/sites.json` **already committed in this repository** — a file
+that is correct today and cannot become wrong without a rebuild. Nothing anywhere ran the campsite
+parser and checked what it did to the OGL file.
+
+**Why that is the gap that matters on this card.** The card's own "Not this card" calls merging into
+`sites.json` load-bearing, and DATA-MODEL says "do not tidy the two files into one". That tidy is a
+few lines in `main` of `scripts/parse_campsites.py`. It would run fully green, and the first sign of
+it would be a `sites.json` in a commit — the ODbL/OGL Collective Database argument this whole card
+rests on, lost silently.
+
+**Watched red, and watched the old assertion stay green beside it.** The new assertion `a campsite
+build never writes into the OGL file` goes in the temp-tree block. It writes a small OGL
+`sites.json` into the temp tree — which had none, so the parser could previously do anything it
+liked there unobserved — runs the parser, and requires the file byte-identical afterwards. I ran it
+against a `parse_campsites.py` that appended its records to `app/data/sites.json` after writing
+`campsites.json`: **242 passed, 1 failed**, the failure being the new assertion, reporting
+`parse_campsites.py rewrote app/data/sites.json, merging two licences into one file (233 bytes ->
+1046 bytes)`. `the OGL file holds no campsite record` reported **PASS** with the merge in place,
+which is the criterion's own failure and the proof the gap was real rather than a missing symbol.
+Reverted the parser and re-ran: 243 passed, 0 failed.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started — `git status` shows `scripts/selftest.js` and the two documents only — and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 243 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 242 self-tests, which this run
+made 243. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — and this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+
