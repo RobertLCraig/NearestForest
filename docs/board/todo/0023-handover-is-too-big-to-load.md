@@ -122,3 +122,44 @@ therefore silent on 0020's deploy state rather than asserting one.
 (3,835 bytes) and `## Key files` is 8,669. Both are candidates for a later fold. The card said to
 stop as soon as the file is under budget, so this run stopped. No browser check applies; nothing
 outside `docs/` was touched.
+
+### 2026-09-08 review (v20260908100035-216a)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+Here is what I found.
+
+**Criterion #2 ÔÇö holds.** The two moved facts are real: the `rgba(0,0,0,.72)` / 9.29:1 note is in `docs/HANDOVER.md` under the `app/map.js` entry in Key files, and the `scraped_at` divergence is in `docs/DATA-MODEL.md` under Known divergences (now closed). The one dropped number, `430`, is still on card 0015.
+
+**Criterion #1 ÔÇö fails now.** `docs/HANDOVER.md` is 42,040 bytes today. The limit is 40 KB (40,960). The criterion has no "at commit time" wording, so measuring the file is the check, and the check fails.
+
+**Criterion #3 ÔÇö fails now.** `~/.claude/hooks/orient-hook.ps1` flags on `$bytes -gt 40KB`. This very session's start-up message printed "HANDOVER.md IS 41 KB, over the ~40 KB a fresh session can afford to load". The hook does report it as over budget.
+
+The fold did work at the time (38,528 bytes at its own commit), but five later commits to `docs/HANDOVER.md` put it back over, and the boxes stay ticked. The brief is failing its only job again, which is the exact thing the card exists to stop.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Findings ÔÇö scope only.**
+
+1. **The diff is far bigger than the card.** The Plan says "Nothing outside `docs/` is touched," and the agent's own comment lists four docs files as TOUCHED. The recorded change also edits `app/core.js` (new `mapHint`, rewritten `safeHref` comment), `app/map.js`, `app/index.html`, `app/sw.js`, `app/data/campsites.json`, `scripts/parse.py`, `scripts/fetch.py`, `scripts/parse_campsites.py` and `scripts/selftest.js` (+356 lines). None of that is a stale block folded out of `HANDOVER.md`. That is card 0020/0015 work riding on a docs card.
+
+2. **The board grew ~40 new cards** under `docs/board/ai-review/` and `docs/board/human-review/`, plus lane moves of 0006, 0008, 0012, 0013, 0014, 0018, 0020, 0024. The card allowed exactly one new card (0026) as an out-of-scope note. `0024`, `0027`, `0033`, `0035`, `0037` and the rest are over the fence.
+
+3. **Left half done.** `docs/HANDOVER.md` measures **42,040 bytes** today ÔÇö over the 40 KB the card set and over what criteria #1 and #3 assert. Card `0031-handover-is-over-budget-again-and-0023-is-ticked-as-under.md` already exists saying so, which means the tick was known to be false and left ticked.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**What I checked.** The facts the fold moved out are all still findable: `rgba(0,0,0,.72)` and the 9.29:1 bound live in HANDOVER's `app/map.js` entry (matching `.map__hint--attrib` in `app/app.css`); the `scraped_at` divergence lives in `docs/DATA-MODEL.md` and is now marked closed; `NF.mapHint()` in `app/core.js` and `updateHint()` in `app/map.js` match what HANDOVER's Key files entry says about them, and `scripts/selftest.js` asserts both. I grepped the numbers the fold removed (`1,512`, `177`, `3600`, `219`, `274`) and each still has a home. No caller, comment or docblock was made false by the fold.
+
+**What is broken.** `docs/HANDOVER.md` is 42,040 bytes right now. Criteria #1 and #3 on this card are ticked as satisfied, and the orient hook fired at the start of this very session with "HANDOVER.md IS 41 KB, over the ~40 KB a fresh session can afford to load". So the card asserts a state the repository does not hold. Card `0031` in `docs/board/ai-review/` names this exact failure, and a later fold (`33e6a5e`) took the file to 37,430 bytes, but it has grown back over budget since. The tick is a rule asserted in one place and contradicted by the file it measures.
+
+VERDICT: defect
+
