@@ -89,3 +89,49 @@ Not settled from the repository: why `0033` moved only `0025` when three more `t
 its stated rule. `0003` and `0017` carry a `waiting_on:` recheck date that is not yet due, which may
 have read as "parked", but `0018` carries no key at all. `0037` records the question; it does not
 answer it.
+
+### 2026-09-08 review (v20260908114922-ad0f)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Criterion #1: both cards sit in `docs/board/human-review/` (`0010-rotate-the-thunderforest-key.md`, `0027-send-the-forestry-england-enquiry.md`) and neither is in `docs/board/todo/`. That is what the criterion asks and it holds. There is no code to trace: the lane is a folder, and `scripts/selftest.js` reads only the app, so `proves: none` is honest rather than an excuse.
+
+Task 3 also lands: `docs/HANDOVER.md` states the lane count and names both cards in the "Blockers / open questions" list.
+
+One thing I checked and rejected as a finding: `docs/HANDOVER.md` says eleven cards and the lane now holds 32 files. Its own sentence stamps the count "counted 2026-09-07" and lists the eleven, so it is a dated measurement, not a false claim. The extra files arrived from later cards (`0045`, `0046`, `0051`), which is outside this card's fence.
+
+I could not break it.
+
+VERDICT: sound
+
+**scope: defect**
+
+Findings, plain:
+
+**1. It moved more cards than the two it was allowed to move.** The card names exactly two moves. The diff also shows `docs/board/human-review/0003-straight-line-distance-in-practice.md` and `docs/board/human-review/0017-how-much-of-wales-can-we-actually-ship.md` as renames into the lane. The card's own comment says the opposite: that `0003`, `0017` and `0018` were left in `todo/` and raised as card `0037` instead. The write-up and the tree do not agree, so the note added to `docs/HANDOVER.md` ("the other three are `0003`, `0017` and `0018`, still in `todo/`") is false as written.
+
+**2. Code changed under a docs-only fence.** The plan says "Nothing outside `docs/board/` and `docs/HANDOVER.md` changes." The diff carries `app/core.js` (new `mapHint`, rewritten comment on `safeHref`), `app/app.js` `openSheet`, `app/api/nearest.php`, `scripts/parse_campsites.py`, `scripts/selftest.js` and `app/data/campsites.json`. None of that is a lane move.
+
+**3. Half done.** With the extra moves in the tree, the count and the named cards in `docs/HANDOVER.md` "Blockers / open questions" no longer match the lane, which is the one thing task 3 had to get right.
+
+VERDICT: defect
+
+**breakage: defect**
+
+Reviewed against the delivered tree.
+
+**Finding 1 ÔÇö the count this card was created to fix is false again, and it is stated as self-verifying.**
+`docs/HANDOVER.md`, "Blockers / open questions", says **"Eleven cards need Rob, and all eleven are in the lane: `ls docs/board/human-review` on 2026-09-07 gives 0001, 0002, 0003, 0010, 0017, 0018, 0024, 0025, 0027, 0030 and 0043. The folder is the count."** The folder holds **32** files. The same eleven is repeated in the summary block at the top of `docs/HANDOVER.md`. The one command the prose offers as proof refutes the prose.
+
+**Finding 2 ÔÇö the same section names lanes that moved.**
+`docs/HANDOVER.md`, "Blockers / open questions", puts `0045` in `todo/` and `0044` in `in-progress/`. `0045` is in `human-review/`, `0044` is in `ai-review/`, and `todo/` holds only `0052`, `0053`, `0054`.
+
+**Finding 3 ÔÇö this card's own follow-up is stale.**
+`docs/board/ai-review/0037-three-decision-cards-are-still-in-todo.md` was raised by this card and says `0003`, `0017`, `0018` are in `todo/`. All three are in `human-review/`. The card describes a board that no longer exists.
+
+VERDICT: defect
+
