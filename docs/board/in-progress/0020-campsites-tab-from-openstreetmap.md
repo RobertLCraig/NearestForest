@@ -480,7 +480,8 @@ under `app/`, so there is nothing new to look at.
 
 **2026-09-08** RESULT: partial
 TESTS: +1 new, all green (236 passed, 0 failed)
-TOUCHED: scripts/selftest.js, docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
 OUT-OF-SCOPE: none
 
 **Closed the gap in criterion #1, which nothing was watching.** #1 is "THE APP SHALL offer a third
@@ -512,6 +513,9 @@ meet, so pinning the exact expression guards the licence boundary as well as the
 **Suite:** `node scripts/selftest.js`, 236 passed, 0 failed. There is no `vendor/` in this
 repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
 This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 235 self-tests, which this run
+made 236. Not a run report — HANDOVER's header forbids those — just the count kept honest.
 
 **Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
 hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
