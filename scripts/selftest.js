@@ -562,6 +562,31 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
        'campsites.json holds no nulls at all; every silence is an absent key');
   }
 
+  // The run that added `a site the source says you pay for is never shown as free` pinned the
+  // string `fee_text()` writes, and said plainly that the badge keying off it was still
+  // unwatched. This is that half. It is the sharper one to get wrong: `parking` on the sheet
+  // needs a tap to reach, but the badge is on the LIST ROW, which is the line a driver reads
+  // and chooses by, and `=== 'Free'` loosened to a truthiness test badges every site that
+  // publishes a price. Lift the campsite branch of the row builder out of app.js source and run
+  // it, the way `field()` is lifted above: it depends only on `esc` and a `sub` array.
+  {
+    const rowBranch020 = new Function('s', 'esc',
+      'var sub = [];\n' +
+      appjs020.match(/if \(s\.source === 'campsite'\) \{[\s\S]*?\r?\n    \}\r?\n/)[0] +
+      'return sub.join("");');
+    const sub020 = (s) => rowBranch020(s, (x) => String(x));
+    const badged = (s) => /<span>Free<\/span>/.test(sub020(Object.assign({ source: 'campsite' }, s)));
+    const paying = [{ parking: 'Charges apply' }, { parking: 'GBP 20 per night' },
+                    { parking: '£15 per pitch' }].filter(badged);
+    ok('a campsite the source says you pay for never wears the Free badge on its row',
+       paying.length === 0 && !badged({}) && badged({ parking: 'Free' }),
+       paying.length
+         ? paying.map(s => `parking=${JSON.stringify(s.parking)} wore the Free badge`).join(', ')
+         : (!badged({ parking: 'Free' })
+            ? 'a genuinely free site lost its badge'
+            : 'a site carrying no fee at all wore the badge'));
+  }
+
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
   ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
   ok('campsite ranking is sorted ascending',

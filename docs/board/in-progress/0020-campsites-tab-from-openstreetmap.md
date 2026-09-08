@@ -1887,3 +1887,66 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (261 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Took the render half of the money claim, which the run above named and deliberately left.** Its
+last section says so in plain words: "The badge itself, in `app/app.js`, is still unwatched: this
+assertion pins the string the badge keys off, not the branch that draws it." That run pinned
+`fee_text()` in `scripts/parse_campsites.py`. This one pins the branch on the list row that reads
+its output.
+
+**Why this half is the sharper one.** Every other campsite claim the suite watches lives on the
+detail sheet and needs a tap to reach. `parking === 'Free'` in `app/app.js` draws a badge on the
+**row**, which is the line a driver reads in a car park at dusk and chooses by. And the two halves
+fail independently: a correct `fee_text()` writing `"Charges apply"` is no protection at all if the
+branch reading it stops comparing.
+
+**Measured, not argued.** I loosened `s.parking === 'Free'` to `s.parking` -- one character short of
+the most ordinary slip there is in this file, which is full of `if (s.foo)` truthiness pushes on the
+lines either side of it -- and ran the suite: **260 passed, 0 failed.** With that change every
+campsite that publishes a price wears a "Free" badge, including the ones carrying a real figure like
+`GBP 20 per night`, and nothing in the suite says a word. The assertion added the previous run,
+`a site the source says you pay for is never shown as free`, reported PASS throughout: it reads the
+parser, and the parser was still right.
+
+**Watched red, and watched everything else stay green beside it.** The new assertion `a campsite the
+source says you pay for never wears the Free badge on its row` goes in the campsite block beside the
+two `field()` assertions. Against the broken branch it failed naming all three paying fixtures --
+`parking="Charges apply"`, `parking="GBP 20 per night"`, `parking="£15 per pitch"` -- which is the
+criterion's own failure, not a missing symbol. Restored the comparison and re-ran: 261 passed, 0
+failed.
+
+**Behaviour, not spelling, and both ends pinned.** The branch is lifted out of `app.js` source with
+`new Function` and **run**, the way `field()` is lifted above it, because it depends only on a `sub`
+array and `esc`. It also requires a genuinely free site to keep its badge and a site carrying no
+`parking` key at all not to gain one, so it fails a rule tightened into uselessness as well as a
+loosened one -- the same shape the scout, static and `takes_a_van()` fixtures on this card use.
+
+**One limit of the harness, said plainly.** The regex is anchored on the branch's exact opening line
+and its four-space closing brace, so re-indenting that block or renaming `sub` makes the suite throw
+rather than fail. That is loud but not informative, and it is the same coupling the `field()`
+assertion above already carries and names.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started --
+`git status` shows `scripts/selftest.js` and the two documents only -- and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 261 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 260 self-tests, which this run
+made 261. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
