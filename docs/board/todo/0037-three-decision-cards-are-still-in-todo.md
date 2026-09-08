@@ -101,3 +101,53 @@ not the contents of a card the board scoped and promoted in order to make the mo
 **One finding left for a person, raised as card `0040`:** `docs/HANDOVER.md` says in two places that
 the open agent-ready cards are `0033` and `0034`. Both are in `ai-review/`; `todo/` holds `0038` and
 `0039`. Not fixed here, because this card's scope was the person-waiting count.
+
+### 2026-09-08 review (v20260908121520-6afa)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**AC #1 ÔÇö passes.** `ls docs/board/human-review` shows `0003-straight-line-distance-in-practice.md`, `0017-how-much-of-wales-can-we-actually-ship.md` and `0018-write-to-forestry-england.md`. `ls docs/board/todo` shows none of them, and no `todo/` card carries `## Options`. `docs/board/human-review/0018-write-to-forestry-england.md` now carries `## What I need from you`.
+
+**AC #2 ÔÇö fails.** The criterion says the folder count and `docs/HANDOVER.md` must give the same number. They do not.
+
+- `docs/HANDOVER.md`, status block at the top: "**Eleven cards wait on a person in `docs/board/human-review/`**" and names eleven ids.
+- `docs/HANDOVER.md`, "Blockers / open questions": "**Eleven cards need Rob**, and all eleven are in the lane", naming the same eleven.
+- The folder holds **34** files, including `0004`, `0006`, `0008`, `0009`, `0011`ÔÇô`0016`, `0019`, `0023`, `0026`, `0028`, `0031`ÔÇô`0036`, `0045`, `0046`, `0051`, none of which appear in either sentence.
+
+The card's own log claims "eight in both places"; the file says eleven, and the lane says 34. Whichever number was true when the work landed, the criterion is not met in the tree as it stands, so the tick is not supported.
+
+VERDICT: defect
+
+**scope: sound**
+
+What I checked: the commit for this card is `7e7193a` alone. The big diff in the brief is other cards' later work, not this one.
+
+Scope check on that commit:
+
+- Three files moved, nothing else moved.
+- `docs/board/human-review/0003-...md` and `0017-...md` moved with a zero-byte diff. No text touched.
+- `0018-write-to-forestry-england.md` gained only `## What I need from you`, which the card's task asked for. Its two asks come from the card's own `## Options` and its question 2. No new ask.
+- `docs/HANDOVER.md` changed in two places: the status block and the "Blockers / open questions" paragraph. Both now say eight and both drop the pointer to this card. The second place is one line past the task text, but it named the same stale split, so leaving it would have made the file disagree with itself.
+- No board check was built. No decision was answered. The fence holds.
+- One extra thing: a new card `0040` in `todo/`. That is over the ask, but it is a note, not a change, and the agent said so in its result.
+
+I tried to find a quiet growth and could not.
+
+VERDICT: sound
+
+**breakage: defect**
+
+Two things this card broke, both in `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, a card that is open and in front of Rob right now.
+
+**1. The line budget.** `docs/board/README.md` sets a whole card at 100 lines. Card `0024`'s `## What I need from you` states its Pass condition as "`0018` and `0020` are 100 lines each". Card `0037` added a `## What I need from you` block to `0018` (+23 lines), so `docs/board/human-review/0018-write-to-forestry-england.md` is now 123 lines. `0024` asks Rob to close a card on a sentence that is no longer true, and nothing in `0037` says so. A card cannot both gain the lane's required section and stay inside the budget another open card is measuring it against; that tension had to be written down and was not.
+
+**2. A broken command left for a person.** `0024`'s `## Plan` says to count with `wc -l docs/board/todo/0018-write-to-forestry-england.md`. `0037` moved that file. The command now errors, in a card whose whole job is counting that file.
+
+`0003` and `0017` already carried `## What I need from you`, and the HANDOVER "eight" edit was made in both places, so those parts hold.
+
+VERDICT: defect
+
