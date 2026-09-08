@@ -1760,3 +1760,68 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (259 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one rule on this card that Rob decided himself and nothing was watching.**
+`takes_a_van()` in `scripts/parse_campsites.py` is the whole of "Answered, and built": on
+2026-08-15 Rob chose *named and explicitly caravan or motorhome capable* over the wider filter that
+would have taken the 2,370 records carrying no caravan tag. Every assertion this thread has
+accumulated watches what happens **after** that decision — what a kept record says, which records
+are dropped for being members-only or static, where the licence notice goes. Nothing watched the
+decision itself.
+
+**Measured, not argued.** I replaced the body of `takes_a_van()` with `return True` and ran the
+suite: **258 passed, 0 failed.** The two assertions that look like they cover it — `every campsite
+names at least one vehicle it takes` and `every campsite takes a caravan or a motorhome` — read the
+`app/data/campsites.json` already committed here, which the filter has already cleaned, so they are
+green from birth on this question.
+
+**What the red taught me, and what I changed because of it.** My first fixture had four forbidden
+sites. Two of them — a `camp_site` with no vehicle tag at all, and one publishing `caravans=no
+motorhome=no` — made the parser exit 1 on its own: they reach `validate()` with an empty `vehicles`
+list and it refuses them by name. So the red I watched was the build failing, not the criterion's
+own failure, and two of the four rules turned out to have a second line of defence I had not known
+about. I cut those two out of the fixture and said so in the comment beside it, rather than keeping
+a case whose red comes from somewhere else.
+
+**The two with no second line** are the ones left: a `tents=only` field still derives
+`vehicles: ["tents"]`, and a `backcountry=yes` pitch tagged `caravans=yes` still derives
+`vehicles: ["caravans"]`, so both pass `validate()` and rank in the Campsites tab — one you cannot
+bring a van to at all, one you cannot drive to. Against the broken filter the new assertion `a site
+the source never says takes a van is not listed as somewhere to pull up` failed naming `os-n51,
+os-n52` as "listed as somewhere to pull up", which is the criterion's own failure rather than a
+missing symbol. Every other campsite assertion reported PASS beside it. Restored the seven lines and
+re-ran: 259 passed, 0 failed.
+
+**Both ends pinned.** Two kept fixtures hold "explicit" from being read as "caravans=yes only": a
+`motorhome=yes` stopover, and a `tourism=caravan_site` carrying no `caravans` tag, which is a
+caravan park saying so by its own primary tag. Without them the assertion would pass a filter
+tightened into uselessness — the same shape the scout and Stay the Night fixtures on this card use.
+
+**Which criterion this belongs to, said plainly.** The filter is not the literal text of any one
+criterion. It is #1's tab — "places where you could pull up in a campervan" — and it is #2's rule,
+because listing a tents-only field as somewhere to pull up for the night states something OSM never
+published. Neither tick moves: both were already true, and are now watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started — `git diff --stat` shows `scripts/selftest.js` only — and nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 259 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 258 self-tests, which this run
+made 259. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

@@ -1626,6 +1626,64 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
        : !twinIds.includes('os-n41')
          ? 'the merge is too wide: it swallowed a campsite 1.4 mi from the car park'
          : 'the Stay the Night record itself was dropped or lost its rules');
+
+    // Card 0020's tab is "places where you could pull up in a campervan or RV / caravan
+    // trailer", and takes_a_van() in parse_campsites.py is the whole of that promise: Rob
+    // chose "named and explicitly caravan or motorhome capable" on 2026-08-15, over the
+    // wider filter that would have taken the 2,370 records carrying no caravan tag at all.
+    // Nothing anywhere watched it. Measured on 2026-09-08: replace the body of
+    // takes_a_van() with `return True` and the suite passes 258 of 258, because
+    // `every campsite names at least one vehicle it takes` and `every campsite takes a
+    // caravan or a motorhome` both read the app/data/campsites.json ALREADY COMMITTED
+    // here, which the filter already cleaned. A tents-only field, a backcountry pitch and
+    // a site publishing caravans=no would then all rank in the Campsites tab as somewhere
+    // to pull up for the night -- a claim OSM never made, which is acceptance #2's own
+    // words, on the tab acceptance #1 exists to offer.
+    //
+    // Two of takes_a_van()'s four rules are already fenced downstream and are deliberately
+    // NOT the fixture here: a site carrying no vehicle tag at all, and one publishing
+    // caravans=no motorhome=no, both reach the file with an empty `vehicles` list, and
+    // validate() already refuses that with "lists no vehicle type, so it does not belong
+    // in this tab" and exits non-zero. Measured while writing this: with `return True` in
+    // place, both were named by the parser itself. The two rules below have no such
+    // second line. A tents-only field still derives vehicles=["tents"] and a backcountry
+    // pitch tagged caravans=yes still derives vehicles=["caravans"], so both pass
+    // validate() and rank in the tab -- one you cannot bring a van to at all, one you
+    // cannot drive to.
+    //
+    // Both ends are pinned. The two kept records hold the "explicit" rule from being read
+    // as "caravans=yes only": motorhome=yes is a van, and tourism=caravan_site with no
+    // caravans tag is a caravan park saying so by its own primary tag.
+    const vanNo = [
+      { type: 'node', id: 51, lat: 53.2, lon: -1.2, tags: {
+          name: 'Tents Only Field', tourism: 'camp_site', tents: 'only' } },
+      { type: 'node', id: 52, lat: 53.3, lon: -1.3, tags: {
+          name: 'Remote Walk-in Pitch', tourism: 'camp_site', backcountry: 'yes',
+          caravans: 'yes' } },
+    ];
+    const vanYes = [
+      { type: 'node', id: 54, lat: 53.5, lon: -1.5, tags: {
+          name: 'Motorhome Stopover', tourism: 'camp_site', motorhome: 'yes' } },
+      { type: 'node', id: 55, lat: 53.6, lon: -1.6, tags: {
+          name: 'Riverside Touring Park', tourism: 'caravan_site' } },
+    ];
+    writeOsm(vanNo.concat(vanYes));
+    const cVan = runCamp();
+    let vanIds = null;
+    if (cVan.status === 0 && fs.existsSync(cOut)) {
+      try { vanIds = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites.map(s => s.id); }
+      catch (e) { vanIds = null; }
+    }
+    const vanWrong = vanIds && vanNo.map(e => `os-n${e.id}`).filter(id => vanIds.includes(id));
+    const vanLost = vanIds && vanYes.map(e => `os-n${e.id}`).filter(id => !vanIds.includes(id));
+    ok('a site the source never says takes a van is not listed as somewhere to pull up',
+       !!vanIds && vanWrong.length === 0 && vanLost.length === 0,
+       !vanIds ? `the run exited ${cVan.status} and wrote no dataset: ${tail(cVan)}`
+       : vanWrong.length
+         ? 'the filter is too wide: the source publishes no caravan or motorhome access ' +
+           `for ${vanWrong.join(', ')}, and they are listed as somewhere to pull up`
+         : `the filter is too tight: it dropped ${vanLost.join(', ')}, which the source ` +
+           'does say takes a van');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
