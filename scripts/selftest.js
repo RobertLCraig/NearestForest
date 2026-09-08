@@ -1201,6 +1201,44 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
        : !exclIds.includes('os-n1') ? 'the parser dropped the ordinary campsite too'
        : `these should not be listed as somewhere to pull up for the night: ${shipped.join(', ')}`);
 
+    // Acceptance #6 of card 0020 again, and the half of it the `scout` tag cannot carry.
+    // The drop reads tags.scout and group_only only. OSM tagging is sparse: measured over
+    // the three cached Overpass responses, 89 elements carry scout=yes, but two sites that
+    // are plainly scout sites carry no such tag and ship today -- "Rolleston Scout Group
+    // Caravan Park" (way 127724548, tags: name and tourism=caravan_site, nothing else) and
+    // "South London Scout Centre" (way 145180506, a scout centre with caravans=yes). The
+    // static-caravan drop already reads the name and operator for exactly this reason.
+    // "Scoutscroft" and "Scoutscroft Touring" in Coldingham are commercial holiday parks,
+    // so the match has to be the word rather than the letters, and one is kept here to
+    // hold that line.
+    const scoutish = [
+      { type: 'node', id: 17, lat: 54.7, lon: -2.7, tags: {
+          name: 'Rolleston Scout Group Caravan Park', tourism: 'caravan_site' } },
+      { type: 'node', id: 18, lat: 54.8, lon: -2.8, tags: {
+          name: 'South London Scout Centre', tourism: 'camp_site', caravans: 'yes' } },
+      { type: 'node', id: 19, lat: 54.9, lon: -2.9, tags: {
+          name: 'Barnsfield Camp', tourism: 'camp_site', caravans: 'yes',
+          operator: '1st Barnsfield Scouts' } },
+    ];
+    const notScout = { type: 'node', id: 20, lat: 55.0, lon: -3.0, tags: {
+      name: 'Scoutscroft Touring', tourism: 'caravan_site', caravans: 'yes' } };
+    writeOsm([goodEl, notScout].concat(scoutish));
+    const cScout = runCamp();
+    let scoutIds = null;
+    if (cScout.status === 0 && fs.existsSync(cOut)) {
+      try { scoutIds = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites.map(s => s.id); }
+      catch (e) { scoutIds = null; }
+    }
+    const scoutShipped = scoutIds && scoutish.map(e => `os-n${e.id}`).filter(id => scoutIds.includes(id));
+    ok('a site named as a scout site is dropped even when it carries no scout tag',
+       !!scoutIds && scoutShipped.length === 0 &&
+       scoutIds.includes('os-n1') && scoutIds.includes('os-n20'),
+       !scoutIds ? `the run exited ${cScout.status} and wrote no dataset: ${tail(cScout)}`
+       : scoutShipped.length ? `scout sites still listed as somewhere to pull up for the night: ${scoutShipped.join(', ')}`
+       : !scoutIds.includes('os-n20')
+         ? 'the match is too wide: it dropped "Scoutscroft Touring", a commercial holiday park'
+         : 'the parser dropped the ordinary campsite too');
+
     // Acceptance #3 and #4 of card 0020, the half the shipped file cannot prove. The check
     // over app/data/campsites.json only matches /ODbL/ and /OpenStreetMap/, and it reads a
     // file that already happens to be right, so it is green from birth. #3 names three

@@ -37,6 +37,12 @@ STATIC_BRANDS = ("parkdean", "haven holiday", "haven ", "park holidays", "royale
                  "away resorts", "john fowler", "darwin escapes", "coastal holidays",
                  "static caravan")
 
+# A scout site named as one but not tagged as one. OSM's `scout` tag is sparsely applied:
+# 89 of 8,501 elements carry it, while "Rolleston Scout Group Caravan Park" carries only a
+# name and tourism=caravan_site. Matched as a WORD, not as letters, because "Scoutscroft"
+# and "Scoutscroft Touring" in Coldingham are commercial holiday parks anyone may book.
+SCOUT_RE = re.compile(r"\bscouts?\b", re.I)
+
 FLS_STN_NOTE = ("Forestry and Land Scotland 'Stay the Night': overnight parking only, "
                 "6pm to 10am, no return within 48 hours. Self-contained motorhomes and "
                 "campervans only, so no tents and no toilet set up beside the vehicle. "
@@ -224,7 +230,8 @@ def build_osm():
             if tags.get("access") in ("private", "no", "members"):
                 notes["private"] += 1
                 continue
-            if tags.get("scout") in ("yes", "only") or tags.get("group_only") == "yes":
+            if (tags.get("scout") in ("yes", "only") or tags.get("group_only") == "yes"
+                    or SCOUT_RE.search("%s %s" % (tags.get("operator", ""), name))):
                 notes["scout"] += 1
                 continue
             if looks_static(tags):

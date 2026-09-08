@@ -230,8 +230,8 @@ campsite record has appeared inside `sites.json`.
 ```json
 {
   "generated_at": "2026-08-15",
-  "counts": { "campsite": 3675 },
-  "counts_by_country": { "England": 2606, "Scotland": 505, "Wales": 564 },
+  "counts": { "campsite": 3673 },
+  "counts_by_country": { "England": 2604, "Scotland": 505, "Wales": 564 },
   "licence": "ODbL 1.0",
   "attribution": "Campsite data © OpenStreetMap contributors, available under the Open Database License. ...",
   "attribution_url": "https://www.openstreetmap.org/copyright",
@@ -253,19 +253,19 @@ A campsite record is the same `Site` shape, with three differences and four extr
 Three differences from the `Site` table above, all deliberate:
 
 - **`opening_summary` is always absent, and the app must never show an open/closed badge here.**
-  Measured 2026-09-08: 98 of 3,675 records publish any opening text at all. A badge would be a guess,
+  Measured 2026-09-08: 98 of 3,673 records publish any opening text at all. A badge would be a guess,
   and this project does not guess that a gate is open. A self-test asserts `openState()` returns
   `unknown` for every campsite record.
 - **Coordinates are 5 dp, not 7.** Most of these are the centroid of a hand-drawn polygon, so digits
   six and seven would be precision the data does not have. 5 dp is ~1.1 m, and it saved 40 KB.
 - **An absent key means "not known".** `sites.json` writes an explicit `null`; this file omits the
-  key, because at 3,675 records the nulls were the majority of the bytes. Every consumer tests
+  key, because at 3,673 records the nulls were the majority of the bytes. Every consumer tests
   `value == null` or truthiness, which reads the two identically. This is the one place the
   "null means not known" rule is expressed by omission rather than by a literal `null`.
 
 ### What is filtered out, and why the count is what it is
 
-From 8,501 OSM elements across the three countries, 3,675 records survive. Every exclusion is
+From 8,501 OSM elements across the three countries, 3,673 records survive. Every exclusion is
 counted and printed by the parser rather than happening quietly:
 
 | Dropped | Count | Why |
@@ -274,6 +274,7 @@ counted and printed by the parser rather than happening quietly:
 | no explicit caravan or motorhome access | 2,370 | Rob's call, 2026-08-15. An untagged `camp_site` is not evidence that a van can get in. |
 | static-caravan holiday park | 129 | You cannot pull a campervan onto a static pitch. Parkdean alone is 58 records. |
 | private, members-only or no public access | 30 | `access=members` joined `private` and `no` on 2026-09-08. A club site you are not a member of is not somewhere you can pull up for the night, and the parser had been labelling those six "Members only" rather than dropping them. |
+| scout or group-only | 2 | Both were found on 2026-09-08 by their **name**, not by a tag: OSM's `scout` tag is sparse, and "Rolleston Scout Group Caravan Park" carries only a name and `tourism=caravan_site`. The match is the whole word, because "Scoutscroft" in Coldingham is a commercial holiday park. Every site carrying `scout=yes` had already gone at an earlier rule, which is why this row read 0 before. |
 | the same site mapped twice | 42 | OSM maps many campsites as both a node and the surrounding area. Merged by name within **0.5 mi**, a threshold taken from the distribution: 47 same-name pairs sit within 0.3 mi, one at 0.38, one at 0.55, and the next is 1.43 mi. |
 | already counted in a neighbouring country | 5 | Border sites returned by two queries. |
 | merged into a Stay the Night record | 2 | Where OSM and FLS describe the same tarmac, the first-party record wins, because it carries the scheme rules. |

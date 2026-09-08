@@ -95,7 +95,7 @@ OpenStreetMap contributors"**, naming the Open Database License and linking to
 **Rob chose the shortest cut on 2026-08-15: named and explicitly caravan or motorhome capable.** The
 recommendation on this card had been the middle option; the call went the other way, in favour of a
 list every row of which is recognisable and true. Widening it later is a one-line change to
-`takes_a_van()`. **Shipped:** 3,675 campsites — 2,606 England, 505 Scotland, 564 Wales — including
+`takes_a_van()`. **Shipped:** 3,673 campsites — 2,604 England, 505 Scotland, 564 Wales — including
 all 44 Stay the Night car parks, 972 KB on disk and about 150 KB on the wire. Two faults were found
 by running it rather than reading it: the same site mapped twice, as an OSM node and as the
 surrounding area, fixed by merging same-name records within 0.5 mi and self-tested; and the Stay the
@@ -1037,6 +1037,71 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 **Nothing here has been seen in a browser** — this is a worktree and Herd serves the main checkout —
 and the changed row wants a look on the phone alongside the other deploy checks: a Stay the Night
 sheet should now read "Data checked / Not listed" rather than a date.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (247 passed, 0 failed)
+TOUCHED: scripts/parse_campsites.py, scripts/selftest.js, app/app.js, app/core.js, app/sw.js,
+app/data/campsites.json, docs/DATA-MODEL.md, docs/DECISIONS.md, docs/HANDOVER.md, docs/PRD.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Found two scout sites shipping under criterion #6, and dropped them.** #6 names four kinds of
+site the app must not list, and both assertions covering it watch the `scout` **tag**: the shipped
+file check reads `access_note` text, and the fixture on this thread feeds a node tagged
+`scout=yes`. Neither can see the failure that was actually in the data, because **OSM's `scout` tag
+is sparsely applied**. Measured over the three cached Overpass responses: 89 of 8,501 elements carry
+it, and the counter for that drop rule printed **0** — every element carrying the tag had already
+gone at an earlier rule. So the rule was live and catching nothing.
+
+**Measured, not argued.** `os-w127724548` "Rolleston Scout Group Caravan Park" carries exactly two
+tags, `name` and `tourism=caravan_site`. `os-w145180506` "South London Scout Centre" carries
+`caravans=yes` and a `southlondonscouts.org.uk` website. Both shipped in `app/data/campsites.json`,
+both are somewhere a passing campervan cannot pull up for the night, and both are the criterion's
+own words rather than an inference from them. The static-caravan drop already reads the name and
+operator for this exact reason; the scout drop did not.
+
+**Watched red, and watched both old scout assertions stay green beside it.** The new assertion `a
+site named as a scout site is dropped even when it carries no scout tag` goes in the temp-tree block
+and feeds the parser the two real shapes plus a scout-operator one. It failed against the current
+parser naming `os-n17, os-n18, os-n19`, while `no campsite is members-only, private, scout or a
+static-caravan park` and `a members-only, private, scout or static-caravan site never reaches the
+file` both reported **PASS** — the criterion's own failure, not a missing symbol.
+
+**Why the word and not the letters.** `Scoutscroft` and `Scoutscroft Touring` in Coldingham are
+commercial holiday parks anyone may book, and a substring match drops them. So `SCOUT_RE` is
+`\bscouts?\b`, and the fixture keeps a `Scoutscroft Touring` record that the assertion requires to
+survive — a match that is too wide fails it just as loudly as one that is too narrow.
+
+**`CACHE` and `BUILD` bumped to `v21-2026-09-08`**, because the rebuild changed
+`app/data/campsites.json`: **3,673 records, England 2,604 / Scotland 505 / Wales 564**, down two.
+The `card 0036` prose-count guard did its job unprompted — it failed with `app/app.js: says 3675,
+dataset holds 3673` before I had touched any prose — so the corrected counts in `app/app.js`,
+`docs/HANDOVER.md`, `docs/DATA-MODEL.md`, `docs/PRD.md`, `docs/DECISIONS.md` and this card's own
+"Answered, and built" line are checked rather than asserted. `DATA-MODEL`'s exclusion table gained
+the scout row it never had, with the reason it used to read 0.
+
+**Assumed:** `data/raw/osm/` is gitignored and absent from a fresh worktree, so the three cached
+Overpass responses were read from `C:\Dev\NearestForest`. The rebuild reflects OSM's 2026-08-15
+snapshot, not today's.
+
+**What I did not do.** I did not widen the drop to `access=restricted` or `access=appointment`
+(one element each in the extract), because #6 does not name them and a card that grows is a card
+nobody reviewed. Nor did I touch `scout=*` — the one element carrying it, "Jubilee Scout Campsite",
+is already dropped by `caravans=no`.
+
+**Suite:** `node scripts/selftest.js`, 247 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Nothing here has been seen in a browser** — this is a worktree and Herd serves the main checkout —
+and this run shipped a dataset change, so the Campsites tab wants the same phone look the other
+deploy checks want.
 
 **Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
 icon, Campsites tab tapped into while offline. Card 0001 check 5.
