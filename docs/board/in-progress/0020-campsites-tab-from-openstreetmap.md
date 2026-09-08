@@ -2319,3 +2319,60 @@ it.
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (268 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the third thing the campsite row draws, and the only one nothing had ever read: the "Stay
+the Night" badge.** Earlier runs on this thread took the other two lines of that same branch in
+`app/app.js` -- the `Free` badge and the `access_note` restriction -- at both the parser end and the
+render end. The line above them, `if (s.stay_the_night) sub.push(... row__badge ... Stay the Night
+...)`, was never read by anything. It is not a translated field: it is a claim of **membership in
+Forestry and Land Scotland's scheme**, which OpenStreetMap publishes about no campsite at all.
+
+**Measured, not argued.** I dropped the `if` -- one word, on a line sitting between two other plain
+`sub.push` calls -- and ran the suite: **267 passed, 0 failed.** All 3,574 campsite rows then wear
+the badge. The two assertions that read this very branch, `a campsite the source says you pay for
+never wears the Free badge on its row` and `a campsite restriction is drawn on its row, and outranks
+the Free badge`, both reported PASS: each tests its own substring and is blind to a badge appearing
+beside it. The consequence is not a withheld answer but an invitation -- a badge saying a car park
+is in a scheme that permits overnight parking, on a car park whose owner never joined it.
+
+**Watched red first.** The new assertion `only a Stay the Night car park wears the Stay the Night
+badge on its row` failed against that break naming all three fixtures that must not carry it --
+`{}`, `{"parking":"Free"}` and `{"access_note":"Customers only"}` -- while 267 passed beside it.
+That is the fault's own failure, not a missing symbol. Restored the `if` and re-ran: 268 passed, 0
+failed.
+
+**Both ends pinned.** A real Stay the Night car park must still get the badge, so a condition
+tightened into never drawing it fails as well as one drawing it for everything. It reuses the
+`rowBranch020` harness the fee assertion built -- the branch is lifted out of `app.js` source with
+`new Function` and **run** -- so it carries the same coupling those assertions already name: the
+extraction regex is anchored on the branch's opening line and its four-space closing brace, so
+re-indenting that block makes the suite throw rather than fail. Loud, but not informative.
+
+**Which criteria this belongs to.** #2, because a row claiming scheme membership states something no
+source published; and #7, whose obligations attach to the rows this badge marks out. Neither tick
+moves: both were already true, and this last line of the row is now watched.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started;
+`git status` shows `scripts/selftest.js` and the two documents only, and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 268 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 267 self-tests, which this run
+made 268. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

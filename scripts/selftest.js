@@ -606,6 +606,26 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
          : (/<span>Free<\/span>/.test(shut)
             ? 'a restricted site wears the Free badge as well as its restriction: ' + shut
             : 'an unrestricted free site lost its badge'));
+
+    // The third thing this branch draws, and the only one nothing has ever read: the
+    // "Stay the Night" badge. It is not a translated field but a claim of MEMBERSHIP in
+    // Forestry and Land Scotland's scheme, and OpenStreetMap publishes no such thing about
+    // an ordinary campsite. Lose the `if` and all 3,574 campsite rows wear it, which invites
+    // somebody to park overnight in a car park that is not in the scheme and is not theirs to
+    // sleep in. Measured: with that condition dropped the whole suite still reported 267
+    // passed, 0 failed -- the fee and access-note assertions above read their own substrings
+    // and are blind to a badge appearing beside them.
+    const stnRow = (s) => sub020(Object.assign({ source: 'campsite' }, s));
+    const wearsStn = (s) => /<span class="row__badge">Stay the Night<\/span>/.test(stnRow(s));
+    ok('only a Stay the Night car park wears the Stay the Night badge on its row',
+       wearsStn({ stay_the_night: true }) &&
+       !wearsStn({}) && !wearsStn({ parking: 'Free' }) &&
+       !wearsStn({ access_note: 'Customers only' }),
+       !wearsStn({ stay_the_night: true })
+         ? 'a real Stay the Night car park lost its badge: ' + stnRow({ stay_the_night: true })
+         : 'an ordinary campsite claims to be in the Stay the Night scheme: ' +
+           [{}, { parking: 'Free' }, { access_note: 'Customers only' }]
+             .filter(wearsStn).map(s => JSON.stringify(s)).join(', '));
   }
 
   // `vehicles` has the same two halves the fee and the access note had, and only the parser
