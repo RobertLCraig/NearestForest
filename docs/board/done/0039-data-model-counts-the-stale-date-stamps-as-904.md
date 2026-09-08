@@ -84,3 +84,59 @@ row in that table.
 No PHP suite exists in this project; the suite is `node scripts/selftest.js`, so `.\vendor\bin\pest.bat`
 and `.\vendor\bin\pint.bat` were not run. Nothing under `app/` changed, so no `CACHE`/`BUILD` bump.
 Docs only, so nothing needs a browser look.
+
+### 2026-09-08 review (v20260908130242-917f)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Checked both files myself.
+
+- The criterion: `docs/DATA-MODEL.md` "Known divergences" bullet now reads "all 1,180 records still read `2026-08-29`". I counted the shipped file myself: `{ '2026-08-29': 1180 }` over 1,180 records. The number matches the thing it counts.
+- `docs/DATA-MODEL.md` `counts_by_country` still reads `"England": 904`. Untouched, as the card said.
+- The check that holds it: `scripts/selftest.js`, in the `dataset counts carried in prose (card 0036)` block, test `dataset counts in comments match sites.json`. The row `['docs/DATA-MODEL.md', /all ([\d,]+) records still read/, staleCount]` reads the claimed number out of the prose. `staleCount` is not hard-coded: a second regex `/still read \`(\d{4}-\d{2}-\d{2})\`/` pulls the date from the same sentence and counts records carrying it. So the row survives a re-fetch.
+- I tried to break the keying. `still read` appears once in the file, and `all ([\d,]+) records still read` cannot reach the JSON block holding the correct 904. No overlap.
+- I ran the suite: 240 passed, 0 failed.
+
+I could not break it.
+
+VERDICT: sound
+
+**scope: sound**
+
+Checked the card's own commit, `5f09178`, not the branch-wide stat block (the rest of that block is cards 0016ÔÇô0038, already on `main`).
+
+What it touched: one line in `docs/DATA-MODEL.md` ("Known divergences", the parse-date stamp bullet), one new row plus two lookup lines in the `carried` block of `scripts/selftest.js`, and the card file. Nothing else.
+
+Fence check, one by one:
+
+- `docs/DATA-MODEL.md` `counts_by_country` block: not touched. The `"England": 904` line is byte-identical.
+- `docs/DECISIONS.md`: not touched by this commit.
+- `data/raw/`: not touched, no re-fetch.
+- `app/`: not touched, so no `CACHE`/`BUILD` bump was owed. The `BUILD` bump you can see in the branch stat belongs to card 0020's commits, not this one.
+
+Half-done check: task 3 asked for a key that cannot reach `:89`. The row in `carried` in `scripts/selftest.js` keys on `all ([\d,]+) records still read`, and the `counts_by_country` JSON block has no such words, so it cannot collide. The date is read from the same sentence by `staleDate` rather than hard-coded, so the row survives a re-fetch instead of pinning `2026-08-29`. If the paragraph is deleted the row reports "no count matching", the same failure mode as every sibling row, which the card said out loud.
+
+I tried to find something over the fence and there is nothing over it.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the card 0039 change. I could not.
+
+What I checked:
+
+- `scripts/selftest.js`, the `carried` block: the new row's key `all ([\d,]+) records still read` matches only one line in `docs/DATA-MODEL.md`. It cannot reach the `counts_by_country` block. I grepped `still read` across all docs ÔÇö the other two hits are in `docs/board/README.md` and `docs/outreach/forestry-england-handover.md`, other files, not read by this row.
+- `staleDate` in that same block reads the date out of the same sentence. If the paragraph is deleted, the row reports `no count matching` and the suite goes red, not silent. If the date changes to one no record carries, the count becomes 0 and the row goes red. Both fail loud.
+- `docs/DATA-MODEL.md` at the `counts_by_country` line still reads `"England": 904`. Untouched.
+- No other file carries a second copy of the stale-stamp record count, so nothing was left behind out of step.
+- I ran `node scripts/selftest.js`: 240 passed, 0 failed. The card's note says 227; other cards have landed since, and the count is not a claim the card makes in a doc.
+
+No caller, comment or docblock was made false by this change.
+
+VERDICT: sound
+
