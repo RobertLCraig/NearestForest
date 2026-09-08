@@ -112,3 +112,44 @@ this card` fences out, and it will read correctly again as soon as this card lea
 No browser check applies; nothing under `app/` changed. `board:convention` was not run: per this
 board's own notes its `--path` resolves only under `C:\Dev`, so from a worktree it would measure the
 main tree rather than this one.
+
+### 2026-09-08 review (v20260908140226-7272)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+I counted the folders, then read the file.
+
+**Criterion #1 fails.** `docs/HANDOVER.md`, the status block ("Eleven cards wait on a person...") and the Blockers paragraph ("`ls docs/board/human-review` on 2026-09-07 gives ...") both name eleven cards: 0001, 0002, 0003, 0010, 0017, 0018, 0024, 0025, 0027, 0030, 0043. `ls docs/board/human-review` gives **thirty-seven**: those eleven plus 0004, 0006, 0008, 0009, 0011, 0012, 0013, 0014, 0015, 0016, 0019, 0023, 0026, 0028, 0031, 0032, 0033, 0034, 0035, 0036, 0037, 0038, 0040, 0045, 0046, 0051. That is not later drift by another card: the same change set under review is what moved most of them (the diff creates `docs/board/human-review/0006-...`, `0008-...`, `0012-...`, `0013-...`, `0014-...` and more). The reader is told eleven and finds thirty-seven, which is a bigger version of the exact fault the card exists to fix.
+
+**Criterion #2 fails.** `docs/HANDOVER.md` "What's next" item 4 says "twenty-nine cards on 2026-09-07". `ls docs/board/ai-review` gives **eight**. Same change set: it deletes `ai-review/0006`, `0008`, `0012`, `0013`, `0014`, `0020`.
+
+Both numbers are cited in the file as folder counts, so both are trusted and both are wrong.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Scope: the fence held.** The commit that built this card is `d0336e4`, touching only `docs/HANDOVER.md`, its own card file, and new card `0042`. The agent-ready sentences that `## Not this card` fences off are untouched. Raising `0042` is declared on the card and is normal board practice, not silent growth. No app, script or data file moved in that commit; the large diff shown to me is other cards' work, not this one's.
+
+**One thing left half done.** In `docs/HANDOVER.md`, "What's next" item 4 now says `ai-review/` held **twenty-nine** cards. At that commit the folder held **28** card files plus a tracked `.gitkeep`. The count includes the placeholder, so it counts a non-card as a card. A reader sizing the adversarial pass is told 29 and meets 28 ÔÇö the same off-by-count fault the card exists to remove, just smaller. The `human-review/` sentences escape this because they enumerate names rather than count files.
+
+Fix is one word in item 4, plus stating that the count is `*.md` files, not folder entries.
+
+VERDICT: defect
+
+**breakage: defect**
+
+Found one thing that is wrong.
+
+**Finding ÔÇö `docs/HANDOVER.md`, "What's next" item 4.** It says `ai-review/` held **twenty-nine** cards on 2026-09-07 and calls `ls docs/board/ai-review` "the only honest count". At the card's own commit (`d0336e4`) that folder held **28 card files plus a `.gitkeep`**. The build counted the placeholder as a card. `ls docs/board/ai-review | measure`, the exact check the card's criterion #2 names, returns 28, not 29. So the sentence fails the check written to prove it, and it fails in the direction the card exists to stop: a sized queue that does not match the folder.
+
+The same trap does not hit the human-review number: that folder has no `.gitkeep`, so eleven is right, and the eleven bullets below the "Blockers" paragraph do cover all eleven cards.
+
+Nothing else the change touched went stale by it. Later drift in both lanes comes from cards `0021`, `0045`ÔÇô`0051`, not this one, and both sentences are date-stamped.
+
+VERDICT: defect
+
