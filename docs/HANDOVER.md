@@ -57,14 +57,14 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
   Collective Database from share-alike; one merged file would invite the argument that the OGL data
   became a derivative of the ODbL one. **A self-test fails if a campsite record appears inside
   `sites.json`.** Do not "tidy" the two files into one.
-- **Both are generated, never hand-edited.** 1,180 records / 719 KB and 3,575 records / 944 KB,
+- **Both are generated, never hand-edited.** 1,180 records / 719 KB and 3,574 records / 944 KB,
   committed on purpose because they are what the app ships. Fix the generator and re-run; do not
   patch the JSON.
 - **Campsites and Forests cover England and Scotland (Campsites adds Wales); Car parks is England
   only.** That asymmetry is deliberate and is written into the PRD: no open dataset of Scottish
   forest car parks exists. **Wales is card 0017 and is still open**, blocked on a contradiction
   between NRW's own metadata and data.gov.uk about internet applications.
-- **A campsite never shows an open/closed badge.** 97 of 3,575 records publish any hours at all, so
+- **A campsite never shows an open/closed badge.** 97 of 3,574 records publish any hours at all, so
   a badge would be a guess, and a self-test asserts `openState()` returns `unknown` for every one.
 - **Coordinates are WGS84 decimal degrees everywhere.** The car park source is EPSG:27700 and is
   reprojected at fetch time by asking ArcGIS for `outSR=4326`. `scripts/parse.py` asserts every
@@ -145,7 +145,7 @@ Forestry and Land Scotland --------+                                            
                           scripts/parse.py                                 scripts/parse_campsites.py
                                    |                                                       |
                                    v                                                       v
-                   app/data/sites.json (1,180)                       app/data/campsites.json (3,575)
+                   app/data/sites.json (1,180)                       app/data/campsites.json (3,574)
                                    |                                                       |
                                    +---------------------+---------------------------------+
                                                          |  merged in memory at load, NEVER on disk
@@ -224,7 +224,7 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   record's `country` comes from which query returned it rather than from a bounding box: England and
   Wales share too long a border for a box to be honest about it.
 - **The campsite filter is where the judgement lives**, in `takes_a_van()` and the drop rules around
-  it. 8,501 features in, 3,575 out, every exclusion counted and printed. Widening it to include the
+  it. 8,501 features in, 3,574 out, every exclusion counted and printed. Widening it to include the
   2,370 records that simply carry no caravan tag is a one-line change, and it is the first thing to
   reach for if real use says the list is too thin.
 - `app/map.js` — the canvas map: outline, markers, pan, pinch, tap, plus the optional tile layer.
@@ -323,14 +323,15 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 - **Built and not yet deployed, as one batch:** **0004** (177 car parks named after their nearest
   forest) and **0016** (Scotland in the Forests tab), both 2026-08-29; **0015** (the tile
   attribution pill), 2026-08-29, rendered and closed by a second run the same day; **0019** and
-  **0022** (the footer credits), both 2026-09-05. 249 self-tests pass (`node scripts/selftest.js`,
-  measured 2026-09-08) and `CACHE` / `BUILD` are at `v23-2026-09-08`, bumped six times by card 0020:
+  **0022** (the footer credits), both 2026-09-05. 250 self-tests pass (`node scripts/selftest.js`,
+  measured 2026-09-08) and `CACHE` / `BUILD` are at `v24-2026-09-08`, bumped seven times by card 0020:
   when it dropped six members-only campsites, when it gave the map its own ODbL credit, when it
   stopped a Stay the Night car park borrowing OpenStreetMap's data-checked date, when it dropped two
   scout sites that carry no `scout` tag, when it dropped 26 residential parks and park-home
   estates that a static-brand list cannot see, and when it dropped 72 Certificated Locations and
   Certificated Sites, which are members-only by the scheme's own definition and carry no
-  `access=members` tag. See
+  `access=members` tag, and when it dropped one site whose name says "private" while carrying no
+  `access` tag. See
   "What's next" item 1 for what is still owed before they ship.
   **What each card measured, found and deliberately left alone is on its own comment thread** in
   `ai-review/`; the facts that outlived the build are in DATA-MODEL and DECISIONS, and the FLS
@@ -356,7 +357,7 @@ The queue is [docs/board/](board/), one card per file. At the head:
    "Car park near Bedgebury Nat…" truncates at 22 characters. **0015 no longer needs a desktop look**
    — it got one, and its layout and contrast both hold; what it still wants is the phone, which the
    0018 screenshots need anyway, so fold it into that rather than blocking the deploy on it.
-   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v23-2026-09-08`.
+   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v24-2026-09-08`.
    **Serving a worktree is a solved problem now** and is worth reusing on 0004:
    `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
@@ -381,7 +382,7 @@ The queue is [docs/board/](board/), one card per file. At the head:
    compass, 0008 offline map, 0009 tile layer, and **0020 campsites**, which is the largest
    single change since the map. 0020 is worth real scepticism on three points: the filter that
    decides what a campervan can get into, whether the ODbL Collective Database argument holds, and
-   whether 3,575 more markers have broken the map's clustering or its label collisions. Nothing reaches `done/` without somebody trying
+   whether 3,574 more markers have broken the map's clustering or its label collisions. Nothing reaches `done/` without somebody trying
    to break it. **0008 deserves the most scepticism:** its gestures have only ever run against a
    stubbed canvas in node, never a real finger, and nobody has watched 630 car park markers render
    on a phone. `/code-review` is the tool.

@@ -1253,3 +1253,71 @@ deploy checks want.
 
 **Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
 icon, Campsites tab tapped into while offline. Card 0001 check 5.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (250 passed, 0 failed)
+TOUCHED: scripts/parse_campsites.py, scripts/selftest.js, app/app.js, app/core.js, app/sw.js,
+app/data/campsites.json, docs/DATA-MODEL.md, docs/DECISIONS.md, docs/HANDOVER.md, docs/PRD.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Found the last of #6's four words that was never checked against a name, and closed it.** #6 names
+members-only, private, scout and static-caravan. Three entries above this one found that `members`,
+`scout` and the static kinds all rested on tags OSM applies sparsely, and each shipped real records.
+**`private` was the fourth, and it rested entirely on `access=private` / `access=no`.** One record
+shipped: `os-w305916449` "King Edward Park(private)", which carries no `access` tag at all — the
+name is the only thing that says so, and nothing read the name.
+
+**Measured, not argued.** I read the shipped `app/data/campsites.json` rather than the assertion
+list. One record matches `\bprivate\b` on its name; the drop counter for private/no-public-access
+went from 102 to 103 on the rebuild.
+
+**The line that must not move, and it is in the fixture.** `operator=Private` in OSM means privately
+**owned**, not closed to the public. `os-w157576032` "Llyn Gwynant Campsite" in Snowdonia carries it
+and takes anyone who books. So `PRIVATE_RE` reads the **name only**, which is why it is its own
+pattern rather than another word inside `MEMBERS_RE` — that one reads operator and name together.
+The fixture keeps a `Llyn Gwynant Campsite` with `operator: 'Private'` that the assertion requires
+to survive, so a match that is too wide fails as loudly as one that is too narrow. It survived the
+rebuild.
+
+**Watched red, and watched the four older #6 assertions stay green beside it.** The new assertion `a
+site named private is dropped even when it carries no access tag` goes in the temp-tree block beside
+the members-only one. Against the current parser it failed naming `os-n51, os-n52`, while `no
+campsite is members-only, private, scout or a static-caravan park`, `a members-only, private, scout
+or static-caravan site never reaches the file`, `a site named as a scout site is dropped even when
+it carries no scout tag` and `a residential or park-home site is dropped even when only its name
+says so` all reported **PASS**. That is the criterion's own failure, not a missing symbol. 250
+passed, 0 failed after the fix.
+
+**`CACHE` and `BUILD` bumped to `v24-2026-09-08`**, because the rebuild changed
+`app/data/campsites.json`: **3,574 records, England 2,524 / Scotland 496 / Wales 554**, down one,
+944 KB. The `card 0036` prose-count guard failed unprompted with `app/app.js: says 3575, dataset
+holds 3574` before I had touched any prose, so the corrected counts in `app/app.js`,
+`docs/HANDOVER.md`, `docs/DATA-MODEL.md`, `docs/PRD.md` and `docs/DECISIONS.md` are checked rather
+than asserted. `DATA-MODEL`'s `counts_by_country` block was also stale from two runs back
+(2582/505/560) and now matches the file.
+
+**What I looked at and deliberately left alone.** Six naturist and adults-only sites still ship
+(`Ashdene Naturist Club`, `Greenacres Sun Club`, `The Naturist Foundation` and three more). Several
+are clubs that in practice admit members only, but #6 does not name them, `Manor Farm Camping
+(Naturist and Textile)` is open to all, and a rule that guesses is worse than the gap — the same
+reason the entries above gave for `access=restricted`. `Scoutscroft` and `Scoutscroft Touring` still
+ship and should: they are commercial holiday parks, and the word-boundary match on `scout` is what
+keeps them. No card raised, because leaving a site the criterion does not name is not a fault.
+
+**Assumed:** `data/raw/osm/` was already present in this worktree, so no Overpass request was made.
+The rebuild reflects OSM's 2026-08-15 snapshot, not today's.
+
+**Suite:** `node scripts/selftest.js`, 250 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Nothing here has been seen in a browser** — this is a worktree and Herd serves the main checkout —
+and this run shipped a dataset change, so the Campsites tab wants the same phone look the other
+deploy checks want.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5.

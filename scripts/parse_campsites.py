@@ -61,6 +61,12 @@ SCOUT_RE = re.compile(r"\bscouts?\b", re.I)
 # non-members at a higher price, so "club" is deliberately absent from this pattern.
 MEMBERS_RE = re.compile(r"\b(cl|cs|certificated|members?)\b", re.I)
 
+# A private site named as one but not tagged access=private. "King Edward Park(private)"
+# carries no access tag at all and shipped. Read against the NAME ONLY, never the operator:
+# operator=Private in OSM means privately OWNED rather than closed to the public, and
+# "Llyn Gwynant Campsite" in Snowdonia carries it while taking anyone who books.
+PRIVATE_RE = re.compile(r"\bprivate\b", re.I)
+
 FLS_STN_NOTE = ("Forestry and Land Scotland 'Stay the Night': overnight parking only, "
                 "6pm to 10am, no return within 48 hours. Self-contained motorhomes and "
                 "campervans only, so no tents and no toilet set up beside the vehicle. "
@@ -253,7 +259,8 @@ def build_osm():
             # at a club site you are not a member of, so "Members only" on a row in a
             # list read while driving is an invitation to a locked gate.
             if (tags.get("access") in ("private", "no", "members")
-                    or MEMBERS_RE.search("%s %s" % (tags.get("operator", ""), name))):
+                    or MEMBERS_RE.search("%s %s" % (tags.get("operator", ""), name))
+                    or PRIVATE_RE.search(name)):
                 notes["private"] += 1
                 continue
             if (tags.get("scout") in ("yes", "only") or tags.get("group_only") == "yes"

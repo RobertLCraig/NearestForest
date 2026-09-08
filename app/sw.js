@@ -5,7 +5,7 @@
    which is the only reliable way to retire a stale dataset on iOS. */
 'use strict';
 
-var CACHE = 'nearest-forest-v23-2026-09-08';
+var CACHE = 'nearest-forest-v24-2026-09-08';
 var ASSETS = [
   './',
   './index.html',

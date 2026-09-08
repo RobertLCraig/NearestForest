@@ -1327,6 +1327,42 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
          ? 'the match is too wide: it dropped "Abbey Wood Caravan Club Site", which takes non-members'
          : 'the parser dropped the ordinary campsite too');
 
+    // Acceptance #6 of card 0020 a fifth time, for the "private" kind -- the one word of the
+    // four that the parser has never checked against a NAME. The drop rests entirely on
+    // access=private / access=no, and OSM's access tag is as sparse here as it was for
+    // members and scout: measured over the shipped app/data/campsites.json,
+    // "King Edward Park(private)" (os-w305916449) ships today carrying no access tag at all.
+    // The line that must not move: operator=Private in OSM means privately OWNED, not closed
+    // to the public -- "Llyn Gwynant Campsite" in Snowdonia carries it and anyone may book --
+    // so this reads the name only, never the operator. That is why it is its own pattern
+    // rather than another word inside MEMBERS_RE, which reads both.
+    const privateNamed = [
+      { type: 'node', id: 51, lat: 55.6, lon: -3.6, tags: {
+          name: 'King Edward Park(private)', tourism: 'caravan_site', caravans: 'yes' } },
+      { type: 'node', id: 52, lat: 55.7, lon: -3.7, tags: {
+          name: 'Hillside Private Caravan Park', tourism: 'caravan_site' } },
+    ];
+    const privatelyOwned = { type: 'node', id: 53, lat: 56.1, lon: -4.1, tags: {
+      name: 'Llyn Gwynant Campsite', tourism: 'camp_site', caravans: 'yes',
+      operator: 'Private' } };
+    writeOsm([goodEl, privatelyOwned].concat(privateNamed));
+    const cPrivate = runCamp();
+    let privIds = null;
+    if (cPrivate.status === 0 && fs.existsSync(cOut)) {
+      try { privIds = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites.map(s => s.id); }
+      catch (e) { privIds = null; }
+    }
+    const privShipped = privIds &&
+      privateNamed.map(e => `os-n${e.id}`).filter(id => privIds.includes(id));
+    ok('a site named private is dropped even when it carries no access tag',
+       !!privIds && privShipped.length === 0 &&
+       privIds.includes('os-n1') && privIds.includes('os-n53'),
+       !privIds ? `the run exited ${cPrivate.status} and wrote no dataset: ${tail(cPrivate)}`
+       : privShipped.length ? `private sites still listed as somewhere to pull up for the night: ${privShipped.join(', ')}`
+       : !privIds.includes('os-n53')
+         ? 'the match is too wide: it dropped "Llyn Gwynant Campsite", whose operator=Private means privately owned, not closed'
+         : 'the parser dropped the ordinary campsite too');
+
     // Acceptance #3 and #4 of card 0020, the half the shipped file cannot prove. The check
     // over app/data/campsites.json only matches /ODbL/ and /OpenStreetMap/, and it reads a
     // file that already happens to be right, so it is green from birth. #3 names three
