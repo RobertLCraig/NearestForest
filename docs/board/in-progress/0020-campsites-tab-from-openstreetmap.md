@@ -95,8 +95,8 @@ OpenStreetMap contributors"**, naming the Open Database License and linking to
 **Rob chose the shortest cut on 2026-08-15: named and explicitly caravan or motorhome capable.** The
 recommendation on this card had been the middle option; the call went the other way, in favour of a
 list every row of which is recognisable and true. Widening it later is a one-line change to
-`takes_a_van()`. **Shipped:** 3,647 campsites — 2,582 England, 505 Scotland, 560 Wales — including
-all 44 Stay the Night car parks, 972 KB on disk and about 150 KB on the wire. Two faults were found
+`takes_a_van()`. **Shipped:** 3,575 campsites — 2,525 England, 496 Scotland, 554 Wales — including
+all 44 Stay the Night car parks, 944 KB on disk and about 150 KB on the wire. Two faults were found
 by running it rather than reading it: the same site mapped twice, as an OSM node and as the
 surrounding area, fixed by merging same-name records within 0.5 mi and self-tested; and the Stay the
 Night rules sitting under a heading about money, relabelled "Overnight rules".
@@ -1171,6 +1171,76 @@ than the gap. Nor did I widen `\bhaven\b` beyond what the existing entry already
 The rebuild reflects OSM's 2026-08-15 snapshot, not today's.
 
 **Suite:** `node scripts/selftest.js`, 248 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Nothing here has been seen in a browser** — this is a worktree and Herd serves the main checkout —
+and this run shipped a dataset change, so the Campsites tab wants the same phone look the other
+deploy checks want.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (249 passed, 0 failed)
+TOUCHED: scripts/parse_campsites.py, scripts/selftest.js, app/app.js, app/core.js, app/sw.js,
+app/data/campsites.json, docs/DATA-MODEL.md, docs/DECISIONS.md, docs/HANDOVER.md, docs/PRD.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Found 72 members-only sites shipping under criterion #6, and dropped them.** This is the same
+shape as the scout and residential findings on the two entries above, in the one drop rule that had
+never been checked against a name: `access`. #6 names four kinds of site, and the members-only kind
+rested entirely on the tag `access=members`. That tag is as sparsely applied as `scout` was.
+
+**Measured, not argued.** Reading the shipped `app/data/campsites.json` rather than the assertion
+list: **71 Certificated Locations and Certificated Sites** were listed as somewhere to pull up for
+the night, from `os-n8974947457` "Arlebrook House CAMC CL" to `os-w420057782` "Wyming Brook Farm
+Certificated Site" and `os-w1312827351` "Lodge Farm C&CC CS", plus `os-w127174906`, named literally
+"Caravan Club Site (members)". **Not one of the 72 carried `access=members`**, so every existing #6
+assertion stayed green: a record the parser correctly drops leaves no text to match on, so a record
+it wrongly keeps ships with `access_note: null` and matches nothing either.
+
+**Why a CL is members-only by definition and not by policy.** A Certificated Location or
+Certificated Site is a five-van site that is exempt from site licensing *only* because an exempted
+organisation runs it for its own members, under the Caravan Sites and Control of Development Act
+1960, schedule 1. It cannot admit a passing non-member without losing the exemption. That is
+external law rather than anything this repository states, so it is written into the parser's comment
+and into `docs/DATA-MODEL.md` where the next person can check it.
+
+**The line that must not move, and it is in the fixture.** The full network **Club Sites** — "Abbey
+Wood Caravan Club Site" and its siblings — take non-members at a higher price, so `club` is
+deliberately absent from `MEMBERS_RE` and the fixture keeps an "Abbey Wood Caravan Club Site" that
+the assertion requires to survive. A match that is too wide fails it as loudly as one that is too
+narrow. 185 club sites survived the rebuild.
+
+**Watched red, and watched both older #6 assertions stay green beside it.** The new assertion `a
+certificated members-only site is dropped even when it carries no access tag` goes in the temp-tree
+block beside the scout and residential ones. Against the current parser it failed naming `os-n41,
+os-n42, os-n43, os-n44`, while `no campsite is members-only, private, scout or a static-caravan
+park` and `a members-only, private, scout or static-caravan site never reaches the file` both
+reported **PASS**. That is the criterion's own failure, not a missing symbol. 249 passed, 0 failed
+after the fix.
+
+**`CACHE` and `BUILD` bumped to `v23-2026-09-08`**, because the rebuild changed
+`app/data/campsites.json`: **3,575 records, England 2,525 / Scotland 496 / Wales 554**, down 72, 944
+KB. The `card 0036` prose-count guard failed unprompted with `app/app.js: says 98, dataset holds 97
+| says 3647, dataset holds 3575` before I had touched any prose, so the corrected counts in
+`app/app.js`, `docs/HANDOVER.md`, `docs/DATA-MODEL.md`, `docs/PRD.md` and `docs/DECISIONS.md` are
+checked rather than asserted. `DATA-MODEL`'s exclusion table private/members row went from 30 to 102
+and now carries the name-only reason.
+
+**What I did not do.** I did not drop the 185 remaining club sites, because they admit non-members
+and #6 does not name them. I did not widen the rule to `access=restricted` or `access=appointment`,
+for the same reason the entry above gives.
+
+**Assumed:** `data/raw/osm/` was already present in this worktree, so no Overpass request was made.
+The rebuild reflects OSM's 2026-08-15 snapshot, not today's.
+
+**Suite:** `node scripts/selftest.js`, 249 passed, 0 failed. There is no `vendor/` in this
 repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
 This project has never had a PHP suite.
 

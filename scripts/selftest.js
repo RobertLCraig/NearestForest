@@ -1283,6 +1283,50 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
          ? 'the match is too wide: it dropped "Second Chance Touring & Residential Park", which takes tourers'
          : 'the parser dropped the ordinary campsite too');
 
+    // Acceptance #6 of card 0020 a fourth time, for the "members-only" kind, which until now
+    // rested entirely on the tag access=members. That tag is as sparse as `scout` was: measured
+    // over the shipped app/data/campsites.json, 71 Certificated Locations and Certificated
+    // Sites ship today -- "Arlebrook House CAMC CL", "Wyming Brook Farm Certificated Site",
+    // "Lodge Farm C&CC CS" -- plus one named "Caravan Club Site (members)". A CL or CS is a
+    // five-van site licensed only because an exempted organisation runs it for ITS MEMBERS
+    // (Caravan Sites and Control of Development Act 1960, sch. 1), so members-only is the
+    // definition of the scheme rather than a policy the site could change. None carries
+    // access=members, so every existing #6 assertion stays green while a non-member drives
+    // to a locked gate.
+    // The line that must not move: a full Club Site -- the big network sites -- takes
+    // non-members at a higher price, so "Abbey Wood Caravan Club Site" has to survive.
+    const membersOnly = [
+      { type: 'node', id: 41, lat: 55.6, lon: -3.6, tags: {
+          name: 'Arlebrook House CAMC CL', tourism: 'caravan_site' } },
+      { type: 'node', id: 42, lat: 55.7, lon: -3.7, tags: {
+          name: 'Wyming Brook Farm Certificated Site', tourism: 'caravan_site',
+          operator: 'Caravan and Camping Club' } },
+      { type: 'node', id: 43, lat: 55.8, lon: -3.8, tags: {
+          name: 'Lodge Farm C&CC CS', tourism: 'camp_site', caravans: 'yes' } },
+      { type: 'node', id: 44, lat: 55.9, lon: -3.9, tags: {
+          name: 'Caravan Club Site (members)', tourism: 'caravan_site' } },
+    ];
+    const openClub = { type: 'node', id: 45, lat: 56.1, lon: -4.1, tags: {
+      name: 'Abbey Wood Caravan Club Site', tourism: 'caravan_site', caravans: 'yes',
+      operator: 'Caravan and Motorhome Club' } };
+    writeOsm([goodEl, openClub].concat(membersOnly));
+    const cMembers = runCamp();
+    let memberIds = null;
+    if (cMembers.status === 0 && fs.existsSync(cOut)) {
+      try { memberIds = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites.map(s => s.id); }
+      catch (e) { memberIds = null; }
+    }
+    const memberShipped = memberIds &&
+      membersOnly.map(e => `os-n${e.id}`).filter(id => memberIds.includes(id));
+    ok('a certificated members-only site is dropped even when it carries no access tag',
+       !!memberIds && memberShipped.length === 0 &&
+       memberIds.includes('os-n1') && memberIds.includes('os-n45'),
+       !memberIds ? `the run exited ${cMembers.status} and wrote no dataset: ${tail(cMembers)}`
+       : memberShipped.length ? `members-only sites still listed as somewhere to pull up for the night: ${memberShipped.join(', ')}`
+       : !memberIds.includes('os-n45')
+         ? 'the match is too wide: it dropped "Abbey Wood Caravan Club Site", which takes non-members'
+         : 'the parser dropped the ordinary campsite too');
+
     // Acceptance #3 and #4 of card 0020, the half the shipped file cannot prove. The check
     // over app/data/campsites.json only matches /ODbL/ and /OpenStreetMap/, and it reads a
     // file that already happens to be right, so it is green from birth. #3 names three

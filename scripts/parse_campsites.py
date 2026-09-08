@@ -52,6 +52,15 @@ TOURING_RE = re.compile(r"\btouring\b", re.I)
 # and "Scoutscroft Touring" in Coldingham are commercial holiday parks anyone may book.
 SCOUT_RE = re.compile(r"\bscouts?\b", re.I)
 
+# A members-only site named as one but not tagged access=members. A Certificated Location
+# (CL) or Certificated Site (CS) is a five-van site that is licence-exempt only because an
+# exempted organisation runs it for ITS MEMBERS -- Caravan Sites and Control of Development
+# Act 1960, sch. 1 -- so members-only is the definition of the scheme, not a policy the site
+# could change. 71 of them shipped and not one carried the tag.
+# NOT the full network Club Sites: "Abbey Wood Caravan Club Site" and its ~200 siblings take
+# non-members at a higher price, so "club" is deliberately absent from this pattern.
+MEMBERS_RE = re.compile(r"\b(cl|cs|certificated|members?)\b", re.I)
+
 FLS_STN_NOTE = ("Forestry and Land Scotland 'Stay the Night': overnight parking only, "
                 "6pm to 10am, no return within 48 hours. Self-contained motorhomes and "
                 "campervans only, so no tents and no toilet set up beside the vehicle. "
@@ -243,7 +252,8 @@ def build_osm():
             # access=members is dropped, not labelled. You cannot pull up for the night
             # at a club site you are not a member of, so "Members only" on a row in a
             # list read while driving is an invitation to a locked gate.
-            if tags.get("access") in ("private", "no", "members"):
+            if (tags.get("access") in ("private", "no", "members")
+                    or MEMBERS_RE.search("%s %s" % (tags.get("operator", ""), name))):
                 notes["private"] += 1
                 continue
             if (tags.get("scout") in ("yes", "only") or tags.get("group_only") == "yes"
