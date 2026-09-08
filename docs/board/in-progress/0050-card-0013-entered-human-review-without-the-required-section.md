@@ -45,23 +45,23 @@ Not a check that refuses a card entering the lane without the section: that live
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0013-scheme-allow-list-for-dataset-urls.md` is searched for the
+- [x] #1 WHEN `docs/board/human-review/0013-scheme-allow-list-for-dataset-urls.md` is searched for the
       heading `## What I need from you`, THE CARD SHALL return a hit directly under its title.
       proves: none - this project's suite is one node script over the app and cannot read the board;
       the check is `grep -rL "## What I need from you" docs/board/human-review/*.md` not naming `0013`
-- [ ] #2 WHEN a reader opens `0013`, THE CARD SHALL state the ask, what a pass is and what a fail is,
+- [x] #2 WHEN a reader opens `0013`, THE CARD SHALL state the ask, what a pass is and what a fail is,
       within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the `breakage: defect` verdict above it, and use the ask
+- [x] Read the card's last comment entry and the `breakage: defect` verdict above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget after the section is added, and say on the
+- [x] Check the card is still inside the 100-line budget after the section is added, and say on the
       card if it is not
-- [ ] Re-grep the lane and report which cards still miss the heading
+- [x] Re-grep the lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository. Only
@@ -99,3 +99,27 @@ title.
 **2026-09-07** Raised by card `0047` on its run. `0045` named three cards, `0046` two more, `0047`
 named `0008`, `0048` named `0011`, `0049` named `0012`, and `0013` arrived after `0049` was written.
 The lane keeps changing under an open card, which is the finding rather than a miscount.
+
+**2026-09-08** RESULT: done
+TESTS: +0 new, all green (227 passed, 0 failed)
+TOUCHED: docs/board/human-review/0013-scheme-allow-list-for-dataset-urls.md
+TOUCHED: docs/board/in-progress/0050-card-0013-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: none
+
+Wrote `## What I need from you` directly under `0013`'s title, using the ask already at the bottom of
+its thread rather than a new one. The ask names criterion `#2`, not `#3`: the reviewer's `breakage`
+verdict says `validate()` in `scripts/parse.py` is the only place AC `#2` lives and nothing drives
+it. Which box to untick is still Rob's call, and the section says so under "Why it needs you".
+
+Neither criterion here could be given a test. `#1` is `proves: none` and `#2` is `proves: manual`, and
+this project's suite is `node scripts/selftest.js` over the app — it cannot read the board. I ran it
+anyway to show nothing broke: 227 passed, 0 failed. There is no PHP suite in this repository, so
+`.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist here and were not run.
+
+**`0013` is now 117 lines and over the 100-line budget**, as this card predicted. It was 98 before.
+Nothing was cut to make room: `## Comments` is append-only and holds three review verdicts, which is
+most of the file. Shortening it means moving those verdicts, and that is not this card's call.
+
+Re-grepped the lane. **Two cards still miss the heading: `0014` and `0015`.** Both already have a
+card, so no new one was raised: `0051` in `todo/` covers `0012`, `0013` and `0014`, and `0052` in
+`todo/` covers `0015`. Note `0051` overlaps this card and `0049` on `0013` and `0012`.
