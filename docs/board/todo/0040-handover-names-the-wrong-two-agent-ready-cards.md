@@ -77,3 +77,53 @@ anyway to show the docs edit broke nothing: 227 passed, 0 failed. There is no PH
 I left the `human-review/` and `ai-review/` counts alone, as `## Not this card` requires. Both are
 stale — the file says eight person-waiting cards and names eight, the folder holds eleven; it says
 nineteen in `ai-review/`, the folder holds twenty-seven. That is card `0041`.
+
+### 2026-09-08 review (v20260908133410-397d)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+Card 0040 says both sentences would name exactly what `ls docs/board/todo` gives. In the tree today they do not.
+
+- `docs/board/todo/` holds `0052`, `0053`, `0054`.
+- `docs/HANDOVER.md`, status block near the top ("Three agent-ready cards are open"), names `0045` in `todo/`, plus `0021` and `0044`.
+- `docs/HANDOVER.md`, opening of "Blockers / open questions", names the same set: `0045` in `todo/`, `0021` and `0044` in `in-progress/`.
+- `0045` is in neither `todo/` nor any lane listing I read; `0021` is in `in-progress/`, so only that part still holds.
+
+So criterion #1 cannot be traced to a true state of the file. A reader counting agent-ready cards is pointed at one card that is not there and told nothing about the three that are.
+
+I can also see the card's own text was already overwritten: card `0044` (in `ai-review/`) rewrote both sentences to the `0045` wording, and that wording is now stale too. That is the same fault this card claims to have closed, which is evidence the fix did not hold, not evidence it was met.
+
+The prose task about `0033`/`0034` is done: the paragraph says both are built and sit in `ai-review/`.
+
+VERDICT: defect
+
+**scope: defect**
+
+Findings, in plain words.
+
+**1. The change went far over the fence.** The card asked for two sentences in `docs/HANDOVER.md`, and nothing else. The recorded diff also adds `mapHint` in `app/core.js`, changes the marker credit in `app/map.js`, bumps `BUILD` in `app/core.js` and the cache name in `app/sw.js`, rewrites `scripts/parse_campsites.py`, adds ~253 lines to `scripts/selftest.js`, and regenerates `app/data/campsites.json`. None of that is in `## Tasks` or `## Acceptance`.
+
+**2. It also edited the counts the fence names.** `## Not this card` says do not touch the `human-review/` count. The diff still edits `docs/DATA-MODEL.md`, `docs/PRD.md`, `docs/DECISIONS.md` and `docs/outreach/forestry-england-handover.md` record counts, which the card never asked for.
+
+**3. It is half done now.** The status block in `docs/HANDOVER.md` names `0045`, `0021`, `0044`. `ls docs/board/todo` gives `0052`, `0053`, `0054`. The "Blockers / open questions" opening says the same wrong thing. The one criterion is false as the file stands.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding ÔÇö `docs/HANDOVER.md`, "Blockers / open questions"**
+
+Card 0040's task 4 was to say where `0033` and `0034` went. The sentence it wrote says both are "sitting in `ai-review/` for the adversarial pass". The folders say otherwise: `docs/board/human-review/0033-a-decision-card-nobody-can-see-sits-in-todo.md` and `.../0034-the-no-caching-decision-rests-on-a-smaller-dataset.md`. `ai-review/` holds neither. So the one claim of 0040's that survives in the file is false, and it points a fresh session at the wrong lane ÔÇö the exact fault the card was raised to remove, reproduced one lane over.
+
+Both count sentences 0040 wrote (naming `0041`) have already been overwritten by card 0044, so nothing else of this work is left to break. Nothing in code depends on the file: `scripts/selftest.js` never reads `docs/`, so nothing catches this.
+
+Also stale, same cause: the card's own log lists `TOUCHED: docs/board/in-progress/0040-...`, but the file is in `ai-review/`.
+
+The lane claim is the fixable part. It was checkable with `find docs/board -name "003[34]*"` and was not checked.
+
+VERDICT: defect
+
