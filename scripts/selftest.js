@@ -720,6 +720,14 @@ console.log('--- update path ---');
   ok('the app credits OpenStreetMap and names the licence',
      /OpenStreetMap/.test(html) && /Open Database License/.test(html) &&
      /openstreetmap\.org\/copyright/.test(html));
+  // Card 0020 #3 asks for three things and the assertion above proves two of them: the
+  // credit and the licence name. Its third is "link to openstreetmap.org/copyright", and
+  // a substring match cannot tell a link from a printed URL -- write the address out as
+  // plain text in the footer and that check stays green while nothing is tappable. On a
+  // phone, and on an app whose whole point is having no keyboard-and-address-bar moment,
+  // an unclickable URL does not discharge the obligation. So this pins the anchor.
+  ok('the OpenStreetMap credit is a real link, not a printed URL',
+     /<a\s[^>]*href="https:\/\/(www\.)?openstreetmap\.org\/copyright"/.test(html));
   ok('the Campsites tab exists in the shell', /data-tab="campsite"/.test(html));
 
   const ht = fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8');

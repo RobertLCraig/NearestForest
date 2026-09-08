@@ -678,3 +678,58 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (240 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the third clause of criterion #3, which nothing could distinguish from its own failure.**
+#3 names three obligations: credit OpenStreetMap, state the Open Database License, and **link to
+`openstreetmap.org/copyright`**. One assertion covered the shell, `the app credits OpenStreetMap and
+names the licence`, and it tests that third clause with a bare substring match on the address.
+**A substring match cannot tell a link from a printed URL.** Write the address out as plain text in
+the footer and that assertion stays green while nothing on the page is tappable. On a phone, in a
+car park, an unclickable URL does not discharge a licence obligation: there is no address bar to
+paste it into and no signal to load it with.
+
+**Watched red, and watched the old assertion stay green beside it.** The new assertion `the
+OpenStreetMap credit is a real link, not a printed URL` requires the copyright URL to appear as an
+anchor's `href`. I ran it against an `index.html` whose `#osm-credit` paragraph had the `<a>` reduced
+to plain text with the URL printed in brackets: **239 passed, 1 failed**, the one failure being the
+new assertion, and `the app credits OpenStreetMap and names the licence` reported **PASS** with no
+link on the page at all. That is the criterion's own failure and the proof the gap was real rather
+than a missing symbol. Restored the anchor and re-ran: 240 passed, 0 failed.
+
+**Why the footer and not the map hint.** The map pill (`OSM_CREDIT` in `app/core.js`) carries the
+credit and the licence name but no link, deliberately — a pill drawn over a canvas is not somewhere
+to put an anchor. The footer is where #3's third clause is discharged, so the footer is where it is
+pinned.
+
+**What I looked at and left alone.** `NF.mapHint(true, true)` — tiles on *and* campsite markers
+drawn — is the one corner of that function with no assertion of its own, and it returns the
+Thunderforest line, which names OpenStreetMap but not ODbL. I did not add a test, because it is not
+unwatched: `provider attribution is present` greps `core.js` for both provider names on one line,
+which is `TILE_CREDIT` itself, so shortening that string already fails the suite. And the wording of
+that corner is a decision this card's own thread recorded ("Tiles on still gives the Thunderforest
+line"), not a gap.
+
+**No `CACHE` / `BUILD` bump.** `app/index.html` ends the run byte-identical to how it started;
+`git status` shows `scripts/selftest.js` and the two documents only, and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 240 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 239 self-tests, which this run
+made 240. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+
