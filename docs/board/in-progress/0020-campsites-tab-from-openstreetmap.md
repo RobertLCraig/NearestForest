@@ -478,3 +478,46 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (236 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the gap in criterion #1, which nothing was watching.** #1 is "THE APP SHALL offer a third
+tab, Campsites, ranked by distance from the current fix exactly as the other two are." Three
+assertions were traced to it by an earlier entry on this thread: `the Campsites tab exists in the
+shell`, `ranking the campsite tab returns only campsites` and `campsite ranking is sorted ascending`.
+The first proves the button. **The other two prove `NF.rank`, not the app**, because the line above
+them is `NF.rank(sites.concat(camps), ...)` — the suite builds the merged array itself. Nothing
+asserted that the *shell* fetches `data/campsites.json` and concatenates it into the list `rank`
+reads. Delete either line in `app/app.js` and the button still exists, the file still ships, every
+campsite assertion still passes, and the tab renders empty.
+
+**Watched red, and watched the rest stay green beside it.** The new assertion `the shell fetches the
+campsite file and merges it into the ranked list` reads `app/app.js` and requires both
+`loadJson('data/campsites.json')` and `DATA.sites = DATA.sites.concat(CAMP.sites)`. I ran it against
+an `app.js` with the concat line replaced by a comment: **235 passed, 1 failed**, and the one failure
+was the new assertion. Every other campsite check reported PASS with the tab wired to nothing, which
+is the proof the gap was real rather than a missing symbol. Restored the line and re-ran: 236 passed,
+0 failed.
+
+**Why source text rather than a run.** `app.js` is DOM-and-`fetch` only and this suite has no DOM, so
+this is the same shape card 0004's `the detail sheet marks a derived name` and this card's own Stay
+the Night heading assertion use. The merge is also the one place #4 permits the two databases to
+meet, so pinning the exact expression guards the licence boundary as well as the tab.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started;
+`git status` shows `scripts/selftest.js` only, and nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 236 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
+

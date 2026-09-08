@@ -440,6 +440,17 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
      /site\.stay_the_night \? field\('Overnight rules', site\.parking\)/.test(appjs020),
      'listing the scheme rules under a price heading invites someone to break them');
 
+  // Acceptance #1 is "the app offers a Campsites tab, ranked like the other two", and the
+  // ranking assertions below build the merged array themselves, so they prove `rank` and
+  // not the app. The shell has to fetch the second file AND concat it into the list `rank`
+  // reads; drop either line and every other campsite assertion here stays green while the
+  // tab renders empty. The merge is in-memory only and must never reach disk (#4), so this
+  // asserts the one place it is allowed to happen. Source text, because app.js is DOM-only.
+  ok('the shell fetches the campsite file and merges it into the ranked list',
+     /loadJson\('data\/campsites\.json'\)/.test(appjs020) &&
+     /DATA\.sites = DATA\.sites\.concat\(CAMP\.sites\)/.test(appjs020),
+     'without both lines the Campsites tab loads empty and nothing else here notices');
+
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
   ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
   ok('campsite ranking is sorted ascending',
