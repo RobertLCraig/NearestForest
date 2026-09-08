@@ -1484,3 +1484,54 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (254 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the app half of criterion #2's badge clause.** #2 says "THE APP SHALL NOT show an
+open/closed badge". Two assertions were traced to it: `no campsite carries a parsed opening summary`
+reads the shipped file, and `no campsite is ever reported open or closed` calls `NF.openState` over
+every campsite. Both prove the **data** and the **core function**. **Neither proves the app asks.**
+The badge is rendered in two places — the list row in `draw()` and the "Right now" field in
+`openSheet()` — and each is gated on that state by a hand-written condition nothing was watching.
+
+**Measured, not argued.** I replaced `if (st.state !== 'unknown')` in `openSheet` with `if (true)`
+and ran the suite: **253 passed, 0 failed**. With that one word changed every campsite sheet carries
+a "Right now" row reading `Closed · undefined`, built from a state the source never published, and
+the whole suite is green — including both existing #2 assertions, because `openState` still returns
+`unknown` and the app simply stopped asking it.
+
+**Watched red, and watched the two older #2 assertions stay green beside it.** The new assertion
+`the app shows an open or closed badge only when the state is known` requires both gates: the
+sheet's `Right now` field inside the `st.state !== 'unknown'` guard, and the row's two spans emitted
+only under `st.state === 'closed'` and `st.state === 'open'`. Against the broken `openSheet` it
+failed while `no campsite is ever reported open or closed` reported **PASS**. That is the criterion's
+own failure, not a missing symbol. Restored the gate and re-ran: 254 passed, 0 failed.
+
+**One limit of the harness, said plainly.** This is source text, not behaviour. Both gates sit inside
+`draw()` and `openSheet()`, which are DOM-only, and unlike `field()` and `updateHint()` they cannot
+be lifted out with `new Function` — they read `listEl`, `$()` and the sheet element from module
+scope. It is the same shape as the two neighbouring `app.js` assertions on this card. The cost is
+that renaming the local `st` makes the assertion fail loudly but unhelpfully.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started;
+`git status` shows `scripts/selftest.js` and the two documents only, and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 254 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 253 self-tests, which this run
+made 254. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

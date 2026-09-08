@@ -440,6 +440,19 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
      /site\.stay_the_night \? field\('Overnight rules', site\.parking\)/.test(appjs020),
      'listing the scheme rules under a price heading invites someone to break them');
 
+  // Acceptance #2, the badge clause: "THE APP SHALL NOT show an open/closed badge".
+  // `no campsite is ever reported open or closed` above proves NF.openState returns
+  // `unknown`. It does not prove the app asks. Two places render the badge -- the list
+  // row in draw() and the "Right now" field in openSheet() -- and both are gated on that
+  // state by hand. Delete either gate and every campsite gets a badge built from an
+  // undefined label, which is the guess this project refuses, and the suite stays green.
+  // Source text rather than behaviour: both live inside DOM-only functions this harness
+  // cannot run. The cost is that renaming `st` breaks the assertion loudly but unhelpfully.
+  ok('the app shows an open or closed badge only when the state is known',
+     /if \(st\.state !== 'unknown'\) \{\r?\n\s*h \+= field\('Right now'/.test(appjs020)
+     && /if \(st\.state === 'closed'\)[\s\S]{0,160}?else if \(st\.state === 'open'\)/.test(appjs020),
+     'an ungated badge tells a reader a campsite gate is open on no published hours');
+
   // Acceptance #2, "state only what its source publishes". The sheet's "Data checked" row
   // falls back to the file's `generated_at` when a record carries no `scraped_at` — and
   // `generated_at` is OpenStreetMap's snapshot date. A Stay the Night car park comes from
