@@ -139,3 +139,55 @@ that budget and left 2,985 bytes of headroom; this card's figures spent about ha
 back and cut the passage to its facts rather than leaving it at first draft. **1,654 bytes remain**,
 which is less than `0031` handed over and worth knowing before the next HANDOVER edit. No new card:
 `0031` is already in `ai-review/` and covers this.
+
+### 2026-09-08 review (v20260908113915-9bea)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked only the one acceptance criterion.
+
+**Criterion #1** ÔÇö `docs/HANDOVER.md`, `## Current state`, the security-review bullet about `api/nearest.php`. It now carries:
+
+- a date: "Re-measured 2026-09-06 (card 0034)"
+- a file size and record count: "736,457-byte (719 KB), 1,180-record `app/data/sites.json`"
+- response times: 5.3 ms warm request, 3.7 ms parse, ten at once finishing in ~55 ms
+- the harness: "PHP built-in server (`php -S`)"
+
+I tried to break it two ways:
+
+1. Does the cited size match the shipped file? `app/data/sites.json` on disk is exactly 736,457 bytes, and its `counts` are `forest: 550` + `carpark: 630` = 1,180. Both match.
+2. Does the old "has not been re-timed" claim survive anywhere? Grep for `not been re-taken`, `nobody has re-timed` and `515 KB` across `docs/HANDOVER.md` finds only the one honest mention that the 2026-08-10 figure was on a 515 KB file, explicitly flagged as "not a comparison". No stale claim left.
+
+The criterion is `proves: none`, so no test is expected, and the check is reading the file ÔÇö which passes.
+
+VERDICT: sound
+
+**scope: defect**
+
+**What I checked:** the card says only `docs/HANDOVER.md` changes, and any code change becomes a new card instead. The diff is 70 files.
+
+**Over the fence:**
+
+1. `app/core.js` ÔÇö a whole new `mapHint()` function plus `TILE_CREDIT` / `OSM_CREDIT` / `PLAIN_HINT`, exported. That is attribution work (cards 0015 / 0020), not a timing measurement. `app/map.js` and `app/sw.js` move with it.
+2. `app/core.js` `safeHref()` comment, `app/api/nearest.php` file header, and `docs/build/IOS-SHORTCUT.md` all had 904 ÔåÆ 1,180 rewritten. The card's own thread says it **raised `0036`** for exactly these three. It raised the card *and* did the work. That is the "do not build it here" rule broken by the session that wrote the rule down.
+3. `scripts/parse_campsites.py` and `app/data/campsites.json` were regenerated (3,681 ÔåÆ 3,675 records), and `app/app.js` `openSheet()` re-counts them. Campsites are the PWA, which "## Not this card" fences out.
+4. `scripts/selftest.js` grew 185 lines; the card's own report says "+0 new tests".
+
+The measurement itself looks done. Everything around it is another card's work smuggled in.
+
+VERDICT: defect
+
+**breakage: defect**
+
+I checked the card's real change: the `## Current state` passage in `docs/HANDOVER.md`, plus `app/api/nearest.php` (the loader only reads `sites.json`).
+
+**The measurement itself holds up.** `app/data/sites.json` is 736,457 bytes and `sites.length` is 1,180 (`counts`: 550 forest + 630 carpark), so the figures, the date and the size the brief now cites all match the file that ships. The endpoint's `$dataPath` reads only `sites.json`, never `campsites.json`, so "the whole dataset" is the right thing to have timed. No caller, comment or test depended on the old sentence.
+
+**What it breaks is the size budget.** The card's log states `docs/HANDOVER.md` is 39,306 bytes with "1,654 bytes remain" under the 40,960 budget card `0031` owns. That is not true of this tree. `docs/HANDOVER.md` at `HEAD` is already 41,505 bytes, and with this card's edit applied it is 42,040 ÔÇö about 1,080 bytes over. The SessionStart orient hook says the same thing out loud. So a rule asserted by `0031` is now false, and the card's own log records a headroom figure a reader will trust and act on. The next HANDOVER edit will be made on a false budget.
+
+VERDICT: defect
+
