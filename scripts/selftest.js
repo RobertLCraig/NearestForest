@@ -635,6 +635,40 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
        `a site the source is silent on reads "${takes({})}"`);
   }
 
+  // `More` is a link, and its LABEL is a claim about who published the page behind it. A
+  // campsite's website is whatever OpenStreetMap holds for it, so "Forestry England page" over
+  // one states a relationship no source ever published -- #2's own failure, on the single field
+  // a reader taps to check the place out before driving. Nothing read those four lines: with the
+  // campsite branch deleted every one of the other 266 assertions reports PASS while all 3,574
+  // campsite websites read as Forestry England's. Lift the block out of app.js source and run
+  // it, the way `field()` and the `Takes` row above are, because it depends on `field` and `esc`
+  // alone. Same coupling those two carry and name: the regex is anchored on the block's opening
+  // line and its two-space closing brace, so re-indenting it makes the suite throw, not fail.
+  {
+    const esc020 = new Function(
+      appjs020.match(/function esc\(s\) \{[\s\S]*?\r?\n\}\r?\n/)[0] + 'return esc;')();
+    const more020 = new Function('site', 'moreHref', 'field', 'esc',
+      "var h = '';\n" +
+      appjs020.match(/ {2}if \(moreHref\) \{[\s\S]*?\r?\n {2}\}\r?\n/)[0] +
+      'return h;');
+    const link = (s, url) => {
+      const m = /<a href="([^"]*)"[^>]*>([^<]*)<\/a>/.exec(more020(s, url, field020, esc020));
+      return m ? { href: m[1], text: m[2] } : { href: null, text: null };
+    };
+    const osm = link({ source: 'campsite' }, 'https://www.wildrosepark.co.uk/pitches');
+    const stn = link({ source: 'campsite', stay_the_night: true },
+                     'https://forestryandland.gov.scot/visit/stay-the-night');
+    const fe = link({ source: 'forest' }, 'https://www.forestryengland.uk/bedgebury');
+    ok('a campsite website is labelled by its own host, never as a Forestry England page',
+       osm.text === 'wildrosepark.co.uk' &&
+       stn.text === 'Forestry and Land Scotland page' &&
+       fe.text === 'Forestry England page' &&
+       osm.href === 'https://www.wildrosepark.co.uk/pitches',
+       `an OpenStreetMap website reads "${osm.text}" and points at "${osm.href}", ` +
+       `a Stay the Night car park reads "${stn.text}", ` +
+       `a Forestry England forest reads "${fe.text}"`);
+  }
+
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
   ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
   ok('campsite ranking is sorted ascending',

@@ -2256,3 +2256,66 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (267 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the last positive claim the campsite sheet makes that nothing was reading: the `More`
+link's label.** Earlier runs on this thread took the four translated fields -- `facilities`,
+`vehicles`, `fee` and `access_note` -- at the parser end and, for three of them, at the render end
+too. `More` is none of those: it is not a translated field but a **claim about who published the
+page behind the link**, and it is the one row a reader taps to check a place out before committing
+to the drive. `app/app.js` defaults its label to `Forestry England page` and only the campsite
+branch below it corrects that to the site's own host, or to `Forestry and Land Scotland page` for a
+Stay the Night car park. The comment above those four lines says exactly why they exist.
+
+**Measured, not argued.** I collapsed `if (site.source === 'campsite')` to `if (false)` -- the
+whole correction gone, one word -- and ran the suite: **266 passed, 0 failed.** Every one of the
+3,574 campsite websites then reads "Forestry England page", a relationship OpenStreetMap never
+published and Forestry England would not thank us for. `every dataset url survives safeHref` and
+`app.js puts site.url through safeHref rather than straight into the href` both cover the *href*;
+nothing covered the *text*.
+
+**Watched red first.** The new assertion `a campsite website is labelled by its own host, never as
+a Forestry England page` failed against that break naming all three cases -- an OpenStreetMap
+website, a Stay the Night car park and a Forestry England forest all reading "Forestry England
+page" -- while **266 passed** beside it. That is #2's own failure, not a missing symbol. Restored
+the line and re-ran: 267 passed, 0 failed.
+
+**Behaviour, not spelling, and both ends pinned.** The `if (moreHref)` block is lifted out of
+`app.js` source with `new Function` and **run**, reusing the `field020` harness already in that
+block and lifting `esc` beside it, because the block depends on those two alone. A forest must
+still read `Forestry England page`, so a label rewritten into naming hosts for everything fails as
+well as one naming Forestry England for everything; and the `href` is asserted unchanged, so the
+label cannot be fixed by breaking the link.
+
+**One limit of the harness, said plainly.** The extraction regex is anchored on the block's exact
+opening line and its two-space closing brace, so re-indenting it makes the suite throw rather than
+fail. Loud, but not informative. It is the same coupling the `field()`, row-badge and `Takes`
+assertions above it already carry and name.
+
+**Which criterion this belongs to.** #2 -- "state only what its source publishes". Its tick does
+not move: it was already true, and the last unwatched claim on the sheet is now watched.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started;
+`git status` shows `scripts/selftest.js` and the two documents only, and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 267 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 266 self-tests, which this run
+made 267. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the
+orient hook's budget, reported again at session start; card `0031` in `ai-review/` already carries
+it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
