@@ -3,6 +3,40 @@ no_outward_effect: "sent" in criterion #1 is the footer promising that nothing l
 ---
 # Say what happens to a location
 
+## What I need from you
+
+**One call.** Untick criterion `#2` below, so the card goes back to `todo/` and the footer wording
+gets fixed — **or** write on the thread that the reviewer is wrong and the card stands as done.
+Doing neither is the fail: it comes straight back to this lane, unchanged, on the next run.
+
+---
+
+**What's wrong.** The footer says your location never leaves the phone and that the **Tiles** layer
+is the one exception. There is a second one. Tapping **Google Maps**, **Apple Maps** or **Waze** on
+a site hands that company the forest you picked and your address, via `navUrl` in `app/core.js`.
+So the app is not quite doing what the footer says, which is what criterion `#2` claims it does.
+
+A second, smaller finding sits under Tasks rather than a criterion: the guard in
+`scripts/selftest.js` matches only the phrase `location stays on this phone`. Someone can delete
+the whole Tiles sentence and the suite stays green, which is the exact failure that task existed to
+stop.
+
+**Cause.** A reviewer may not edit acceptance, so the card came back with 2 of 2 ticked. Every
+unattended session since has read the boxes, found nothing open, and promoted it again.
+
+**Pass** is either of:
+- `#2` unticked and the card back in `todo/`; or
+- a dated line in `## Comments` saying which part of the finding is wrong, boxes left ticked.
+
+**Fail** is leaving it as it is.
+
+**Why it needs you.** The reviewer graded acceptance `sound`, so no box is plainly false. Whether a
+link the user deliberately taps to leave the app counts as the app "sending" anything is a
+judgement about how you want to be read, not a lookup.
+
+**Note on length.** This card is now 134 lines against a 100-line budget. `## Direction` and
+`## Comments` are append-only and hold most of it, so this card could not bring it under.
+
 ## Why
 The app asks for a precise location the moment it opens, stores it in `localStorage` indefinitely,
 and said nothing about either. That was defensible while it was one person's app on one phone. It

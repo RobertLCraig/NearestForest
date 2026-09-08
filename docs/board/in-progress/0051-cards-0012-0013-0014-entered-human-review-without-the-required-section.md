@@ -39,7 +39,7 @@ section: that lives in `C:\Dev\ProgressBoard`, not in this repository.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN each of `0012`, `0013` and `0014` in `docs/board/human-review/` is searched for the
+- [x] #1 WHEN each of `0012`, `0013` and `0014` in `docs/board/human-review/` is searched for the
       heading `## What I need from you`, THE CARD SHALL return a hit directly under its title.
       proves: none - this project's suite is one node script over the app and cannot read the board;
       the check is `grep -rL "## What I need from you" docs/board/human-review/*.md` naming none of
@@ -50,12 +50,12 @@ section: that lives in `C:\Dev\ProgressBoard`, not in this repository.
 <!-- AC:END -->
 
 ## Tasks
-- [ ] For each card, read its last comment entry and the `defect` verdicts above it, and use the ask
+- [x] For each card, read its last comment entry and the `defect` verdicts above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under each title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under each title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check each card is still inside the 100-line budget afterwards, and say on it if it is not
-- [ ] Re-grep the lane and report which cards still miss the heading
+- [x] Check each card is still inside the 100-line budget afterwards, and say on it if it is not
+- [x] Re-grep the lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository. Only the three card files change; nothing under `app/` or
@@ -89,3 +89,42 @@ title.
 **2026-09-07** Raised by card `0048` on its last task, re-grepping the lane after fixing `0011`.
 These three arrived in the lane the same day and after `0048` was written, which is the finding
 rather than a miscount.
+
+**2026-09-08** RESULT: partial
+TESTS: +0 new, all green (227 passed, 0 failed — `node scripts/selftest.js`)
+TOUCHED: docs/board/human-review/0014-say-what-happens-to-a-location.md
+TOUCHED: docs/board/todo/0053-card-0019-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/in-progress/0051-cards-0012-0013-0014-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: 0053
+
+**Only `0014` needed the work.** `0012` and `0013` gained the section before this run, in commits
+`5151cd4` and `0189179`, which are cards `0049` and `0050` doing the same job one card at a time. So
+this card found two of its three targets already fixed and wrote the section for `0014` only.
+
+The ask on `0014` is the one already at the bottom of the card: untick `#2` and send it back to
+`todo/`, or write on the thread why the reviewer is wrong. `#2` is the criterion the finding hits —
+the footer names the **Tiles** layer as the one exception, and tapping a map button hands the chosen
+forest and the reader's address to Google, Apple or Waze via `navUrl` in `app/core.js`. The
+self-test finding (one phrase pinned out of three) sits under Tasks rather than a criterion, so it is
+recorded on the card but is not what a person unticks. Nothing was unticked here and nothing moved
+lane.
+
+**`0014` is now 134 lines against the 100-line budget**, and that is written on the card itself.
+`## Direction` and `## Comments` are append-only, so this card could not bring it under.
+
+**No test was written, and no harness could hold one.** Criterion `#1` says `proves: none`: the
+project's suite is `node scripts/selftest.js`, one node script over `app/`, and it cannot read
+`docs/board/`. The check the criterion names is the grep, and it was watched failing on `0014`
+before the edit and passing after. The suite was run either way and is green.
+
+**Criterion `#2` is left open.** It says `proves: manual` — whether an ask reads clearly in three
+lines is a reader's judgement, and an unattended session cannot make it. The section is written; a
+person has to say it lands.
+
+**No suite could be run the way the brief asks.** `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat`
+do not exist in this repository: NearestForest has no `vendor/`, no PHP suite and no Pint. The suite
+here is `node scripts/selftest.js`, which is what was run.
+
+**Re-grepping the lane afterwards leaves two cards without the heading**: `0015`, which card `0052`
+already carries in `todo/`, and `0019`, which arrived in the lane on 2026-09-08 after `0051` and
+`0052` were written and which no open card named. `0019` is raised as card `0053`.
