@@ -133,3 +133,60 @@ when 1,180 do. Both cards ask for a row added to this card's `carried` table rat
 Not checked in a browser: this is a worktree and Herd serves `C:\Dev\NearestForest`. Nothing visual
 changed — the diff under `app/` is two comments and two version strings.
 </content>
+
+### 2026-09-08 review (v20260908115742-c766)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each box against real code.
+
+**AC1 ÔÇö the three files say today's count.**
+`app/api/nearest.php` header comment says "ranking 1,180 sites". `docs/build/IOS-SHORTCUT.md` says "rank 1,180 sites on device". `app/core.js`, in the comment above `safeHref()`, says 550 records carry a url. `sites.json` holds 1180 records, 550 with a url. All match.
+
+**AC2 ÔÇö both agencies named.**
+The same `safeHref()` comment names `forestryengland.uk` (274) and `forestryandland.gov.scot` (276). I counted the data: 274 and 276. Correct.
+
+**AC3 ÔÇö the suite fails on future drift.**
+`scripts/selftest.js`, block "dataset counts carried in prose (card 0036)", builds a `carried` table of file + regex + expected count and compares to `sites.json`. The check `ok('dataset counts in comments match sites.json', ...)` is named exactly as the acceptance cites. A second check pushes a failure if `core.js` does not mention both hosts. I ran it: 237 passed, 0 failed.
+
+One soft spot, not an AC breach: the 274/276 split inside the `core.js` comment is not itself asserted, only the 550 is. Those two numbers can drift silently.
+
+VERDICT: sound
+
+**scope: defect**
+
+Scope findings, against the card's fence.
+
+The change as git records it is far wider than the card. The card names five files plus its own board cards. The diff also carries:
+
+- `app/core.js` ÔÇö a whole new `mapHint()` function and the `TILE_CREDIT` / `OSM_CREDIT` / `PLAIN_HINT` constants, plus a new export. The card says "Not changing `safeHref()` or any other code path." A new exported function is a new code path.
+- `app/map.js` and `app/app.js` ÔÇö `app.js` rewrites the campsite hours comment (3,723 ÔåÆ 3,675). Not one of the three named files.
+- `app/data/campsites.json` ÔÇö regenerated data, with `scripts/parse_campsites.py` changed. The card touches no generator and no dataset.
+- `docs/DATA-MODEL.md` ÔÇö fenced explicitly by `## Not this card`, yet it is in the diff, and its stale-stamp line now reads 1,180, which the card said it was raising as `0039` rather than fixing.
+- `docs/DECISIONS.md` ÔÇö fenced as append-only, yet it shows 4 changed lines.
+- `docs/PRD.md`, `docs/outreach/forestry-england-handover.md` ÔÇö the outreach file is exactly what `0038` was raised to defer.
+
+Half done: the card claims those two other 904s were raised, not fixed. The tree shows them fixed anyway, so the raised cards and the work no longer agree.
+
+Either the branch carries other cards' work, or this card grew past its own fence. Both need sorting before it lands.
+
+VERDICT: defect
+
+**breakage: defect**
+
+What I did: I attacked the change, not the whole branch.
+
+Holds up: `app/api/nearest.php` header comment, `docs/build/IOS-SHORTCUT.md` and the `safeHref()` docblock in `app/core.js` all read 1,180 / 550 today; I counted the shipped file and got 1180 records, 550 with a `url`, 274 `forestryengland.uk`, 276 `forestryandland.gov.scot`, 630 with no `url`. `CACHE` in `app/sw.js` and `BUILD` in `app/core.js` match.
+
+One break:
+
+The rewritten `safeHref()` docblock in `app/core.js` now carries **four** numbers: 550, 274, 276 and 630. The new self-test block "dataset counts carried in prose (card 0036)" in `scripts/selftest.js` only reads back the 550, with `/Every one of the ([\d,]+) records/`. Add ten Scottish forests and 276 and 630 become false while the suite stays green ÔÇö the same silent drift the card exists to stop. The change made the unguarded surface bigger, not smaller.
+
+What to do next: add rows for the two host splits and the no-url count, or drop those numbers from the comment.
+
+VERDICT: defect
+
