@@ -130,3 +130,49 @@ Re-grepped the lane afterwards. `0012` no longer appears. Three cards still miss
 `0013`, `0014` and `0015`. `0051` in `todo/` already carries `0013` and `0014` (and `0012`), but no
 open card carried `0015`, so I raised `0052` for it. I did not touch `0013`, `0014`, `0015`, `0051`,
 or anything under `app/` or `scripts/`.
+
+### 2026-09-08 review (v20260908152236-a0ed)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Criterion #1 ÔÇö traceable. `docs/board/human-review/0012-close-the-open-tile-proxy.md` has `## What I need from you` as the first heading, directly under the title `# Close the open tile proxy`. `grep -rL "## What I need from you" docs/board/human-review/*.md` does not name `0012`. Hit.
+
+Criterion #2 ÔÇö traceable. The three lines under the title, in the `## What I need from you` block of the same file, say the ask ("One decision... only you can untick a box"), the pass ("untick the criteria the finding disproves and send the card back to `todo/`") and the fail ("say in the thread below that the finding is wrong and the card closes as it stands"). Both branches are inside the three lines, not below them. Legible without scrolling.
+
+I tried to break #2 by counting from the title rather than from the heading: even then the ask still lands inside the first block a reader meets. The `What's wrong` and `Cause` fields sit after the `---`, so they do not push the ask down.
+
+Nothing under `app/` or `scripts/` is claimed by either criterion, so the wider diff is out of this lens.
+
+VERDICT: sound
+
+**scope: sound**
+
+Reviewed only the card's own commit (`5151cd4`), not the branch-wide diff.
+
+**Touched files, all board:** `docs/board/human-review/0012-close-the-open-tile-proxy.md` (the `## What I need from you` section under the title), `docs/board/in-progress/0049-...` (its own log), and a new `docs/board/todo/0052-...`. Nothing under `app/` or `scripts/`, so the `## Not this card` fence on `app/api/tiles.php` and `app/map.js` holds. The section names `rateLimit()` in `app/api/tiles.php` and `getTile()` in `app/map.js` only as description; it does not act on them, does not move `0012`, and does not untick anything ÔÇö `## Acceptance` in `0012` is unchanged in that commit.
+
+**The one growth:** raising `0052` for `0015` was not asked for. Task 4 asked only to "re-grep the lane and report". It is one file, it was declared `OUT-OF-SCOPE: 0052` in the entry on `0049`, and it follows the one-card-per-finding practice the same lane already uses for `0045`ÔÇô`0048`. Not a breach.
+
+**Nothing half done:** the re-grep report was accurate at that commit ÔÇö `0013`, `0014`, `0015` were the exact three still missing the heading, and the over-budget note (173 vs 100) is on `0012` as the task required.
+
+VERDICT: sound
+
+**breakage: sound**
+
+Checked the card and the lane.
+
+- `docs/board/human-review/0012-close-the-open-tile-proxy.md` now carries `## What I need from you` directly under its title. The ask, Pass and Fail are all there.
+- The section points at criteria `#2`, `#3`, `#5`. I read the `<!-- AC:BEGIN -->` block: #3 is the per-address cap, #2 and #5 are the map drawing tiles. The mapping is right, so no false claim.
+- It names `rateLimit()` in `app/api/tiles.php` and `getTile()` in `app/map.js`. Both exist and were not changed by this card.
+- "173 lines" matches the file.
+- The comment's lane report (`0013`, `0014`, `0015` still missing) looks wrong today: 13 files in the lane lack the heading. But `git log` shows `0019`, `0023`, `0026`, `0028`, `0031` and the rest only entered the lane on 2026-09-08, after that 2026-09-07 entry. The report was true when written, and the card said the lane keeps moving under it. Not breakage by this change.
+- Nothing under `app/` or `scripts/` depends on this file, so no caller went stale.
+
+I tried to break it and could not.
+
+VERDICT: sound
+
