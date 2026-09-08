@@ -1028,6 +1028,20 @@ console.log('--- update path ---');
   ok('the OpenStreetMap credit is a real link, not a printed URL',
      /<a\s[^>]*href="https:\/\/(www\.)?openstreetmap\.org\/copyright"/.test(html));
   ok('the Campsites tab exists in the shell', /data-tab="campsite"/.test(html));
+  // Card 0020 #1 wants a tab that RANKS, and the assertion above cannot see whether it
+  // does. It is an unanchored substring, so data-tab="campsites" satisfies it too -- and
+  // app.js feeds that attribute straight to NF.rank as a `source`, which filters on
+  // equality. One trailing letter and the tab is permanently empty, with "No campsites
+  // nearby" telling a reader there is nothing near them. The CAMP_ERROR branch in draw()
+  // is keyed on TAB === 'campsite' as well, so even a failed load would go quiet. So pin
+  // every tab token to a source the shipped data actually uses, rather than to spelling.
+  const tabTokens = [...html.matchAll(/data-tab="([^"]*)"/g)].map(m => m[1]);
+  const dataSources = new Set(sites.concat(CAMP.sites).map(s => s.source));
+  const orphanTabs = tabTokens.filter(t => !dataSources.has(t));
+  ok('every tab is labelled with a source the data actually uses',
+     tabTokens.includes('campsite') && orphanTabs.length === 0,
+     `tabs [${tabTokens.join(', ')}] rank nothing: [${orphanTabs.join(', ')}] ` +
+     `is no source in the data, which holds [${[...dataSources].join(', ')}]`);
 
   const ht = fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8');
   ok('the app shell is not HTTP-cached', /\(html\|css\|js\|json\|webmanifest\)/.test(ht) &&

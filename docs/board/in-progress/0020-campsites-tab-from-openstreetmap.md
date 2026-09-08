@@ -2718,3 +2718,67 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-09** RESULT: partial
+TESTS: +1 new, all green (275 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the comparative clause of criterion #1, which nothing read.** #1 is not "a Campsites tab
+exists"; it is "a third tab, Campsites, ranked by distance from the current fix **exactly as the
+other two are**". The tab's own half is well covered -- `the Campsites tab exists in the shell` pins
+`data-tab="campsite"` exactly, and `the shell fetches the campsite file and merges it into the
+ranked list` pins the fetch and the concat. The comparison was not covered at all. `app.js` line 307
+reads `TAB = tab.getAttribute('data-tab')` and hands it straight to `NF.rank` as a `source`, which
+filters on equality, so a tab token is only a tab if the data uses that exact word as a source. **No
+assertion in the suite mentioned `data-tab="forest"` or `data-tab="carpark"`.**
+
+**Measured, not argued, and the first break I tried was the wrong one.** I began by assuming
+`/data-tab="campsite"/` was an unanchored substring that a `campsites` typo would slip past. It is
+not -- the closing quote is inside the pattern, and that break failed the old assertion as well.
+Saying so because it is the reason the new assertion is framed round the comparison rather than
+round the campsite token. The break that *does* land is the sibling: I changed `data-tab="carpark"`
+to `carparks` and ran the suite. **274 passed, 0 failed.** The Car parks tab then ranks an empty
+list for ever, `draw()` renders it, and the empty message reads as "nothing near you" rather than as
+a broken tab -- the same silent-empty failure #1's own `CAMP_ERROR` branch exists to prevent on the
+campsite side, on the two tabs the criterion holds Campsites to.
+
+**Watched red first.** The new assertion `every tab is labelled with a source the data actually
+uses` reads every `data-tab` token out of `index.html` and requires each to be a `source` present in
+the shipped data, `sites.json` and `campsites.json` together, with `campsite` among them. Against
+the broken shell it failed with `tabs [forest, carparks, campsite] rank nothing: [carparks] is no
+source in the data, which holds [forest, carpark, campsite]`, which is the criterion's own failure
+and not a missing symbol, while `the Campsites tab exists in the shell` reported **PASS** beside it.
+Restored `index.html` and re-ran: 275 passed, 0 failed.
+
+**Why data rather than spelling.** A second literal in the suite would only pin today's three words
+in two places. Reading the source values out of the two shipped files means the check tracks
+whatever the data model says a source is, which is the thing `rank` actually filters on. It is also
+the one assertion on this card that treats the two databases as a set without merging them, matching
+the `app.js` line #4 permits them to meet on.
+
+**Which criterion this belongs to, and its limit.** #1, and only #1. Its tick does not move: it was
+already true, and the clause holding Campsites to the other two tabs is now watched. The limit, said
+plainly: this proves a tab token *can* rank, not that the button is reachable or that the handler
+fires. `app.js` is DOM-only and this suite has no DOM, so a tab hidden by CSS would still pass. That
+is a browser check, and it is the same one #8 already owes.
+
+**No `CACHE` / `BUILD` bump.** `app/index.html` ends the run byte-identical to how it started --
+`git status` shows `scripts/selftest.js` and the two documents only -- and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 275 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 274 self-tests, which this run
+made 275. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.
