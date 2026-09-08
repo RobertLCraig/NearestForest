@@ -135,3 +135,60 @@ fixing it here would have been unreviewed scope.
 
 **No Pest or Pint run.** This project has no `composer.json` and no `vendor/`; it is static HTML, CSS
 and JS with a node self-test. The suite is `node scripts/selftest.js`, and it is green at 218.
+
+### 2026-09-08 review (v20260908091708-0901)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked the real files, not the card's word.
+
+**#1** ÔÇö `app/index.html` footer paragraph carries the exact Forestry England line, "Crown Copyright, courtesy Forestry England, licensed under the Open Government Licence", and a separate sentence puts the OGL v3 on the car park data. Both present.
+
+**#2** ÔÇö no personal-use claim anywhere in the footer paragraph.
+
+**#3** ÔÇö "This app is not affiliated with Forestry England or with Forestry and Land Scotland" is still there.
+
+**#4** ÔÇö `scripts/selftest.js`, in the footer/attribution block (the one that also holds `the app states its privacy position in the footer`): two `ok()` calls assert both strings against a whitespace-flattened copy of index.html, so a re-wrap cannot break them, and a missing string fails the run.
+
+I tried to break #2: the HTML comment above the paragraph writes "personal-use claim" with a hyphen, so the `/personal use/i` test does not falsely pass on its own comment.
+
+One thing beyond the card: the footer and a fifth test now also name "Forestry Commission copyright and/or database right 2025", which is card 0022's job. That is extra work, not a missed criterion, so it is not a defect against this card. Flag it to whoever owns 0022 ÔÇö it may already be done.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Finding ÔÇö the Scottish credit is not what the card says it is.**
+
+In `app/index.html`, the About `<footer>` paragraph, the Scotland sentence reads "Crown Copyright, Forestry and Land Scotland, licensed under the Open Government Licence." That is Forestry England's published template with a different name dropped in. It is not the generic "contains public sector information..." wording.
+
+The card's Links section says the Scottish credit "stays and takes the generic wording". The build's own comment on the card says the same. The HTML comment directly above the line says it too: "Forestry and Land Scotland publish none... so both take the generic OGL wording" ÔÇö and the very next line does the opposite. So the code, its comment, and the card disagree.
+
+This is over the fence. Forestry and Land Scotland publish no statement (DECISIONS 2026-08-29), so the app is now putting a first-party-looking wording into their mouth that they never wrote. Card 0016's shipped credit was changed by a card that never asked to change it.
+
+The car park sentence and the removal of "Personal use" are inside scope and correct. Deploy is openly left, which is declared, not hidden.
+
+VERDICT: defect
+
+**breakage: defect**
+
+Reviewed the footer change and everything that quotes it.
+
+**Finding ÔÇö the same rule is applied in one place and not the other.**
+
+`app/index.html` footer now says Forestry England's own statement is the credit for their data, and the generic "Contains public sector informationÔÇª" line is only the fallback. But `build_dataset` in `scripts/parse.py` still stamps the whole file with
+
+`"attribution": "Contains public sector information licensed under the Open Government Licence v3.0."`
+
+and that file, `app/data/sites.json`, is the shipped dataset, now holding English forests **and** Scottish forests **and** car parks. It names no agency at all. The campsite file got this right: `app/data/campsites.json` names OpenStreetMap in its own `attribution`.
+
+The self-test hides it: `ok('attribution present', ...)` in `scripts/selftest.js` only checks that the words "Open Government Licence" appear, so it passes on the wording the card just retired. `docs/DATA-MODEL.md` also still shows the old string as the field's value.
+
+Nothing in `app/app.js` or `app/api/nearest.php` reads that field, so no screen is wrong today. It is the redistribution credit that is wrong, which is the same obligation the card exists to fix.
+
+VERDICT: defect
+
