@@ -118,3 +118,57 @@ and "the hook SHALL NOT report the file as over budget" both ticked, while the f
 bytes and the hook did report it this morning. `0026`'s four HANDOVER edits are what took it back
 over, and they are correct and should stay. The gap between a ticked criterion and the live
 measurement is the finding, and it is `0031`.
+
+### 2026-09-08 review (v20260908101845-321d)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Checked both criteria against the tree.
+
+**Criterion #1 ÔÇö met.** `docs/board/human-review/0026-scraped-at-says-the-parse-date-not-the-fetch-date.md`, its `## Links` section under `**Relates to**`, now carries a `0023` entry with the relationship stated: it folded the note out of HANDOVER's prose into DATA-MODEL's divergences. That is the missing relationship the card named. There is no function to cite; the artefact is the card file itself, which is what this card's scope was.
+
+**Criterion #2 ÔÇö the fix holds, the board number does not.** Re-running the check from this repository root now prints:
+
+    NearestForest   11   52   0055
+
+Eleven open cards fail. **`0026` is not one of them** ÔÇö it does not appear in the list, so the edit this card made is doing its job. Every failing card named (`0032`, `0038`, `0039`, `0046`ÔÇô`0053`) was created after this work, by other sessions, and each is the same unexplained-link fault in a different card. So the criterion's literal words ("zero open cards failing") read false today, but nothing this card touched caused it, and this card may not edit other cards.
+
+That is board drift for a new card to catch, not a defect in this build.
+
+VERDICT: sound
+
+**scope: defect**
+
+**What I checked**
+
+`docs/board/human-review/0026-scraped-at-says-the-parse-date-not-the-fetch-date.md` does now carry `0023` under `**Relates to**` with the relationship stated. That part is done.
+
+**Over the fence**
+
+The Plan says "One card file changes and nothing else." The build's own log admits four edits to `docs/HANDOVER.md` (the counts of `ai-review/` cards, the "0028 is agent-ready" line, and the deleted "the convention check reports one failing card, 0026" sentence). None of that is in `## Tasks`, none is in `## Acceptance`, and `## Not this card` names no allowance for it. Correct edits, but they are a second card's work done inside this one, and the log says they are what pushed `docs/HANDOVER.md` back over the 40 KB budget ÔÇö a live regression created by an out-of-scope edit.
+
+The build then raised `0031` to describe the breakage it had just caused, instead of not causing it. `0030` is a fair out-of-scope raise; `0031` is scope growth reported as a finding.
+
+Nothing was left half done inside the fence.
+
+**What to do now:** send the card back; the HANDOVER edits belong on their own card.
+
+VERDICT: defect
+
+**breakage: sound**
+
+I checked the card's actual change, and tried to break it.
+
+- `docs/board/human-review/0026-scraped-at-says-the-parse-date-not-the-fetch-date.md`, `## Links` ÔÇö the `0023` entry is there with the relationship stated. It survived 0026's later move from `ai-review/` to `human-review/`, because the entry lives in the card file, not in a path.
+- I re-ran the checker the card names: `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards`. `0026` no longer appears. The board now shows 11 failures, but every one is a card written after this work (0032, 0038, 0039, 0046ÔÇô0053), so none is breakage this change caused.
+- No caller, comment or docblock depends on the edited text. The only code-shaped risk would be a script reading `docs/board/`, and `scripts/selftest.js` reads nothing there.
+- The HANDOVER sentence that this work made false ("the convention check reports one failing card, 0026") is gone. The one still in `docs/HANDOVER.md` under the `0024` bullet already says 0028 is built, so it is not stale.
+
+Nothing in the diff outside this card belongs to it; those are other cards' work.
+
+VERDICT: sound
+
