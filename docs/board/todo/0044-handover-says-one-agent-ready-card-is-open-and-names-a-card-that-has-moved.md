@@ -87,3 +87,58 @@ The criterion's `proves:` is `none`, so no test was written for it. `node script
 green as the Plan asked, purely to show the edit broke nothing; it reads `app/` and `data/` and
 cannot see the board. There is no PHP suite in this repository - no `vendor/`, so no
 `vendor\bin\pest.bat` or `pint.bat` to run.
+
+### 2026-09-08 review (v20260908142904-aebb)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+I checked the folders against the file.
+
+**What the criterion asks:** `docs/HANDOVER.md` must name exactly the cards in `docs/board/todo/` and `docs/board/in-progress/`.
+
+**What is there.** The status block at the top of `docs/HANDOVER.md` ("Three agent-ready cards are open") and the "Blockers / open questions" paragraph both name the set **0045, 0021, 0044**.
+
+**Defect 1 ÔÇö `0020` is missing.** `docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md` sits in `in-progress/`, and `git log` shows it was already there in the same commit that edited `docs/HANDOVER.md` (`964d104`). So the file misses a card that the folder held on the day it was written. That is the exact miss the card exists to stop.
+
+**Defect 2 ÔÇö `0045` is not in `todo/`.** `ls docs/board/todo` returns `0052`, `0053`, `0054`. No `0045` anywhere. Both paragraphs point a reader at a card that is not open.
+
+The dated wording ("on 2026-09-07") covers normal drift, but not Defect 1: that one was wrong at the moment of writing.
+
+VERDICT: defect
+
+**scope: sound**
+
+Scope check on card `0044`.
+
+What I did: I looked at the real commit for this card (`67fe4eb`), not the big file list in the brief. That big list is earlier cards' work (campsites, `app/core.js` `mapHint`, `scripts/selftest.js`), all of it committed before this card started.
+
+The card's own commit touches two files only: `docs/HANDOVER.md` and its own board card. No `app/`, no `scripts/`, no data.
+
+Fence check ("## Not this card"):
+- It did not re-count `human-review/` or `ai-review/`. The status block in `docs/HANDOVER.md` still carries the old eleven-card line untouched.
+- It did not build any freshness mechanism.
+
+Half-done check: `0041` appears nowhere in `docs/HANDOVER.md`. Both paragraphs ÔÇö the status block and "Blockers / open questions" ÔÇö name the same set, `0045`, `0021`, `0044`, each with the date.
+
+One small extra: the "Blockers" paragraph adds a new gloss that `0021` waits on decision `0025`. That is a fresh claim, not a correction of a card number. It is true (`docs/HANDOVER.md` says the same at the `0025` entry), so it is a very small overrun, not a defect.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**What I found (breakage lens)**
+
+I read `docs/HANDOVER.md` against the two folders.
+
+1. **The "Blockers / open questions" paragraph says a folder listing gave it cards that are not in that folder.** It says `ls docs/board/todo` plus `ls docs/board/in-progress` "give **0045**, the three `human-review/` cards that carry no 'What I need from you' section, and **0021** and **0044**". Those three cards live in `docs/board/human-review/`. Neither listed folder can return them. This is the same false-evidence pattern the card exists to remove, and the card's own Plan says neither paragraph may name a card sitting in `human-review/`.
+
+2. **The two paragraphs disagree.** The status block near the top names three cards (0045, 0021, 0044). The Blockers paragraph says "Three agent-ready cards are open" and then names six. The criterion asks both paragraphs to name the same set.
+
+3. **The date stamp is now false, not just stale.** Both paragraphs say "on 2026-09-07", but `git log -- docs/HANDOVER.md` shows the file was rewritten on 2026-09-08 by later commits, while `todo/` now holds 0052, 0053, 0054 and `in-progress/` holds 0020 and 0021. The stamp no longer marks the day the file was written, which is the one thing it was for.
+
+VERDICT: defect
+
