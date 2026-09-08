@@ -265,3 +265,40 @@ board has been cleaning up, not a finding.
 cold from the Home Screen icon, with the Campsites tab tapped into while offline. That is card 0001
 check 5 and no run of this loop can close it.
 
+**2026-09-08** RESULT: partial
+TESTS: +0 new, all green (232 passed, 0 failed)
+TOUCHED: docs/board/todo/0054-the-campsite-cards-raw-feature-count-is-wrong.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: 0054
+
+**Nothing was built, because nothing on this card is buildable.** Seven criteria are met and traced;
+#8 needs a person on a phone. Every task is ticked. A test written here would be one first seen
+green, which is what this thread has twice refused.
+
+**What I did instead of restating the run above.** I re-ran `node scripts/selftest.js` — 232 passed,
+0 failed, working tree clean — and then went after a number rather than re-reading prose. Criterion #2
+says "only 96 of 8,496 records carry any opening hours". `docs/HANDOVER.md` says "8,501 features in,
+3,675 out". Two figures for one measurement. I counted the `elements` arrays in the three cached
+Overpass responses in `data/raw/osm/`: **6,133 England + 905 Scotland + 1,463 Wales = 8,501**. So
+HANDOVER is right and this card's own criterion is five out.
+
+**I did not fix it, and that is deliberate.** A session working a card may not reword that card's
+criteria, and this is criterion #2's text. Raised as card `0054` instead, which also asks for the
+assertion that would have caught it — the `card 0036` prose-count guard in `scripts/selftest.js`
+reads `app/data/sites.json` and checks only `app/app.js`, so nothing checks a number written on a
+board card. The rule criterion #2 states is correct and unchanged; only its justifying count is wrong,
+and #2 stays ticked because what it requires is true.
+
+**The "96" is a second figure and I could not settle it.** It counts raw OSM features carrying any
+`opening_hours` tag, which needs a parse rather than an element count, and rebuilding the dataset to
+find out would rewrite `app/data/campsites.json` for a number in a comment. Card `0054` carries it.
+
+**The suite is `node scripts/selftest.js`.** There is no `vendor/` in this repository, so
+`.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run. This project has
+never had a PHP suite.
+
+**`docs/HANDOVER.md` is still over the orient hook's ~40 KB budget**, reported again at session start.
+Card `0031` in `ai-review/` already carries exactly that, so no second card was raised.
+
+**Nothing here has been seen in a browser.** This is a worktree and Herd serves the main checkout.
+
