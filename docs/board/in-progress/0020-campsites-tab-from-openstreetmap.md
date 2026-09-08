@@ -2660,3 +2660,61 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-09** RESULT: partial
+TESTS: +1 new, all green (274 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed criterion #4 in the direction nothing was watching: the OGL parser writing into the ODbL
+file.** #4 is "keep OSM-derived records in a file separate from the OGL-derived `sites.json`, each
+carrying its own licence statement", and this thread has pinned it one way only. `a campsite build
+never writes into the OGL file` runs `parse_campsites.py` in a temp tree and requires `sites.json`
+byte-identical. **Nothing ran `parse.py` and looked at `campsites.json`.** The two assertions that
+speak for the campsite file, `every record in campsites.json is a campsite` and `the campsite file
+states its own licence and attribution`, read the file **already committed** here, so they cannot
+speak until somebody rebuilds -- and the forest pipeline is red on purpose pending a re-fetch, so no
+rebuild would surface it for weeks.
+
+**And it is the worse half of the boundary, not the mirror image.** `campsites.json` *is* the
+Derivative Database. An OGL forest record appended to it is precisely the merge the card's licence
+section exists to prevent: one file holding both, inviting the argument that the OGL data became a
+derivative of the OSM one and lost the clean position DECISIONS 2026-08-15 established. The other
+direction costs a stray record in the wrong tab; this direction costs the licence argument.
+
+**Watched red first.** The new assertion `the OGL build never writes into the ODbL campsite file`
+puts an ODbL-headed `campsites.json` into the forest temp tree beside the OGL fixtures, runs
+`parse.py`, and requires the file present and byte-identical. I ran it against a `parse.py` that
+appends its own `sites` list to `campsites.json` after writing `sites.json` -- the "tidy the two
+files into one" change in five lines: **273 passed, 1 failed**, the one failure being the new
+assertion, reporting `parse.py rewrote campsites.json (226 bytes -> 1431 bytes), merging the two
+licences into one file`. Every other licence assertion on this card reported PASS with the two
+databases in one file, which is the proof the gap was real rather than a missing symbol. Removed the
+five lines and re-ran: 274 passed, 0 failed.
+
+**Both failure shapes are covered by one check.** A `parse.py` that deleted `campsites.json` rather
+than extending it reports `parse.py deleted app/data/campsites.json`, so the ODbL file is required
+to survive as well as to stay unchanged.
+
+**Which criterion this belongs to.** #4, and only #4. Its tick does not move: it was already true,
+and the untested half of the boundary is now watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse.py` ends the run byte-identical to how it started --
+`git status` shows `scripts/selftest.js` and the two documents only -- and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 274 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 273 self-tests, which this run
+made 274. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.

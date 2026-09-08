@@ -1307,7 +1307,31 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
                                      { cwd: fx, encoding: 'utf8', env: PYENV });
     const outPath = path.join(fx, 'app', 'data', 'sites.json');
 
+    // Acceptance #4 of card 0020, in the direction nothing watched. `a campsite build
+    // never writes into the OGL file` pins parse_campsites.py; the mirror -- parse.py
+    // leaving the ODbL file alone -- had no assertion at all, and it is the worse half.
+    // campsites.json IS the Derivative Database, so an OGL record appended to it makes
+    // the merged file a derivative of the OSM one, which is the exact argument the card's
+    // licence section exists to avoid. A parse.py that clobbered or extended it would run
+    // green: every campsite check reads the file already committed here.
+    const fCamps = path.join(fx, 'app', 'data', 'campsites.json');
+    write(fCamps, JSON.stringify({
+      generated_at: '2026-08-15',
+      licence: 'Open Database License (ODbL) 1.0',
+      attribution: '© OpenStreetMap contributors',
+      sites: [{ id: 'os-n1', name: 'Test Campsite', source: 'campsite',
+                country: 'England', lat: 54.0, lng: -2.0 }] }));
+    const odblBefore = fs.readFileSync(fCamps);
+
     const clean = runParse();
+
+    const odblAfter = fs.existsSync(fCamps) ? fs.readFileSync(fCamps) : null;
+    ok('the OGL build never writes into the ODbL campsite file',
+       odblAfter !== null && odblBefore.equals(odblAfter),
+       odblAfter === null ? 'parse.py deleted app/data/campsites.json'
+       : `parse.py rewrote campsites.json (${odblBefore.length} bytes -> ` +
+         `${odblAfter.length} bytes), merging the two licences into one file`);
+
     let built = null;
     if (fs.existsSync(outPath)) { try { built = JSON.parse(fs.readFileSync(outPath, 'utf8')); } catch (e) { built = null; } }
     ok('a clean parse still writes the dataset',
