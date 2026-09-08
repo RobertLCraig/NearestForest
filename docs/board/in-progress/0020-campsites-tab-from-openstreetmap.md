@@ -928,3 +928,62 @@ icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here
 browser** — this is a worktree and Herd serves the main checkout — and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
 
+**2026-09-08** RESULT: partial
+TESTS: +0 new, all green (243 passed, 0 failed)
+TOUCHED: scripts/parse_campsites.py, scripts/selftest.js,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Found a real defect in criterion #2 by reading the parser rather than the assertion list, and
+fixed it.** The entry above added `a blank OSM tag becomes null, never an empty string` and put
+`parking` in its `blankKeys` array — but **the fixture never sets a `fee` tag**, so that key was
+listed and never exercised. `blankRec['parking']` was `undefined`, `undefined == null` is true, and
+the assertion passed on a field it had never once made the parser produce. A key named in a check is
+not a key the check covers.
+
+**The defect it was hiding.** `fee_text()` in `scripts/parse_campsites.py` is the one free-text
+field that does **not** go through `tag()`, deliberately: it passes an unrecognised value straight
+through, because plenty of records publish an actual price and the app should show it as published.
+That pass-through had no strip and no emptiness guard, so `fee="  "` — and OSM is edited by anybody
+and does carry blank tag values — reaches `app/data/campsites.json` as `parking: "  "`. `field()` in
+`app/app.js` treats only `null` and `''` as missing, so a whitespace fee draws `<dd>  </dd>`: a
+blank line under the heading **"Charges"**. On a campsite that reads as *free*, which is exactly the
+failure #2's first clause names, and it is a claim about somebody else's money.
+
+**Watched red first, for the criterion's own reason.** I added `fee: '  '` to the existing blank-tag
+fixture and ran the suite before touching the parser: **242 passed, 1 failed**, the failure being
+`a blank OSM tag becomes null, never an empty string — parking="  "`. That is the field naming
+itself, not a missing symbol. Then `fee_text` was changed to read `tag(tags, "fee")` instead of
+`tags.get("fee")` — one line, reusing the helper an earlier run on this thread added for exactly
+this — and re-ran: 243 passed, 0 failed.
+
+**No new assertion, and that is the honest count.** The check that needed writing already existed;
+what it lacked was an input. So `TESTS:` says +0 new, the suite is still 243, and `docs/HANDOVER.md`
+needs no number corrected this time.
+
+**No `CACHE` / `BUILD` bump, proved rather than assumed.** Today's extract carries no blank or
+untrimmed `fee`, so I re-ran `python scripts/parse_campsites.py` against the cached Overpass
+responses and hashed the output either side: SHA-256 `44AD13FB...FBA3FC` before and after,
+**byte-identical**, 3,675 records, England 2,606 / Scotland 505 / Wales 564. Nothing under `app/`
+changed. The parser now guarantees what the data merely happened to be — the same shape as the
+blank-tag fix itself.
+
+**Assumed:** `data/raw/osm/` is gitignored and absent from a fresh worktree, so the three cached
+Overpass responses were read from `C:\Dev\NearestForest`. The rebuild therefore reflects OSM's
+2026-08-15 snapshot, not today's.
+
+**What I tried and could not do.** Every entry on this thread says nothing has been seen in a
+browser. I served this worktree — `php -S 127.0.0.1:8791 -t app`, which returned 200 for both the
+shell and `data/campsites.json` — but **the browser-driving tools are not permitted in this
+session**, so no page was loaded and no screenshot taken. The server was stopped again. That gap is
+unchanged and still owed: the Campsites tab has never been looked at on a screen from this card.
+
+**Suite:** `node scripts/selftest.js`, 243 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5.

@@ -170,7 +170,10 @@ def vehicles_for(tags):
 
 
 def fee_text(tags):
-    f = tags.get("fee")
+    # Stripped through tag() for the same reason every other free-text field is: a blank
+    # or whitespace-only fee reaches the sheet as an empty line under "Charges", and a
+    # blank beside a label reads as a published answer -- here, as "free".
+    f = tag(tags, "fee")
     if f is None:
         return None
     if f == "yes":

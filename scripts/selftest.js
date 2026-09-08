@@ -1124,9 +1124,13 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     // OSM is edited by anybody and does carry empty tag values, so the parser has to
     // normalise them. Today's extract happens to hold none, so a check over the shipped
     // file would be green from birth -- this feeds the parser the tags instead.
+    // `fee` is the one of these that does NOT go through tag(): fee_text() passes an
+    // unrecognised value straight through as published, because plenty of records carry
+    // an actual price. A blank one therefore reaches the file as a blank string and the
+    // sheet draws an empty line under "Charges", which reads as "free".
     writeOsm(Object.assign({}, goodEl, { tags: Object.assign({}, goodEl.tags, {
       'addr:postcode': '  ', opening_hours: '', operator: ' ', phone: '\t',
-      'addr:street': '  ', website: '' }) }));
+      'addr:street': '  ', website: '', fee: '  ' }) }));
     const cBlank = runCamp();
     let blankRec = null;
     if (cBlank.status === 0 && fs.existsSync(cOut)) {
