@@ -13,7 +13,7 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v18-2026-09-08';
+  var BUILD = 'v19-2026-09-08';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -245,6 +245,24 @@
     return /^https:\/\/[^\s/?#]/i.test(s) ? s : null;
   }
 
+  /* What the one line under the map should say, and whether it is a licence credit.
+
+     Two separate obligations land on the same element. The tile layer is Thunderforest
+     over OSM and is credited only while it is on (card 0015). The campsite markers ARE
+     an ODbL database, drawn whether the layer is on or off, so with tiles off and
+     campsites on screen the map owes OSM a credit that the tile pill never gave it.
+     `credit` is true whenever the text is an attribution, which is what earns the
+     readable pill; the plain hint keeps the dim style it has always had. */
+  var TILE_CREDIT = 'Maps © Thunderforest, Data © OpenStreetMap contributors';
+  var OSM_CREDIT = 'Campsite data © OpenStreetMap contributors, ODbL';
+  var PLAIN_HINT = 'Tap a marker for details. Pinch to zoom.';
+
+  function mapHint(tilesOn, hasOsmMarkers) {
+    if (tilesOn) return { text: TILE_CREDIT, credit: true };
+    if (hasOsmMarkers) return { text: OSM_CREDIT, credit: true };
+    return { text: PLAIN_HINT, credit: false };
+  }
+
   /* Sorted list of the sites in `source`, nearest first, or alphabetical when pos is null.
 
      Returns shallow COPIES carrying _mi/_bear rather than annotating the input objects.
@@ -279,5 +297,6 @@
            clusterPoints: clusterPoints,
            haversineMi: haversineMi, bearingDeg: bearingDeg,
            compassIdx: compassIdx, pad2: pad2, hhmmToMins: hhmmToMins, sunsetAt: sunsetAt,
-           openState: openState, navUrl: navUrl, safeHref: safeHref, rank: rank };
+           openState: openState, navUrl: navUrl, safeHref: safeHref, rank: rank,
+           mapHint: mapHint };
 }));

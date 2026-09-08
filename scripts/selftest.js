@@ -471,13 +471,31 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
   // tile reveals the coastline rather than a grey hole.
   ok('tiles draw over the bundled outline, not instead of it',
      map.indexOf('ctx.fill();') < map.indexOf('if (tilesOn) drawTiles()'));
-  ok('provider attribution is present', /Thunderforest.*OpenStreetMap/.test(map));
+  ok('provider attribution is present', /Thunderforest.*OpenStreetMap/.test(
+     fs.readFileSync(path.join(ROOT, 'app', 'core.js'), 'utf8')));
   // The attribution is a licence obligation, so it must appear with the layer it
   // credits and be readable against a light basemap while it does. Card 0015.
-  ok('the attribution is shown only when the layer is on',
-     /hint\.textContent = tilesOn \? ATTRIB :/.test(map));
-  ok('the attribution gets its solid backing from the same toggle',
-     /hint\.classList\.toggle\('map__hint--attrib', tilesOn\)/.test(map));
+  // Card 0020 moved the wording decision into core.js so it can be asserted by
+  // behaviour rather than by matching the line that writes it.
+  ok('the map asks core.js what the hint should say',
+     /NF\.mapHint\(tilesOn,/.test(map));
+  ok('the hint gets its solid backing exactly when it is a credit',
+     /hint\.classList\.toggle\('map__hint--attrib', h\.credit\)/.test(map));
+  ok('with the layer on the hint credits the tile provider',
+     NF.mapHint(true, false).credit &&
+     /Thunderforest/.test(NF.mapHint(true, false).text));
+  // With tiles OFF the map still draws every campsite marker, and those markers
+  // ARE the ODbL database. Card 0015's pill credits Thunderforest and hides with
+  // the layer, so it does not discharge this obligation. Card 0020.
+  ok('with the layer off the OSM markers still carry their credit',
+     NF.mapHint(false, true).credit &&
+     /OpenStreetMap/.test(NF.mapHint(false, true).text) &&
+     !/Thunderforest/.test(NF.mapHint(false, true).text));
+  ok('a map with no OSM markers and no tiles keeps the plain hint',
+     !NF.mapHint(false, false).credit &&
+     !/OpenStreetMap/.test(NF.mapHint(false, false).text));
+  ok('the map recomputes the hint when the list it draws changes',
+     /refresh: function \(\) \{ if \(open\) \{ updateHint\(\);/.test(map));
   {
     const css = fs.readFileSync(path.join(ROOT, 'app', 'app.css'), 'utf8');
     const attrib = /\.map__hint--attrib \{([^}]*)\}/.exec(css);

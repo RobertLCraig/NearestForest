@@ -38,7 +38,6 @@ var NFMap = (function () {
   var tiles = {};
   var tileCount = 0;
   var MAX_TILES = 300;
-  var ATTRIB = 'Maps © Thunderforest, Data © OpenStreetMap contributors';
 
   /* ---------- theme ---------- */
   /* Read from the stylesheet rather than duplicated here, so the map follows
@@ -209,6 +208,20 @@ var NFMap = (function () {
     }
   }
 
+  /* The hint under the map is also where two licence credits land, so it depends on
+     the tile toggle AND on whether the list being drawn is ODbL data. core.js decides
+     the wording; this only says which markers are on screen. Called from the toggle
+     and from refresh(), which app.js fires on every render, rather than from draw(),
+     so a pan does not rewrite the DOM on every frame. */
+  function updateHint() {
+    var hint = document.getElementById('map-hint');
+    if (!hint) return;
+    var osm = hooks.getSites().some(function (s) { return s.source === 'campsite'; });
+    var h = NF.mapHint(tilesOn, osm);
+    hint.textContent = h.text;
+    hint.classList.toggle('map__hint--attrib', h.credit);
+  }
+
   function setTiles(on) {
     tilesOn = !!on;
     try { localStorage.setItem(LS_TILES, tilesOn ? '1' : '0'); } catch (e) { /* private mode */ }
@@ -217,11 +230,7 @@ var NFMap = (function () {
       btn.textContent = tilesOn ? 'Tiles on' : 'Tiles';
       btn.setAttribute('aria-pressed', tilesOn ? 'true' : 'false');
     }
-    var hint = document.getElementById('map-hint');
-    if (hint) {
-      hint.textContent = tilesOn ? ATTRIB : 'Tap a marker for details. Pinch to zoom.';
-      hint.classList.toggle('map__hint--attrib', tilesOn);
-    }
+    updateHint();
     schedule();
   }
 
@@ -525,6 +534,7 @@ var NFMap = (function () {
     open = true;
     wrap.hidden = false;
     document.body.classList.add('is-mapping');
+    updateHint();
     loadBoundary().then(function () {
       sizeCanvas();
       computeScaleLimits();
@@ -544,6 +554,6 @@ var NFMap = (function () {
     show: show,
     hide: hide,
     isOpen: function () { return open; },
-    refresh: function () { if (open) schedule(); }
+    refresh: function () { if (open) { updateHint(); schedule(); } }
   };
 }());

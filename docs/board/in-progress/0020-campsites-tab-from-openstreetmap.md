@@ -86,11 +86,10 @@ OpenStreetMap contributors"**, naming the Open Database License and linking to
       duplicates, and the OSM attribution string present in `index.html`.
 - [x] `docs/DATA-MODEL.md`, `docs/PRD.md` and `docs/DECISIONS.md` updated for the second file, the
       three-tab scope and the offline-cache footprint.
-- [ ] **Map attribution still outstanding**, and it is a licence condition rather than a nicety. It
-      no longer waits on `0015`: that card shipped `.map__hint--attrib`, but the pill it built shows
-      only while the tile layer is on and credits OSM as the *tile* source. With tiles off the map
-      draws 3,675 ODbL-derived markers and carries no credit at all. The footer credit (acceptance
-      #3) is in place; this is the map half, and it is still owed.
+- [x] **Map attribution.** `0015` shipped `.map__hint--attrib`, but its pill shows only while the
+      tile layer is on and credits OSM as the *tile* source, so with tiles off the map drew 3,675
+      ODbL-derived markers with no credit at all. `NF.mapHint()` in `app/core.js` now decides the
+      wording from both facts, and `updateHint()` in `app/map.js` reports which markers are drawn.
 
 ## Answered, and built
 **Rob chose the shortest cut on 2026-08-15: named and explicitly caravan or motorhome capable.** The
@@ -191,4 +190,39 @@ and credits OSM as the tile source, so with tiles off the map draws 3,675 ODbL-d
 no credit at all. That is a licence condition, but it is a task rather than a criterion, so it does
 not hold a tick back. Nothing here has been seen in a browser: this is a worktree and Herd serves the
 main checkout.
+
+**2026-09-08** RESULT: partial
+TESTS: +4 new, all green (232 passed, 0 failed)
+TOUCHED: app/core.js, app/map.js, app/sw.js, scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+Closed the last open task on this card, the map credit. Nothing else was touched: the seven built
+criteria were already true and I re-ran them rather than re-deriving them.
+
+**The map credit.** With the tile layer off, the map drew every campsite marker — the ODbL database
+itself — under the hint "Tap a marker for details. Pinch to zoom." 0015's pill was toggled by
+`tilesOn` alone and names Thunderforest, so it never covered this. I moved the wording decision out
+of `map.js` and into `NF.mapHint(tilesOn, hasOsmMarkers)` in `app/core.js`, which is the file the
+suite can actually run; `map.js` only reports which markers are on screen. Tiles on still gives the
+Thunderforest line; tiles off with campsites gives "Campsite data © OpenStreetMap contributors,
+ODbL"; tiles off with no campsites keeps the plain hint. Both credits get the readable pill, from
+`h.credit` rather than from `tilesOn`.
+
+**Watched red first.** The four assertions went in against the old code and failed. Three failed on
+missing wiring, so I first added `mapHint` reproducing the *old* behaviour and re-ran, and watched
+`with the layer off the OSM markers still carry their credit` fail on its own, for the reason the
+task describes, before adding the one line that fixes it.
+
+**Why not in `draw()`.** `draw()` already reads the ranked list, so the hint could be computed there,
+but `draw` runs every frame of a pan and that would rewrite the DOM on each. `updateHint()` is called
+from `setTiles`, `show` and `refresh` instead; `app.js` fires `refresh` on every render, which is
+where a tab change lands.
+
+`CACHE` and `BUILD` bumped to `v19-2026-09-08`, because `app/core.js` and `app/map.js` changed.
+
+**Still open. #8 needs a person**, unchanged: a cold offline launch on the device, card 0001 check 5.
+**Nothing here has been seen in a browser** — this is a worktree and Herd serves the main checkout —
+so the new pill wants the same phone look the 0004 and 0015 checks want. The wording is asserted by
+the suite; how it wraps on a narrow screen is not.
 

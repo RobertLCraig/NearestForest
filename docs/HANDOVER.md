@@ -233,9 +233,14 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   Reads the same ranked list the rows are built from, so the two cannot disagree about what is
   shown. **Tiles draw over the outline, never instead of it**, so a failed or offline tile reveals
   the coastline rather than a grey hole; a self-test asserts that draw order.
-  **The tile attribution carries its own modifier, `.map__hint--attrib`**, toggled on the same line
-  of `setTiles` that swaps the text: white on `rgba(0,0,0,.72)`, a pill that hugs the text, dark
-  `text-shadow` cleared. **`.72` is not a taste call and must not be lightened**: a pure white tile
+  **The hint under the map carries TWO licence credits, and `NF.mapHint()` in `core.js` decides
+  which.** The tile layer is credited only while it is on (card 0015). The campsite markers *are*
+  an ODbL database and are drawn whether tiles are on or off, so with tiles off and the Campsites
+  tab showing, the hint credits OpenStreetMap on its own (card 0020). `updateHint()` in `map.js`
+  only reports which markers are on screen; it is called from `setTiles`, `show` and `refresh`,
+  never from `draw`, so panning does not rewrite the DOM every frame.
+  **Both credits carry the modifier `.map__hint--attrib`**, toggled by `h.credit`: white on
+  `rgba(0,0,0,.72)`, a pill that hugs the text, dark `text-shadow` cleared. **`.72` is not a taste call and must not be lightened**: a pure white tile
   composites the pill to `rgb(71)`, so white on it is 9.29:1, and that bounds the worst case at
   every zoom without anyone sampling a basemap.
 - `app/api/tiles.php` — Thunderforest proxy. Exists so the key never reaches the browser, since this
@@ -319,7 +324,9 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   forest) and **0016** (Scotland in the Forests tab), both 2026-08-29; **0015** (the tile
   attribution pill), 2026-08-29, rendered and closed by a second run the same day; **0019** and
   **0022** (the footer credits), both 2026-09-05. 228 self-tests pass (`node scripts/selftest.js`,
-  measured 2026-09-08) and `CACHE` / `BUILD` are at `v18-2026-09-08`, bumped by card 0020 when it dropped six members-only campsites. See "What's next" item 1 for what is still owed before they ship.
+  measured 2026-09-08) and `CACHE` / `BUILD` are at `v19-2026-09-08`, bumped twice by card 0020: once
+  when it dropped six members-only campsites, once when it gave the map its own ODbL credit. See
+  "What's next" item 1 for what is still owed before they ship.
   **What each card measured, found and deliberately left alone is on its own comment thread** in
   `ai-review/`; the facts that outlived the build are in DATA-MODEL and DECISIONS, and the FLS
   licence gap 0016 left for a person is in Blockers below.
@@ -344,7 +351,7 @@ The queue is [docs/board/](board/), one card per file. At the head:
    "Car park near Bedgebury Nat…" truncates at 22 characters. **0015 no longer needs a desktop look**
    — it got one, and its layout and contrast both hold; what it still wants is the phone, which the
    0018 screenshots need anyway, so fold it into that rather than blocking the deploy on it.
-   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v18-2026-09-08`.
+   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v19-2026-09-08`.
    **Serving a worktree is a solved problem now** and is worth reusing on 0004:
    `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
