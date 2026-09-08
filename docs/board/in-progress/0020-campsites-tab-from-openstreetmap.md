@@ -2491,3 +2491,57 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (271 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one clause of the file header that nothing read: the second source.**
+`app/data/campsites.json` is not a pure OpenStreetMap extract. Forty-four of its records are
+Forestry and Land Scotland's Stay the Night car parks, which OSM never published. The header says so
+in one sentence -- "Stay the Night car parks from Forestry and Land Scotland." -- and the assertion
+that reads that header, `every campsite file the parser writes carries the full ODbL notice`,
+matches only `ODbL`, `© OpenStreetMap contributors`, `Open Database License` and `attribution_url`.
+The FLS sentence sits between two of those matches and no check touches it.
+
+**Measured, not argued.** I deleted the sentence from the payload in `scripts/parse_campsites.py`
+and ran the suite: **270 passed, 0 failed**, the ODbL-notice assertion reporting PASS beside it. The
+file then credits "© OpenStreetMap contributors" for all 3,574 records, 44 of which are somebody
+else's. That is the same invented provenance the sheet's `Source` row is already watched for --
+one level up, in the artefact that travels on its own and takes no footer with it.
+
+**Watched red first.** The new assertion `the campsite file names Forestry and Land Scotland for the
+records OSM did not publish` reads the header back out of the file the parser wrote in the temp
+tree, beside `the parser puts the Stay the Night rules on every record it builds`, and reuses that
+assertion's own `stnRec`. Against the deleted sentence it failed naming the shortened attribution in
+full, which is the fault's own failure and not a missing symbol. Restored the two lines and re-ran:
+271 passed, 0 failed.
+
+**The rule is conditional on the data, deliberately.** It requires the FLS sentence only when the
+written file actually holds a Stay the Night record; a campsite file built from OSM alone needs no
+FLS credit, and asserting one unconditionally would pin today's pipeline rather than the obligation.
+
+**Which criteria this belongs to.** #2, because the file would state a provenance its sources do not
+support; and #4, whose "each carrying its own licence statement" is about this header. Neither tick
+moves: both were already true, and the last unwatched line of the header is now watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started -- `git status` shows `scripts/selftest.js` and the two documents only -- and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 271 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 270 self-tests, which this run
+made 271. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.

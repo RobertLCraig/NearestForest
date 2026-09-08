@@ -1917,6 +1917,28 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
                : `parking=${JSON.stringify(stnRec.parking)} -- it must state the ` +
                  '6pm to 10am window and the self-contained-vehicle rule');
 
+    // Acceptance #2 and #4 of card 0020, at the level of the file rather than the screen.
+    // campsites.json is not a pure OSM extract: 44 of its records are Forestry and Land
+    // Scotland's Stay the Night car parks, which OpenStreetMap never published. The header
+    // says so in one sentence, and `every campsite file the parser writes carries the full
+    // ODbL notice` above does not read it -- delete that sentence and the file credits
+    // "© OpenStreetMap contributors" for all of it, which is the same invented provenance
+    // the sheet's Source row is watched for, one level up in the artefact that travels on
+    // its own. The rule is conditional on the data: a file holding no FLS record needs no
+    // FLS sentence.
+    let hdrFar = null;
+    if (cFar.status === 0 && fs.existsSync(cOut)) {
+      try { hdrFar = JSON.parse(fs.readFileSync(cOut, 'utf8')); } catch (e) { hdrFar = null; }
+    }
+    ok('the campsite file names Forestry and Land Scotland for the records OSM did not publish',
+       !!hdrFar && !!stnRec &&
+       /Forestry and Land Scotland/.test(hdrFar.attribution || ''),
+       !hdrFar ? `the run exited ${cFar.status} and wrote no dataset: ${tail(cFar)}`
+       : !stnRec ? 'the parser wrote no Stay the Night record, so this proves nothing'
+       : `the file holds FLS records but its attribution is ` +
+         `${JSON.stringify(hdrFar.attribution)} -- it credits OpenStreetMap for data OSM ` +
+         'never published');
+
     // Acceptance #7 of card 0020, the way it fails without anyone touching build_stn.
     // #7 is about a piece of tarmac, not about a record: "WHEN an FLS Stay the Night car
     // park is listed, THE APP SHALL say that it is overnight-only between 6pm and 10am and
