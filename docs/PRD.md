@@ -46,7 +46,7 @@ In priority order.
 - Three tabs: **Forests** (550 named sites, the default: 274 from Forestry England and 276 from
   Forestry and Land Scotland, in one ranked list) and **Car parks** (630 official car park features,
   for when the named site is not the nearest usable parking, England only), both from `sites.json`;
-  plus **Campsites** (3,673 places across England, Scotland and Wales that explicitly take a caravan
+  plus **Campsites** (3,647 places across England, Scotland and Wales that explicitly take a caravan
   or motorhome), from the separately licensed `campsites.json`.
 - **Two of the three tabs are Great Britain minus Wales; Car parks is still England only.** That is
   not an oversight: no open dataset of Scottish forest car parks exists (the Forestry Commission hub

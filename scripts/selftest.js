@@ -1239,6 +1239,50 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
          ? 'the match is too wide: it dropped "Scoutscroft Touring", a commercial holiday park'
          : 'the parser dropped the ordinary campsite too');
 
+    // Acceptance #6 of card 0020 a third time, for the "static-caravan site" kind. The drop
+    // rule is a brand list plus permanent_camping=only, and both are blind to the largest
+    // group of static sites in the source: the ones a name alone identifies. Measured over
+    // the shipped app/data/campsites.json, 22 residential parks and park-home estates ship
+    // today -- "Whitearch Park. Residential Park Homes", "Lynwood Residential Park",
+    // "Cringles Park Home estate" and so on -- places where people LIVE in static homes,
+    // plus one literally called "Static Holiday Park", two called "Haven" (the brand the
+    // list already names, missed because the name ends there) and "Martello Beach Holiday
+    // Park", operated by Park Resorts. Every one carries caravans or tourism=caravan_site,
+    // so takes_a_van() lets them through, and every existing #6 assertion stays green.
+    // The line that must not move: a park that says Touring, or that takes tents, is a
+    // mixed site with real pitches on it and has to survive.
+    const statics = [
+      { type: 'node', id: 31, lat: 55.1, lon: -3.1, tags: {
+          name: 'Whitearch Park. Residential Park Homes', tourism: 'caravan_site' } },
+      { type: 'node', id: 32, lat: 55.2, lon: -3.2, tags: {
+          name: 'Static Holiday Park', tourism: 'caravan_site' } },
+      { type: 'node', id: 33, lat: 55.3, lon: -3.3, tags: {
+          name: 'Haven', tourism: 'caravan_site' } },
+      { type: 'node', id: 34, lat: 55.4, lon: -3.4, tags: {
+          name: 'Martello Beach Holiday Park', tourism: 'caravan_site',
+          operator: 'Park Resorts' } },
+    ];
+    const mixed = { type: 'node', id: 35, lat: 55.5, lon: -3.5, tags: {
+      name: 'Second Chance Touring & Residential Park', tourism: 'caravan_site',
+      caravans: 'yes', tents: 'yes' } };
+    writeOsm([goodEl, mixed].concat(statics));
+    const cStatic = runCamp();
+    let staticIds = null;
+    if (cStatic.status === 0 && fs.existsSync(cOut)) {
+      try { staticIds = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites.map(s => s.id); }
+      catch (e) { staticIds = null; }
+    }
+    const staticShipped = staticIds &&
+      statics.map(e => `os-n${e.id}`).filter(id => staticIds.includes(id));
+    ok('a residential or park-home site is dropped even when only its name says so',
+       !!staticIds && staticShipped.length === 0 &&
+       staticIds.includes('os-n1') && staticIds.includes('os-n35'),
+       !staticIds ? `the run exited ${cStatic.status} and wrote no dataset: ${tail(cStatic)}`
+       : staticShipped.length ? `static-caravan sites still listed as somewhere to pull up for the night: ${staticShipped.join(', ')}`
+       : !staticIds.includes('os-n35')
+         ? 'the match is too wide: it dropped "Second Chance Touring & Residential Park", which takes tourers'
+         : 'the parser dropped the ordinary campsite too');
+
     // Acceptance #3 and #4 of card 0020, the half the shipped file cannot prove. The check
     // over app/data/campsites.json only matches /ODbL/ and /OpenStreetMap/, and it reads a
     // file that already happens to be right, so it is green from birth. #3 names three

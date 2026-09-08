@@ -33,9 +33,18 @@ LNG_RANGE = (-8.8, 2.2)
 # Operators and brand names whose sites are static-caravan holiday parks. You cannot
 # pull a campervan onto a static pitch, and these are the loudest false positives in
 # the source: Parkdean alone is 58 records.
-STATIC_BRANDS = ("parkdean", "haven holiday", "haven ", "park holidays", "royale resort",
-                 "away resorts", "john fowler", "darwin escapes", "coastal holidays",
-                 "static caravan")
+STATIC_BRANDS = ("parkdean", "haven holiday", "haven ", "park holidays", "park resorts",
+                 "royale resort", "away resorts", "john fowler", "darwin escapes",
+                 "coastal holidays", "static caravan")
+
+# The static sites a brand name cannot catch, because they carry no brand: a residential
+# park or a park-home estate is somewhere people LIVE in static homes, and there is no
+# pitch to pull onto. 22 of them shipped, from "Lynwood Residential Park" to "Cringles
+# Park Home estate", every one tagged caravans=yes or tourism=caravan_site.
+RESIDENTIAL_RE = re.compile(r"\b(residential|park homes?|static)\b", re.I)
+# ... except a mixed park. "Second Chance Touring & Residential Park" has residents at one
+# end and touring pitches at the other, and so does anything taking tents. Those stay.
+TOURING_RE = re.compile(r"\btouring\b", re.I)
 
 # A scout site named as one but not tagged as one. OSM's `scout` tag is sparsely applied:
 # 89 of 8,501 elements carry it, while "Rolleston Scout Group Caravan Park" carries only a
@@ -92,8 +101,15 @@ def haversine_mi(a_lat, a_lng, b_lat, b_lng):
 def looks_static(tags):
     if tags.get("permanent_camping") == "only":
         return True
-    blob = " ".join([tags.get("operator", ""), tags.get("name", "")]).lower()
-    return any(b in blob for b in STATIC_BRANDS)
+    # Trailing space so a brand ending the name still matches: two records are called
+    # exactly "Haven", which "haven " missed for want of one character.
+    blob = " ".join([tags.get("operator", ""), tags.get("name", ""), ""]).lower()
+    if any(b in blob for b in STATIC_BRANDS):
+        return True
+    if RESIDENTIAL_RE.search(blob) and not TOURING_RE.search(blob) \
+            and tags.get("tents") not in ("yes", "only"):
+        return True
+    return False
 
 
 def takes_a_van(tags):

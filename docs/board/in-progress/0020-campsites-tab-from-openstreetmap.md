@@ -95,7 +95,7 @@ OpenStreetMap contributors"**, naming the Open Database License and linking to
 **Rob chose the shortest cut on 2026-08-15: named and explicitly caravan or motorhome capable.** The
 recommendation on this card had been the middle option; the call went the other way, in favour of a
 list every row of which is recognisable and true. Widening it later is a one-line change to
-`takes_a_van()`. **Shipped:** 3,673 campsites — 2,604 England, 505 Scotland, 564 Wales — including
+`takes_a_van()`. **Shipped:** 3,647 campsites — 2,582 England, 505 Scotland, 560 Wales — including
 all 44 Stay the Night car parks, 972 KB on disk and about 150 KB on the wire. Two faults were found
 by running it rather than reading it: the same site mapped twice, as an OSM node and as the
 surrounding area, fixed by merging same-name records within 0.5 mi and self-tested; and the Stay the
@@ -1093,6 +1093,84 @@ nobody reviewed. Nor did I touch `scout=*` — the one element carrying it, "Jub
 is already dropped by `caravans=no`.
 
 **Suite:** `node scripts/selftest.js`, 247 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Nothing here has been seen in a browser** — this is a worktree and Herd serves the main checkout —
+and this run shipped a dataset change, so the Campsites tab wants the same phone look the other
+deploy checks want.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (248 passed, 0 failed)
+TOUCHED: scripts/parse_campsites.py, scripts/selftest.js, app/app.js, app/core.js, app/sw.js,
+app/data/campsites.json, docs/DATA-MODEL.md, docs/DECISIONS.md, docs/HANDOVER.md, docs/PRD.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Found 26 static-caravan sites shipping under criterion #6, and dropped them.** This is the same
+shape as the scout finding on the entry above, in the neighbouring drop rule. #6 names four kinds of
+site, and the static-caravan kind is caught by `looks_static()`: `permanent_camping=only`, plus a
+list of ten operator brands. Both are blind to the largest group in the source, the sites a **name**
+alone identifies. Every existing assertion stayed green, because a record that is correctly dropped
+leaves no text to match on, so a record wrongly kept ships with `access_note: null` and matches
+nothing either.
+
+**Measured, not argued.** Reading the shipped `app/data/campsites.json` rather than the assertion
+list: **22 residential parks and park-home estates** were listed as somewhere to pull up for the
+night, from `os-w303066740` "Lynwood Residential Park" to `os-n6796288905` "Whitearch Park.
+Residential Park Homes" and `os-w1082381965` "Cringles Park Home estate". A residential park is
+where people **live** in static homes; there is no pitch to pull onto, and the gate is somebody's
+front garden. Four more were brand misses the existing list should have caught: `os-w102220819`
+"Static Holiday Park" (the list holds `static caravan`, not `static`), `os-w87787629` "Martello
+Beach Holiday Park" operated by **Park Resorts**, and two records named exactly `Haven` — the brand
+the list already names, missed because its entry is `"haven "` with a trailing space and the name
+ends there.
+
+**Watched red, and watched both older #6 assertions stay green beside it.** The new assertion `a
+residential or park-home site is dropped even when only its name says so` goes in the temp-tree
+block beside the scout one. It feeds the parser the four real shapes above. Against the current
+parser it failed naming `os-n31, os-n32, os-n33, os-n34`, while `no campsite is members-only,
+private, scout or a static-caravan park` and `a site named as a scout site is dropped even when it
+carries no scout tag` both reported **PASS**. That is the criterion's own failure, not a missing
+symbol.
+
+**The line that must not move, and it is in the fixture.** `os-w1201815923` "Second Chance Touring &
+Residential Park", `os-w1196173845` "Castle Bay Holiday & Residential Park" and `os-w482693448`
+"Ryanbay Holiday and Residential Park" are **mixed** sites: residents at one end, touring pitches at
+the other. So the rule is `\b(residential|park homes?|static)\b` **unless** the name says Touring or
+the record takes tents, and the fixture keeps a `Second Chance Touring & Residential Park` the
+assertion requires to survive. A match that is too wide fails it as loudly as one that is too
+narrow. All three survived the rebuild.
+
+**One drop I want on the record as luck rather than design.** Adding a trailing space to the
+name/operator blob is what lets `"haven "` match a name ending in Haven, and it also made
+"Greenacres Caravan Park Presthaven" match on the letters inside *Presthaven*. That record is a
+Haven park, so the drop is right on the merits, but it is right by collision. The pre-existing
+`"haven "` entry already had that exposure mid-name (it would drop a "Milford Haven Caravan Park"),
+so nothing new was widened and no guard was added for a record that is not in the data. Worth
+knowing before anyone tightens it.
+
+**`CACHE` and `BUILD` bumped to `v22-2026-09-08`**, because the rebuild changed
+`app/data/campsites.json`: **3,647 records, England 2,582 / Scotland 505 / Wales 560**, down 26, 964
+KB. The `card 0036` prose-count guard failed unprompted with `app/app.js: says 3673, dataset holds
+3647` before I had touched any prose, so the corrected counts in `app/app.js`, `docs/HANDOVER.md`,
+`docs/DATA-MODEL.md`, `docs/PRD.md` and `docs/DECISIONS.md` are checked rather than asserted.
+`DATA-MODEL`'s exclusion table static row went from 129 to 155 and now carries the name-only reason.
+
+**What I did not do.** I did not touch the 413 records named "Holiday Park", even though many are
+static-heavy: plenty of them take tourers, #6 does not name them, and a rule that guesses is worse
+than the gap. Nor did I widen `\bhaven\b` beyond what the existing entry already does.
+
+**Assumed:** `data/raw/osm/` was already present in this worktree, so no Overpass request was made.
+The rebuild reflects OSM's 2026-08-15 snapshot, not today's.
+
+**Suite:** `node scripts/selftest.js`, 248 passed, 0 failed. There is no `vendor/` in this
 repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
 This project has never had a PHP suite.
 
