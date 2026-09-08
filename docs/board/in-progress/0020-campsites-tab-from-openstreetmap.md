@@ -2376,3 +2376,62 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (269 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the per-record licence notice, the one artefact carrying #3's credit that nothing had ever
+read.** Every other licence assertion on this card watches something that travels whole: the footer
+credit and its link in `index.html`, the map pill from `NF.mapHint`, the `campsites.json` header,
+and the Shortcut endpoint. The detail sheet's `Source` row is different in kind -- it is the credit
+sitting **beside the record it is about**, on the one screen somebody actually looks a place up on,
+and it is the only notice a reader meets while the app is open rather than while scrolling to the
+bottom of the page.
+
+**Measured, not argued.** I collapsed `if (site.source === 'campsite' && !site.stay_the_night)` to
+`if (false)` -- the whole block gone -- and ran the suite: **268 passed, 0 failed.** All 3,574 ODbL
+records then show a sheet with no attribution of any kind, and nothing said a word.
+
+**It carries a second clause the footer does not.** The row must NOT appear on a Stay the Night car
+park: that data is Forestry and Land Scotland's, not OpenStreetMap's, so crediting OSM there states
+a provenance no source published -- #2's failure, not #3's.
+
+**Watched red twice, on both halves separately.** The new assertion `the detail sheet credits
+OpenStreetMap on an ODbL record, and on no other` failed against the deleted block with `an
+OpenStreetMap campsite reads its source as null`, and against the `&& !site.stay_the_night` dropped
+with `a Stay the Night car park reads "OpenStreetMap contributors, ODbL" ... crediting OSM for data
+it never published`. **268 passed, 1 failed** each time, the one failure being the new assertion.
+Restored and re-ran: 269 passed, 0 failed.
+
+**Behaviour, not spelling, and anchored so the red stays honest.** The block is lifted out of
+`app.js` source with `new Function` and **run**, reusing the `field020` harness. The extraction
+regex is anchored on the **tail of `openSheet`** -- from the `Data checked` line up to
+`$('#sheet-body')` -- rather than on the `if` itself, deliberately: an anchor on the condition would
+have made a deleted condition throw rather than fail, and a throw is not the criterion's own
+failure. The cost is the same coupling the assertions above it name: moving that line makes the
+suite throw, which is loud but not informative.
+
+**Which criteria this belongs to.** #3, whose credit obligation this is, and #2 for the Stay the
+Night half. Neither tick moves: both were already true, and the per-record notice is now watched.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started;
+`git status` shows `scripts/selftest.js` and the two documents only, and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 269 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 268 self-tests, which this run
+made 269. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

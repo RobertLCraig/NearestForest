@@ -689,6 +689,38 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
        `a Forestry England forest reads "${fe.text}"`);
   }
 
+  // Acceptance #3, on the one screen a reader actually looks a place up on. Every other
+  // licence assertion on this card watches an artefact that travels whole: the footer, the
+  // map pill, the campsites.json header, the Shortcut endpoint. The detail sheet is the
+  // per-record notice, and it is the only place the credit sits beside the record it is
+  // about. It also carries a clause the footer does not: it must NOT appear on a Stay the
+  // Night car park, whose data is Forestry and Land Scotland's, not OpenStreetMap's --
+  // crediting OSM there states a provenance no source published, which is #2's failure.
+  // Measured: with the whole block collapsed to `if (false)` the suite still reported 268
+  // passed, 0 failed, and every one of the 3,574 ODbL records lost its notice in silence.
+  // Anchored on the tail of openSheet rather than on the `if` itself, so a deleted or
+  // disabled condition fails this assertion instead of making the regex throw.
+  {
+    const credit020 = new Function('site', 'field', 'NF', 'CAMP',
+      "var h = '';\n" +
+      appjs020.match(/ {2}h \+= field\('Data checked'[\s\S]*?\r?\n(?= {2}\$\('#sheet-body'\))/)[0] +
+      'return h;');
+    const sourceRow = (s) => {
+      const m = /<dt>Source<\/dt><dd[^>]*>([^<]*)<\/dd>/.exec(credit020(s, field020, NF, null));
+      return m ? m[1] : null;
+    };
+    const osmRec = sourceRow({ source: 'campsite' });
+    const stnRec = sourceRow({ source: 'campsite', stay_the_night: true });
+    const forestRec = sourceRow({ source: 'forest' });
+    ok('the detail sheet credits OpenStreetMap on an ODbL record, and on no other',
+       osmRec === 'OpenStreetMap contributors, ODbL' &&
+       stnRec === null && forestRec === null,
+       osmRec !== 'OpenStreetMap contributors, ODbL'
+         ? `an OpenStreetMap campsite reads its source as ${JSON.stringify(osmRec)}`
+         : `a Stay the Night car park reads ${JSON.stringify(stnRec)} and a forest ` +
+           `reads ${JSON.stringify(forestRec)}, crediting OSM for data it never published`);
+  }
+
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');
   ok('ranking the campsite tab returns only campsites', ranked.every(s => s.source === 'campsite'));
   ok('campsite ranking is sorted ascending',
