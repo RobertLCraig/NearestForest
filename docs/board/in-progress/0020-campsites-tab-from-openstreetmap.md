@@ -1535,3 +1535,60 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (255 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the failure mode this card's own design created, which nothing was watching.** #4 splits
+the ODbL data into a second file, and #1 says the app loads with three tabs. The cost of the split
+is that the shell now makes a **second fetch that can fail on its own** — a half-populated offline
+cache, an interrupted deploy, a corrupt file. `app/app.js` guards it in two places, and both are one
+line: `loadJson('data/campsites.json')` carries its own `.catch`, so a rejection cannot take
+`Promise.all` down with it, and `render()` swaps the empty-tab message for a named load error.
+**Neither line had an assertion.** The nearest one, `the shell fetches the campsite file and merges
+it into the ranked list`, greps the fetch and the concat and looks straight past the `.catch` on the
+same expression.
+
+**Measured, not argued.** I deleted the `.catch` and ran the suite: **254 passed, 0 failed**. With
+that one clause gone, a missing `campsites.json` rejects the pair, the outer handler sets "Could not
+load the site data" and clears the list, and the app offers **no tabs at all** — Forests and Car
+parks included, neither of which has anything to do with OpenStreetMap. That is #1 failing in the
+scenario #8 exists to test, under a fully green suite. I then deleted only the `CAMP_ERROR` branch
+of the empty message and ran it again: **254 passed, 0 failed**, with a Campsites tab reporting "No
+sites match that filter" over data that never arrived — telling a reader in a dead-signal area there
+is nowhere to sleep near them, which is a statement no source published and the failure #2 names.
+
+**Watched red twice, once per clause.** The new assertion `a missing campsite file cannot take the
+forests down, and the tab says which happened` requires the chained `.catch`, the `CAMP_ERROR`
+capture, the `TAB === 'campsite' && CAMP_ERROR` branch and its wording. It failed against each of
+the two breakages above on its own, while every other campsite assertion reported PASS both times.
+That is the criteria's own failure, not a missing symbol. Restored both lines and re-ran: 255
+passed, 0 failed.
+
+**One limit of the harness, said plainly.** This is source text, not behaviour. The load is a
+top-level `Promise.all` reading `metaEl`, `DATA` and `loadStale`, and the message is inside
+`render()`, which reads `emptyEl` and `listEl` from module scope — neither lifts out with
+`new Function` the way `field()` and `updateHint()` did, and this suite has no DOM. It is the same
+shape as the three neighbouring `app.js` assertions on this card. The cost is that renaming
+`CAMP_ERROR` fails it loudly but unhelpfully.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started;
+`git diff --stat` shows `scripts/selftest.js` only, and nothing under `app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 255 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 254 self-tests, which this run
+made 255. Not a run report — HANDOVER's header forbids those — just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** — this is a worktree and Herd serves the main checkout — but this run shipped no bytes
+under `app/`, so there is nothing new to look at.

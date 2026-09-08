@@ -480,6 +480,25 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
      /DATA\.sites = DATA\.sites\.concat\(CAMP\.sites\)/.test(appjs020),
      'without both lines the Campsites tab loads empty and nothing else here notices');
 
+  // Acceptance #1 again, and the price #4 charges for it. Splitting the ODbL data into a
+  // second file gives the shell a SECOND fetch that can fail on its own -- a half-populated
+  // offline cache, an interrupted deploy, a corrupt json. That failure must land on the
+  // Campsites tab and nowhere else: chained onto Promise.all without its own catch, one
+  // missing campsites.json rejects the pair, and the app that "loads" offers no tabs at all,
+  // Forests and Car parks included. And a tab that comes up empty has two causes a reader
+  // cannot tell apart -- a filter that matched nothing, or data that never arrived -- so
+  // "No sites match that filter" over a failed load tells somebody there is nowhere to sleep
+  // near them, which is a thing no source published. Both guards are one line each and
+  // nothing was watching either. Source text, because app.js is DOM-and-fetch only: the load
+  // is a top-level Promise.all and the message is inside render(), so neither lifts out the
+  // way field() does. The cost is that renaming CAMP_ERROR fails this loudly but unhelpfully.
+  ok('a missing campsite file cannot take the forests down, and the tab says which happened',
+     /loadJson\('data\/campsites\.json'\)\s*\r?\n?\s*\.?catch\(/.test(appjs020)
+     && /CAMP_ERROR = err\.message/.test(appjs020)
+     && /TAB === 'campsite' && CAMP_ERROR/.test(appjs020)
+     && /could not be loaded/.test(appjs020),
+     'an uncaught second fetch loses all three tabs, and an unexplained empty tab reads as "no campsites near you"');
+
   // Acceptance #2 has two clauses and only one was watched. "SHALL NOT show an open/closed
   // badge" is covered below; "SHALL state only what its source publishes, and say not known
   // for every field the source is silent on" was covered only as far as the parser — a silent
