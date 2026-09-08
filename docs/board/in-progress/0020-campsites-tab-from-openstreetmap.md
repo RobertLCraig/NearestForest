@@ -987,3 +987,56 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 
 **Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
 icon, Campsites tab tapped into while offline. Card 0001 check 5.
+
+**2026-09-08** RESULT: partial
+TESTS: +3 new, all green (246 passed, 0 failed)
+TOUCHED: app/core.js, app/app.js, app/sw.js, scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Found a real defect in criterion #2 by reading the sheet rather than the assertion list, and fixed
+it.** The "Data checked" row in `openSheet` read
+`site.scraped_at || (site.source === 'campsite' && CAMP ? CAMP.generated_at : null)`.
+`CAMP.generated_at` is **OpenStreetMap's snapshot date** — `main` in `scripts/parse_campsites.py`
+sets it to the max `timestamp_osm_base` across the three Overpass responses. `build_stn` sets
+`scraped_at: None` on every Stay the Night car park, deliberately, because `fetch_campsites.py`
+records no date for the FLS pages at all. So the fallback fired on exactly the 44 records it must
+not, and each one told the reader "Data checked: 2026-08-15" — a date OSM published about OSM,
+presented as Forestry and Land Scotland's. Measured, not argued: `node -e` over the shipped
+`app/data/campsites.json` gives 44 STN records, **0** carrying `scraped_at`, and `generated_at`
+`2026-08-15`.
+
+**Why it is criterion #2 and not tidiness.** #2 is "state only what its source publishes, and say
+`not known` for every field the source is silent on". The parser's null was the source being silent;
+the app filled it in. And "Data checked" is the one field a reader consults to decide whether to
+trust the row — a Stay the Night car park is exactly the row somebody drives to at 9pm.
+
+**The decision moved to `core.js`, which is the project convention and the only way to test it.**
+`NF.dataChecked(site, camp)` now decides; `app.js` calls it. Same shape this card's own `NF.mapHint`
+entry used, for the same reason: `app.js` is DOM-only and the suite has no DOM.
+
+**Watched red, honestly.** Two of the three new assertions would have failed on a missing symbol, so
+I first added `dataChecked` **reproducing the old behaviour** and ran the suite: **244 passed, 2
+failed**, and the failure that matters — `a Stay the Night car park is not given OpenStreetMap's
+data-checked date` — failed on the criterion's own fault, with the function present and returning
+`2026-08-15`. Then one condition (`&& !site.stay_the_night`) and re-ran: 246 passed, 0 failed. The
+second assertion pins what must *not* change, that an OSM record still reports its snapshot; the
+third pins the wiring, so deleting the call and restoring the inline expression fails.
+
+**`CACHE` and `BUILD` bumped to `v20-2026-09-08`**, because `app/core.js` and `app/app.js` changed.
+`app/data/campsites.json` did not: this is a rendering fix, the parser is untouched, and no record
+gained or lost a field.
+
+**Suite:** `node scripts/selftest.js`, 246 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Nothing here has been seen in a browser** — this is a worktree and Herd serves the main checkout —
+and the changed row wants a look on the phone alongside the other deploy checks: a Stay the Night
+sheet should now read "Data checked / Not listed" rather than a date.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5.

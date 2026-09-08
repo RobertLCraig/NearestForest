@@ -229,7 +229,7 @@ function openSheet(site) {
     h += field('More', '<a href="' + esc(moreHref) + '" target="_blank" rel="noopener noreferrer">' +
                esc(label) + '</a>', { raw: true });
   }
-  h += field('Data checked', site.scraped_at || (site.source === 'campsite' && CAMP ? CAMP.generated_at : null));
+  h += field('Data checked', NF.dataChecked(site, CAMP));
   if (site.source === 'campsite' && !site.stay_the_night) {
     h += field('Source', 'OpenStreetMap contributors, ODbL');
   }

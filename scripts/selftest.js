@@ -440,6 +440,22 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
      /site\.stay_the_night \? field\('Overnight rules', site\.parking\)/.test(appjs020),
      'listing the scheme rules under a price heading invites someone to break them');
 
+  // Acceptance #2, "state only what its source publishes". The sheet's "Data checked" row
+  // falls back to the file's `generated_at` when a record carries no `scraped_at` — and
+  // `generated_at` is OpenStreetMap's snapshot date. A Stay the Night car park comes from
+  // Forestry and Land Scotland, whose fetcher records no date at all, so all 44 of them
+  // would report OSM's freshness as their own: a date the source never published, on the
+  // one field a reader consults to decide whether to trust the row.
+  ok('a Stay the Night car park is not given OpenStreetMap\'s data-checked date',
+     NF.dataChecked({ source: 'campsite', stay_the_night: true },
+                    { generated_at: '2026-08-15' }) === null,
+     'FLS publishes no scrape date, so the sheet must say not listed rather than OSM\'s');
+  ok('an OSM campsite still reports the snapshot it came from',
+     NF.dataChecked({ source: 'campsite', scraped_at: '2026-08-15' }, null) === '2026-08-15' &&
+     NF.dataChecked({ source: 'campsite' }, { generated_at: '2026-08-15' }) === '2026-08-15');
+  ok('the sheet asks core.js for the data-checked date rather than deciding it inline',
+     /NF\.dataChecked\(site, CAMP\)/.test(appjs020));
+
   // Acceptance #1 is "the app offers a Campsites tab, ranked like the other two", and the
   // ranking assertions below build the merged array themselves, so they prove `rank` and
   // not the app. The shell has to fetch the second file AND concat it into the list `rank`

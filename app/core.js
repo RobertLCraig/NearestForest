@@ -13,7 +13,7 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v19-2026-09-08';
+  var BUILD = 'v20-2026-09-08';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -263,6 +263,18 @@
     return { text: PLAIN_HINT, credit: false };
   }
 
+  /* The date to show under "Data checked", or null for "not listed".
+
+     The campsite file's `generated_at` is OpenStreetMap's snapshot date, so it stands in
+     for an OSM record that carries no stamp of its own. It says nothing about a Stay the
+     Night car park: that comes from Forestry and Land Scotland, whose fetcher records no
+     date, and lending it OSM's date claims a freshness nobody measured. */
+  function dataChecked(site, camp) {
+    if (site.scraped_at) return site.scraped_at;
+    if (site.source === 'campsite' && camp && !site.stay_the_night) return camp.generated_at;
+    return null;
+  }
+
   /* Sorted list of the sites in `source`, nearest first, or alphabetical when pos is null.
 
      Returns shallow COPIES carrying _mi/_bear rather than annotating the input objects.
@@ -298,5 +310,5 @@
            haversineMi: haversineMi, bearingDeg: bearingDeg,
            compassIdx: compassIdx, pad2: pad2, hhmmToMins: hhmmToMins, sunsetAt: sunsetAt,
            openState: openState, navUrl: navUrl, safeHref: safeHref, rank: rank,
-           mapHint: mapHint };
+           mapHint: mapHint, dataChecked: dataChecked };
 }));
