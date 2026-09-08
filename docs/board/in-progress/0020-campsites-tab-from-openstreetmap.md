@@ -87,13 +87,16 @@ OpenStreetMap contributors"**, naming the Open Database License and linking to
 - [x] `docs/DATA-MODEL.md`, `docs/PRD.md` and `docs/DECISIONS.md` updated for the second file, the
       three-tab scope and the offline-cache footprint.
 - [ ] **Map attribution still outstanding**, and it is a licence condition rather than a nicety. It
-      waits on `0015`, since the map credit is the thing that card is about.
+      no longer waits on `0015`: that card shipped `.map__hint--attrib`, but the pill it built shows
+      only while the tile layer is on and credits OSM as the *tile* source. With tiles off the map
+      draws 3,675 ODbL-derived markers and carries no credit at all. The footer credit (acceptance
+      #3) is in place; this is the map half, and it is still owed.
 
 ## Answered, and built
 **Rob chose the shortest cut on 2026-08-15: named and explicitly caravan or motorhome capable.** The
 recommendation on this card had been the middle option; the call went the other way, in favour of a
 list every row of which is recognisable and true. Widening it later is a one-line change to
-`takes_a_van()`. **Shipped:** 3,681 campsites — 2,612 England, 505 Scotland, 564 Wales — including
+`takes_a_van()`. **Shipped:** 3,675 campsites — 2,606 England, 505 Scotland, 564 Wales — including
 all 44 Stay the Night car parks, 972 KB on disk and about 150 KB on the wire. Two faults were found
 by running it rather than reading it: the same site mapped twice, as an OSM node and as the
 surrounding area, fixed by merging same-name records within 0.5 mi and self-tested; and the Stay the
@@ -148,4 +151,44 @@ VERDICT: defect
 Nothing else broke: `openState` in `app/core.js` returns `unknown` for every campsite (none carry `opening_summary`), and `rank` filters cleanly by source.
 
 VERDICT: defect
+
+**2026-09-08** RESULT: partial
+TESTS: +2 new (one assertion, two prose-count rows), 228 passed, 0 failed
+TOUCHED: scripts/parse_campsites.py, scripts/selftest.js, app/app.js, app/sw.js, app/core.js,
+app/data/campsites.json, docs/DATA-MODEL.md, docs/DECISIONS.md, docs/HANDOVER.md, docs/PRD.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+Cleared the three defects the review above found, each test-first and each watched red first.
+
+**#6, members-only sites.** `ACCESS_NOTE` mapped `access=members` to a "Members only" label while
+`build_osm` dropped only `private` and `no`, so six club sites shipped. Added the assertion `no
+campsite is members-only, private, scout or a static-caravan park` to `scripts/selftest.js`, ran it,
+watched it name all six by id (`os-w1072961135` and five more), then moved `members` into the drop
+list and deleted its label. Re-ran the parser: 3,675 records, England 2,606 / Scotland 505 / Wales
+564. The criterion stays ticked because it is now true, not because it was.
+
+**The drifted counts.** `app/app.js` and a `selftest.js` comment both said "99 of 3,723", the file
+held 3,681, and the card said 96 of 8,496 — three figures for one fact. The block *card 0036* built
+to stop exactly this read `sites.json` only. Added two rows to it for both halves of `app.js`'s
+sentence, ran it, watched it fail with `says 99, dataset holds 98 | says 3723, dataset holds 3675`,
+then corrected the prose. The `selftest.js` and `parse_campsites.py` comments now carry no number of
+their own, so there is one written-down count and it is checked on every run.
+
+**Assumed:** `data/raw/osm/` is not in a worktree (it is gitignored), so I copied the three cached
+Overpass responses in from `C:\Dev\NearestForest` read-only rather than re-querying Overpass. The
+rebuild therefore reflects OSM's 2026-08-15 snapshot, not today's.
+
+`CACHE` and `BUILD` bumped to `v18-2026-09-08`, because `app/data/campsites.json` changed.
+
+**The review's scope findings do not hold, and nothing was raised for them.** 0004, 0015 and 0016 are
+on `main` (`git log main -- scripts/parse.py app/map.js` gives `42876cf`, `b3f5297`, `b542a3f`), so
+their work shows up in a diff against an older base rather than in this branch's own changes.
+
+**Still open. #8 needs a person** — a cold offline launch on the device, card 0001 check 5. The
+map-attribution task is also still owed: 0015 shipped its pill, but it shows only while tiles are on
+and credits OSM as the tile source, so with tiles off the map draws 3,675 ODbL-derived markers with
+no credit at all. That is a licence condition, but it is a task rather than a criterion, so it does
+not hold a tick back. Nothing here has been seen in a browser: this is a worktree and Herd serves the
+main checkout.
 

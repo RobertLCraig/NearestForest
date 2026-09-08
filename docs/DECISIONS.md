@@ -92,13 +92,13 @@ found its way into `sites.json`.
 
 **Trade-off accepted:** OSM is crowd-edited, so its tagging is uneven and its coverage is not
 uniform. That is met with an explicit filter rather than with hope. Rob's call on the cut was named
-and explicitly caravan or motorhome capable, which takes 8,501 features down to 3,681: an untagged
+and explicitly caravan or motorhome capable, which takes 8,501 features down to 3,675 (3,681 until 2026-09-08, when card 0020 dropped the six `access=members` sites it had been labelling instead of excluding): an untagged
 `camp_site` is not evidence that a van can get in, and a list read while driving is worth more short
 and recognisable than long and speculative. Every exclusion is counted and printed by the parser.
 The 2,292 unnamed and 2,370 untagged records are not lost, only unshipped, and widening the filter is
 a one-line change if real use says the list is too thin.
 
-**Also decided here:** the campsite tab never shows an open or closed badge. 99 of 3,681 records
+**Also decided here:** the campsite tab never shows an open or closed badge. 98 of 3,675 records
 publish any opening text at all, so a badge would be a guess, and the standing rule that this app
 does not guess a gate is open applies with more force to somewhere you intended to sleep.
 **Status:** active

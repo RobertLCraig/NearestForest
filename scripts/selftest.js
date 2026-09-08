@@ -384,8 +384,16 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
      camps.every(s => s.vehicles.some(v => v === 'caravans' || v === 'motorhomes')),
      'a tents-only site does not belong in this tab');
 
-  // 99 of 3,723 records publish any hours at all, so a badge here would be a guess,
-  // and this project does not guess that a gate is open.
+  // Acceptance #6: a members-only site is not somewhere you can pull up for the night,
+  // so it must be dropped by the parser rather than shipped with a "Members only" label.
+  // Labelling is not excluding, and the label was what shipped until 2026-09-08.
+  ok('no campsite is members-only, private, scout or a static-caravan park',
+     camps.every(s => !/members only|private|scouts?\b|static caravan/i.test(s.access_note || '')),
+     camps.filter(s => /members only/i.test(s.access_note || '')).map(s => s.id).join(', '));
+
+  // Very few of these records publish any hours at all, so a badge here would be a guess,
+  // and this project does not guess that a gate is open. The measured count is in
+  // app/app.js and is checked against the shipped file by the prose-count block below.
   ok('no campsite carries a parsed opening summary',
      camps.every(s => s.opening_summary == null));
   ok('no campsite is ever reported open or closed',
@@ -1034,6 +1042,12 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
      /\| [\d,]+ locations, [\d,]+ forests, ([\d,]+) car parks \|/,
      sites.filter(s => s.source === 'carpark').length],
     ['docs/DATA-MODEL.md', /all ([\d,]+) records still read/, staleCount],
+    // Card 0020: this block read sites.json only, so the campsite counts written into
+    // prose drifted silently the moment dedupe_same_site dropped records -- which is the
+    // exact failure the block exists to stop. Both halves of app.js's sentence.
+    ['app/app.js', /publishes hours for ([\d,]+) of [\d,]+ records/,
+     CAMP.sites.filter(s => s.opening_times).length],
+    ['app/app.js', /publishes hours for [\d,]+ of ([\d,]+) records/, CAMP.sites.length],
   ];
   // One test, named as the cards cite it, so a run log shows it by that name. The detail
   // says which file and by how much, because "a count is wrong" is not actionable on its own.

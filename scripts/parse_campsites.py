@@ -141,9 +141,9 @@ FACILITY_TAGS = [
 ACCESS_NOTE = {
     "customers": "Customers only",
     "permit": "Permit needed",
-    "members": "Members only",
     "permissive": "Permissive access",
 }
+# access=members is NOT in that map on purpose: it is a drop, not a label. See build_osm.
 
 
 def vehicles_for(tags):
@@ -204,7 +204,10 @@ def build_osm():
             if not takes_a_van(tags):
                 notes["no_rv"] += 1
                 continue
-            if tags.get("access") in ("private", "no"):
+            # access=members is dropped, not labelled. You cannot pull up for the night
+            # at a club site you are not a member of, so "Members only" on a row in a
+            # list read while driving is an invitation to a locked gate.
+            if tags.get("access") in ("private", "no", "members"):
                 notes["private"] += 1
                 continue
             if tags.get("scout") in ("yes", "only") or tags.get("group_only") == "yes":
@@ -238,7 +241,8 @@ def build_osm():
                 "postcode_postal": None,
                 "address": addr or None,
                 "url": url,
-                # 96 of 8,496 records publish any hours at all, so this is almost always
+                # Barely any of these records publish hours at all -- the measured count of
+                # what survives the filter is in app/app.js and self-tested -- so this is
                 # null and the app must never show an open/closed badge on a campsite.
                 "opening_times": tags.get("opening_hours"),
                 "opening_summary": None,

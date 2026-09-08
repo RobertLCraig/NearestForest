@@ -186,7 +186,7 @@ function openSheet(site) {
   }
   h += field('Sat nav postcode', site.postcode_satnav, { missing: 'No sat nav postcode published' });
   h += field('Address', site.address);
-  /* Campsites: the source publishes hours for 99 of 3,723 records, so "Opening times"
+  /* Campsites: the source publishes hours for 98 of 3,675 records, so "Opening times"
      as a headline field would be an empty row on almost every one of them. What the
      source does say is who may use the place and what it takes, and that is what
      decides whether the drive is worth making. */
