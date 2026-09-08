@@ -118,3 +118,54 @@ and leaving that sentence would make the file contradict itself in one commit, w
 **One thing this run could not check.** `php C:\Dev\ProgressBoard\artisan board:convention` only
 resolves boards under `C:\Dev`, so from this worktree it reads the main checkout and cannot see
 `0033` or `0034`. They were written against `docs/board/README.md` by hand.
+
+### 2026-09-08 review (v20260908110645-0c1b)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**#1 ÔÇö the number matches.** `docs/HANDOVER.md`, `## Current state`, the bullet beginning "Built and not yet deployed", now reads "235 self-tests pass". I ran the suite: `scripts/selftest.js` prints `235 passed, 0 failed`. Same number, today. The card's log says 225 because more tests landed after it (card 0020); the file was kept in step, so the criterion still holds now, which is what it asks.
+
+**#2 ÔÇö the command travels with it.** The same sentence names `node scripts/selftest.js` and carries the date it was measured. A reader can settle it in one command. `docs/HANDOVER.md` also names the same command in its run block ("expect: all passed, 0 failed"), so the two do not disagree.
+
+**I tried to break it.** I looked for a second, stale copy of the count elsewhere in the file: `grep` for `219` finds only an IP address, and no other line states a self-test total. There is no test that reads the docs, and the card says there should not be, so nothing is missing there.
+
+Both criteria trace to real text in the file, and the file agrees with the suite as it runs right now.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Scope check: this change is much bigger than the card.**
+
+The card's Plan says "Only `docs/HANDOVER.md` changes." The diff changes app and script code:
+
+- `app/core.js` ÔÇö a whole new function `mapHint()` plus new `TILE_CREDIT` / `OSM_CREDIT` / `PLAIN_HINT` constants, and it is added to the module export list. That is a map-attribution feature (card 0015 territory), not a count fix.
+- `scripts/parse_campsites.py` and `scripts/selftest.js` (+174 lines) ÔÇö new parse rules and new tests.
+- `app/data/campsites.json` regenerated, `app/core.js` `BUILD` bumped to `v19-2026-09-08`.
+- Comment counts rewritten in `app/api/nearest.php` and `app/app.js` (`openSheet`), and text edits in `docs/DATA-MODEL.md`, `docs/PRD.md`, `docs/DECISIONS.md`, `docs/build/IOS-SHORTCUT.md`, `docs/outreach/forestry-england-handover.md`.
+- About 20 new board cards were written. The card's own log lists only two (`0033`, `0034`) as out of scope.
+
+"## Not this card" fences off record counts and any doc-reading test. The change crossed both: it re-derived record counts across app comments and grew the suite.
+
+**Left half done:** the card's log says the brief now reads "225 self-tests"; `docs/HANDOVER.md` `## Current state` today reads "235 self-tests pass". The number moved again inside the same branch, so the card's stated result no longer matches the file it claims to have fixed.
+
+VERDICT: defect
+
+**breakage: defect**
+
+The self-test number itself is right: `node scripts/selftest.js` prints `235 passed, 0 failed`, and `docs/HANDOVER.md` `## Current state` says 235 with the command beside it. That part holds.
+
+The sweep does not. Task 3 asked for every carried count to match the thing it counts, and three still do not ÔÇö each one printed next to the exact command that disproves it:
+
+- `docs/HANDOVER.md`, "What's next" item 4, says `ai-review/` holds "twenty-nine cards ... (`ls docs/board/ai-review`, which is the only honest count)". `ls` gives **17**.
+- `docs/HANDOVER.md`, "Read this first" and "What I need from Rob", both say "**Eleven cards** wait on a person" and list eleven ids. `ls docs/board/human-review` gives **29**. The eleven and twenty-nine look swapped between the two lanes.
+- `docs/HANDOVER.md`, "Read this first", names the open cards as "0045 in `todo/`, and 0021 and 0044 in `in-progress/`". `todo/` holds 0052, 0053, 0054; `in-progress/` holds 0020 and 0021. No 0045, no 0044.
+
+A number that names its own check and then fails it is worse than the bare 219 this card replaced.
+
+VERDICT: defect
+
