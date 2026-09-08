@@ -1024,6 +1024,33 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
        : cAfter === null ? 'parse_campsites.py exited non-zero and deleted the previous dataset'
        : `parse_campsites.py exited ${cBad.status} but had already replaced campsites.json ` +
          `(${cBefore.length} bytes -> ${cAfter.length} bytes)`);
+
+    // Acceptance #6 of card 0020, the half the shipped file cannot prove: "say not known
+    // for every field the source is silent on". Null renders as "not known"; an empty or
+    // whitespace-only string renders as blank space, which reads as a published answer.
+    // OSM is edited by anybody and does carry empty tag values, so the parser has to
+    // normalise them. Today's extract happens to hold none, so a check over the shipped
+    // file would be green from birth -- this feeds the parser the tags instead.
+    writeOsm(Object.assign({}, goodEl, { tags: Object.assign({}, goodEl.tags, {
+      'addr:postcode': '  ', opening_hours: '', operator: ' ', phone: '\t',
+      'addr:street': '  ', website: '' }) }));
+    const cBlank = runCamp();
+    let blankRec = null;
+    if (cBlank.status === 0 && fs.existsSync(cOut)) {
+      try { blankRec = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites
+                          .find(s => s.id === 'os-n1'); } catch (e) { blankRec = null; }
+    }
+    const blankKeys = ['postcode_satnav', 'opening_times', 'operator', 'phone',
+                       'address', 'url', 'access_note', 'parking'];
+    ok('a blank OSM tag becomes null, never an empty string',
+       !!blankRec && blankKeys.every(k => blankRec[k] == null ||
+                                          (typeof blankRec[k] === 'string' &&
+                                           blankRec[k] === blankRec[k].trim() &&
+                                           blankRec[k].length > 0)),
+       !blankRec ? `the blank-tag run exited ${cBlank.status} and wrote no os-n1: ${tail(cBlank)}`
+                 : blankKeys.filter(k => typeof blankRec[k] === 'string' &&
+                                         (!blankRec[k].trim() || blankRec[k] !== blankRec[k].trim()))
+                            .map(k => `${k}=${JSON.stringify(blankRec[k])}`).join(', '));
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

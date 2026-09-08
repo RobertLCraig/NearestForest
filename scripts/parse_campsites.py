@@ -101,6 +101,17 @@ def takes_a_van(tags):
     return tags.get("caravans") == "yes" or tags.get("motorhome") == "yes"
 
 
+def tag(tags, *keys):
+    """The first of these OSM tags that carries text, stripped, or None. OSM is edited by
+       anybody and does carry empty and whitespace-only tag values; the app renders null as
+       "not known" and an empty string as blank space, which reads as a published answer."""
+    for k in keys:
+        v = (tags.get(k) or "").strip()
+        if v:
+            return v
+    return None
+
+
 def safe_url(u):
     """A campsite's own website, from a source anybody may edit. The app renders this
        into an href, so the scheme is checked here as well as at render time. Anything
@@ -237,14 +248,14 @@ def build_osm():
                 "name": name,
                 "name_is_derived": False,
                 "lat": round(float(lat), DP), "lng": round(float(lng), DP),
-                "postcode_satnav": tags.get("addr:postcode"),
+                "postcode_satnav": tag(tags, "addr:postcode"),
                 "postcode_postal": None,
                 "address": addr or None,
                 "url": url,
                 # Barely any of these records publish hours at all -- the measured count of
                 # what survives the filter is in app/app.js and self-tested -- so this is
                 # null and the app must never show an open/closed badge on a campsite.
-                "opening_times": tags.get("opening_hours"),
+                "opening_times": tag(tags, "opening_hours"),
                 "opening_summary": None,
                 "parking": fee_text(tags),
                 "facilities": facilities,
@@ -255,8 +266,8 @@ def build_osm():
                 "country": country,
                 "vehicles": vehicles_for(tags),
                 "access_note": ACCESS_NOTE.get(tags.get("access")),
-                "operator": tags.get("operator"),
-                "phone": tags.get("phone") or tags.get("contact:phone"),
+                "operator": tag(tags, "operator"),
+                "phone": tag(tags, "phone", "contact:phone"),
                 "stay_the_night": False,
                 "scraped_at": stamp,
             })

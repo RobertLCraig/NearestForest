@@ -331,3 +331,49 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 **Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
 icon, Campsites tab tapped into while offline. Card 0001 check 5. No run of this loop can close it.
 
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (233 passed, 0 failed)
+TOUCHED: scripts/parse_campsites.py, scripts/selftest.js,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the untested half of criterion #2.** The five entries above all traced #2 to the
+open/closed badge, which is only its second clause. Its first clause — "state only what its source
+publishes, and say `not known` for every field the source is silent on" — had no assertion for
+campsites at all. The Scottish-forest block has one (`a silent field is null, never an empty
+string`, `scripts/selftest.js`), and the campsite block does not. Null renders as "not known"; an
+empty or whitespace-only string renders as blank space, which a reader takes for a published answer.
+
+**Why the shipped file could not prove it, and what I did instead.** Today's extract holds zero
+blank or untrimmed string fields, so an assertion over `app/data/campsites.json` would have been
+green from birth — the thing this thread has refused three times. `build_osm` in
+`scripts/parse_campsites.py` read `addr:postcode`, `opening_hours`, `operator` and `phone` straight
+off the OSM tag dict with no strip and no emptiness guard, and OSM is edited by anybody and does
+carry empty tag values, so the guarantee rested on the extract rather than on the parser. The new
+assertion `a blank OSM tag becomes null, never an empty string` therefore goes in the temp-tree
+block beside `a failed campsite parse leaves the previous dataset untouched`: it feeds the parser a
+node whose tags are `'  '`, `''`, `' '` and `'\t'`, runs it, and reads the record back out of the
+written file.
+
+**Watched red first.** It failed against the old parser naming all four fields —
+`postcode_satnav="  ", opening_times="", operator=" ", phone="\t"` — which is the criterion's own
+failure, not a missing symbol. Fixed with one helper, `tag(tags, *keys)`, returning the first tag
+carrying text, stripped, or `None`; `address` and `url` were already guarded and are asserted too so
+that stays true.
+
+**No `CACHE` / `BUILD` bump, and that is the point.** I re-ran `python scripts/parse_campsites.py`
+against the cached Overpass responses in `data/raw/osm/` — 3,675 records, England 2,606 / Scotland
+505 / Wales 564 — and `app/data/campsites.json` came back byte-identical. Nothing under `app/`
+changed, so nothing needed bumping. The parser now guarantees what the data happened to be.
+
+**Suite:** `node scripts/selftest.js`, 233 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget; card `0031` in `ai-review/` already carries it.
+
+**Nothing here has been seen in a browser.** This is a worktree and Herd serves the main checkout.
+The change is parser-side and shipped no bytes, so there is nothing new to look at, but #8's device
+check is unchanged and still owed.
+
