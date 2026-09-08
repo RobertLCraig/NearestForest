@@ -198,3 +198,49 @@ OPENING TIMES with no badge anywhere, and "Not listed" for the address FLS does 
 owed: a real phone**, and the offline check, since the precache grew by about 190 KB.
 
 **Not deployed.** `pwsh ./scripts/deploy.ps1` has not been run, and 0004 and 0015 are also waiting.
+
+### 2026-09-08 review (v20260908090459-5381)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I traced each criterion to code.
+
+- **#1** `build_fls()` in `scripts/parse.py` reads the cached index and emits one `forest` record per destination with `name`, `lat`/`lng`, `url`. Shipped file has 276 Scottish forests.
+- **#2** `fls_satnav()`, `fls_facilities()` and the `Opening hours` cut in `build_fls()` all return `None` when the heading is missing, and `openSheet()` in `app/app.js` prints "No sat nav postcode published" / "Not published".
+- **#3** `fls_opening()` in `scripts/parse.py` matches `RE_INDOOR_SUBJECT` and forces `access: unknown`, `confidence: unparsed`. Kirroughtree keeps "always open" because the site itself says so. `NF.status` in `app/core.js` only badges `parsed`, so caf├® text never becomes a badge.
+- **#4** `RE_CLOSED_TITLE` is checked twice in `build_fls()` ÔÇö index title and page `<h1>` ÔÇö and the record is skipped. No shipped name has "(closed)".
+- **#5** `validate()` in `scripts/parse.py` checks `GB_LAT_RANGE`/`GB_LNG_RANGE` for every record plus a per-country box, and `main()` exits 1 before writing.
+- **#6** Names keep their accents in `app/data/sites.json` ("Allt na Cr├¼che", "Creag Ph├ádraig"), and `scripts/selftest.js` asserts it.
+
+I tried to break #3 with Balkello: `parse_opening()` reads its month range and stores `closes: 08:00`, which is the opening time. That is the known English month-range defect, but it lands as `confidence: partial`, so `NF.status` shows no badge and the raw text is displayed. No criterion breaks.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Scope check on card 0016.**
+
+I looked for work that jumped the fence. Most of the huge diff is other cards, not this one: campsites (`scripts/parse_campsites.py`, `app/data/campsites.json`), the tile layer, and `docs/outreach/*` all belong to cards `0020`, `0009` and `0018`, which sit on the board in their own right. The `fls-stn-*` Stay the Night records the card warns about were shipped on 2026-08-15, before this work.
+
+Inside this card's own code the fence holds. `build_fls()` in `scripts/parse.py` emits only `forest` records, adds no tab, no country filter, and does not re-scrape England. `validate()` widened the box to Great Britain and kept a per-country box, as asked.
+
+One thing left half done in this card's own edit: the `sites.json` sample in `docs/DATA-MODEL.md` records `"counts_by_country": { "England": 904, "Scotland": 276 }`. `parse.py` `main()` writes the real counts, and England is 274 forests, not 904. This card introduced that block and wrote the wrong number into the doc it was told to update.
+
+Next session: fix that count in `docs/DATA-MODEL.md`.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**app/app.js, `openSheet()`** ÔÇö the "More" link label is hardcoded `'Forestry England page'` and only overridden when `site.source === 'campsite'`. All 276 new Scottish forest records take that branch, so every FLS detail sheet shows a link that says "Forestry England page" and goes to `forestryandland.gov.scot`. The campsite branch right below it carries a comment saying exactly why that is wrong ("must not claim it is a Forestry England page"), and the rule was not applied to the source that this card added. Card task "update the attribution in the app's About view" was done in `app/index.html`; the per-record label was not. No self-test covers the label: `scripts/selftest.js` checks Scottish `url` hosts but never the text shown next to them.
+
+**app/app.js, comment above `moreHref` in `openSheet()`** ÔÇö "tell Forestry England which page sent you" is now false for 276 records.
+
+Same function: `field('Country', ...)` is emitted only for campsites, so a Scottish forest never states its country even though `country` is now on every record.
+
+VERDICT: defect
+
