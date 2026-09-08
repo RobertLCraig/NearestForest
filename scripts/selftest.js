@@ -585,6 +585,27 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
          : (!badged({ parking: 'Free' })
             ? 'a genuinely free site lost its badge'
             : 'a site carrying no fee at all wore the badge'));
+
+    // The run that added `the access rule a campsite ships is the one its source published`
+    // pinned the string `ACCESS_NOTE` writes and said plainly that the row drawing it was still
+    // unwatched. This is that half, and it has a clause the fee badge does not: `access_note`
+    // and `Free` share one `if / else if`, so the restriction OUTRANKS the badge on purpose.
+    // Slip that `else` and a site OSM says needs a permit reads "Permit needed  Free" — two
+    // answers to one question, on the line a driver chooses by. Drop the branch entirely and the
+    // same site reads simply "Free", with nothing on the row saying the gate is shut.
+    const restricted = (s) => sub020(Object.assign({ source: 'campsite' }, s));
+    const shut = restricted({ access_note: 'Permit needed', parking: 'Free' });
+    ok('a campsite restriction is drawn on its row, and outranks the Free badge',
+       /<span class="row__closed">Permit needed<\/span>/.test(shut) &&
+       !/<span>Free<\/span>/.test(shut) &&
+       /<span class="row__closed">Customers only<\/span>/
+         .test(restricted({ access_note: 'Customers only' })) &&
+       /<span>Free<\/span>/.test(restricted({ parking: 'Free' })),
+       !/row__closed">Permit needed/.test(shut)
+         ? 'a site the source restricts says nothing about it on the row: ' + shut
+         : (/<span>Free<\/span>/.test(shut)
+            ? 'a restricted site wears the Free badge as well as its restriction: ' + shut
+            : 'an unrestricted free site lost its badge'));
   }
 
   const ranked = NF.rank(sites.concat(camps), 'campsite', BRIGHTON, '');

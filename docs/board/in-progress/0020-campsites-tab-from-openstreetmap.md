@@ -2133,3 +2133,68 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-08** RESULT: partial
+TESTS: +1 new, all green (265 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the render half of `access_note`, which the run above named and left open.** Its own entry
+says so: "the *render* half is still unwatched: this pins the string, not the branch on the row that
+draws it, nor the fact that it outranks the Free badge." That is the whole of this run. The string
+`ACCESS_NOTE` writes is watched by `the access rule a campsite ships is the one its source
+published`; nothing read the two lines in `app/app.js` that put it on a row.
+
+**Why this half carries a clause the fee badge did not.** `access_note` and `Free` share one
+`if / else if`, and the comment above them says why: "a restriction outranks a facility for the
+space available". So the row has two independent ways to lie. Drop the `else` and a site OSM says
+needs a permit reads **"Permit needed  Free"** -- two answers to one question, on the line a driver
+reads in a car park at dusk. Drop the branch and the same site reads simply **"Free"**, with nothing
+on the row saying the gate is shut.
+
+**Watched red twice, on both of those failures separately, and watched everything else stay green
+beside each.** The new assertion `a campsite restriction is drawn on its row, and outranks the Free
+badge` goes in the campsite block beside the fee-badge one and reuses the `rowBranch020` harness it
+built. Against `else if` collapsed to `if` -- one word, the most ordinary slip in a file full of
+plain `if (s.foo)` pushes on the lines either side -- it failed with `a restricted site wears the
+Free badge as well as its restriction: <span class="row__closed">Permit needed</span><span>Free</span>`.
+Against the `access_note` line deleted it failed with `a site the source restricts says nothing about
+it on the row: <span>Free</span>`. Both are the fault's own failure, not a missing symbol, and
+**264 passed, 1 failed** each time -- the one failure being the new assertion. Restored both lines
+and re-ran: 265 passed, 0 failed.
+
+**Both ends pinned, and the class as well as the text.** A site with no restriction and `parking:
+'Free'` must keep its badge, so a branch tightened into never drawing it fails too. The assertion
+requires `row__closed` rather than any span: that class is what makes the line read as a warning
+instead of a fact, and it is the same class a closed forest gets.
+
+**Behaviour, not spelling.** The branch is lifted out of `app.js` source with `new Function` and
+**run**, the way `field()` and the fee badge above it are, because it depends only on a `sub` array
+and `esc`. It carries the same coupling those two already name: the extraction regex is anchored on
+the branch's opening line and its four-space closing brace, so re-indenting that block makes the
+suite throw rather than fail. Loud, but not informative.
+
+**Which criteria this belongs to.** #2, because a row that says "Free" over a published restriction
+states something the source never published; and #6, which is about who can get through the gate.
+Neither tick moves: both were already true, and are now watched at the render end as well as the
+parser end.
+
+**No `CACHE` / `BUILD` bump.** `app/app.js` ends the run byte-identical to how it started --
+`git status` shows `scripts/selftest.js` and the two documents only -- and nothing under `app/`
+changed.
+
+**Suite:** `node scripts/selftest.js`, 265 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 264 self-tests, which this run
+made 265. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- but this run shipped no bytes
+under `app/`, so there is nothing new to look at.
