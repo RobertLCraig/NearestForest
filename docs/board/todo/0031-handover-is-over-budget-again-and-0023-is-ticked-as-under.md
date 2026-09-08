@@ -153,3 +153,51 @@ heaviest section and is the next candidate if the budget is lost again, but it i
 stale, so folding it means deciding which do-not-undo notes a fresh session can do without — a
 judgement this card did not have the standing to make. No browser check applies; nothing outside
 `docs/` was touched.
+
+### 2026-09-08 review (v20260908104717-0c02)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**#1 ÔÇö under budget with headroom: DEFECT.**
+`docs/HANDOVER.md` on disk is **42,040 bytes** now, over the 40,960 budget.
+
+More than staleness: the card's own second commit broke it. The fold commit `c4e44eb` left the blob at 38,026 bytes. The very next commit, `af34af4` ("correct the three handover lines this work made false" ÔÇö the "three corrections made in passing" in the card's own comment entry), took it to **40,981 bytes**, already over 40,960 before any other card touched the file. So this card closed over budget, not 3,427 under. The "headroom" clause in #1 is not met by the card's own end state.
+
+**#2 ÔÇö keep every date, count, decision:** traceable. The removed preamble facts survive in `docs/DECISIONS.md` (2026-08-08 tile eviction, 2026-08-15 OGL) and `docs/DATA-MODEL.md`, and `max-age=3600` is back in the `.htaccess` note in `docs/HANDOVER.md`. Sound.
+
+**#3 ÔÇö hook silent: DEFECT.** The orient hook fired at this session's start against this repository and printed "HANDOVER.md IS 41 KB, over the ~40 KB". The criterion is false as measured, by its own wording.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Scope, card 0031.**
+
+What it touched: only `docs/HANDOVER.md`, its own card, and a new card `0032`. No `0023` edit, no `0026` revert, no PRD/DATA-MODEL/DECISIONS change. The fence held.
+
+Two things over the line, both small and declared: the fold added *new* prose to `## Key files` (the `deploy.sh` re-exec note and the committed-key guard note) and rewrote `## What's next` item 4 from "fourteen" to "eighteen". Adding text is the opposite of the job, but the card allows "moving anything still true into the doc that owns it", so this stays inside.
+
+Left half done, and this is the defect. Criterion #1 is not just "under 40 KB": it is under "with enough headroom that an ordinary card's edits do not put it back over". The fold landed 37,533. Today `docs/HANDOVER.md` is **42,040 bytes** ÔÇö over the 40,960 budget again, two days later, after ordinary card edits (see commits `67fe4eb`, `cd3263a`, `1892a97` in `git log -- docs/HANDOVER.md`). The card's own stated failure mode happened. `## Key files` at 9,570 bytes was measured, named as the heaviest block, and left.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**What I checked, and what I found**
+
+Good news first. The number changes in the diff are all true today: `app/api/nearest.php` header ("1,180 sites"), `app/core.js` `safeHref` ("550 records that carries a url", "630 records, the car parks") and `app/app.js` `openSheet` ("98 of 3,675") all match `app/data/sites.json` and `app/data/campsites.json`. `NF.mapHint` in `app/core.js` has its one caller in `app/map.js` `drawMap` and four checks in `scripts/selftest.js`. Suite: 234 passed, 0 failed. Nothing broken there.
+
+Now the bad news, and it is the card's own job.
+
+`docs/HANDOVER.md` is **42,040 bytes** right now, over the 40,960 budget. This session's orient hook said so. The "Known bugs / broken" block in `## Current state` ÔÇö the second fold the card said it needed to make the headroom ÔÇö **is back in the file**. So is the size.
+
+The fold was real. Nothing holds it. There is no check anywhere that fails when the file grows; the only guard is the hook line every card session reads and declines. A rule with no enforcement is silent breakage, and it broke inside a day.
+
+Also stale: `## Current state` says 228 self-tests; the suite prints 234.
+
+VERDICT: defect
+
