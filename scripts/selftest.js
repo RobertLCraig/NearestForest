@@ -1539,6 +1539,60 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
          ? `shipped with no name a reader could read: ${namelessShipped.join(', ')}`
          : 'the parser dropped the ordinary campsite too');
 
+    // Acceptance #2 of card 0020, on the one campsite field the sheet turns into something
+    // you can TAP. `safe_url()` in parse_campsites.py is the only thing anywhere that reads
+    // an OSM `website` tag critically, and nothing in this suite ever ran it. The two checks
+    // that speak for campsite URLs -- `every campsite url is https` and `every campsite url
+    // survives the href guard` -- read the committed app/data/campsites.json, so they cannot
+    // speak until somebody rebuilds, and neither would object in any case: NF.safeHref in
+    // core.js tests the scheme and nothing else, and validate() below tests the https prefix
+    // and nothing else. Measured, not argued: collapse safe_url()'s hostile-value branch to
+    // `if False` and all 275 assertions pass.
+    //
+    // What ships under that break is `https://forestryengland.uk@evil.example.com/`. It is
+    // https, it survives safeHref, and openSheet() labels the "More" link with the authority
+    // read off the front of it -- so a link that reads as a Forestry England address opens
+    // evil.example.com. OpenStreetMap is edited by anybody, so that is an input the source
+    // can genuinely carry, not a hypothetical. The record is meant to be KEPT without its
+    // link rather than dropped or shipped with it: the site is still real.
+    const urlSite = (id, name, website) => ({
+      type: 'node', id: id, lat: 54.0 + id / 1000, lon: -2.0 - id / 1000,
+      tags: { name: name, tourism: 'caravan_site', caravans: 'yes', website: website } });
+    const hostileUrls = [
+      urlSite(90, 'Url Site Userinfo', 'https://forestryengland.uk@evil.example.com/'),
+      urlSite(91, 'Url Site Quote', 'https://example.com/a"onmouseover=alert(1)'),
+      urlSite(92, 'Url Site Space', 'https://example.com/a b'),
+      urlSite(93, 'Url Site Angle', 'https://example.com/<script>'),
+      urlSite(94, 'Url Site Nohost', 'https://localhost/booking'),
+      urlSite(95, 'Url Site Long', 'https://example.com/' + 'a'.repeat(320)),
+    ];
+    // ...and one the guard must NOT eat, so a branch widened to drop everything fails here
+    // too. Plain http is upgraded rather than discarded on purpose: it is the only contact
+    // detail many of these records carry, and a browser will redirect or warn.
+    const urlOk = urlSite(96, 'Url Site Ordinary', 'http://ordinary-campsite.example.com/');
+    writeOsm([goodEl].concat(hostileUrls, [urlOk]));
+    const cUrl = runCamp();
+    let urlSites = null;
+    if (cUrl.status === 0 && fs.existsSync(cOut)) {
+      try { urlSites = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites; }
+      catch (e) { urlSites = null; }
+    }
+    const hostileIds = hostileUrls.map(e => 'os-n' + e.id);
+    const hostileKept = urlSites && urlSites.filter(s => hostileIds.indexOf(s.id) >= 0);
+    const stillLinked = hostileKept && hostileKept.filter(s => s.url != null);
+    const urlOkRec = urlSites && urlSites.find(s => s.id === 'os-n96');
+    ok('a website OpenStreetMap holds that is not a usable link is dropped, and the site kept',
+       !!urlSites && hostileKept.length === hostileIds.length && stillLinked.length === 0 &&
+       !!urlOkRec && urlOkRec.url === 'https://ordinary-campsite.example.com/',
+       !urlSites ? `the hostile-url run exited ${cUrl.status} and wrote no dataset: ${tail(cUrl)}`
+       : hostileKept.length !== hostileIds.length
+         ? `the parser threw the records away instead of their links: kept ` +
+           `${hostileKept.length} of ${hostileIds.length}`
+       : stillLinked.length
+         ? stillLinked.map(s => `${s.id} ships url ${JSON.stringify(s.url)}`).join(', ')
+       : !urlOkRec ? 'the parser dropped the ordinary campsite as well'
+       : `an ordinary http website did not survive: ${JSON.stringify(urlOkRec.url)}`);
+
     // Acceptance #2 of card 0020: "state ONLY what its source publishes". `facilities` is
     // the one campsite field that is a list of positive claims -- the sheet draws each as a
     // chip reading "toilets", "drinking water", "chemical disposal" -- and nothing anywhere

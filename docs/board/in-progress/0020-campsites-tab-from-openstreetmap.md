@@ -2782,3 +2782,68 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-09** RESULT: partial
+TESTS: +1 new, all green (276 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one campsite field the sheet turns into something you can tap, and that nothing had
+ever read: the website.** `safe_url()` in `scripts/parse_campsites.py` is the only place in the
+project that reads an OSM `website` tag critically, and no assertion ran it. The two checks that
+speak for campsite URLs -- `every campsite url is https` and `every campsite url survives the href
+guard` -- read the **committed** `app/data/campsites.json`, so they cannot speak until somebody
+rebuilds. Neither would object in any case: `NF.safeHref` in `app/core.js` is
+`/^https:\/\/[^\s/?#]/`, which tests the scheme and nothing else, and `validate()` tests the
+`https://` prefix and nothing else.
+
+**Measured, not argued.** I collapsed `safe_url()`'s hostile-value branch to `if False:` -- one
+line, leaving the scheme check below it intact so the break stays isolated -- and ran the suite:
+**275 passed, 0 failed.**
+
+**What ships under that break is worth naming exactly.**
+`https://forestryengland.uk@evil.example.com/` is https, it survives `safeHref`, it passes
+`validate()`, and `openSheet()` labels the "More" link with the authority read off the front of it.
+So a link that reads as a Forestry England address opens `evil.example.com`. OpenStreetMap is
+edited by anybody, so that is an input the source can genuinely carry rather than a hypothetical.
+The other four the break lets through are a URL carrying a double quote, one carrying a space, one
+carrying `<script>` and one 340 characters long.
+
+**Watched red first, and both ends are pinned.** The new assertion `a website OpenStreetMap holds
+that is not a usable link is dropped, and the site kept` goes in the temp-tree block beside `a
+campsite OpenStreetMap never named is dropped`. It feeds the parser six sites with unusable
+`website` tags plus one ordinary site whose plain `http` address must survive the upgrade to
+`https`, and requires exit 0, all six records **kept**, none of them carrying a link, and the
+ordinary one still linked. Against the broken parser it failed naming five records and their exact
+URLs, including the userinfo one, which is the fault's own failure and not a missing symbol.
+Restored the line and re-ran: 276 passed, 0 failed.
+
+**The record is kept, not dropped, and that is the assertion's other half.** A campsite with a bad
+website tag is still a real campsite, so `safe_url` returning `None` must cost the link and nothing
+more. A guard widened to discard the whole record, or to discard every URL, fails this assertion on
+`os-n96`.
+
+**Which criterion this belongs to.** #2 -- "state only what its source publishes". A `website` value
+that is not a usable web address is not a published website, and shipping it puts a tappable link on
+the sheet that goes somewhere the record does not name. Its tick does not move: it was already true,
+and the last field the sheet renders as an action is now watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started -- `git status` shows `scripts/selftest.js` and the two documents only -- and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 276 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 275 self-tests, which this run
+made 276. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.
