@@ -2904,3 +2904,63 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-09** RESULT: partial
+TESTS: +1 new, all green (278 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one field every campsite carries that nothing had ever watched the parser produce:
+`country`.** `fetch_campsites.py` asks Overpass one question per country deliberately, and
+DATA-MODEL states the consequence: a record's country comes from **which query returned it**, never
+from its coordinates, because England and Wales share too long a border for a box to be honest about
+it. Nothing guarded that. The two checks that read the field, `campsites exist in all three
+countries` and `every record names the country it is in`, read files **already committed** here, so
+neither can speak until somebody rebuilds.
+
+**Measured, not argued.** I replaced `"country": country` in `build_osm` with a longitude box --
+`"England" if lng > -3.0 else "Wales"` -- and ran the suite: **277 passed, 0 failed**, with every
+campsite in the file relabelled. The failure is quiet by construction: `counts_by_country` in the
+file header is derived from the same relabelled list, so the artefact agrees with itself and the
+header a reader would check confirms the wrong answer.
+
+**Watched red first.** The new assertion `a campsite both country queries return is listed once,
+under the country that answered first` goes in the temp-tree block. It feeds one border element into
+**both** the England and Scotland extracts, plus a Scotland-only control, and requires exit 0, the
+border record present exactly once and labelled England, and the control labelled Scotland. Against
+the broken parser it failed with `the Scotland-only control is labelled "Wales", so a record no
+longer takes its country from the query that returned it` -- the fault's own failure, not a missing
+symbol -- and it was the **only** failure. Restored the line and re-ran: 278 passed, 0 failed.
+
+**What I got wrong first, said plainly, because it changes what this assertion proves.** I went in
+after `seen_ids`, the cross-border rule in `build_osm`, and measured that collapsing it to `if
+False:` leaves the suite green at 277. It does. But the assertion written for it **also passed**
+against that break: `dedupe_same_site()` catches the twin first, on name and distance, and keeps the
+England copy, because two returns of one element are identical in both. So the "listed once" half is
+a guard on the outcome held up by either rule, and only breaking both puts a border site in the file
+twice. The country half is the part nothing else covers, and it is the part I watched fail. The
+comment above the assertion says all of this rather than claiming a red I did not see.
+
+**Which criterion this belongs to.** #2 -- "state only what its source publishes". A country read off
+a coordinate is a claim the per-country query design exists to avoid making. Its tick does not move:
+it was already true, and the field is now watched at the parser rather than in a file.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started -- `git status` shows `scripts/selftest.js` and the two documents only -- and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 278 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 277 self-tests, which this run
+made 278. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.

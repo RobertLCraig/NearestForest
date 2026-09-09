@@ -2265,6 +2265,64 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
            `(postcode_satnav=${JSON.stringify(dupKept[0].postcode_satnav)}), so the ` +
            'poorer of the two records won');
 
+    // Acceptance #2 of card 0020 -- "state only what its source publishes" -- on the field
+    // every campsite carries and no assertion has ever watched the parser produce: `country`.
+    // fetch_campsites.py asks Overpass one question per country ON PURPOSE, because England
+    // and Wales share too long a border for a bounding box to be honest about which side a
+    // site is on, so a record's country is decided by WHICH QUERY RETURNED IT and never by
+    // its coordinates. That is a DATA-MODEL rule with no guard on it. Measured on 2026-09-09:
+    // replace `"country": country` in build_osm() with a longitude box and the whole suite
+    // stays green, 277 of 277, with every campsite in the file relabelled. The two checks
+    // that read the field, `campsites exist in all three countries` and `every record names
+    // the country it is in`, read files ALREADY COMMITTED here, so neither can speak until
+    // somebody rebuilds -- and by then the counts_by_country header agrees with the wrong
+    // answer, because it is derived from the same relabelled list.
+    //
+    // The fixture is a border site, because that is the input the per-country design exists
+    // for: one OSM element returned by two queries. It also covers the rule build_osm() keeps
+    // for it, `seen_ids` -- first country wins, the second counted in notes["cross_border"].
+    // Said plainly, because it changes what this assertion proves: collapsing `if oid in
+    // seen_ids:` to `if False:` does NOT fail this check. dedupe_same_site() catches the twin
+    // first, on name and distance, and keeps the England copy. So the "listed once" half is a
+    // guard on the OUTCOME, held up by either rule; only breaking both puts a border site in
+    // the file twice. The country half is the part nothing else covers.
+    //
+    // Both ends are pinned. The border record must survive ONCE and under England, the query
+    // that answered first -- a "last one wins" rule would relabel a site from a second query,
+    // a claim the source never made. The Scotland-only control must come through as Scotland,
+    // so a parser that guesses from a box fails here rather than passing.
+    const borderEl = { type: 'node', id: 70, lat: 55.0000, lon: -2.3000, tags: {
+      name: 'Border Farm Campsite', tourism: 'camp_site', caravans: 'yes' } };
+    const sctOnlyEl = { type: 'node', id: 71, lat: 56.5000, lon: -4.0000, tags: {
+      name: 'Highland Touring Park', tourism: 'camp_site', caravans: 'yes' } };
+    writeOsm([borderEl], [borderEl, sctOnlyEl]);
+    const cBorder = runCamp();
+    let borderSites = null;
+    if (cBorder.status === 0 && fs.existsSync(cOut)) {
+      try { borderSites = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites; }
+      catch (e) { borderSites = null; }
+    }
+    const borderKept = borderSites && borderSites.filter(s => s.id === 'os-n70');
+    const sctKept = borderSites && borderSites.find(s => s.id === 'os-n71');
+    ok('a campsite both country queries return is listed once, under the country that answered first',
+       !!borderSites && borderKept.length === 1 && borderKept[0].country === 'England' &&
+       !!sctKept && sctKept.country === 'Scotland',
+       !borderSites ? `the run exited ${cBorder.status} and wrote no dataset, which is what a ` +
+         `border site does to a build that does not dedupe by OSM id: ${tail(cBorder)}`
+       : borderKept.length !== 1
+         ? `one OSM element returned by two country queries ships ${borderKept.length} times ` +
+           `(${borderKept.map(s => s.country).join(', ') || 'not at all'}), so one place takes ` +
+           'two rows of a list read while driving'
+       : borderKept[0].country !== 'England'
+         ? `the border site is labelled ${JSON.stringify(borderKept[0].country)}, but the ` +
+           'England query returned it first, so a later query has overwritten a country the ' +
+           'source never assigned it'
+       : !sctKept
+         ? 'the Scotland-only control never reached the file, so the merge is discarding ' +
+           'records the second country query is the only source for'
+       : `the Scotland-only control is labelled ${JSON.stringify(sctKept.country)}, so a ` +
+         'record no longer takes its country from the query that returned it');
+
     // Acceptance #2 of card 0020, on the one claim the detail sheet makes that is not about
     // the place at all: "Data checked". NF.dataChecked() takes a campsite's date from its
     // own `scraped_at`, falling back to the file's `generated_at`, and BOTH come from one
