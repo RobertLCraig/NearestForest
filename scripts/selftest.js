@@ -2528,6 +2528,33 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
   ok('both upstreams really are in the data',
      withUrl.some(s => /forestryengland\.uk/.test(s.url)) &&
      withUrl.some(s => /forestryandland\.gov\.scot/.test(s.url)));
+
+  // Card 0054: criterion #2 on card 0020 argues from the RAW Overpass feature count, not
+  // from the shipped file, so nothing above can check it -- and it was five out. The card
+  // moves between lane folders, so find it rather than naming a path.
+  // data/raw/ is gitignored, so on a clean clone there is nothing to compare against.
+  // Say so and check nothing: a check that fails on a fresh clone is noise, and one that
+  // quietly passes is worse.
+  const RAW_OSM = path.join(ROOT, 'data', 'raw', 'osm');
+  const card0020 = fs.readdirSync(path.join(ROOT, 'docs', 'board'))
+    .map(lane => path.join(ROOT, 'docs', 'board', lane))
+    .filter(d => fs.statSync(d).isDirectory())
+    .flatMap(d => fs.readdirSync(d).filter(f => f.startsWith('0020-')).map(f => path.join(d, f)))[0];
+  if (!fs.existsSync(RAW_OSM)) {
+    console.log('  SKIP  card 0020 quotes the raw OSM feature count correctly'
+                + ' — data/raw/osm is gitignored and absent, nothing to count');
+  } else if (!card0020) {
+    ok('card 0020 quotes the raw OSM feature count correctly', false,
+       'no 0020-*.md found in any docs/board lane');
+  } else {
+    const rawFeatures = fs.readdirSync(RAW_OSM).filter(f => f.endsWith('.json'))
+      .reduce((n, f) => n + JSON.parse(fs.readFileSync(path.join(RAW_OSM, f), 'utf8')).elements.length, 0);
+    const m = /only [\d,]+ of ([\d,]+) records carry any opening hours/
+      .exec(fs.readFileSync(card0020, 'utf8'));
+    ok('card 0020 quotes the raw OSM feature count correctly',
+       !!m && Number(m[1].replace(/,/g, '')) === rawFeatures,
+       m ? `card says ${m[1]}, data/raw/osm holds ${rawFeatures}` : 'criterion #2 carries no such count');
+  }
 }
 
 console.log('\n--- ranking from Brighton ---');

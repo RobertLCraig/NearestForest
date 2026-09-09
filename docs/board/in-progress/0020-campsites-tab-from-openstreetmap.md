@@ -54,7 +54,7 @@ OpenStreetMap contributors"**, naming the Open Database License and linking to
       current fix exactly as the other two are.
 - [x] #2 WHEN a campsite record is shown, THE APP SHALL state only what its source publishes, and
       say "not known" for every field the source is silent on — in particular it SHALL NOT show an
-      open/closed badge, since only 96 of 8,496 records carry any opening hours.
+      open/closed badge, since only 96 of 8,501 records carry any opening hours.
 - [x] #3 WHEN campsite data is shipped, THE APP SHALL credit OpenStreetMap, state that the data is
       under the Open Database License, and link to openstreetmap.org/copyright.
 - [x] #4 WHEN the dataset is built, THE APP SHALL keep OSM-derived records in a file separate from
@@ -278,7 +278,7 @@ green, which is what this thread has twice refused.
 
 **What I did instead of restating the run above.** I re-ran `node scripts/selftest.js` — 232 passed,
 0 failed, working tree clean — and then went after a number rather than re-reading prose. Criterion #2
-says "only 96 of 8,496 records carry any opening hours". `docs/HANDOVER.md` says "8,501 features in,
+says "only 96 of 8,501 records carry any opening hours". `docs/HANDOVER.md` says "8,501 features in,
 3,675 out". Two figures for one measurement. I counted the `elements` arrays in the three cached
 Overpass responses in `data/raw/osm/`: **6,133 England + 905 Scotland + 1,463 Wales = 8,501**. So
 HANDOVER is right and this card's own criterion is five out.
