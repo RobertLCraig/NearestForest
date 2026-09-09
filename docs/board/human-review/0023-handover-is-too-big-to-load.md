@@ -1,5 +1,35 @@
 # HANDOVER.md is too big for the session that has to read it
 
+## What I need from you
+
+**Untick criteria #1 and #3 and send this card back to `todo/`, or write a dated line on the thread
+saying the reviewer is wrong.** Either one closes it. Doing neither leaves the card exactly here.
+
+**What's wrong.** This card is ticked as having made the brief fit. It does not fit.
+`docs/HANDOVER.md` is **42,299 bytes** today against a budget of about 40 KB, and the hook that runs
+at the start of every session in this project still says so out loud. Criterion #1 says the file is
+under 40 KB and criterion #3 says the hook no longer complains. Both are ticked and both are false.
+The reviewer also found this card's build carrying other cards' code and about forty new board cards.
+
+**Cause.** The fold did work: the file was 38,528 bytes the day it landed. Five later commits put it
+back over, and nothing unticks a box when the thing it measured changes. A reviewer is forbidden from
+unticking a criterion, so the card came back with all three still ticked, and every unattended run
+since has opened it, found nothing to do, and promoted it again on the ticks.
+
+**Pass** is either of these:
+- criteria #1 and #3 unticked and the card in `todo/`, where a session can fold another block out
+- a dated line here saying why the reviewer is wrong
+
+**Fail** is neither. The card stays ticked, the brief stays over budget, and the next run promotes it
+again.
+
+**Why it needs you.** Only you may untick a criterion. There is also a judgement in it: the extra
+code in the diff may be other cards riding on a shared branch rather than this card overreaching, and
+no lookup settles which.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `docs/HANDOVER.md` is **41.5 KB over 545 lines**, measured 2026-09-05. The project's orient hook
 fires at the start of every session in this repository and says so in those words: over the ~40 KB a

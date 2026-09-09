@@ -1,5 +1,36 @@
 # Three live files still say the dataset holds 904 records
 
+## What I need from you
+
+**One choice, and I recommend the first.**
+
+1. Untick a criterion and send this card back to `todo/`, so a session guards the three numbers the
+   new check does not read. That is three lines in `scripts/selftest.js`.
+2. Or write on the thread that those three numbers should be deleted from the comment instead, and
+   send it back for that.
+
+**What's wrong.** The three stale `904`s are fixed and the reviewer counted the shipped file to
+confirm it. The problem is what the fix left behind. The comment above `safeHref` in `app/core.js`
+now carries **four** numbers: 550 records with a link, 274 English, 276 Scottish, 630 car parks. The
+new guard this card built reads back only the 550. Add ten Scottish forests and three of those four
+numbers quietly go wrong while the suite still passes. The card exists to stop numbers drifting in
+comments, and it made the unguarded surface bigger.
+
+**Cause.** The rewrite added detail to the comment and the guard was written against the sentence as
+it stood before, not after.
+
+**Pass** is either route above, recorded here with today's date, and then a session doing it.
+
+**Fail** is neither. The boxes stay ticked, no session finds anything open, and the loop promotes the
+card again on the ticks.
+
+**Why it needs you.** Only you may untick a criterion. There is also a real choice underneath: a
+comment that carries four checked numbers is more useful to a reader than one that carries a single
+checked number, and it costs three more lines of test to keep honest.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `app/data/sites.json` holds **1,180 records** today: 630 car parks and 550 forests. Three files that
 a reader treats as current still describe it as **904**, which is what it held before card `0016`

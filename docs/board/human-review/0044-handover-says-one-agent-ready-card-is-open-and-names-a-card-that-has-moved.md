@@ -1,5 +1,39 @@
 # `docs/HANDOVER.md` names `0041` as the open agent-ready card, and it has moved
 
+## What I need from you
+
+**Untick the card's one criterion and send it back to `todo/`, or write a dated line on the thread
+saying the reviewer is wrong.** Either one closes it. Doing neither leaves the card exactly here.
+
+**What's wrong.** The criterion asks two paragraphs in the brief to name exactly the cards sitting
+in `todo/` and `in-progress/`. Neither does, and one was wrong the moment it was written:
+
+- Both paragraphs name `0045` as ready to pick up. It has never been in `todo/`. `todo/` holds
+  `0055`.
+- Both miss `0020`, the Campsites card, which was in `in-progress/` in the very commit that wrote
+  them. It is still there today.
+- The two paragraphs disagree with each other. One names three cards, the other says three and lists
+  six.
+- The paragraph claims a folder listing produced cards that live in a third folder, so the evidence
+  it cites could not have produced the answer it gives.
+
+**Cause.** This is the third card in a row to rewrite the same two sentences by hand. A list of card
+numbers in prose is stale as soon as anything moves, and the brief is edited far less often than the
+board is.
+
+**Pass** is either of these:
+- the criterion unticked and the card in `todo/`
+- a dated line here saying why the reviewer is wrong
+
+**Fail** is neither. A fourth card gets raised about the same two sentences.
+
+**Why it needs you.** Only you may untick a criterion, and there is a decision under it worth taking
+once rather than three more times: should the brief keep a written list of open cards at all, or say
+"run `ls docs/board/todo`" and stop? Say which and the card that goes back will do it.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `docs/HANDOVER.md` says, in two places, that one agent-ready card is open and that it is `0041`:
 

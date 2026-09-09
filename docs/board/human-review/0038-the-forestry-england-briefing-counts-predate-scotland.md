@@ -1,5 +1,35 @@
 # The Forestry England briefing still counts the dataset as it was before Scotland
 
+## What I need from you
+
+**Untick a criterion and send this card back to `todo/`, so a session corrects two car park numbers
+in the briefing.** If you think the numbers are right as they stand, write that on the thread
+instead. Doing neither leaves the card here.
+
+**What's wrong.** This matters more than an ordinary count fix, because
+`docs/outreach/forestry-england-handover.md` is the file you would hand to Forestry England, and to
+a session working in Word that cannot check anything against the code. Two numbers in its
+screenshots section disagree with the repository:
+
+- It says **196** car parks publish no usable name. The real figure is **177**. The 196 counts 19
+  records twice, because those 19 are already inside the 177.
+- It says card `0004` names **177** of them after their nearest forest. It names **158**. The other
+  19 are more than five miles from any forest and keep the plain label.
+
+**Cause.** The card fixed the numbers in the table at the top of the briefing, which is the part the
+self-tests read. These two sit in prose further down, which nothing reads.
+
+**Pass** is 196 becoming 177 and 177 becoming 158 in that file, with a dated line here.
+
+**Fail** is neither route. The card stays ticked, no session finds anything open, and the briefing
+keeps two wrong figures in a document that goes to an outside party.
+
+**Why it needs you.** Only you may untick a criterion. This is also correspondence rather than code:
+whether it is worth a round of edits before the email goes is your call.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `docs/outreach/forestry-england-handover.md` is the self-contained briefing for a session drafting
 the Forestry England email in Word. Two of its statements about the app describe a dataset that no

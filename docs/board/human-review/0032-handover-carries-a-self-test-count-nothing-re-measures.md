@@ -1,5 +1,37 @@
 # HANDOVER carries a self-test count that nothing re-measures
 
+## What I need from you
+
+**One choice, and I recommend the second.**
+
+1. Untick the criterion covering the sweep and send this card back to `todo/`.
+2. Or write on the thread that the counts still wrong are other cards' work, name `0040`, `0041` and
+   `0044` as carrying them, and let this card go to `done/`.
+
+**What's wrong.** The self-test number is right and is now checked: the brief says what
+`node scripts/selftest.js` prints, beside the command. What the reviewer found is that the card's
+third task asked for **every** hand-written count in the brief to match the thing it counts, and
+three still do not. Each one names the command that disproves it:
+
+- The brief says the review queue holds twenty-nine cards. Listing that folder gives **3**.
+- It says eleven cards wait on you. The folder holds **42**.
+- It names `0045` as ready to pick up. That card is not in `todo/`; `todo/` holds `0055`.
+
+**Cause.** The sweep was done on 2026-09-07 and the lanes have moved every day since. A number
+written next to the command that checks it is worse than a bare number, because a reader trusts it.
+
+**Pass** is either route above, recorded here with today's date.
+
+**Fail** is neither. The boxes stay ticked, no session finds anything open, and the loop promotes
+the card again.
+
+**Why it needs you.** Three other cards, `0040`, `0041` and `0044`, were raised for exactly these
+counts and are all sitting in this lane. Whether that makes this card done or leaves it owing the
+sweep is a call about how the board divides work, not something a session can look up.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `docs/HANDOVER.md` says, in `## Current state`, that **219 self-tests pass**. Run
 `node scripts/selftest.js` today and it prints **225 passed, 0 failed**. Measured 2026-09-06.

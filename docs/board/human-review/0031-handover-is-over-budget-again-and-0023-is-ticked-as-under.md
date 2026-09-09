@@ -1,5 +1,36 @@
 # HANDOVER is over the 40 KB budget again, and the card that fixed it is ticked as under
 
+## What I need from you
+
+**Untick criteria #1 and #3 and send this card back to `todo/`, or write a dated line on the thread
+saying the reviewer is wrong.** Either one closes it. Doing neither leaves the card exactly here.
+
+**What's wrong.** This card was raised because the brief had grown back over its size budget, and it
+has the same fault itself. Criterion #1 asks for the file to be under 40 KB **with room to spare**,
+so an ordinary edit does not put it straight back over. The card's own second commit ended at
+**40,981 bytes**, already over the 40,960 limit, on the day it closed. `docs/HANDOVER.md` is
+**42,299 bytes** today. Criterion #3 asks for the session-start hook to stop complaining; it
+complained again at the start of this session.
+
+**Cause.** The fold was real and it held for about a day. Nothing anywhere fails when the brief
+grows, so the only guard is a warning at session start that each session reads and moves past. A
+reviewer may not untick a box, so the card came back with all three ticked and every run since has
+found nothing open to do.
+
+**Pass** is either of these:
+- criteria #1 and #3 unticked and the card in `todo/`, so a session folds another block out
+- a dated line here saying why the reviewer is wrong
+
+**Fail** is neither. The brief keeps growing, the boxes keep saying it does not, and the loop keeps
+promoting this card on the ticks.
+
+**Why it needs you.** Only you may untick a criterion. The heaviest block left is `## Key files`, at
+roughly 9 KB, and it is all do-not-undo notes, so how much of it may go is a judgement about what a
+future session must not lose.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 The orient hook fires on every session start in this repository and reports:
 

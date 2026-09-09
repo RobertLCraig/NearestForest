@@ -1,5 +1,34 @@
 # Card 0026 names 0023 in a sentence and never says what the relationship is
 
+## What I need from you
+
+**One choice, and I recommend the second.**
+
+1. Untick a criterion and send this card back to `todo/`.
+2. Or write on the thread that the work asked for was done, that the extra edits were correct, and
+   let the card go to `done/`.
+
+**What's wrong.** The job itself is finished: card `0026` now says why it points at card `0023`, and
+two of the three reviewers passed it. The complaint is that the card promised "one card file changes
+and nothing else" and the session also made four edits to `docs/HANDOVER.md`. Those edits were
+right, but they pushed the brief back over its size budget, and the same session then opened a new
+card, `0031`, to report the problem it had just caused.
+
+**Cause.** The four edits were needed to stop the brief saying something this work had made untrue.
+Nobody had written that allowance into the card, so a correct edit reads on paper as work escaping
+its fence.
+
+**Pass** is either route above, recorded here with today's date.
+
+**Fail** is neither. All the card's boxes stay ticked, no session finds anything open, and the loop
+promotes it again on the ticks.
+
+**Why it needs you.** Nothing here is a lookup. It is whether a card that fixed a true thing outside
+its own fence should lose its ticks for it, and how strictly the fence should be read next time.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `docs/board/README.md` has one rule about links: a card number dropped into a paragraph is a puzzle
 rather than a link, so every number a card mentions belongs in its `## Links` section with one line

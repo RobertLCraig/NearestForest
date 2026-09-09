@@ -1,5 +1,37 @@
 # `docs/HANDOVER.md` under-counts the `human-review/` and `ai-review/` lanes
 
+## What I need from you
+
+**Untick criteria #1 and #2 and send this card back to `todo/`, or write a dated line on the thread
+saying the reviewer is wrong.** Either one closes it. Doing neither leaves the card exactly here.
+
+**What's wrong.** The card asks the brief to state two lane counts truthfully, and both are wrong
+again. Counted today:
+
+- The brief says **eleven** cards wait on you. The folder holds **42**.
+- The brief says the review queue holds **twenty-nine** cards. The folder holds **3**.
+
+The brief prints the exact command that disproves each one right beside it, which makes it worse
+than a bare number: a reader trusts a figure that cites its own check.
+
+**Cause.** The counts were written on 2026-09-07 and the lanes have moved every day since. The
+review queue number was also one out on the day it was written, because it counted a placeholder
+file that is not a card.
+
+**Pass** is either of these:
+- criteria #1 and #2 unticked and the card in `todo/`
+- a dated line here saying why the reviewer is wrong
+
+**Fail** is neither. The counts stay wrong, the boxes stay ticked, and the loop promotes the card
+again on the ticks.
+
+**Why it needs you.** Only you may untick a criterion. The fix that would actually hold is to stop
+writing counts into the brief and tell the reader to run the listing instead. That trades a number
+you can read at a glance for one you have to go and get, and which you prefer is a preference.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `docs/HANDOVER.md` says eight cards wait on a person and names them, in two places: the status block
 near the top and the "Blockers / open questions" paragraph. Both list `0001, 0002, 0003, 0010, 0017,

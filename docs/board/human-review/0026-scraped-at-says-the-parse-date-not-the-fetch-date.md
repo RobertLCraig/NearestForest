@@ -1,5 +1,37 @@
 # `scraped_at` says when the parser ran, not when the page was read
 
+## What I need from you
+
+**One choice, and I recommend the first.**
+
+1. Untick a criterion and send this card back to `todo/`, so a session adds a warning to
+   `CLAUDE.md`. That is a two-line edit.
+2. Or write on the thread that the `CLAUDE.md` warning belongs on its own card, and let this one go
+   to `done/`.
+
+**What's wrong.** The work itself is right and two of the three reviewers said so. The break is in
+`CLAUDE.md`, the file loaded into every session that opens this project. It still tells a fresh
+session to run the pipeline as `python scripts/fetch.py && python scripts/parse.py && ...`. After
+this change that command **exits 1** for the 552 pages already sitting in the cache, because none of
+them carries a download date. Re-running the fetcher cannot repair it, since it skips any page it
+already has; only deleting `data/raw/` and fetching everything again will. A session follows the
+instruction, sees the pipeline go red, and reads a broken repository.
+
+**Cause.** The build wrote that warning into `docs/HANDOVER.md` four times over and never into
+`CLAUDE.md`, which is the file that actually loads itself into every session.
+
+**Pass** is either route above, recorded here with today's date.
+
+**Fail** is neither. `CLAUDE.md` keeps handing every new session a command that fails on purpose, and
+nothing on the board says so.
+
+**Why it needs you.** No criterion on this card was disproved, so a session has nothing to reopen on
+its own. Whether a card that has met its acceptance may be sent back for a side effect is your call,
+not a session's.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 Every forest and car park record carries a `scraped_at` date, and DATA-MODEL says that field exists
 to make staleness visible. It does not. `scripts/parse.py` sets `TODAY = date.today()` at line 16 and

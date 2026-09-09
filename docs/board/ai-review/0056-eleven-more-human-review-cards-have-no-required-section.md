@@ -44,23 +44,23 @@ section: that lives in `C:\Dev\ProgressBoard`.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN each of the eleven cards listed above is searched for the heading
+- [x] #1 WHEN each of the eleven cards listed above is searched for the heading
       `## What I need from you`, THE CARD SHALL return a hit directly under its title.
       proves: none - this project's suite is one node script over the app and cannot read the board;
       the check is `grep -rL "## What I need from you" docs/board/human-review/*.md` naming none of
       the eleven
-- [ ] #2 WHEN a reader opens any of the eleven, THE CARD SHALL state the ask, what a pass is and
+- [x] #2 WHEN a reader opens any of the eleven, THE CARD SHALL state the ask, what a pass is and
       what a fail is, within the first three lines under the title. proves: manual - whether an ask
       is legible in three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] For each card, read its last comment entry and any review verdict above it, and use the ask
+- [x] For each card, read its last comment entry and any review verdict above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under each title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under each title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check each card is still inside the 100-line budget afterwards, and say on it if it is not
-- [ ] Re-grep the lane and report which cards still miss the heading
+- [x] Check each card is still inside the 100-line budget afterwards, and say on it if it is not
+- [x] Re-grep the lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository. Only the eleven card files change; nothing under `app/` or
@@ -90,3 +90,53 @@ under the title.
 `0051` reported on 2026-09-08 that only `0015` and `0019` were left, which was a miscount: the grep
 run today names thirteen files, of which `0015` is fixed by `0052` and `0019` is carried by `0053`.
 These eleven are the remainder and no open card named them.
+
+**2026-09-10** RESULT: done
+TESTS: +0 new, neither criterion asked for one, all green (280 passed, 0 failed)
+TOUCHED: the eleven card files listed in `## Why`, and nothing else
+OUT-OF-SCOPE: none
+
+**No test was written and none was possible.** `#1` says `proves: none` and `#2` says
+`proves: manual`, so the test-first rule does not apply to either. This project's suite is
+`node scripts/selftest.js` over `app/` and `scripts/` and cannot read `docs/board/`. It was run
+anyway to show nothing broke: 280 passed, 0 failed. There is no PHP suite here, so `pest` and `pint`
+do not exist and were not run.
+
+**`## Plan` was wrong about one thing, and it is worth recording.** It said several of these were
+documentation-accuracy cards rather than returned builds, so the ask would not be the "untick what
+the reviewer disproved" shape. All eleven are returned builds. Every one ends with the same
+scheduler stanza, all eleven carry at least one `defect` verdict, and every one is stuck for the
+same reason: a reviewer may not untick a criterion, so the card came back fully ticked and each
+unattended run since has found nothing open and promoted it again. **The ask on each card is the one
+already at its bottom**, not a new one.
+
+**What differs between them is which finding is stuck, and that is what each new section says.**
+Six were disproved on acceptance and ask for named criteria to be unticked: `0023` (#1 and #3),
+`0031` (#1 and #3), `0040` (#1), `0041` (#1 and #2), `0044` (its one criterion), and `0038` (its
+briefing numbers). Five passed acceptance and are held by a side effect the builder could not act
+on, so each offers two routes with a recommendation: `0026` (`CLAUDE.md` still tells every session
+to run a pipeline that now exits 1), `0028` (four correct edits outside the card's fence), `0032`
+(three counts in the brief that other cards now carry), `0034` (a false size figure in its own log),
+and `0036` (a new guard reading one of the four numbers in the comment it protects).
+
+**Every count in the new sections was measured today, not copied.** `docs/HANDOVER.md` is 42,299
+bytes; `human-review/` holds 42 cards; `ai-review/` holds 3; `todo/` holds `0055` and not `0045`;
+`0033` and `0034` are both in `human-review/` and not `ai-review/`; `0020` is still in
+`in-progress/`. Several of the eleven claimed different figures, and the sections say what is true
+now rather than repeating what the card said.
+
+**All eleven are over the 100-line budget and this card could not fix that.** They run from 160 to
+236 lines. Between a half and two thirds of each file is `## Comments` and the review verdicts,
+which are append-only, so there was nothing this card was allowed to cut. Each new section says so
+in a closing "Note on length", as `0045` did for `0043` and `0051` did for `0014`.
+
+**Nothing inside the eleven was acted on**, per `## Not this card`. No criterion unticked, no lane
+move, no reviewer finding fixed. Each section only states the ask, the pass, the fail and why it is
+Rob's.
+
+**Lane re-grep, at this commit.** `grep -rL "## What I need from you" docs/board/human-review/*.md`
+names no files. All 42 cards in the lane now carry the section, and the arrears this series has been
+clearing one batch at a time since 2026-09-07 are cleared. **The fault itself is not fixed**: the
+scheduler still moves a card into this lane without adding the section, so the twelfth card to
+arrive will have the same defect. That fix belongs in `C:\Dev\ProgressBoard`, which is outside this
+repository and outside this card.

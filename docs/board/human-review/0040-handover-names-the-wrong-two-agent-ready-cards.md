@@ -1,5 +1,34 @@
 # `docs/HANDOVER.md` names the wrong two agent-ready cards
 
+## What I need from you
+
+**Untick criterion #1 and send this card back to `todo/`, or write a dated line on the thread saying
+the reviewer is wrong.** Either one closes it. Doing neither leaves the card exactly here.
+
+**What's wrong.** The card asks the brief to name exactly the cards that are ready for an agent to
+pick up. It does not, and it did not on the day the card closed. As the tree stands now:
+
+- The brief names `0045` as ready. `0045` is not in `todo/`. `todo/` holds `0055`.
+- The brief says `0033` and `0034` are waiting for a review. Both are in this lane, waiting on you.
+- The brief says three cards are ready, then lists six.
+
+**Cause.** The card wrote a list of card numbers into the brief, and a list of numbers goes wrong
+the moment anything moves. Card `0044` was raised to rewrite the same two sentences and its rewrite
+is stale too, which is the clearest evidence that naming cards in prose cannot hold.
+
+**Pass** is either of these:
+- criterion #1 unticked and the card in `todo/`
+- a dated line here saying why the reviewer is wrong
+
+**Fail** is neither. The brief keeps pointing a fresh session at a card that is not there.
+
+**Why it needs you.** Only you may untick a criterion. There is a second thing worth saying while
+you are here, and it is the real fix: the brief should say **run `ls docs/board/todo`** rather than
+carry a list. Say the word and a session will make that change on the card that goes back.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 Two places in `docs/HANDOVER.md` say two agent-ready cards are open and name them `0033` and `0034`:
 the status block near the top, and the opening of "Blockers / open questions". Both are stale.

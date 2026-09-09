@@ -1,5 +1,35 @@
 # The "no caching needed" finding was measured on a dataset 40% smaller
 
+## What I need from you
+
+**One choice, and I recommend the second.**
+
+1. Untick a criterion and send this card back to `todo/`.
+2. Or write on the thread that the measurement stands, that the false size figure in the log is
+   already covered by cards `0023` and `0031`, and let this card go to `done/`.
+
+**What's wrong.** The measurement itself is sound, and the reviewer checked it against the shipped
+file: the endpoint really does read only `app/data/sites.json`, that file really is 736,457 bytes
+and 1,180 records, and the timings in the brief carry their date and file size. Two things around it
+are wrong. The card's own log claims the brief had 1,654 bytes of room left under its size budget;
+the brief was already over, and is **42,299 bytes** today, so the next person to edit it works from
+a false figure. The reviewer also found the change carrying other cards' code.
+
+**Cause.** The session measured the brief before its own edit and reported that number as the result.
+The extra code is very likely other cards sharing a branch rather than this card overreaching.
+
+**Pass** is either route above, recorded here with today's date.
+
+**Fail** is neither. The card sits ticked, no session finds anything open, and the loop promotes it
+again on the ticks.
+
+**Why it needs you.** Only you may untick a criterion, and the question here is whether a card that
+did its own job correctly should be reopened for a wrong number in its report. That is a judgement
+about how strict the board is, not a lookup.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `docs/HANDOVER.md`, under `## Current state`, tells a fresh session not to re-derive one thing about
 `api/nearest.php`: it "was measured at ~65 ms with ten concurrent and no degradation", so its
