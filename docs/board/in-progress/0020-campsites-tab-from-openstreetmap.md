@@ -2964,3 +2964,81 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-09** RESULT: partial
+TESTS: +1 new, all green (279 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the one stage of the campsite pipeline nothing in this suite had ever run:
+`scripts/fetch_campsites.py`.** Every campsite assertion on this thread starts at the parser or
+later. The fetcher is 208 lines, it is the only thing that decides what the parser is ever given,
+and it had zero coverage. Criterion #1 is a Campsites tab "ranked by distance from the current
+fix", and the top of that ranking is only the nearest campsite if the extract behind it is the
+whole country.
+
+**The fault the fetcher exists to catch, said exactly.** Overpass answers **HTTP 200 with a
+truncated body** when a query times out. It is valid JSON, it carries no `remark`, it has an
+`elements` key -- so `raise_for_status()`, the `remark` check and the `elements` check all wave it
+through. The only thing between that and the shipped dataset is `EXPECT_MIN`.
+
+**Measured, not argued.** I deleted the three-line floor check in `fetch_osm()` and ran the suite:
+**278 passed, 0 failed.** Nothing anywhere noticed.
+
+**And it is cached forever, which is what makes it worse than a bad run.** The cache branch
+re-fetches only a file of 50,000 bytes or less. The fixture's 400-element England extract is
+**138,267 bytes** on the wire -- real campsite elements carry description, operator and address
+tags, so a truncation big enough to matter is far bigger than that floor. The stub proves the
+permanence rather than asserting it: with the guard removed it reports the file written **and**
+`reused: true` on a second call, meaning a re-run costs zero requests and reports "cached", exactly
+as the card's own task asks it to, while the tab ranks a fraction of England for as long as
+`data/raw/osm/` survives.
+
+**Nothing downstream can see it.** `parse_campsites.py` counts what it was given,
+`counts_by_country` is derived from that same short list, and every shipped-file assertion above
+reads the `app/data/campsites.json` committed here, which does not move until somebody rebuilds --
+and the pipeline is red on purpose pending a re-fetch, so nobody would for weeks.
+
+**Watched red first.** The new assertion `a short answer from Overpass is refused rather than
+cached as the dataset` goes in the temp-tree block. It loads the real fetcher by path, points
+`OSM_DIR` and `FLS_DIR` at a throwaway directory, stubs `requests.post`, and runs it twice: once
+against a 400-element answer and once against a 3,200-element one. Against the broken fetcher it
+failed with `a 138267-byte extract holding 400 of England's 6,000-odd campsites was written to
+data/raw/osm/ and, being over the 50,000-byte cache floor, is now served back on every re-run`,
+which is the criterion's own failure and not a missing symbol, and it was the **only** failure.
+Restored the three lines and re-ran: 279 passed, 0 failed.
+
+**Both ends are pinned.** A guard that simply refused everything would empty the tab rather than
+shorten it, so the full extract must be accepted, written, and served back from the cache on a
+second call **without a second request**. That last clause is the card's own "zero-request on
+re-run" task, and it is now watched too.
+
+**It costs Overpass nothing.** `requests.post` is stubbed, so the check downloads nothing and makes
+no request against a donated public service. Same fixture discipline as every other temp-tree
+assertion here: nothing touches `data/raw/` or the committed dataset.
+
+**Which criterion this belongs to, and its limit.** #1, and only #1. Its tick does not move: it was
+already true, and the stage that decides what the tab can rank is now watched. The limit, said
+plainly: this proves the floor is enforced, not that the floor is the right number. `EXPECT_MIN`
+was measured on 2026-08-15 and no test can tell a genuine shrinkage in OpenStreetMap from a
+truncation. That judgement stays where the file's own comment puts it.
+
+**No `CACHE` / `BUILD` bump.** `scripts/fetch_campsites.py` ends the run byte-identical to how it
+started -- `git status` shows `scripts/selftest.js` and the two documents only -- and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 279 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 278 self-tests, which this run
+made 279. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.

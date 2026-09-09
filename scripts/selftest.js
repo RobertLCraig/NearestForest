@@ -2353,6 +2353,118 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
          `${JSON.stringify(stampRec.scraped_at)} and generated_at=` +
          `${JSON.stringify(stampFile.generated_at)}, so the sheet dates this data from the ` +
          'day the build ran rather than from what OpenStreetMap published');
+
+    // Acceptance #1 of card 0020, at the one stage of the campsite pipeline nothing in
+    // this suite had ever run: scripts/fetch_campsites.py. #1 is a Campsites tab "ranked
+    // by distance from the current fix", and the ranking is only the nearest campsite if
+    // the extract behind it is the whole country. Overpass answers HTTP 200 with a
+    // TRUNCATED body when a query times out -- valid JSON, no `remark`, an `elements` key,
+    // just far fewer of them -- so every other guard in fetch_osm() waves it through. The
+    // only thing standing between that and the shipped dataset is EXPECT_MIN.
+    //
+    // And it is cached forever, which is what makes this worse than a bad run. The cache
+    // branch re-fetches only a file of 50,000 bytes or less, and a truncation big enough
+    // to matter is far bigger than that -- the fixture below reports its own wire size, so
+    // the assertion proves the permanence rather than asserting it. A re-run then reports
+    // "cached" and costs zero requests, exactly as the card's own task asks it to, and the
+    // tab silently ranks a fraction of England for as long as data/raw/osm survives.
+    //
+    // Nothing downstream can see it. parse_campsites.py counts what it was given,
+    // counts_by_country is derived from that same short list, and every shipped-file
+    // assertion above reads app/data/campsites.json, which does not move until somebody
+    // rebuilds -- and the pipeline is red on purpose pending a re-fetch, so nobody would.
+    //
+    // requests.post is stubbed, so this downloads nothing and costs Overpass nothing.
+    const fdir = path.join(tmp, 'fetchcamp');
+    const fetchStub = [
+      'import importlib.util, os, sys, json',
+      'raw, mode = sys.argv[1], sys.argv[2]',
+      'spec = importlib.util.spec_from_file_location("nf_fc", os.path.join("scripts", "fetch_campsites.py"))',
+      'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+      'm.OSM_DIR = os.path.join(raw, "osm"); m.FLS_DIR = os.path.join(raw, "fls")',
+      'os.makedirs(m.OSM_DIR, exist_ok=True); os.makedirs(m.FLS_DIR, exist_ok=True)',
+      'm.DELAY = 0.0; m.BACKOFF = 0.0',
+      // Real campsite elements carry description, operator and address tags, so a
+      // truncated extract is bulky even when it is short. The padding is what makes the
+      // wire size honest against the 50,000-byte cache floor.
+      'PAD = "a description tag of the sort a real campsite element carries, padding this "',
+      'PAD += "extract past the fifty thousand byte cache floor while staying far short of "',
+      'PAD += "the element count Overpass owes for England"',
+      'n = 400 if mode == "short" else 3200',
+      'els = [{"type": "node", "id": i, "lat": 54.0, "lon": -2.0,',
+      '        "tags": {"name": "Campsite %d" % i, "tourism": "camp_site",',
+      '                 "caravans": "yes", "description": PAD}} for i in range(n)]',
+      'payload = json.dumps({"version": 0.6,',
+      '                      "osm3s": {"timestamp_osm_base": "2026-08-15T00:00:00Z"},',
+      '                      "elements": els})',
+      'calls = []',
+      'class R:',
+      '    status_code = 200',
+      '    content = payload.encode("utf-8")',
+      '    text = payload',
+      '    def raise_for_status(self): pass',
+      '    def json(self): return json.loads(payload)',
+      'def post(*a, **kw):',
+      '    calls.append(1)',
+      '    return R()',
+      'm.requests.post = post',
+      'm.fetch_fls = lambda: []',      // the FLS half is fetched over HTTP too; not this check
+      'p = os.path.join(m.OSM_DIR, "campsites-gb-eng.json")',
+      'err = ""',
+      'try:',
+      '    m.fetch_osm("England", "GB-ENG", 1, 1)',
+      'except Exception as e:',
+      '    err = "%s: %s" % (type(e).__name__, e)',
+      'cached = os.path.exists(p)',
+      'before = len(calls)',
+      'try:',
+      '    m.fetch_osm("England", "GB-ENG", 1, 1)',
+      'except Exception:',
+      '    pass',
+      'reused = len(calls) == before',
+      'code = 0',
+      'try:',
+      '    m.main()',
+      'except SystemExit as e:',
+      '    code = e.code or 0',
+      'print(json.dumps({"err": err, "cached": cached, "wire": len(payload),',
+      '                  "reused": reused, "exit": code}))',
+    ].join('\n');
+    const runFetch = (mode) => spawnSync(PY, ['-c', fetchStub, path.join(fdir, mode), mode],
+                                         { cwd: ROOT, encoding: 'utf8', env: PYENV });
+    const lastJson = (r) => {
+      try { return JSON.parse(((r.stdout || '').trim().split('\n').pop() || '').trim()); }
+      catch (e) { return null; }
+    };
+    const rShort = runFetch('short'), rFull = runFetch('full');
+    const fShort = lastJson(rShort), fFull = lastJson(rFull);
+    // Both ends are pinned. A guard that simply refused everything would leave the tab
+    // empty rather than short, so the full answer must be accepted, written, and served
+    // back from the cache on a second call without a second request.
+    ok('a short answer from Overpass is refused rather than cached as the dataset',
+       !!fShort && !!fFull &&
+       /Error/.test(fShort.err) && fShort.cached === false && fShort.exit !== 0 &&
+       fShort.wire > 50000 &&
+       fFull.err === '' && fFull.cached === true && fFull.reused === true && fFull.exit === 0,
+       !fShort || !fFull
+         ? `the stub fetcher reported nothing: ${((rShort.stderr || rFull.stderr || '').trim().split('\n').slice(-3).join(' / ')) || 'no stderr'}`
+       : fShort.cached
+         ? `a ${fShort.wire}-byte extract holding 400 of England's 6,000-odd campsites was ` +
+           'written to data/raw/osm/ and, being over the 50,000-byte cache floor, is now ' +
+           `served back on every re-run (reused: ${fFull.reused}), so the Campsites tab ranks ` +
+           'a fraction of the country and no re-run can recover it'
+       : fShort.exit === 0
+         ? 'the short extract was refused but scripts/fetch_campsites.py still exited 0, ' +
+           'so a pipeline run reports success on a dataset it declined to build'
+       : !fShort.err
+         ? 'the short extract was refused without naming a reason'
+       : fFull.err
+         ? `a full extract was refused too (${fFull.err}), which empties the tab rather ` +
+           'than shortening it'
+       : !fFull.cached
+         ? 'a full extract was accepted but never cached, so every re-run re-queries a ' +
+           'donated public service the card asks us to query once'
+       : `a full extract is re-queried rather than served from the cache (reused: ${fFull.reused})`);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
