@@ -134,3 +134,50 @@ this card was allowed to cut. Said so on the card itself, as `0045` did for `004
 `0023`, `0026`, `0028`, `0031`, `0032`, `0034`, `0036`, `0038`, `0040`, `0041`, `0044`. All eleven are
 already carried by card `0056` in `todo/`, which names exactly that list, so no new card was raised
 and `OUT-OF-SCOPE` is `none`. Every other card in the lane now has the section.
+
+### 2026-09-09 review (v20260909033843-0f4c)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Reviewed against the two criteria only.
+
+**Criterion #1** ÔÇö the heading `## What I need from you` is present in `docs/board/human-review/0019-use-forestry-englands-own-attribution-wording.md`, directly under the title `# Credit Forestry England the way they ask to be credited`, with only the frontmatter above the title. The lane re-grep confirms the card no longer appears in the miss list; eleven other cards do, and card `0056` in `todo/` carries them, matching what the build session reported.
+
+**Criterion #2** ÔÇö the first paragraph under the heading states the ask ("Untick whichever criteria the reviewer disproved... or write on the thread that the reviewer is wrong"), both pass routes, and the fail ("Doing neither is the fail: it returns to this lane, unchanged, on the next run"). All three land in that one paragraph, before any of the supporting detail. The longer `**Pass**` and `**Fail**` blocks further down repeat it, they do not carry it alone.
+
+I tried two ways to break it. First, whether the frontmatter pushes the heading away from the title: it does not, the heading is the first content. Second, whether a reader must scroll to learn the fail: they do not, the fail is in the opening paragraph.
+
+The findings named in the section trace to real code, `build_dataset` in `scripts/parse.py` and `ok('attribution present', ...)` in `scripts/selftest.js`, so the ask is not describing something that does not exist.
+
+VERDICT: sound
+
+**scope: sound**
+
+The card's own commit (123663d) touches only two files: card 0019 and card 0053. Everything else in the big diff belongs to earlier commits by other cards, not this one.
+
+I checked the fence line by line.
+
+- **Nothing acted on in 0019.** The commit adds 38 lines and deletes none from `docs/board/human-review/0019-use-forestry-englands-own-attribution-wording.md`. Its `## Acceptance` block, `## Comments` thread and verdicts are byte-identical.
+- **No code touched.** `app/index.html` and the `attribution` string built by `build_dataset` in `scripts/parse.py` are untouched by this commit, which `## Not this card` demanded.
+- **No lane move, no new check.** 0019 is still in `human-review/`. No entry-guard was added here, which the card said belongs in ProgressBoard.
+- **The re-grep task is honest.** My own `grep -rL "## What I need from you" docs/board/human-review/*.md` returns exactly the eleven cards the comment names: 0023, 0026, 0028, 0031, 0032, 0034, 0036, 0038, 0040, 0041, 0044. Card 0056 in `todo/` already carries that list, so raising nothing new was right.
+- **Over-budget was declared, not hidden.** The file is 234 lines and the new "Note on length" section says so, matching how 0045 and 0051 handled the same squeeze.
+
+I tried to find growth over the fence and could not.
+
+VERDICT: sound
+
+**breakage: defect**
+
+Findings under the breakage lens.
+
+The added section in `docs/board/human-review/0019-use-forestry-englands-own-attribution-wording.md` now tells a person, at the top, that two credit lines are wrong and the card must go back to `todo/`. But `docs/HANDOVER.md`, in "What's next" item 1, still tells that same person to look at 0019 on a screen and then deploy `0004, 0015, 0016, 0019 and 0022` together, and "Built and not yet deployed, as one batch" still lists 0019 as build-complete. Both texts speak to the same reader about the same card and give opposite instructions. Before this change the ask was buried at the bottom of a 197-line card, so the clash was invisible; the change put it at the top and left the brief untouched. The build note does not name the clash, and no open card covers it: `0056` covers only the eleven missing-section cards, and `0040`, `0041` and `0044` cover card counts and agent-ready naming, not the deploy list.
+
+Everything else checks out. The eleven-card re-grep matches `0056` exactly. The two findings the section restates are true against `app/index.html`, `build_dataset` in `scripts/parse.py`, and `ok('attribution present', ...)` in `scripts/selftest.js`.
+
+VERDICT: defect
+
