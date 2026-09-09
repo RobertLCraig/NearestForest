@@ -42,24 +42,24 @@ this repository.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0019-use-forestry-englands-own-attribution-wording.md` is
+- [x] #1 WHEN `docs/board/human-review/0019-use-forestry-englands-own-attribution-wording.md` is
       searched for the heading `## What I need from you`, THE CARD SHALL return a hit directly under
       its title. proves: none - this project's suite is one node script over the app and cannot read
       the board; the check is `grep -rL "## What I need from you" docs/board/human-review/*.md` not
       naming `0019`
-- [ ] #2 WHEN a reader opens `0019`, THE CARD SHALL state the ask, what a pass is and what a fail is,
+- [x] #2 WHEN a reader opens `0019`, THE CARD SHALL state the ask, what a pass is and what a fail is,
       within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the two `defect` verdicts above it, and use the ask
+- [x] Read the card's last comment entry and the two `defect` verdicts above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget after the section is added, and say on the
+- [x] Check the card is still inside the 100-line budget after the section is added, and say on the
       card if it is not
-- [ ] Re-grep the lane and report which cards still miss the heading
+- [x] Re-grep the lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository. Only
@@ -100,3 +100,37 @@ title.
 **2026-09-08** Raised by card `0051` on its last task, re-grepping the lane after fixing `0014`.
 `0019` arrived in the lane on 2026-09-08, after `0051` and `0052` were written, so it is the one card
 in the lane that no open card carries.
+
+**2026-09-09** RESULT: done
+TESTS: +0 new, all green (279 passed, 0 failed)
+TOUCHED: docs/board/human-review/0019-use-forestry-englands-own-attribution-wording.md
+TOUCHED: docs/board/in-progress/0053-card-0019-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: none
+
+**No test was written, and neither criterion asked for one.** `#1` says `proves: none` and `#2` says
+`proves: manual`, so the test-first rule does not apply to either. The harness could not express `#1`
+in any case: this project's suite is `node scripts/selftest.js` over `app/` and `scripts/`, and it
+cannot read `docs/board/`. The suite was run anyway to show the change broke nothing: 279 passed, 0
+failed. There is no PHP suite here, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not
+exist and were not run.
+
+Wrote `## What I need from you` directly under `0019`'s title, using the ask already at the bottom of
+the card rather than a new one: untick what the reviewer disproved and send the card to `todo/`, or
+say in the thread why the finding is wrong. Named the two `defect` findings in the reader's terms
+(the Scottish footer sentence wearing Forestry England's template, and the retired attribution string
+still stamped into `app/data/sites.json` by `build_dataset` in `scripts/parse.py` behind a self-test
+that greps only for "Open Government Licence"), and included the `defect`-card fields `What's wrong`
+and `Cause` per the README's field table.
+
+**Nothing in `0019` was acted on, unticked or moved**, per this card's `## Not this card` fence. Its
+`## Acceptance` block, its thread, `app/index.html` and `scripts/parse.py` are all untouched.
+
+**`0019` is over budget and this card could not fix it.** It was 197 lines and is now 234 against a
+budget of 100. `## Comments` is append-only and holds roughly half the file, so there was nothing
+this card was allowed to cut. Said so on the card itself, as `0045` did for `0043` and `0051` did for
+`0014`.
+
+**Lane re-grep, at this commit.** Eleven files in `docs/board/human-review/` still miss the heading:
+`0023`, `0026`, `0028`, `0031`, `0032`, `0034`, `0036`, `0038`, `0040`, `0041`, `0044`. All eleven are
+already carried by card `0056` in `todo/`, which names exactly that list, so no new card was raised
+and `OUT-OF-SCOPE` is `none`. Every other card in the lane now has the section.

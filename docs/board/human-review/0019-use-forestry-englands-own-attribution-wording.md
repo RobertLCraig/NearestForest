@@ -3,6 +3,44 @@ no_outward_effect: "published" in criteria #1 and #4 is Forestry England's own w
 ---
 # Credit Forestry England the way they ask to be credited
 
+## What I need from you
+
+**One call.** Untick whichever criteria below the reviewer disproved, so the card goes back to
+`todo/` and an agent fixes the two credit lines — **or** write on the thread that the reviewer is
+wrong and the card stands. Doing neither is the fail: it returns to this lane, unchanged, on the
+next run.
+
+---
+
+**What's wrong.** Two credits are not what this card says they are.
+
+1. **Scotland.** The footer in `app/index.html` credits Forestry and Land Scotland with "Crown
+   Copyright, Forestry and Land Scotland, licensed under the Open Government Licence." That is
+   Forestry England's own published template with another agency's name dropped in. Forestry and
+   Land Scotland publish no such statement (DECISIONS 2026-08-29). This card, the build note, and
+   the HTML comment on the line directly above all say Scotland takes the plain wording instead.
+2. **The data file.** `build_dataset` in `scripts/parse.py` still stamps every record with the plain
+   "Contains public sector information..." string this card retired, and that file ships. The guard
+   `ok('attribution present', ...)` in `scripts/selftest.js` only looks for the words "Open
+   Government Licence", so it passes on the old wording and the new one alike.
+
+**Cause.** A reviewer may not edit acceptance, so the card came back with 4 of 4 boxes still ticked.
+Every unattended session since has read the boxes, found nothing open, and promoted it again.
+
+**Pass** is either of:
+- at least one criterion unticked and the card back in `todo/`; or
+- a dated line in `## Comments` saying which finding is wrong, boxes left ticked.
+
+**Fail** is leaving it as it is.
+
+**Why it needs you.** The reviewer graded acceptance `sound`, so no box is plainly false. Criterion
+`#1` asks for Forestry England's wording and got it; nothing in the acceptance ever mentions
+Scotland or the data file. Deciding whether that makes this card unfinished or makes it a new card
+is a scope judgement, not a lookup.
+
+**Note on length.** This card is now 234 lines against a 100-line budget. `## Comments` is
+append-only and holds most of it, so this card could not bring it under.
+
 ## Why
 The app's footer currently reads:
 
