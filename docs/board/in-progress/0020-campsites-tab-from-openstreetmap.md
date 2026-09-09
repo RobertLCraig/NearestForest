@@ -2847,3 +2847,60 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-09** RESULT: partial
+TESTS: +1 new, all green (277 passed, 0 failed)
+TOUCHED: scripts/selftest.js, docs/HANDOVER.md,
+docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md
+OUT-OF-SCOPE: none
+
+**Closed the path that carries nine records in ten and that no fixture had ever run: the OSM area.**
+Criterion #1 is a Campsites tab "ranked by distance from the current fix", and a record can only be
+ranked if the parser gave it a position. **3,142 of the 3,530 records in `app/data/campsites.json`
+are ways or relations** -- `grep -o '"id":"os-[nwr]'` gives 3,073 ways, 69 relations and 388 nodes --
+and an OSM area carries no `lat`/`lon` of its own. `centroid()` in `scripts/parse_campsites.py` reads
+`center`, which Overpass emits only because `fetch_campsites.py` asks for `out center`. **Every
+fixture in the temp-tree block is a node**, so that branch had never executed in this suite.
+
+**Measured, not argued.** I collapsed `centroid()` to `return el.get("lat"), el.get("lon")` -- what a
+"simplified" centroid, or an `out body` query, gives you -- and ran the suite: **276 passed, 0
+failed.** What that break does on the next re-fetch is drop every way and relation into the
+`no_coord` counter, silently: `validate()` only ever sees the records that survived, and
+`counts_by_country` is derived from that same shortened list, so the file's own header agrees with a
+tab that has lost 89% of itself. The two shipped-file checks that could have spoken, `campsite count
+matches header` and `campsite ids are unique`, both compare the file with itself.
+
+**Watched red first.** The new assertion `a campsite mapped as an area is placed at the centre its
+source published` feeds the parser a `way` and a `relation`, each with a `center`, and requires both
+in the written file at exactly those coordinates. Against the broken `centroid()` it failed with
+`os-w200 never reached the file, so an OSM area cannot be ranked at all; os-r201 never reached the
+file...`, which is the criterion's own failure and not a missing symbol, while all 276 other
+assertions reported PASS. Restored the four lines and re-ran: 277 passed, 0 failed.
+
+**Both failure shapes are covered by one check.** It compares the written `lat`/`lng` against the
+published centre rather than merely testing for presence, so a `centroid()` that read the wrong key,
+or swapped the pair, fails on the coordinates rather than on the record being absent. That is the
+quieter fault of the two: a campsite at the wrong position still ranks, just wrongly, and #5's Great
+Britain box waves through anything that lands inside it.
+
+**Which criterion this belongs to.** #1, and only #1. Its tick does not move: it was already true,
+and the parser path that positions nine campsites in ten is now watched.
+
+**No `CACHE` / `BUILD` bump.** `scripts/parse_campsites.py` ends the run byte-identical to how it
+started -- `git status` shows `scripts/selftest.js` and the two documents only -- and nothing under
+`app/` changed.
+
+**Suite:** `node scripts/selftest.js`, 277 passed, 0 failed. There is no `vendor/` in this
+repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+This project has never had a PHP suite.
+
+**One number corrected in `docs/HANDOVER.md`:** "Current state" said 276 self-tests, which this run
+made 277. Not a run report -- HANDOVER's header forbids those -- just the count kept honest.
+
+**Nothing raised.** The one fault outside this card is `docs/HANDOVER.md` at ~41 KB, over the orient
+hook's budget, reported again at session start; card `0031` in `ai-review/` already carries it.
+
+**Still open. #8 needs a person**, unchanged: aeroplane mode, relaunched cold from the Home Screen
+icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
+browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
+under `app/`, so there is nothing new to look at.

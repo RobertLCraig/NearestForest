@@ -1593,6 +1593,46 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
        : !urlOkRec ? 'the parser dropped the ordinary campsite as well'
        : `an ordinary http website did not survive: ${JSON.stringify(urlOkRec.url)}`);
 
+    // Acceptance #1 of card 0020: a Campsites tab "ranked by distance from the current fix".
+    // A record can only be ranked at all if the parser gave it a position, and 3,142 of the
+    // 3,530 records in app/data/campsites.json are ways or relations -- an OSM AREA, which
+    // carries no lat/lon of its own. centroid() in parse_campsites.py reads `center`, which
+    // Overpass emits only because fetch_campsites.py asks for `out center`. EVERY fixture in
+    // this block is a node, so that branch has never run here: the way and relation path
+    // carries 89% of the tab and nothing in the suite touches it.
+    //
+    // Measured, not argued: collapse centroid() to `return el.get("lat"), el.get("lon")` --
+    // which is what a "simplified" centroid, or an `out body` query, gives you -- and the
+    // whole suite passes. What happens on the next re-fetch is that every area lands in the
+    // no_coord counter and is skipped, the tab loses nine records in ten, and NOTHING fails:
+    // validate() only sees the records that survived, and counts_by_country is derived from
+    // that same shortened list, so the file's own header agrees with it.
+    const areaEls = [
+      { type: 'way', id: 200, center: { lat: 54.5, lon: -2.5 },
+        tags: { name: 'Test Way Campsite', tourism: 'camp_site', caravans: 'yes' } },
+      { type: 'relation', id: 201, center: { lat: 55.5, lon: -3.5 },
+        tags: { name: 'Test Relation Campsite', tourism: 'camp_site', caravans: 'yes' } },
+    ];
+    writeOsm([goodEl].concat(areaEls));
+    const cArea = runCamp();
+    let areaRecs = null;
+    if (cArea.status === 0 && fs.existsSync(cOut)) {
+      try {
+        const all = JSON.parse(fs.readFileSync(cOut, 'utf8')).sites;
+        areaRecs = { 'os-w200': all.find(s => s.id === 'os-w200'),
+                     'os-r201': all.find(s => s.id === 'os-r201') };
+      } catch (e) { areaRecs = null; }
+    }
+    const areaWant = { 'os-w200': [54.5, -2.5], 'os-r201': [55.5, -3.5] };
+    const areaWrong = areaRecs && Object.keys(areaWant).filter(k =>
+      !areaRecs[k] || areaRecs[k].lat !== areaWant[k][0] || areaRecs[k].lng !== areaWant[k][1]);
+    ok('a campsite mapped as an area is placed at the centre its source published',
+       !!areaRecs && areaWrong.length === 0,
+       !areaRecs ? `the area run exited ${cArea.status} and wrote no dataset: ${tail(cArea)}`
+       : areaWrong.map(k => areaRecs[k]
+           ? `${k} is at ${areaRecs[k].lat},${areaRecs[k].lng}, not ${areaWant[k].join(',')}`
+           : `${k} never reached the file, so an OSM area cannot be ranked at all`).join('; '));
+
     // Acceptance #2 of card 0020: "state ONLY what its source publishes". `facilities` is
     // the one campsite field that is a list of positive claims -- the sheet draws each as a
     // chip reading "toilets", "drinking water", "chemical disposal" -- and nothing anywhere
