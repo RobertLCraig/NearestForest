@@ -129,3 +129,5 @@ one card, `0056`, following the batching `0045` and `0051` used.
 **The suite the brief names does not exist here.** There is no `vendor/`, no `pest.bat` and no
 `pint.bat` in this repository, and no PHP suite. `node scripts/selftest.js` is the suite per
 CLAUDE.md, and it is what was run.
+
+**2026-09-09** The loop moved this card from in-progress/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
