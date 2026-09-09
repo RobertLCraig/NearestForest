@@ -181,3 +181,33 @@ Everything else checks out. The eleven-card re-grep matches `0056` exactly. The 
 
 VERDICT: defect
 
+**2026-09-10** RESULT: done — the `breakage: defect` above is fixed.
+TESTS: +0 new, all green (279 passed, 0 failed)
+TOUCHED: docs/HANDOVER.md
+OUT-OF-SCOPE: none
+
+**The finding, restated.** Putting `0019`'s ask at the top of the card made a clash visible that had
+been buried: `docs/HANDOVER.md` told the same reader, in two places, to deploy `0019` as part of a
+five-card batch, while `0019` itself now asks Rob to untick what the reviewer disproved and send it
+back to `todo/`. Two texts, one reader, opposite instructions.
+
+**The fix, in `docs/HANDOVER.md` and nowhere else.** "What's next" item 1 now reads "deploy 0004,
+0015, 0016 and 0022. 0019 is held out", names why in one clause (its footer wording would ship the
+Scottish credit line wearing Forestry England's template and the retired `attribution` string in
+`app/data/sites.json`), and points at `0019`'s own ask. The "Built and not yet deployed, as one
+batch" bullet in `## Current state` drops `0019` from the batch and says it is built but held back,
+waiting on Rob. `0022` stays in the batch and is called out as unaffected: it added one clause to the
+car park sentence and neither reviewer finding touches it.
+
+**Nothing in `0019` changed**, per this card's `## Not this card` fence. No criterion unticked, no
+lane move, `app/index.html` and `scripts/parse.py` untouched. The diff for this fix is one file.
+
+**No test, and none was possible.** Both criteria on this card are `proves: none` and
+`proves: manual`; the suite is `node scripts/selftest.js` over `app/` and `scripts/` and cannot read
+`docs/`. Run anyway to show nothing broke: 279 passed, 0 failed.
+
+**`docs/HANDOVER.md` is still over the orient hook's budget** and this card did not make it worse.
+It was 42,542 bytes at session start, 41,996 after a separate fold commit that removed two blocks
+already owned by DATA-MODEL and DECISIONS, and 42,299 after this fix. Cards `0023` and `0031` in
+`human-review/` carry the size problem; this card only had to stop the brief contradicting `0019`.
+

@@ -321,8 +321,9 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   Scotland's Stay the Night scheme — a second data file under a second licence.
 - **Built and not yet deployed, as one batch:** **0004** (177 car parks named after their nearest
   forest) and **0016** (Scotland in the Forests tab), both 2026-08-29; **0015** (the tile
-  attribution pill), 2026-08-29, rendered and closed by a second run the same day; **0019** and
-  **0022** (the footer credits), both 2026-09-05. 279 self-tests pass (`node scripts/selftest.js`,
+  attribution pill), 2026-08-29, rendered and closed by a second run the same day; and **0022** (one
+  clause of the footer credits), 2026-09-05. **0019, the rest of the footer credits, is built but
+  held back**, waiting on Rob in `human-review/`. 279 self-tests pass (`node scripts/selftest.js`,
   measured 2026-09-09) and `CACHE` / `BUILD` are at `v24-2026-09-08`, bumped seven times by card 0020
   as it tightened the campsite filter; **every exclusion, its count and its reasoning are in
   DATA-MODEL's drop table**, which is the doc that owns them. See
@@ -343,9 +344,11 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 
 The queue is [docs/board/](board/), one card per file. At the head:
 
-1. **Look at 0004 and 0019 on a screen, then deploy 0004, 0015, 0016, 0019 and 0022 together.**
-   **0019 and 0022 are the same paragraph**, four sentences of footer text, so the only thing to look
-   at is how it wraps; 0022 added one clause to the car park sentence, so check that one first.
+1. **Look at 0004 on a screen, then deploy 0004, 0015, 0016 and 0022. 0019 is held out.** A reviewer
+   disproved part of 0019, so it sits in `human-review/` and its `## What I need from you` is the
+   ask; deploying it now would ship a Scottish credit line wearing Forestry England's first-party
+   template and the retired `attribution` string still in `app/data/sites.json`. **0022 is the same
+   footer paragraph** and is unaffected: it added one clause, so check how that clause wraps.
    For **0004**, check the dim italic
    against the **dark** theme, where it has the least contrast to spare, and check a map label, since
    "Car park near Bedgebury Nat…" truncates at 22 characters. **0015 no longer needs a desktop look**
