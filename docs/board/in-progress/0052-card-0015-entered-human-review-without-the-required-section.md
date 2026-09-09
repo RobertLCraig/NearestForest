@@ -41,7 +41,7 @@ without the section: that lives in `C:\Dev\ProgressBoard`, not in this repositor
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0015-attribution-is-unreadable-over-tiles.md` is searched for
+- [x] #1 WHEN `docs/board/human-review/0015-attribution-is-unreadable-over-tiles.md` is searched for
       the heading `## What I need from you`, THE CARD SHALL return a hit directly under its title.
       proves: none - this project's suite is one node script over the app and cannot read the board;
       the check is `grep -rL "## What I need from you" docs/board/human-review/*.md` not naming `0015`
@@ -51,13 +51,13 @@ without the section: that lives in `C:\Dev\ProgressBoard`, not in this repositor
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the `breakage: defect` verdict above it, and use the ask
+- [x] Read the card's last comment entry and the `breakage: defect` verdict above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget after the section is added, and say on the
+- [x] Check the card is still inside the 100-line budget after the section is added, and say on the
       card if it is not
-- [ ] Re-grep the lane and report which cards still miss the heading
+- [x] Re-grep the lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository. Only `docs/board/human-review/0015-attribution-is-unreadable-over-tiles.md`
@@ -93,3 +93,39 @@ title.
 **2026-09-07** Raised by card `0049` on its last task, re-grepping the lane after fixing `0012`.
 `0051` was written the same day and names `0012`, `0013` and `0014` but not `0015`, so this is the
 one card in the lane that no open card carries.
+
+**2026-09-09** RESULT: partial
+TESTS: +0 new, all green (279 passed, 0 failed — `node scripts/selftest.js`)
+TOUCHED: docs/board/human-review/0015-attribution-is-unreadable-over-tiles.md
+TOUCHED: docs/board/todo/0056-eleven-more-human-review-cards-have-no-required-section.md
+TOUCHED: docs/board/in-progress/0052-card-0015-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: 0056
+
+**The section is written on `0015`, and the ask is the one already at the bottom of that card.**
+Untick `#1` and send it back to `todo/`, or say on its thread why the reviewer is wrong. `#1` is the
+criterion the `breakage: defect` verdict reaches: the verdict grants that the shipped pill is
+readable, and the only thing it disproves is the guard the card built to keep it that way — the
+regex `/background:rgba\(0,0,0,\.(7[2-9]|[89]\d)\)/` in `scripts/selftest.js`, which rejects both
+`.8` and `0.72`. `#2` and `#3` were graded `sound`, so nothing points at them. The section says the
+choice of which box comes off, if any, is Rob's, because an agent cannot untick on a reviewer's
+behalf. Nothing was unticked here and nothing moved lane.
+
+**`0015` is now 220 lines against the 100-line budget**, and that is written on the card itself.
+`## Comments` is append-only, so this card could not bring it under. The new section is 26 lines.
+
+**No test was written, and no harness could hold one.** Criterion `#1` says `proves: none`: the
+suite here is `node scripts/selftest.js`, one node script over `app/`, and it cannot read
+`docs/board/`. The check the criterion names is the grep, and it was run before the edit, naming
+`0015`, and after, not naming it. The suite was run either way and is green at 279.
+
+**Criterion `#2` is left open.** It says `proves: manual` — whether an ask reads clearly in three
+lines is a reader's judgement, and an unattended session cannot make it.
+
+**Re-grepping the lane leaves eleven cards without the heading**, which is more than the two `0051`
+reported on 2026-09-08: `0023`, `0026`, `0028`, `0031`, `0032`, `0034`, `0036`, `0038`, `0040`,
+`0041` and `0044`. `0019` also misses it and is already carried by `0053`. The eleven are raised as
+one card, `0056`, following the batching `0045` and `0051` used.
+
+**The suite the brief names does not exist here.** There is no `vendor/`, no `pest.bat` and no
+`pint.bat` in this repository, and no PHP suite. `node scripts/selftest.js` is the suite per
+CLAUDE.md, and it is what was run.

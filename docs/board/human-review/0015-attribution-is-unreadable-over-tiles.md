@@ -1,5 +1,31 @@
 # The tile attribution is unreadable over tiles
 
+## What I need from you
+
+**One answer. Did the reviewer disprove criterion #1? Untick it and send the card back to `todo/`,
+or say in the thread below why the finding is wrong.**
+
+- **Pass:** #1 is unticked, **or** a comment here says why the finding does not touch it.
+- **Fail:** all three boxes stay ticked with nothing written. The loop then promotes this card on
+  the boxes again, which is what has already happened once.
+
+**What's wrong** The safety net around this work is weaker than it claims. The card's own self-test
+says it enforces "the credit panel is at least 72% opaque, so white text reads on it". It does not.
+A darker, *better* panel written as `.8` turns the test suite red, and so does the same 72% written
+as `0.72`. Both are ordinary, legal CSS.
+
+**Cause** The test matches the text of the style rule with a pattern that only accepts two digits
+after the dot and no leading zero, in `scripts/selftest.js`. It is a spelling check dressed up as an
+opacity check.
+
+**Why it needs you** The reviewer graded the other two criteria `sound` and is not allowed to untick
+anything, so no agent can move this card. Which box the finding lands on, if any, is a judgement:
+the shipped panel really is readable, and it is only the guard that is wrong. Repairing the pattern
+is this card's own work once you say the box comes off.
+
+Size note: this card is over the 100-line budget at 220 lines. The `## Comments` thread is
+append-only, so this section could not be paid for by cutting elsewhere. Card `0052` added it.
+
 ## Why
 `.map__hint` does two different jobs with one style. With the tile layer off it says "Tap a marker
 for details. Pinch to zoom.", and with it on it becomes the provider attribution, "Maps ©
