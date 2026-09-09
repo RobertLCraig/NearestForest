@@ -1,5 +1,6 @@
 ---
 needs: 0016
+not_for_the_loop: the only criterion left, #8, is an offline check on Rob's phone that no session can run
 no_outward_effect: "publishes" in criterion #2 is what OpenStreetMap holds about a campsite, not a deploy
 ---
 # A Campsites tab: where you can pull up a campervan, across England, Scotland and Wales
@@ -3042,3 +3043,43 @@ hook's budget, reported again at session start; card `0031` in `ai-review/` alre
 icon, Campsites tab tapped into while offline. Card 0001 check 5. **Nothing here has been seen in a
 browser** -- this is a worktree and Herd serves the main checkout -- and this run shipped no bytes
 under `app/`, so there is nothing new to look at.
+
+**2026-09-09** RESULT: blocked
+TESTS: +0 new, all green (279 passed, 0 failed)
+TOUCHED: docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md,
+docs/board/todo/0055-card-0020-has-outgrown-the-agent-file-reader.md
+OUT-OF-SCOPE: 0055
+
+**I wrote no test this run, on purpose, and that is the finding.** Criteria #1 to #7 have been met
+since 2026-08-15. **#8 is an offline check on Rob's phone and says on its own face that only a person
+can close it.** So there is no criterion on this card an unattended session can move, and the brief
+for such a session is explicit: stop, say so, leave the criteria open, do not answer it yourself.
+
+**What the twenty entries above actually are.** Every one of the last 20 opens `RESULT: partial` and
+closes on the same sentence, `#8 needs a person`. Each added one self-test to a different stage of
+the campsite pipeline and about 60 lines of prose about it. The tests are real and I have not touched
+them; the suite is green at 279. But none of them was asked for by an open criterion, and the loop
+was not choosing to write them -- it was restarting a finished card and finding nothing else to do.
+
+**It has now cost a reader, measurably.** This card is **208 KB across 3,044 lines**, and the file
+reader refused it at my session start: over the 200 KB whole-file limit. A session sent here can no
+longer read the card it was sent to work. `docs/board/README.md` names this exact failure under
+`## Comments` -- a card written to "without having anything new to say", grown "too large for the
+agent file reader that had to open it" -- and rules that the writer upstream is the defect, not the
+log, and that only a person may prune. So I raised **`0055`** rather than cutting anything.
+
+**One line changed on this card, and it is the fix for the cause.** The frontmatter now carries
+`not_for_the_loop:`, naming #8's phone check as the reason. Per the README that key is exactly for "a
+step only a person can take ... a browser check on a screen", it keeps the unattended loop off the
+card and grants nothing else, and it moves no lane. Without it the loop restarts this card every
+time, which is what produced the 20 entries above. **No criterion was ticked, reworded or reopened.**
+
+**Suite:** `node scripts/selftest.js`, 279 passed, 0 failed, run from this worktree. There is no
+`vendor/` in this repository, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and
+were not run. This project has never had a PHP suite.
+
+**No `CACHE` / `BUILD` bump and no `docs/HANDOVER.md` edit.** Nothing under `app/` or `scripts/`
+changed, and the self-test count is unchanged at 279, so HANDOVER is already correct.
+
+**What #8 still needs, unchanged:** aeroplane mode, relaunched cold from the Home Screen icon, tap
+into the Campsites tab while offline. It is card 0001 check 5, and 0001 is in `human-review/`.
