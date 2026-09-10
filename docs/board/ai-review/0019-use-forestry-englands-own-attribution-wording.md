@@ -383,9 +383,40 @@ width with no overflow.
 **`CACHE` and `BUILD` already read `v25-2026-09-10`**, bumped earlier the same day by card `0057`,
 and this change is undeployed, so no second bump is needed.
 
-**One thing not done, and it needs Rob.** `app/data/sites.json` still holds the old bare credit,
-because it is a build output and the pipeline cannot regenerate it here: `data/raw/fls/index.json`
-and the 278 cached Scottish pages are gone, so `parse.py` dies at stage 3 and writes nothing.
-Nothing in `app/app.js` or `app/api/nearest.php` reads that field, so no screen is wrong, but the
-file that travels carries the weaker credit until the next full fetch. That is a re-scrape of
-roughly 900 pages across three sites, which is Rob's call to make, not an unattended one.
+**2026-09-10** RESULT: done, second part
+TESTS: 1 re-keyed, all green (284 passed, 0 failed)
+TOUCHED: app/data/sites.json, app/sw.js, app/core.js, docs/DATA-MODEL.md, scripts/selftest.js
+OUT-OF-SCOPE: 0026
+
+**The shipped dataset now carries the new credit.** It could not be rebuilt at first, because it is
+a build output and the pipeline was red: `data/raw/fls/index.json` and the 278 cached Scottish pages
+were gone, so `parse.py` died at stage 3 and wrote nothing. **Rob was asked and chose to re-scrape**
+rather than ship the weaker credit and fix it later.
+
+Two rounds were needed, and the second one is the interesting one. The first re-fetch cost 278
+Scottish pages, and the parse then refused anyway, naming 531 English pages cached before `fetch.py`
+recorded download dates. That is card `0026`'s guard doing its job on real data: it named every file
+and wrote nothing rather than stamping them with today. Deleting those pages and re-fetching them,
+274 more, cleared it. 0 failures either time.
+
+**What changed in the data, measured against the shipped file rather than assumed.** Counts are
+unchanged, 550 forests and 630 car parks, 904 English records and 276 Scottish. Upstream moved a
+little in the eleven days since the last build: one English record renamed at source, so
+`fe-new-forest-reptile-centre` is now `fe-the-old-reptiliary`; `fls-winding-walks` moved 0.8 miles,
+which the parser's own index-versus-page coordinate report flagged; and 22 records changed their
+opening times, parking or facilities text. Nothing else differs except `scraped_at`.
+
+**A side effect worth naming: this closed card `0026`'s last open task**, which had been open since
+2026-09-05 because closing it required exactly this re-fetch and that card's `## Not this card`
+forbade it. All 1,180 records now read `scraped_at: 2026-09-10`, the date their pages were
+downloaded. The divergence in `docs/DATA-MODEL.md` moved to `### Closed`, and 0026 has the detail on
+its own thread. That is out of this card's scope and is declared here rather than hidden.
+
+**One test was re-keyed, not weakened.** `dataset counts in comments match sites.json` read a date
+out of the sentence "all 1,180 records still read ..." and counted the records carrying it. That
+sentence describes a divergence that no longer exists, so the check now reads "records now read" and
+still verifies both halves of the claim against the file. It also gained `\s+` before the date,
+because the sentence wraps and a re-wrap would otherwise have zeroed the count silently.
+
+**`CACHE` and `BUILD` bumped again to `v26-2026-09-10`.** `app/data/sites.json` is precached by the
+service worker, so a changed dataset needs a new cache name or a phone keeps the old one forever.

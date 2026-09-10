@@ -79,8 +79,8 @@ recorded date honest and nothing more. Not re-fetching anything.
 - [x] Have `fetch.py` record a per-page download date beside the cached HTML
 - [x] Have `parse.py` read it back and use it for `scraped_at`, for both the English and Scottish builds
 - [x] Make a missing date a loud failure, never a silent fallback to today
-- [ ] Re-run the pipeline and close the divergence in `docs/DATA-MODEL.md` - divergence closed, pipeline
-      not re-run, because re-running it means re-fetching and `## Not this card` forbids that
+- [x] Re-run the pipeline and close the divergence in `docs/DATA-MODEL.md` - done 2026-09-10 on
+      Rob's call, by card `0019`; see the thread below
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. Only `scripts/fetch.py`,
@@ -325,3 +325,23 @@ touched, `app/data/sites.json` is unchanged, and `BUILD`/`CACHE` are untouched a
 There is no screen whose behaviour differs, so there is nothing a browser could show.
 
 VERDICT: defect
+
+**2026-09-10** The last task is now ticked. It was the only one open and it was open for a reason
+this card could not resolve on its own: closing it meant re-fetching `data/raw/`, and re-fetching
+changes the data, which `## Not this card` put out of bounds. **Rob authorised the re-fetch on
+2026-09-10** while fast-tracking Scotland, so card `0019` ran it and rebuilt the dataset.
+
+274 English pages and 278 Scottish pages downloaded, 0 failures. All 1,180 records now read
+`scraped_at: 2026-09-10`, which is the date the HTML behind them was downloaded rather than the date
+the parser ran. That is this card's whole point, now true of the shipped file and not only of the
+generator. The divergence in `docs/DATA-MODEL.md` moved to `### Closed`.
+
+The re-fetch also proved the guard from criterion `#3` in the real world, which no test could:
+the first parse after the re-fetch still refused, naming 531 English pages that had been cached
+before dates were recorded, and it wrote nothing. Deleting those pages and re-fetching them cleared
+it. It failed loudly and it did not fall back to today, which is exactly what this card asked for.
+
+Upstream moved a little in the eleven days since the last build. Counts are unchanged at 550 forests
+and 630 car parks. One English record was renamed at source, `fe-new-forest-reptile-centre` is now
+`fe-the-old-reptiliary`; one Scottish record moved 0.8 miles, `fls-winding-walks`; and 22 records
+changed their opening times, parking or facilities text. Nothing was added or lost on balance.

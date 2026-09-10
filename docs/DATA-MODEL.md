@@ -163,13 +163,6 @@ shape, no new fields beyond `country`, and nothing in the app branches on where 
      September): 8am - 10pm" reads as closing at 08:00. It is currently harmless because such
      records come out as `partial`, and the app shows raw text below `parsed`, so no wrong badge is
      ever displayed. It becomes harmful the moment anything starts trusting `closes` directly.
-- **The committed `sites.json` still carries parse-date stamps, and only a re-fetch clears them.**
-  The generator was fixed by card 0026 (see Closed below), but the file in the repository was built
-  before that, so all 1,180 records still read `2026-08-29` while the English HTML behind them was
-  downloaded on `2026-08-08`. It cannot be rebuilt from the cache that is on disk: those pages were
-  cached before any date was recorded and their age is not recoverable, so `scripts/parse.py` now
-  refuses them by name and exits non-zero. **The pipeline is therefore red until `data/raw/` is
-  re-fetched**, which card 0026 held out of its own scope because a re-fetch also changes the data.
 - **`CFD-` asset codes are still shown as names.** About 68 car parks are published under an internal
   code such as `CFD-THH-CAR PARK` or `CFD-SAL- Car Park 2`. They are a real upstream value, so the
   derived-name rule below leaves them alone, but they read as machine output in a list. Out of scope
@@ -189,7 +182,16 @@ shape, no new fields beyond `country`, and nothing in the app branches on where 
   parse-time stamp made the whole dataset look a day old whatever the age of the HTML. A file
   modification time is not a substitute either, because any copy of the tree rewrites it and a build
   worktree is a copy. Three self-tests cover it, all driving the real Python scripts in a temporary
-  tree. **What is not closed is the shipped file**: see the open divergence above.
+  tree.
+
+- ~~**The committed `sites.json` still carries parse-date stamps.**~~ Closed 2026-09-10 by card
+  0019. The generator was fixed on 2026-09-05 but the shipped file predated it, and it could not be
+  rebuilt: the cached English pages carried no recorded download date, so `scripts/parse.py` refused
+  them by name and exited non-zero, and the cached Scottish pages had been deleted entirely. The
+  pipeline was red for that reason for five days. `data/raw/` was re-fetched on Rob's call, 274
+  English pages and 278 Scottish ones, and the dataset was rebuilt: all 1,180 records now read
+  `2026-09-10`, which is the date the HTML behind them was downloaded. Counts are unchanged at 550
+  forests and 630 car parks, 904 English records and 276 Scottish.
 
 - ~~**Car parks have no parent forest.**~~ Closed 2026-08-29 by card 0004. The open data still
   carries no link, so `scripts/parse.py` joins each unusable-name car park to its **nearest forest

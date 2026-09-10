@@ -2561,12 +2561,15 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
   // that lives in a comment. These read the number back out of the prose and check it
   // against the shipped file, so the next growth fails a run instead of a reader.
   const withUrl = sites.filter(s => s.url);
-  // Card 0039: DATA-MODEL's "Known divergences" claims how many records still carry a
-  // parse-date stamp rather than a fetch-date one. Read the date out of that same sentence
-  // and count the records carrying it, so both halves of the claim are checked. Keyed on
-  // "still read", which the correct 904 in the counts_by_country block cannot match.
+  // Card 0039: DATA-MODEL claims how many records carry which download date. Read the date
+  // out of that same sentence and count the records carrying it, so both halves of the claim
+  // are checked. It was keyed on "still read" while the divergence was open; card 0019
+  // re-fetched data/raw/ and closed it, so it is now keyed on "records now read", which the
+  // correct 904 in the counts_by_country block cannot match either. The claim is still worth
+  // pinning: the next re-fetch moves the date and nothing else re-reads a number in prose.
   const dataModel = fs.readFileSync(path.join(ROOT, 'docs', 'DATA-MODEL.md'), 'utf8');
-  const staleDate = (/still read `(\d{4}-\d{2}-\d{2})`/.exec(dataModel) || [])[1];
+  // \s+ because the sentence wraps, and a re-wrap must not silently zero the count.
+  const staleDate = (/records now read\s+`(\d{4}-\d{2}-\d{2})`/.exec(dataModel) || [])[1];
   const staleCount = sites.filter(s => s.scraped_at === staleDate).length;
   const carried = [
     // file, pattern whose capture group is the claimed count, what it must equal
@@ -2584,7 +2587,7 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
     ['docs/outreach/forestry-england-handover.md',
      /\| [\d,]+ locations, [\d,]+ forests, ([\d,]+) car parks \|/,
      sites.filter(s => s.source === 'carpark').length],
-    ['docs/DATA-MODEL.md', /all ([\d,]+) records still read/, staleCount],
+    ['docs/DATA-MODEL.md', /all ([\d,]+) records now read/, staleCount],
     // Card 0020: this block read sites.json only, so the campsite counts written into
     // prose drifted silently the moment dedupe_same_site dropped records -- which is the
     // exact failure the block exists to stop. Both halves of app.js's sentence.
