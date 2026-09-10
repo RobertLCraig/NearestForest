@@ -1,5 +1,38 @@
 # Two cards a person must do by hand sit in `todo/`
 
+## What I need from you
+
+**One choice, and I recommend the first.**
+
+1. Send this card to `ai-review/` for a fresh adversarial pass, the same call you made on 2026-09-10
+   for the thirteen cards in the same position.
+2. Or write on the thread that the two lane moves were right, that everything else the reviewers
+   found has since been fixed, and let this card go to `done/`.
+
+**What's wrong.** The two moves the card asked for are done and correct: `0010` and `0027` are both
+in this lane. Three complaints sit on top of them, and two are already dead.
+
+- **Still live.** The card names two moves and the commit shows four: `0003` and `0017` moved too.
+  The session's own note then said those were left behind. The moves were right, and card `0037`
+  claimed them afterwards, but the note was false when written.
+- **Dead.** The card counts in the brief that two reviewers called wrong are gone. On 2026-09-10 the
+  brief stopped carrying card lists and counts entirely.
+- **Dead.** Card `0037`, raised by this one, described a board that had moved on. It is in this lane
+  now with its own ask.
+
+**Cause.** One session did several cards' lane moves in one commit, so a correct move reads as work
+escaping a fence, and the write-up was made from the card rather than from the commit.
+
+**Pass** is either route above, recorded here with today's date.
+
+**Fail** is neither. The card sits fully ticked and the loop promotes it again on the ticks.
+
+**Why it needs you.** Only you may untick a criterion. The judgement is whether an accurate move
+described inaccurately is worth reopening a card for.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `0010` (rotate the Thunderforest key) and `0027` (send the Forestry England enquiry) both open with
 `## What I need from you`, and `docs/board/README.md` calls that "the one section a card in

@@ -1,5 +1,38 @@
 # Three decision cards are still in `todo/`
 
+## What I need from you
+
+**Untick criterion #2 and send this card back to `todo/`, so a session repairs card `0024`.** That
+is the one live fault and it is small. If you would rather it went on its own card, say so here
+instead.
+
+**What's wrong.** The three moves are done and right: `0003`, `0017` and `0018` are all in this lane
+and none is in `todo/`. Two things came out of it.
+
+- **Live, and it is sitting in front of you.** Card `0024` asks you to close it on the condition
+  that cards `0018` and `0020` are 100 lines each. This card added the required ask section to
+  `0018`, which took it to 123 lines, so `0024` is asking you to agree to something that is no
+  longer true and does not say so. Worse, `0024`'s own instructions tell you to count with
+  `wc -l docs/board/todo/0018-write-to-forestry-england.md`. This card moved that file. The command
+  now errors, in a card whose only job is counting it.
+- **Dead.** Criterion #2 asks the brief's count of waiting cards to match the folder. On 2026-09-10
+  the brief stopped carrying that count at all, so there is nothing left for the criterion to
+  compare. It cannot be met and it cannot fail.
+
+**Cause.** A card cannot both gain the section this lane requires and stay inside a line budget that
+another open card is measuring it against. That tension is real and nobody wrote it down.
+
+**Pass** is `0024`'s broken path corrected, its pass condition saying that `0018` grew because the
+lane required it, and a dated line here.
+
+**Fail** is neither route. You are left agreeing to a stale condition using a command that errors.
+
+**Why it needs you.** Only you may untick a criterion, and whether this card owes the repair to
+`0024` or a new card does is a call about how the board divides work.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 `0003`, `0017` and `0018` each carry `## Options`, and `docs/board/README.md` says a card with
 `## Options` is a decision. A decision is a person's, and the lane for a person's card is

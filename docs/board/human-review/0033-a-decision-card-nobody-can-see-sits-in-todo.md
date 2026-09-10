@@ -1,5 +1,36 @@
 # A decision card nobody can see sits in `todo/`
 
+## What I need from you
+
+**One choice, and I recommend the first.**
+
+1. Send this card to `ai-review/` for a fresh adversarial pass, the same call you made on 2026-09-10
+   for the thirteen cards in the same position.
+2. Or write on the thread that the fault below was already fixed by another card, and let this one
+   go to `done/`.
+
+**What's wrong.** The move itself is right and two of the three reviewers said so: card `0025` is in
+this lane, not in `todo/`, and it keeps its ask section. The fault is in the second half of the job.
+After moving `0025`, the session swept the rest of `todo/` and reported that `0003`, `0017` and
+`0018` were already answered, so nothing else needed moving. They were not answered. The board's
+rule is that an answer is an entry marked `**Decided:**`, and none of the three had one. `0018`'s
+only entry says the opposite: "I am still on the fence about what to ask them for."
+
+**Cause.** The sweep read a `## Decided` heading as an answer. A heading is a place to write an
+answer, not the answer itself. Card `0037` moved all three later, so the board is right today.
+
+**Pass** is either route above, recorded here with today's date.
+
+**Fail** is neither. The card sits fully ticked, no session finds anything open, and the loop
+promotes it again.
+
+**Why it needs you.** Only you may untick a criterion. The judgement is whether a card whose own
+criterion passed should be reopened for a wrong conclusion in its write-up, when another card has
+since done the work correctly.
+
+**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
+review verdicts are append-only, so nothing here could be cut to make room.
+
 ## Why
 Card `0025` asks Rob one question: when a card's ask must sit above `## Why`, does the ask win or
 does the problem statement win? Its `## Comments` thread is empty, so it has never been answered.
