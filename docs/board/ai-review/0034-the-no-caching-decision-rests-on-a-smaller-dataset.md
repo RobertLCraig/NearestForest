@@ -12,8 +12,13 @@
 file: the endpoint really does read only `app/data/sites.json`, that file really is 736,457 bytes
 and 1,180 records, and the timings in the brief carry their date and file size. Two things around it
 are wrong. The card's own log claims the brief had 1,654 bytes of room left under its size budget;
-the brief was already over, and is **42,299 bytes** today, so the next person to edit it works from
-a false figure. The reviewer also found the change carrying other cards' code.
+the brief was already over when that was written, so the next person to edit it worked from a false
+figure. The reviewer also found the change carrying other cards' code.
+
+**Corrected 2026-09-10.** This paragraph said the brief "is 42,299 bytes today" and over budget.
+That was true when the section was written this morning and stopped being true the same day: commit
+`a0d9ff7` folded it to **40,722 bytes**, under the 40,960 limit. The five sibling cards got that
+correction and this one was missed, because it had moved to `ai-review/` by then.
 
 **Cause.** The session measured the brief before its own edit and reported that number as the result.
 The extra code is very likely other cards sharing a branch rather than this card overreaching.
@@ -230,3 +235,95 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+**acceptance: sound**
+
+One criterion, and I checked every clause of it against the files that ship today rather than against
+the card's report of them.
+
+The criterion asks the brief to cite a response time measured against the `app/data/sites.json` that
+ships **today**, with the date and the file size. `docs/HANDOVER.md`, `## Current state`, lines
+302–310, carries all four:
+
+- the conclusion — `api/nearest.php` re-parses the whole dataset per request and "that is **not** a
+  DoS lever and does not need caching"
+- the date — "Re-measured 2026-09-06 (card 0034)"
+- the size and record count — "the 736,457-byte (719 KB), 1,180-record `app/data/sites.json` that
+  ships today"
+- the times and the harness — 3.7 ms parse, 5.3 ms warm request, ten at once in ~55 ms, on the PHP
+  built-in server
+
+**The cited numbers match the real file exactly.** Measured now:
+
+    wc -c app/data/sites.json                          ->  736457
+    node -e "d=require('./app/data/sites.json'); ..."  ->  records 1180  counts {"forest":550,"carpark":630}
+
+736,457 bytes, and 550 + 630 = 1,180 records. Not rounded, not approximate — the same digits.
+
+I tried three ways to break it. Does the endpoint read anything else, so that "the whole dataset" is
+the wrong thing to have timed? `app/api/nearest.php`'s `$dataPath` reads `sites.json` and never
+`campsites.json`, so no. Does the retired "nobody has re-timed it" claim survive anywhere? Grepping
+`docs/HANDOVER.md` for `re-timed`, `re-taken` and `515 KB` finds only the one honest mention that the
+2026-08-10 figure was taken on a 515 KB file and is explicitly not offered as a comparison. And is the
+warning about the measurement harness still there — the one saying `ForEach-Object -Parallel` charges
+runspace start-up to its first batch and produces a spurious ~65 ms? Yes, at line 310, which is the
+single most useful thing on this card, because the next person to re-run it would otherwise read the
+old number back out of their own tooling.
+
+VERDICT: sound
+
+**scope: sound — the 2026-09-08 finding is withdrawn in full**
+
+The earlier reviewer said "the diff is 70 files" and charged this card with `mapHint()` in
+`app/core.js`, the 904 → 1,180 rewrites in `app/core.js` / `app/api/nearest.php` /
+`docs/build/IOS-SHORTCUT.md`, a regenerated `app/data/campsites.json`, and 185 new lines of
+`scripts/selftest.js`. **None of it is this card's.** They read the branch, not the card.
+
+This card's build is two commits:
+
+    git show --stat 8e54f82   "re-time the nearest-site endpoint against the dataset that ships today"
+      docs/HANDOVER.md | 21 ++--   this card | 57 ++-   0036-the-904-record-count | 88 +++
+
+    git show --stat 0a2d132   "cut the new timing passage to its facts to protect the HANDOVER budget"
+      docs/HANDOVER.md | 19 ++---   this card | 6 ++
+
+`git show --name-only --format= <sha> | grep -E '^(app|scripts)/'` returns **nothing** for either.
+
+The sharpest charge was that the card "raised `0036` *and* did the work" on the three stale 904s.
+That is false. Neither commit names `app/core.js`, `app/api/nearest.php` or
+`docs/build/IOS-SHORTCUT.md`. `git log -- app/api/nearest.php app/core.js docs/build/IOS-SHORTCUT.md`
+puts their most recent changes on the campsite-filter commits, which are card `0020`'s. This card
+raised `0036`, declared it `OUT-OF-SCOPE`, and left the work alone — which is exactly what its own
+Plan told it to do.
+
+VERDICT: sound
+
+**breakage: sound**
+
+The 2026-09-08 breakage verdict rested entirely on the size budget: `docs/HANDOVER.md` was 41,505
+bytes at HEAD and 42,040 with this card's edit, about 1,080 over the 40,960 budget, so the card's
+"1,654 bytes remain" was a false headroom figure the next editor would trust. **That finding is dead.**
+Commit `a0d9ff7` folded the brief back under: it measures **40,722 bytes** today, 238 under budget,
+and the orient hook has nothing to complain about. There is no false headroom left to act on and
+nothing a builder could do about it.
+
+Nothing else broke. `node scripts/selftest.js` prints `280 passed, 0 failed`; it reads `app/` and
+`scripts/` only, so it proves this card broke no code, which it could not have, having touched none.
+No caller, comment or test depended on the sentence that changed.
+
+**One stale figure remains on this card, and it belongs to `0056`, not here.** The `## What I need
+from you` section at the top says the brief "is **42,299 bytes** today". It is 40,722, and it is
+**under** budget, not over. That section was written today by the session that built card `0056`,
+and it was true at the moment it was written; commit `a0d9ff7`, three commits later, made it false.
+The same session appended corrections to the five sibling cards that had gone to `done/` (`0023`,
+`0031`, `0040`, `0041`, `0044` all now carry "went 42,299 bytes at the start of this session to
+40,722") and missed this one, because it had moved to `ai-review/` instead. So the arrears is one
+card and one number. I am recording it against `0056`, where the fault was made, rather than bouncing
+this card for a sentence its own builder never wrote.
+
+**No UI surface.** Both of this card's commits change markdown only. There is no screen to drive and
+no screenshot to take, and that is a claim I am writing down rather than a step I skipped.
+
+VERDICT: sound
