@@ -10,9 +10,10 @@ Britain minus Wales in two of its three tabs.** Forests is one ranked list of 55
 agencies; Campsites covers England, Scotland and Wales; Car parks is England only, because no open
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
 **The pipeline runs clean**: `data/raw/` was re-fetched on 2026-09-10 and the dataset rebuilt.
-**Built cards are waiting to deploy**; see "Current state". **The three checks that could not fail
-are fixed** (0011, 0013, 0036, all built 2026-09-10 and awaiting review), so a green run now means
-more than it did. Assume there are others and keep looking.
+**Built cards are waiting to deploy**; see "Current state". **Checks that cannot fail are this
+project's recurring defect**, not a closed chapter: four were fixed on 2026-09-10 and a reviewer
+found two more the same day, both in builds whose notes claimed a red-proof that had not been done.
+A green run means more than it did. Assume there are others and keep looking.
 **This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and
 every one was stale within a day, so the rule now is: **list the folder, do not read a number.**
 `ls docs/board/todo` and `ls docs/board/in-progress` are what an agent can pick up;
@@ -313,7 +314,7 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 - **Built and not yet deployed:** run `ls docs/board/ai-review docs/board/done` and read the cards.
   The Scotland batch was fast-tracked on 2026-09-10: cards 0057 and 0019 fixed the two faults the
   adversarial pass found in it, and the dataset was rebuilt off a fresh scrape. **0015 is still held
-  out**, returned with a defect on the same pass. `CACHE` / `BUILD` are at `v26-2026-09-10`;
+  out**, returned with a defect on the same pass. `CACHE` / `BUILD` are at `v27-2026-09-10`;
   **every campsite exclusion, its count and its
   reasoning are in DATA-MODEL's drop table**, which is the doc that owns them.
   **What each card measured, found and deliberately left alone is on that card's own comment
@@ -347,8 +348,10 @@ adversarial pass on 2026-09-10 filled that lane, so the order below overrides ca
    drives `validate()` in `parse.py` directly because a fixture cannot carry an attacker's scheme,
    and 0036 guards all four numbers in the `safeHref` comment rather than the first. **The shape to
    look for is a check that reads one file when the claim spans several**, or a substring loose
-   enough to match what it is supposed to reject. Break the guarded thing and watch the run; that is
-   the only way any of these three were found.
+   enough to match what it is supposed to reject, or a structural check that forbids one branch and
+   says nothing about the other. Break the guarded thing and watch the run; that is the only way any
+   of these was found. **Two builds this project shipped on 2026-09-10 each claimed a red-proof that
+   had not been done**, and a reviewer caught both, so do not take a build note's word for it.
 2. **The two live faults in shipped code.** **0008**: `loadBoundary` latches, so one failed fetch of
    the 32 KB coastline kills the map for the life of the page, and because `draw()` returns before
    the marker block it also erases every site marker and the position dot. **0012**: one refused
@@ -358,7 +361,7 @@ adversarial pass on 2026-09-10 filled that lane, so the order below overrides ca
    defect on 2026-09-10; the card carries it. For **0004**, check the dim italic against the
    **dark** theme, where it has the least contrast to spare, and check a map label, since "Car park
    near Bedgebury Nat…" truncates at 22 characters. Then `pwsh ./scripts/deploy.ps1`; `CACHE` and
-   `BUILD` are already bumped to `v26-2026-09-10`.
+   `BUILD` are already bumped to `v27-2026-09-10`.
    **Serving a worktree is a solved problem**: `php -S 127.0.0.1:8791 -t app` from the worktree,
    since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check** in Blockers below: the precache grew by about
