@@ -9,8 +9,8 @@
 Britain minus Wales in two of its three tabs.** Forests is one ranked list of 550 sites from two
 agencies; Campsites covers England, Scotland and Wales; Car parks is England only, because no open
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
-**The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 4.
-**Three built cards are not yet deployed**; see "Current state". **The suite going green proves
+**The pipeline runs clean**: `data/raw/` was re-fetched on 2026-09-10 and the dataset rebuilt.
+**Built cards are waiting to deploy**; see "Current state". **The suite going green proves
 less here than it looks**: the 2026-09-10 adversarial pass found three checks that cannot fail, and
 "What's next" item 1 is fixing them.
 **This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and
@@ -80,7 +80,8 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
   (Bedgebury publishes `TN17 2SJ` for sat nav and `TN17 2SL` as its postal code).
 - **`opening_summary.access`** is `always` / `dusk` / `hours` / `unknown` and is the primary opening
   field, because most sites publish no clock time at all. Measured over the 274 Forestry England
-  forests: 94 always, 104 dusk, 43 hours, 27 unknown. **It does not cover the rest of the dataset**:
+  forests after the 2026-09-10 re-scrape: 94 always, 102 dusk, 44 hours, 28 unknown, 6 with no
+  `opening_summary` at all. **It does not cover the rest of the dataset**:
   269 of the 276 Scottish forests and all 630 car parks carry `opening_summary: null`. `dusk` deliberately stores no closing time; the app computes sunset per site at render.
 - **177 car park names are ours, not upstream's, and they are flagged.** 170 were published as
   `Unknown` and 7 as a bare `Car Park`. `scripts/parse.py` names each after its nearest forest
@@ -309,11 +310,11 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   with a literal anyway.
 - **Built 2026-08-15:** the **Campsites** tab, card 0020, from OpenStreetMap plus Forestry and Land
   Scotland's Stay the Night scheme, a second data file under a second licence.
-- **Built and not yet deployed:** **0004** (177 car parks named after their nearest forest) and
-  **0016** (Scotland in the Forests tab), both 2026-08-29, plus **0022** (one clause of the footer
-  credits), 2026-09-05. **0015 and 0019 were in this batch and are not any more**: the 2026-09-10
-  adversarial pass returned both to `todo/` with a defect each, so shipping them today ships a known
-  fault. `CACHE` / `BUILD` are at `v24-2026-09-08`; **every campsite exclusion, its count and its
+- **Built and not yet deployed:** run `ls docs/board/ai-review docs/board/done` and read the cards.
+  The Scotland batch was fast-tracked on 2026-09-10: cards 0057 and 0019 fixed the two faults the
+  adversarial pass found in it, and the dataset was rebuilt off a fresh scrape. **0015 is still held
+  out**, returned with a defect on the same pass. `CACHE` / `BUILD` are at `v26-2026-09-10`;
+  **every campsite exclusion, its count and its
   reasoning are in DATA-MODEL's drop table**, which is the doc that owns them.
   **What each card measured, found and deliberately left alone is on that card's own comment
   thread**; the facts that outlived a build are in DATA-MODEL and DECISIONS, and the FLS licence gap
@@ -353,36 +354,30 @@ adversarial pass on 2026-09-10 filled that lane, so the order below overrides ca
    the marker block it also erases every site marker and the position dot. **0012**: one refused
    tile blanks the layer permanently while the button still reads "Tiles on" and the credit still
    claims a basemap, because `t.failed` in `map.js` is written and never read.
-3. **Then look at 0004 on a screen and deploy 0004, 0016 and 0022.** **0015 and 0019 are held out**,
-   both returned with a defect on 2026-09-10; each card carries its own. For **0004**, check the dim
-   italic against the **dark** theme, where it has the least contrast to spare, and check a map
-   label, since "Car park near Bedgebury Nat…" truncates at 22 characters. Then
-   `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v24-2026-09-08`.
+3. **Then look at 0004 on a screen and deploy the batch.** **0015 is held out**, returned with a
+   defect on 2026-09-10; the card carries it. For **0004**, check the dim italic against the
+   **dark** theme, where it has the least contrast to spare, and check a map label, since "Car park
+   near Bedgebury Nat…" truncates at 22 characters. Then `pwsh ./scripts/deploy.ps1`; `CACHE` and
+   `BUILD` are already bumped to `v26-2026-09-10`.
    **Serving a worktree is a solved problem**: `php -S 127.0.0.1:8791 -t app` from the worktree,
    since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check** in Blockers below: the precache grew by about
    190 KB and the Forests tab doubled, so a cold offline launch now tests more than it did.
-4. **Re-fetch `data/raw/`, because card 0026 made the parser refuse it.** `scraped_at` is now the
-   date `fetch.py` downloaded the page, read back from `data/raw/fetched.json`, and a page cached
-   before that index existed has an age nobody can recover. So `python scripts/parse.py` names those
-   pages and exits 1, which is the change working. **`data/raw/fetched.json` is absent from this
-   checkout entirely**, so the refusal is total, and re-running `fetch.py` cannot repair it: it
-   skips any page already over 20,000 bytes. Only deleting `data/raw/` and starting again will.
-   **A re-fetch also refreshes the data**, so it is a dataset change to look at, not a formality.
-   **Card 0029 is built**, so a failing parse no longer costs the shipped dataset: both parsers
-   report and exit *before* they write.
-5. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
+   **The dataset was rebuilt on 2026-09-10** off a fresh scrape, so this deploy ships a data change
+   as well as a code one: one English record renamed at source, one Scottish record moved 0.8 miles,
+   and 22 records with new hours, parking or facilities text. Counts are unchanged.
+4. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
    still does not exist. The 2026-08-14 screenshots show it ("Bedgebury National Pi…" over "Hemsted
    Fores…"), and **0004 has raised the stakes**: 14 car parks now share the label "Car park near
    Dalby Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map
    truncates most derived names before the forest is reached. In the list this is fine, because each
    row carries its own distance and bearing. On the map it is not.
-6. **0020 has never had an adversarial pass** and it is the largest single change since the map. It
+5. **0020 has never had an adversarial pass** and it is the largest single change since the map. It
    sits in `in-progress/` with one criterion left that only a person can close. Worth real
    scepticism on three points: the filter that decides what a campervan can get into, whether the
    ODbL Collective Database argument holds, and whether 3,574 more markers have broken the map's
    clustering or its label collisions. The `review-card` skill is the tool.
-7. Everything else needs a person: see below.
+6. Everything else needs a person: see below.
 
 **Scotland is answered and built** (card 0016, answered Yes on 2026-08-18, built 2026-08-29). The
 forest tabs took on a second agency and a second scraper, knowingly. **Wales is still open**, card
