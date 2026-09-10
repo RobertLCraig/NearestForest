@@ -746,30 +746,72 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
     // rather than take anybody's name. Every Scottish forest in the shipped file is checked
     // too, so this cannot pass on a fixture while the dataset says otherwise.
     const fls = link({ source: 'forest' }, 'https://forestryandland.gov.scot/visit/glentrool');
-    const unknown = link({ source: 'forest' }, 'https://naturalresources.wales/glasfynydd');
+    // NOT naturalresources.wales, which the first version of this used. That is the exact
+    // host card 0017 will add to AGENCY_BY_HOST, so the assertion whose whole job is the
+    // unknown-host fallback would have gone red on the day Wales landed, and the cheap way
+    // out would have been to delete the case. A campsite host is the right fixture: this
+    // table only ever names agencies, so an ordinary business can never enter it.
+    const unknown = link({ source: 'forest' }, 'https://example-campsite.co.uk/pitches');
+    // Case, added after the 2026-09-10 review measured it. safeHref accepts a scheme in any
+    // case and the host strip is written in lower case, so an upper-case URL used to label
+    // itself "HTTPS:" or "WWW.forestryengland.uk". Neither is a different site.
+    const shouty = link({ source: 'forest' }, 'HTTPS://WWW.ForestryEngland.uk/bedgebury');
     const scots = sites.filter(s => s.country === 'Scotland' && s.url);
     const mislabelled = scots.filter(s => link(s, s.url).text !== 'Forestry and Land Scotland page');
     ok('a link is labelled by the agency that published it, never by another agency',
        fls.text === 'Forestry and Land Scotland page' &&
        fe.text === 'Forestry England page' &&
-       unknown.text === 'naturalresources.wales' &&
+       shouty.text === 'Forestry England page' &&
+       unknown.text === 'example-campsite.co.uk' &&
        scots.length > 0 && mislabelled.length === 0,
        `a Scottish forest reads "${fls.text}", an English one reads "${fe.text}", ` +
+       `the same English host shouted reads "${shouty.text}", ` +
        `an unrecognised host reads "${unknown.text}", and ${mislabelled.length} of ` +
        `${scots.length} shipped Scottish records are labelled as another agency` +
        (mislabelled.length ? ` (e.g. ${mislabelled[0].id} reads "${link(mislabelled[0], mislabelled[0].url).text}")` : ''));
 
-    // Card 0057 #2. `country` has been on every record since card 0016, and this row was
-    // written inside the campsite branch, so a Scottish CAMPSITE stated Scotland and a
-    // Scottish FOREST stated nothing on the same screen. Structural rather than rendered,
-    // because the fault is WHICH branch the line sits in: the campsite branch is the same
-    // source block the two assertions above lift, so a line moved back inside it fails here.
-    const campBranch = appjs020.match(/ {2}if \(site\.source === 'campsite'\) \{[\s\S]*?\r?\n {2}\}/)[0];
+    // Card 0057 #2, rewritten after the 2026-09-10 review. `country` has been on every
+    // record since card 0016, and this row was written inside the campsite branch, so a
+    // Scottish CAMPSITE stated Scotland and a Scottish FOREST stated nothing on the same
+    // screen.
+    //
+    // The first version of this check was two regexes over app.js source: Country present
+    // somewhere, and absent from the campsite branch. That forbids ONE of the two branches
+    // and says nothing about the other. The reviewer moved the row into the `else` branch
+    // instead and the whole suite stayed at 284 passed, 0 failed while all 3,574 campsite
+    // sheets went silent about their country, which is this card's own fault with the
+    // branches swapped. A structural check cannot express "for every source"; only
+    // rendering every source can. So render it.
+    //
+    // The lifted span runs from the source branch to the Coordinates row, which is the
+    // whole shared tail the Country row has to sit in, and it needs only `field` and `esc`,
+    // both already lifted above.
+    const tail057 = new Function('site', 'field', 'esc',
+      "var h = '';\n" +
+      appjs020.match(/ {2}if \(site\.source === 'campsite'\) \{[\s\S]*?\r?\n {2}h \+= field\('Coordinates'.*\r?\n/)[0] +
+      'return h;');
+    const countryRow = (s) => {
+      const m = /<dt>Country<\/dt><dd[^>]*>([^<]*)<\/dd>/
+        .exec(tail057(Object.assign({ lat: 54, lng: -2 }, s), field020, esc020));
+      return m ? m[1] : null;
+    };
+    // One per source, plus the record that has no country, which must print no row at all
+    // rather than an empty one. `country` is on every shipped record today, so that last
+    // case is the guard on the `if`, not a live shape.
+    const seen = [
+      ['a Scottish forest', { source: 'forest', country: 'Scotland' }, 'Scotland'],
+      ['an English car park', { source: 'carpark', country: 'England' }, 'England'],
+      ['a Scottish campsite', { source: 'campsite', country: 'Scotland' }, 'Scotland'],
+      ['a Welsh campsite', { source: 'campsite', country: 'Wales' }, 'Wales'],
+      ['a record with no country', { source: 'forest' }, null],
+    ].map(([what, s, want]) => [what, countryRow(s), want]);
+    const silent = seen.filter(([, got, want]) => got !== want);
     ok('the detail sheet shows Country for every source, not only for campsites',
-       /field\('Country'/.test(appjs020) && !/field\('Country'/.test(campBranch),
-       !/field\('Country'/.test(appjs020)
-         ? 'openSheet no longer emits a Country row at all'
-         : 'the Country row is back inside the campsite-only branch, so a Scottish forest is silent about Scotland');
+       silent.length === 0,
+       silent.map(([what, got, want]) => want === null
+         ? `${what} invented a Country row reading ${JSON.stringify(got)}`
+         : `${what} reads ${JSON.stringify(got)} where it should read ${JSON.stringify(want)}`
+       ).join(' | '));
   }
 
   // Acceptance #3, on the one screen a reader actually looks a place up on. Every other

@@ -295,3 +295,55 @@ doing before the Scotland deploy rather than after, because a green suite is pre
 class of fault live for eleven days the first time. Two smaller things can ride along or be dropped
 on Rob's word: `.toLowerCase()` the host, and move the fallback fixture off `naturalresources.wales`
 onto a host card `0017` will never add.
+
+**2026-09-10** RESULT: done, second build
+TESTS: 2 rewritten, all green (286 passed, 0 failed)
+TOUCHED: app/app.js, app/sw.js, app/core.js, scripts/selftest.js
+OUT-OF-SCOPE: none
+
+**The reviewer is right and the finding is taken whole.** My build note claimed both new checks were
+proved red before they were trusted. That was true of #1 and not of #2. I broke #2 in the one
+direction the test could see, moving the row back into the campsite branch, and never in the other.
+A structural check cannot express "for every source"; it can only forbid one branch. The reviewer
+moved the row into the `else` branch and the suite stayed green while 3,574 campsite sheets went
+silent, which is this card's own fault with the branches swapped.
+
+**Criterion #2 is now a render, not a regex.** The check lifts the shared tail of `openSheet()` out
+of `app/app.js` source, from the source branch down to the Coordinates row, and runs it for five
+records: a Scottish forest, an English car park, a Scottish campsite, a Welsh campsite and a record
+with no country at all. Each of the first four must read its own country back. The fifth must
+produce no row rather than an empty one, which is the guard on the `if`. The failure message names
+which source went silent and what it read.
+
+**Proved red on the reviewer's own attack.**
+
+- Country row moved into the `else` branch: `FAIL, a Scottish campsite reads null where it should
+  read "Scotland" | a Welsh campsite reads null where it should read "Wales"`. 285/1. That run was
+  284 passed, 0 failed under the old check.
+- Country line replaced by `// was: field('Country', site.country)`, the comment trick that also
+  beat the old check: `FAIL`, all four sources named. 285/1.
+- Restored, `git diff` clean on that hunk, 286 passed, 0 failed.
+
+**Both smaller findings taken as well, because both were measured rather than suggested.**
+`moreHref` is lower-cased before the host is cut out of it, so `HTTPS://WWW.ForestryEngland.uk/x` now
+reads "Forestry England page" instead of "HTTPS:". A host is case-insensitive by definition and
+`NF.safeHref` already accepts any case, so the two were disagreeing. Pinned by a new fixture in the
+#1 assertion, and proved red by removing the `.toLowerCase()`. The unknown-host fixture moved off
+`naturalresources.wales` onto `example-campsite.co.uk`: the old one is the exact host card `0017`
+will add to the table, so the assertion whose whole job is the fallback would have gone red the day
+Wales landed, and the cheap way out would have been to delete the case.
+
+**Looked at in a browser**, `php -S 127.0.0.1:8795 -t app` at 390x844, service worker unregistered
+and caches cleared first. All four record kinds read their country back: `fls-aberfoyle` Scotland
+with "Forestry and Land Scotland page", `fe-abbeyford-woods` England with "Forestry England page",
+`cp-537` England with no More row, and an OpenStreetMap campsite on South Uist reading Scotland.
+The campsite is the one the old test could not see, so it is the one attached.
+
+![A Scottish campsite's sheet, reading Country Scotland](../attachments/0057-2026-09-10-6.png)
+
+**`CACHE` and `BUILD` bumped to `v27-2026-09-10`**, because `app/app.js` changed again.
+
+**The reviewer's two undocumented side effects are true and stay.** 630 car parks now carry a
+Country row they never had, and the campsite sheet's Country row moved from between Opening times
+and Facilities to after Status. Both follow from the row being shared rather than duplicated, both
+are visible above, and neither is worth a branch to undo.

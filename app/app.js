@@ -237,7 +237,14 @@ function openSheet(site) {
        forestryandland.gov.scot link. A host cannot disagree with the link beside it, and
        an unknown one shows bare, which is the one honest label always available and lets
        you see where a tap will take you. */
-    var host = moreHref.replace(/^https:\/\/(www\.)?/, '').split('/')[0];
+    /* Lower-cased first, because NF.safeHref accepts a scheme in any case while this strip
+       is written in lower case. Measured on 2026-09-10: HTTPS://www.forestryengland.uk/x
+       survives safeHref and then labels itself "HTTPS:", and https://WWW.forestryengland.uk/x
+       misses the table and reads "WWW.forestryengland.uk". A host is case-insensitive by
+       definition, so neither is a different site. This cannot forge an agency name either
+       way, since a hit needs the text up to the first slash to equal a key exactly; it is
+       the honest label that was wrong, on data anybody can edit in OpenStreetMap. */
+    var host = moreHref.toLowerCase().replace(/^https:\/\/(www\.)?/, '').split('/')[0];
     var label = AGENCY_BY_HOST[host] || host;
     h += field('More', '<a href="' + esc(moreHref) + '" target="_blank" rel="noopener noreferrer">' +
                esc(label) + '</a>', { raw: true });
