@@ -314,7 +314,7 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 - **Built and not yet deployed:** run `ls docs/board/ai-review docs/board/done` and read the cards.
   The Scotland batch was fast-tracked on 2026-09-10: cards 0057 and 0019 fixed the two faults the
   adversarial pass found in it, and the dataset was rebuilt off a fresh scrape. **0015 is still held
-  out**, returned with a defect on the same pass. `CACHE` / `BUILD` are at `v27-2026-09-10`;
+  out**, returned with a defect on the same pass. `CACHE` / `BUILD` are at `v28-2026-09-10`;
   **every campsite exclusion, its count and its
   reasoning are in DATA-MODEL's drop table**, which is the doc that owns them.
   **What each card measured, found and deliberately left alone is on that card's own comment
@@ -326,11 +326,13 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   every card then in `ai-review/` returned 15 of 17 with a defect, and the pattern is the same one
   that has caught this project before: **the tests could not fail.** Comment out any security header
   in `.htaccess` and the suite stays green. Falsify three of the four counts in `core.js` and it
-  stays green. Delete the whole scheme check in `parse.py` and it stays green. Two live faults in
-  shipped code: **the map latches dead after one failed coastline fetch** and never retries, taking
-  every marker with it (card 0008), and **the tile layer blanks permanently after one refused tile**
-  while still claiming a basemap (card 0012). Each card in `todo/` carries its own finding and one
-  concrete fix.
+  stays green. Delete the whole scheme check in `parse.py` and it stays green.
+  **The two live faults that pass named in shipped code were fixed on 2026-09-10** and are in
+  `ai-review/` awaiting the adversarial pass: the map latching dead after one failed coastline fetch
+  (card 0008) and the tile layer blanking permanently after one refused tile while still claiming a
+  basemap (card 0012). Both cards carry the measurements and the red-proof. **Neither is deployed**,
+  so a phone is still running the faults. Nothing else is a known live fault, which is not the same
+  as nothing being wrong.
   **Five older bugs were found and fixed here since 2026-08-08 and every one was found by running
   the thing, never by reading it.** The worst was the service worker writing map tiles into the
   app's offline cache until iOS evicted the app along with them; DECISIONS 2026-08-08 "The offline
@@ -352,16 +354,18 @@ adversarial pass on 2026-09-10 filled that lane, so the order below overrides ca
    says nothing about the other. Break the guarded thing and watch the run; that is the only way any
    of these was found. **Two builds this project shipped on 2026-09-10 each claimed a red-proof that
    had not been done**, and a reviewer caught both, so do not take a build note's word for it.
-2. **The two live faults in shipped code.** **0008**: `loadBoundary` latches, so one failed fetch of
-   the 32 KB coastline kills the map for the life of the page, and because `draw()` returns before
-   the marker block it also erases every site marker and the position dot. **0012**: one refused
-   tile blanks the layer permanently while the button still reads "Tiles on" and the credit still
-   claims a basemap, because `t.failed` in `map.js` is written and never read.
+2. **The two live faults in shipped code are fixed and are in `ai-review/`** (0008 and 0012, both
+   built 2026-09-10). Both are still on the phone until this batch deploys. **Attack them the way
+   they were found**: in a browser, with the network broken, not by reading `app/map.js`. Both cards
+   carry a red-proof table and the browser numbers to check against.
+   **When you drive `php -S` in Chrome, read `NF.BUILD` in the console first.** The development
+   server sends no `Cache-Control` and does not read `app/.htaccess`, so Chrome served a two-week-old
+   `core.js` at the same origin and made a working fix look broken. Card 0012 carries it.
 3. **Then look at 0004 on a screen and deploy the batch.** **0015 is held out**, returned with a
    defect on 2026-09-10; the card carries it. For **0004**, check the dim italic against the
    **dark** theme, where it has the least contrast to spare, and check a map label, since "Car park
    near Bedgebury Nat…" truncates at 22 characters. Then `pwsh ./scripts/deploy.ps1`; `CACHE` and
-   `BUILD` are already bumped to `v27-2026-09-10`.
+   `BUILD` are already bumped to `v28-2026-09-10`.
    **Serving a worktree is a solved problem**: `php -S 127.0.0.1:8791 -t app` from the worktree,
    since Herd only ever serves `C:\Dev\NearestForest`.
    **0016 raises the stakes on the offline check** in Blockers below: the precache grew by about
