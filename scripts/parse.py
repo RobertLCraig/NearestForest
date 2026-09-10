@@ -15,6 +15,21 @@ FLS_PAGES = os.path.join(RAW, "fls", "pages")
 OUT = os.path.join(ROOT, "app", "data", "sites.json")
 TODAY = date.today().isoformat()
 
+# The redistribution credit stamped into sites.json. Four sentences, one per source, and the
+# same four the About footer shows: Forestry England publish their own statement so theirs is
+# used verbatim, Forestry and Land Scotland publish none so they take the generic wording, and
+# the car park dataset publishes its own copyright line whose year is the publisher's and is
+# never updated here. See DECISIONS 2026-08-15 and 2026-08-29.
+ATTRIBUTION = (
+    "English forest details: Crown Copyright, courtesy Forestry England, licensed under the "
+    "Open Government Licence. "
+    "Scottish forest details from Forestry and Land Scotland contain public sector information "
+    "licensed under the Open Government Licence v3.0. "
+    "Car park details contain public sector information licensed under the Open Government "
+    "Licence v3.0; © Forestry Commission copyright and/or database right 2025. "
+    "All rights reserved."
+)
+
 # ------------------------------------------------ download dates (card 0026)
 # fetch.py records the date it downloaded each file into data/raw/fetched.json, and
 # `scraped_at` comes from there rather than from the clock. Re-parsing the cache costs
@@ -749,7 +764,11 @@ def main():
         "generated_at": TODAY,
         "counts": {"forest": len(all_forests), "carpark": len(carparks)},
         "counts_by_country": by_country,
-        "attribution": "Contains public sector information licensed under the Open Government Licence v3.0.",
+        # This file travels on its own. A copy handed to somebody carries no index.html, so
+        # the licence alone is not the credit: it has to name whose records are in it, the way
+        # campsites.json names OpenStreetMap. Keep these sentences in step with the footer in
+        # app/index.html; a self-test fails if the two name different agencies.
+        "attribution": ATTRIBUTION,
         "sites": sites,
     }
     with open(OUT, "w", encoding="utf-8") as fh:

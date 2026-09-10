@@ -3,44 +3,6 @@ no_outward_effect: "published" in criteria #1 and #4 is Forestry England's own w
 ---
 # Credit Forestry England the way they ask to be credited
 
-## What I need from you
-
-**One call.** Untick whichever criteria below the reviewer disproved, so the card goes back to
-`todo/` and an agent fixes the two credit lines, **or** write on the thread that the reviewer is
-wrong and the card stands. Doing neither is the fail: it returns to this lane, unchanged, on the
-next run.
-
----
-
-**What's wrong.** Two credits are not what this card says they are.
-
-1. **Scotland.** The footer in `app/index.html` credits Forestry and Land Scotland with "Crown
-   Copyright, Forestry and Land Scotland, licensed under the Open Government Licence." That is
-   Forestry England's own published template with another agency's name dropped in. Forestry and
-   Land Scotland publish no such statement (DECISIONS 2026-08-29). This card, the build note, and
-   the HTML comment on the line directly above all say Scotland takes the plain wording instead.
-2. **The data file.** `build_dataset` in `scripts/parse.py` still stamps every record with the plain
-   "Contains public sector information..." string this card retired, and that file ships. The guard
-   `ok('attribution present', ...)` in `scripts/selftest.js` only looks for the words "Open
-   Government Licence", so it passes on the old wording and the new one alike.
-
-**Cause.** A reviewer may not edit acceptance, so the card came back with 4 of 4 boxes still ticked.
-Every unattended session since has read the boxes, found nothing open, and promoted it again.
-
-**Pass** is either of:
-- at least one criterion unticked and the card back in `todo/`; or
-- a dated line in `## Comments` saying which finding is wrong, boxes left ticked.
-
-**Fail** is leaving it as it is.
-
-**Why it needs you.** The reviewer graded acceptance `sound`, so no box is plainly false. Criterion
-`#1` asks for Forestry England's wording and got it; nothing in the acceptance ever mentions
-Scotland or the data file. Deciding whether that makes this card unfinished or makes it a new card
-is a scope judgement, not a lookup.
-
-**Note on length.** This card is now 234 lines against a 100-line budget. `## Comments` is
-append-only and holds most of it, so this card could not bring it under.
-
 ## Why
 The app's footer currently reads:
 
@@ -105,12 +67,28 @@ that alone unless they ask.
 - [x] #4 WHEN the self-tests run, THE APP SHALL fail if either attribution string is absent from
       index.html. proves: `the footer uses Forestry England's own published attribution wording`
       and `the footer credits the Open Government Licence for the car park data`
+- [x] #5 WHEN the About footer credits Forestry and Land Scotland, THE APP SHALL use the generic
+      Open Government Licence wording rather than another agency's published template, so the
+      sentence agrees with the comment three lines above it.
+      proves: `the Scottish credit uses the generic wording, not another agency's template`
+- [x] #6 WHEN the parser writes the Open Government Licence dataset, THE APP SHALL name every
+      agency whose records are in it, so a copy of that file travelling without the footer still
+      credits its sources. proves: `the OGL file the parser writes names every agency in it`
+- [x] #7 WHEN the self-tests run, THE APP SHALL fail if the footer and the parser name different
+      agencies, so the two records of one obligation cannot drift apart again.
+      proves: `the footer and the dataset credit name the same agencies`
 <!-- AC:END -->
 
 ## Tasks
 - [x] Rewrite the two attribution sentences in `app/index.html`
 - [x] Add a self-test asserting both strings are present, so a future edit cannot quietly drop one
 - [x] Bump `CACHE` in `app/sw.js` and `BUILD` in `app/core.js`, since `app/` changed
+- [x] Rewrite the Scottish sentence in `app/index.html` to the generic wording its own comment asks
+      for, so the file stops contradicting itself
+- [x] Make `build_dataset` in `scripts/parse.py` stamp a credit that names the three agencies, the
+      way `campsites.json` already names OpenStreetMap
+- [x] Replace the four-word `attribution present` substring check with one that asserts the wording,
+      and add a check that the footer and the parser name the same agencies
 - [ ] Deploy
 
 ## Plan
@@ -350,3 +328,64 @@ Scottish sentence against its own comment and make the code and the comment agre
 `build_dataset` stamp a credit that names the agencies, the way `campsites.json` already does; and
 tighten `attribution present` so it asserts the actual wording instead of four words common to both.
 `Deploy` is still openly unticked on the task list, which is declared rather than hidden.
+
+**2026-09-10** RESULT: done
+TESTS: +2 new, 1 rewritten, all green (284 passed, 0 failed)
+TOUCHED: app/index.html, scripts/parse.py, scripts/selftest.js
+OUT-OF-SCOPE: none
+
+Picked up because Rob asked for the Scotland work to be fast-tracked, and this is the second of the
+two things standing between card `0016` and a deploy. Card `0057` was the first and is in
+`ai-review/`. **Three criteria were added and were written before the code**, one per finding the
+reviewer returned, plus one for the drift that let the two findings happen. No existing box was
+touched: the reviewer graded the original four `sound` and I agree, so nothing was unticked.
+
+**The stale `## What I need from you` block is gone.** Rob answered it on the thread on 2026-09-10
+and the block still asked him to untick a box, which is the opposite of what he decided. It also put
+the card 100 lines over budget on its own. The answer stays on the thread above.
+
+**Finding one, the Scottish sentence, fixed the way the file's own comment asked.** It now reads
+"Scottish forest details from Forestry and Land Scotland contain public sector information licensed
+under the Open Government Licence v3.0." That is the generic wording, it names the agency, and it
+agrees with the comment three lines above it, with this card's `## Links` entry for `0016`, and with
+DECISIONS 2026-08-29. Nothing in the old sentence was false, which is exactly why it lasted; the
+defect was that the file contradicted itself, so the next editor would have fixed whichever half
+they read first.
+
+**Finding two, the dataset credit, fixed at the generator.** `scripts/parse.py` now stamps a named
+`ATTRIBUTION` constant carrying the same four credits the footer shows, so a copy of `sites.json`
+handed to somebody without `index.html` still says whose records are in it. `campsites.json` already
+worked this way, which is where the shape came from.
+
+**The old guard could not fail and is gone.** `attribution present` tested `/Open Government
+Licence/`, four words shared by the retired wording and the replacement, so it was green throughout
+the defect and would stay green on almost any sentence. Its replacement, `the OGL file the parser
+writes names every agency in it`, runs `parse.py` in the temp tree and reads the file it actually
+wrote.
+
+**All three new checks were proved red first.**
+
+- Old Scottish sentence back: `FAIL, the generic Scottish credit is not in the footer`. 283/1.
+- Old sentence added alongside the new one: `FAIL, the footer still carries "Crown Copyright,
+  Forestry and Land Scotland", which is Forestry England's template with another agency's name in
+  it`. 283/1. Both halves of that check are load-bearing, so both were broken separately.
+- Agency name dropped from `ATTRIBUTION`: two fail together, `the footer and the dataset credit name
+  the same agencies` and `the OGL file the parser writes names every agency in it`. 282/2.
+- All restored, 284 passed, 0 failed.
+
+**Looked at in a browser.** `php -S 127.0.0.1:8795 -t app` at 390x844. The service worker served the
+old cached page first, so the registration and caches were cleared before reading it, which is worth
+knowing for the next person checking a footer change locally. The paragraph wraps cleanly at phone
+width with no overflow.
+
+![the About footer at 390px, with the generic Scottish credit](../attachments/0019-2026-09-10-2.png)
+
+**`CACHE` and `BUILD` already read `v25-2026-09-10`**, bumped earlier the same day by card `0057`,
+and this change is undeployed, so no second bump is needed.
+
+**One thing not done, and it needs Rob.** `app/data/sites.json` still holds the old bare credit,
+because it is a build output and the pipeline cannot regenerate it here: `data/raw/fls/index.json`
+and the 278 cached Scottish pages are gone, so `parse.py` dies at stage 3 and writes nothing.
+Nothing in `app/app.js` or `app/api/nearest.php` reads that field, so no screen is wrong, but the
+file that travels carries the weaker credit until the next full fetch. That is a re-scrape of
+roughly 900 pages across three sites, which is Rob's call to make, not an unattended one.

@@ -1025,6 +1025,43 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // and neither one is the obligation; the holder's name and the statement are.
   ok('the footer names the copyright holder of the car park data',
      flat.includes('Forestry Commission copyright and/or database right 2025. All rights reserved.'));
+
+  // Card 0019 again, returned by review. The Scottish sentence read "Crown Copyright, Forestry
+  // and Land Scotland, licensed under the Open Government Licence": Forestry England's own
+  // published template with another agency's name substituted. Forestry and Land Scotland
+  // publish no such statement (DECISIONS 2026-08-29), so that sentence put words in their
+  // mouth, and the HTML comment three lines above it said the opposite of the line itself.
+  // Nothing was false, which is why it survived; the file disagreeing with its own comment is
+  // the defect, because the next person to edit that paragraph fixes whichever half they read
+  // first. Pin the generic wording AND pin the absence of the template it was cloned from,
+  // or the same substitution comes straight back.
+  ok('the Scottish credit uses the generic wording, not another agency\'s template',
+     flat.includes('Scottish forest details from Forestry and Land Scotland contain public ' +
+                   'sector information licensed under the Open Government Licence v3.0') &&
+     !flat.includes('Crown Copyright, Forestry and Land Scotland'),
+     !flat.includes('Scottish forest details from Forestry and Land Scotland contain public ' +
+                    'sector information licensed under the Open Government Licence v3.0')
+       ? 'the generic Scottish credit is not in the footer'
+       : 'the footer still carries "Crown Copyright, Forestry and Land Scotland", which is ' +
+         'Forestry England\'s template with another agency\'s name in it');
+
+  // The footer and scripts/parse.py are two records of ONE obligation, edited months apart by
+  // different sessions, and they had already drifted: the footer named three agencies while
+  // the file the parser stamps named none. Neither is derivable from the other, so the only
+  // thing that keeps them together is this. Compare the names, not the sentences: the footer
+  // is prose for a phone screen and the dataset field is a credit for a file, so they are
+  // allowed to read differently. Who is credited is not allowed to differ.
+  const parsepy = fs.readFileSync(path.join(ROOT, 'scripts', 'parse.py'), 'utf8');
+  const stamped = (parsepy.match(/^ATTRIBUTION = \(\r?\n([\s\S]*?)^\)/m) || [])[1] || '';
+  const AGENCIES = ['Forestry England', 'Forestry and Land Scotland', 'Forestry Commission'];
+  const missing = AGENCIES.filter(a => !stamped.replace(/"\s*\r?\n\s*"/g, '').includes(a));
+  ok('the footer and the dataset credit name the same agencies',
+     !!stamped && missing.length === 0 &&
+     AGENCIES.every(a => flat.includes(a)),
+     !stamped
+       ? 'no ATTRIBUTION constant found in scripts/parse.py'
+       : `the footer names ${AGENCIES.filter(a => flat.includes(a)).join(', ') || 'nobody'} ` +
+         `and the dataset credit leaves out ${missing.join(', ')}`);
 }
 
 console.log('');
@@ -1402,10 +1439,19 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     // a re-fetch, so no rebuild would surface it for weeks. A copy of sites.json travels
     // without index.html's footer, and the Collective Database argument rests on each
     // file naming its own licence, so the statement belongs to the parser.
-    ok('every OGL file the parser writes carries its own licence statement',
-       !!built && /Open Government Licence/.test(built.attribution || ''),
+    // Card 0019, second pass. The old form of this test was /Open Government Licence/, four
+    // words that appear in the retired wording and the replacement alike, so it stayed green
+    // through the whole defect: the parser stamped a bare licence line naming NO agency onto a
+    // file holding English forests, Scottish forests and car parks. The licence is not the
+    // credit. Name who the records belong to, the way campsites.json names OpenStreetMap.
+    const wrote = (built && built.attribution) || '';
+    const short = ['Forestry England', 'Forestry and Land Scotland', 'Forestry Commission']
+                    .filter(a => !wrote.includes(a));
+    ok('the OGL file the parser writes names every agency in it',
+       !!built && /Open Government Licence/.test(wrote) && short.length === 0,
        !built ? 'the clean parse wrote no dataset'
-              : `attribution=${JSON.stringify(built.attribution)}`);
+              : `the credit leaves out ${short.join(', ') || 'nobody'}: ` +
+                JSON.stringify(wrote));
 
     // Break it the way the real tree broke: a cached page with no recorded download
     // date. Refusing that is correct (card 0026). Refusing it after overwriting the
