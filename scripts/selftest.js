@@ -2616,6 +2616,17 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
     ['app/api/nearest.php', /ranking ([\d,]+) sites/, sites.length],
     ['docs/build/IOS-SHORTCUT.md', /rank ([\d,]+) sites on device/, sites.length],
     ['app/core.js', /Every one of the ([\d,]+) records/, withUrl.length],
+    // Card 0036, second pass. Its own fix grew that comment from one number to four and
+    // guarded only the first, so adding ten Scottish forests left three of them quietly
+    // wrong on a green run. The card exists to stop numbers drifting in comments and it
+    // made the unguarded surface bigger, which is the failure worth naming. \s+ because
+    // the sentence wraps across three lines and a re-wrap must not silently unhook a check.
+    ['app/core.js', /([\d,]+)\s+on forestryengland\.uk/,
+     withUrl.filter(s => /^https:\/\/(www\.)?forestryengland\.uk\//.test(s.url)).length],
+    ['app/core.js', /([\d,]+) on forestryandland\.gov\.scot/,
+     withUrl.filter(s => /^https:\/\/forestryandland\.gov\.scot\//.test(s.url)).length],
+    ['app/core.js', /The other ([\d,]+)\s+records, the car parks/,
+     sites.length - withUrl.length],
     // Card 0038: the Forestry England briefing is handed to a session with no repository
     // access, so its counts cannot be checked by the person using them, and its row is
     // marked Verified. All three numbers on that row, because it names each separately.

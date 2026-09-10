@@ -1,36 +1,5 @@
 # Three live files still say the dataset holds 904 records
 
-## What I need from you
-
-**One choice, and I recommend the first.**
-
-1. Untick a criterion and send this card back to `todo/`, so a session guards the three numbers the
-   new check does not read. That is three lines in `scripts/selftest.js`.
-2. Or write on the thread that those three numbers should be deleted from the comment instead, and
-   send it back for that.
-
-**What's wrong.** The three stale `904`s are fixed and the reviewer counted the shipped file to
-confirm it. The problem is what the fix left behind. The comment above `safeHref` in `app/core.js`
-now carries **four** numbers: 550 records with a link, 274 English, 276 Scottish, 630 car parks. The
-new guard this card built reads back only the 550. Add ten Scottish forests and three of those four
-numbers quietly go wrong while the suite still passes. The card exists to stop numbers drifting in
-comments, and it made the unguarded surface bigger.
-
-**Cause.** The rewrite added detail to the comment and the guard was written against the sentence as
-it stood before, not after.
-
-**Pass** is either route above, recorded here with today's date, and then a session doing it.
-
-**Fail** is neither. The boxes stay ticked, no session finds anything open, and the loop promotes the
-card again on the ticks.
-
-**Why it needs you.** Only you may untick a criterion. There is also a real choice underneath: a
-comment that carries four checked numbers is more useful to a reader than one that carries a single
-checked number, and it costs three more lines of test to keep honest.
-
-**Note on length.** This section takes the card past the 100-line budget. `## Comments` and the
-review verdicts are append-only, so nothing here could be cut to make room.
-
 ## Why
 `app/data/sites.json` holds **1,180 records** today: 630 car parks and 550 forests. Three files that
 a reader treats as current still describe it as **904**, which is what it held before card `0016`
@@ -84,6 +53,9 @@ the trap on this card: two of the 904s in the tree are right.
 - [x] #3 WHEN a future card grows the dataset again, THE SUITE SHALL fail if one of these carried
       counts no longer matches `app/data/sites.json`, so the next drift is caught by a run rather
       than by somebody reading. proves: `dataset counts in comments match sites.json`
+- [x] #4 WHEN the comment above `safeHref` carries a number, THE SUITE SHALL check that number
+      against `app/data/sites.json`, so all four of them are guarded rather than only the first.
+      proves: `dataset counts in comments match sites.json`
 <!-- AC:END -->
 
 ## Tasks
@@ -91,6 +63,8 @@ the trap on this card: two of the 904s in the tree are right.
       counts read out of `app/data/sites.json`, and watch it fail on today's 904s
 - [x] Correct the three numbers, and the single-agency claim in `app/core.js`
 - [x] Leave `docs/DECISIONS.md` and `docs/DATA-MODEL.md` alone; see `## Not this card`
+- [x] Guard the other three numbers in the `safeHref` comment, the per-agency split and the count of
+      records with no url, in the same `carried` list the first one uses
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. From the repository root, the numbers
@@ -337,3 +311,41 @@ which is green. There is no screen whose behaviour differs, so a browser pass wo
 unchanged app.
 
 VERDICT: defect
+
+**2026-09-10** RESULT: done
+TESTS: 3 rows added to the existing check, all green (285 passed, 0 failed)
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+Picked up as part of the brief's "What's next" item 1, the tests that cannot fail. **One criterion
+was added and was written before the code.** No existing box was touched. Rob's own note on this
+card offered two routes and recommended guarding the three numbers rather than deleting them, so
+that is what was done.
+
+**The fault is worth naming precisely, because it is subtle.** This card's first build was correct:
+it found three stale `904`s, fixed them, and wrote a guard so the next drift would fail a run. But
+the rewrite grew the `safeHref` comment from one number to four, and the guard was written against
+the sentence as it stood before. So a card whose whole purpose is stopping numbers rotting in
+comments left three more numbers rotting in a comment, and the suite would have said nothing. Adding
+ten Scottish forests would have made three of the four false on a green run.
+
+**Three rows added to the same `carried` list**, not a second test beside it. The list already
+carries file, pattern and expected value per row, so this is the shape it was built for, and all
+four numbers now report through one named check with per-file detail in the failure message. The new
+patterns use `\s+` where the sentence wraps across three lines, so re-wrapping that comment cannot
+silently unhook a check. That is the same trap the `records now read` regex hit today on card `0019`.
+
+**Proved red before it was trusted.** Changing all three numbers at once in `app/core.js`, 274 to
+284, 276 to 226 and 630 to 730, gave `FAIL dataset counts in comments match sites.json, app/core.js:
+says 284, dataset holds 274 | app/core.js: says 226, dataset holds 276 | app/core.js: says 730,
+dataset holds 630`. All three named separately, which is what makes the failure actionable.
+Restored, and `git diff` confirms `app/core.js` byte-identical.
+
+**Nothing under `app/` changed**, so `CACHE` and `BUILD` are untouched at `v26-2026-09-10` and there
+is nothing to deploy. **No browser check, and that is a claim rather than a skip**: the only file
+this build touched is `scripts/selftest.js`, which the app never loads.
+
+**The counts are today's, re-measured after the dataset rebuild** earlier on 2026-09-10: 1,180
+records, 550 with a `url`, 274 on `forestryengland.uk`, 276 on `forestryandland.gov.scot`, 630 with
+no `url`. The rebuild did not move any of them, which the check now proves on every run rather than
+leaving to a reader.
