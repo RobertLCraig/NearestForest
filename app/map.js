@@ -70,23 +70,54 @@ var NFMap = (function () {
     return pts;
   }
 
+  /* Deliberately NOT latched on failure (card 0008). A failed fetch is not the
+     no-signal case: offline, the service worker serves boundary.json and the
+     fetch succeeds. It is a captive portal, an evicted cache or a flaky first
+     visit, all of which recover, so every show() gets to ask again. `pending`
+     only stops two overlapping opens issuing two requests. */
+  var pending = null;
   function loadBoundary() {
-    if (boundary || loadError) return Promise.resolve();
-    return fetch('data/boundary.json').then(function (r) {
+    if (boundary) return Promise.resolve();
+    if (pending) return pending;
+    pending = fetch('data/boundary.json').then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     }).then(function (d) {
+      /* A 200 carrying the wrong shape must fail here, not halfway through a
+         draw: a captive portal answers every request with its login page. */
+      if (!d || !Array.isArray(d.bbox) || d.bbox.length !== 4 || !Array.isArray(d.parts)) {
+        throw new Error('not an outline');
+      }
       boundary = {
         bbox: d.bbox,
         parts: d.parts.map(function (p) {
           return { name: p.name, rings: p.rings.map(decodeRing) };
         })
       };
+      loadError = null;
     }).catch(function (err) {
-      /* The map is the only thing that breaks, so say so here rather than
-         taking the list down with it. */
+      /* The outline is the only thing that breaks: the markers and your own
+         position never needed it, and draw() keeps painting them. */
       loadError = err.message;
+    }).then(function () {
+      pending = null;
     });
+    return pending;
+  }
+
+  /* What the view is fitted to and clamped against. Normally the coastline;
+     with no outline, the sites themselves, so a failed fetch costs the outline
+     and not every marker with it (card 0008). */
+  function viewBbox() {
+    if (boundary) return boundary.bbox;
+    var sites = hooks ? hooks.getSites() : [];
+    if (!sites.length) return null;
+    var lats = [], lngs = [];
+    sites.forEach(function (s) { lats.push(s.lat); lngs.push(s.lng); });
+    var pos = hooks.getPos();
+    if (pos) { lats.push(pos.lat); lngs.push(pos.lng); }
+    return [Math.min.apply(null, lngs) - 0.1, Math.min.apply(null, lats) - 0.1,
+            Math.max.apply(null, lngs) + 0.1, Math.max.apply(null, lats) + 0.1];
   }
 
   /* ---------- view maths ---------- */
@@ -111,8 +142,8 @@ var NFMap = (function () {
     /* Keep the country from being dragged off-screen entirely: the centre may
        leave the bbox, but never by more than half a viewport, so there is
        always something to grab and a way back. */
-    if (!boundary) return;
-    var b = boundary.bbox;
+    var b = viewBbox();
+    if (!b) return;
     var x0 = NF.projX(b[0]), x1 = NF.projX(b[2]);
     var y0 = NF.projY(b[3]), y1 = NF.projY(b[1]);
     var mx = (W / 2) / view.scale, my = (H / 2) / view.scale;
@@ -121,8 +152,9 @@ var NFMap = (function () {
   }
 
   function computeScaleLimits() {
-    if (!boundary) return;
-    var f = NF.fitBounds(boundary.bbox, W, H, 12);
+    var b = viewBbox();
+    if (!b) return;
+    var f = NF.fitBounds(b, W, H, 12);
     minScale = f.scale;
     /* 64x is enough to separate two car parks in the same forest without
        letting the outline dissolve into a meaningless wall of coastline. */
@@ -130,8 +162,9 @@ var NFMap = (function () {
   }
 
   function fitAll() {
-    if (!boundary) return;
-    var f = NF.fitBounds(boundary.bbox, W, H, 12);
+    var b = viewBbox();
+    if (!b) return;
+    var f = NF.fitBounds(b, W, H, 12);
     view.cx = f.cx; view.cy = f.cy; view.scale = f.scale;
   }
 
@@ -243,34 +276,28 @@ var NFMap = (function () {
     ctx.fillStyle = c.sea;
     ctx.fillRect(0, 0, W, H);
 
-    if (loadError) {
-      ctx.fillStyle = c.ink;
-      ctx.font = '15px -apple-system, system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Map outline unavailable (' + loadError + ').', W / 2, H / 2 - 10);
-      ctx.fillStyle = c.dim;
-      ctx.fillText('The list still works.', W / 2, H / 2 + 14);
-      return;
-    }
-    if (!boundary) return;
-
-    /* Land. One path for all rings so the fill is a single operation. */
-    ctx.beginPath();
-    boundary.parts.forEach(function (part) {
-      part.rings.forEach(function (ring) {
-        var i;
-        for (i = 0; i < ring.length; i++) {
-          var x = sx(ring[i][0]), y = sy(ring[i][1]);
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
+    /* Land. One path for all rings so the fill is a single operation. A missing
+       outline skips this block and NOTHING else (card 0008): the markers and
+       your own dot are drawn from data that never depended on it, and returning
+       here is what once cost the whole map to one failed 32KB fetch. */
+    if (boundary) {
+      ctx.beginPath();
+      boundary.parts.forEach(function (part) {
+        part.rings.forEach(function (ring) {
+          var i;
+          for (i = 0; i < ring.length; i++) {
+            var x = sx(ring[i][0]), y = sy(ring[i][1]);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+        });
       });
-    });
-    ctx.fillStyle = c.land;
-    ctx.fill();
-    ctx.strokeStyle = c.coast;
-    ctx.lineWidth = 1;
-    ctx.stroke();
+      ctx.fillStyle = c.land;
+      ctx.fill();
+      ctx.strokeStyle = c.coast;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
 
     /* Tiles go OVER the outline, never instead of it. A tile that fails, times
        out or is unavailable offline simply reveals the coastline underneath
@@ -393,6 +420,27 @@ var NFMap = (function () {
         ctx.stroke();
         ctx.setLineDash([]);
       }
+    }
+
+    /* Last, and under the button bar rather than the markers. The bar is measured
+       rather than guessed, because its top is a safe-area inset that differs on
+       every device, and the first version of this line was hidden behind the
+       buttons on a 390px screen. It names no fetch or HTTP status: that is an
+       internal string on a user-facing surface and it tells the person nothing
+       they can act on. Reopening the map is the action, and loadBoundary() no
+       longer latches, so it works. */
+    if (loadError) {
+      var bar = document.querySelector('.map__bar');
+      var top = bar ? bar.getBoundingClientRect().bottom + 20 : 62;
+      var msg = 'Coastline unavailable. Close and reopen the map to retry.';
+      ctx.textAlign = 'center';
+      ctx.font = '13px -apple-system, system-ui, sans-serif';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = c.sea;
+      ctx.strokeText(msg, W / 2, top);
+      ctx.fillStyle = c.dim;
+      ctx.fillText(msg, W / 2, top);
+      ctx.textAlign = 'left';
     }
   }
 

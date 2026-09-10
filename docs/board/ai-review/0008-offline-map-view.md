@@ -1,33 +1,11 @@
 # Map view with the bundled offline outline
 
-## What I need from you
+**Nothing here is waiting on Rob.** The question that used to head this card is answered. The
+2026-09-10 review found the latch disproves no criterion, so no box needed unticking and the fix was
+work rather than a decision. It was built the same day: see the last `## Direction` entry.
 
-**One answer. Untick `#1` and `#2` and send this card back to `todo/`, or say on this thread why the
-reviewer's finding is wrong?**
-
-**Pass** is either of:
-- you untick `#1` and `#2` and the card returns to `todo/`, so a session can fix the latch and prove
-  it with a test.
-- you leave all six ticked and add a `## Comments` entry saying why the finding does not disprove
-  them. Then the card can close on the record rather than on the boxes.
-
-**Fail** is the card staying here with six ticks and nothing written. That is the loop it is already
-in: the reviewer returned it, every unattended session since found nothing open to do, and the loop
-promoted it again on the ticked boxes.
-
-**What's wrong.** One failed fetch of `data/boundary.json` blanks the map for the rest of the page's
-life. No coastline, no site markers, no own-position dot, no retry, and no test covers the case.
-Closing and reopening the map repaints the same error. That is `#1` and `#2` as they are written.
-
-**Cause.** `loadBoundary` in `app/map.js` latches on `loadError`, and `draw()` returns before the
-marker block, so markers that never needed the boundary die with it.
-
-**Why it needs you.** A reviewer may not edit acceptance and a builder may not overrule a review
-verdict. Unticking a criterion somebody else ticked is a person's call.
-
-**Note on length.** This card is now 151 lines against a 100-line budget. `## Direction` and
-`## Comments` are append-only, so nothing here can cut it back; the section above was kept tight
-instead.
+**Note on length.** This card is over the 100-line budget. `## Direction` and `## Comments` are
+append-only, so nothing here can cut it back; the section above was kept tight instead.
 
 ## Why
 A distance-sorted list answers "what is nearest" but not "what is over that way", and it cannot show
@@ -272,3 +250,80 @@ so markers and the own-position dot survive a missing outline. One self-test on 
 VERDICT: defect
 
 **Where it should go.** `todo/`, with all six criteria left ticked and the fix above as the work.
+
+### 2026-09-10 build (the latch)
+
+Fixed, and proved twice: once by a suite that can go red, once in a browser. All six criteria stay
+ticked, because the review found the latch disproves none of them.
+
+**Four changes in `app/map.js`, and the fourth is the one the review did not ask for.**
+
+1. **`loadBoundary` no longer latches.** The guard was `if (boundary || loadError) return`; it is now
+   `if (boundary) return`, with a `pending` promise so two overlapping opens still issue one request.
+   Every `show()` gets to ask again, and a success clears `loadError`.
+2. **`draw()` no longer returns before the markers.** The land block is wrapped in `if (boundary)`
+   and nothing else changed, so the markers, the cluster bubbles, the nearest ring and the
+   own-position dot all paint from data that never needed the outline.
+3. **The response shape is checked before it is trusted.** A 200 must carry a four-element `bbox` and
+   an array of `parts` or it throws. This is finding #2 from the review. The captive-portal login
+   page was already caught by accident, since reading `.parts` off it throws; the case that was not
+   caught is a **partial** outline, `parts` present and `bbox` missing, which was accepted and left
+   the view with no bounds to fit or clamp to.
+4. **Without an outline there is no bbox, so there was nothing to fit the view to.** This is what the
+   review's fix as written would have missed. `clampView`, `computeScaleLimits` and `fitAll` all
+   returned early when `boundary` was null, which leaves `minScale` and `maxScale` at 1, and at scale
+   1 the whole world is one pixel wide. The markers would have been "drawn" in a heap on the centre
+   pixel: technically painted, actually lost. A `viewBbox()` helper now returns the coastline bbox
+   when there is one and the bbox of the sites on screen when there is not, and those three functions
+   read it. Measured in the suite: with the fallback removed the spread between the leftmost and
+   rightmost marker is **0px**; with it, the markers land where the screenshot below shows them.
+
+**And the error text was rewritten twice.** It no longer paints `err.message`, which was finding #3,
+a raw "Failed to fetch" on a user-facing surface that names an action nobody can take. It now reads
+"Coastline unavailable. Close and reopen the map to retry", which is true only because of change 1.
+Drawn at `y=20` it was **invisible behind the Close / Near me / All / Tiles bar** on a 390px screen,
+which the first browser run caught; the bar's top is a safe-area inset and differs per device, so the
+text is now placed under the bar's *measured* bottom edge rather than under a guessed number.
+
+**The suite: 298 passed, 0 failed** (`node scripts/selftest.js`), up from 280.
+
+**Twelve new assertions, and none of them reads the source.** Every earlier check on `app/map.js` was
+a regex over its text, which is exactly why this fault survived two reviews. The new block evaluates
+the real file over stubbed globals and a canvas that records what was painted, then asserts on the
+paint: how many markers, how far apart, whether any `lineTo` ran, what text was written and at what
+`y`. It is async and sits at the end of the file, because `loadBoundary` is a promise chain and node
+runs no microtask inside a synchronous block.
+
+**Red-proof, which this project's handover says not to take on trust.** Each half of the fault was
+put back and the suite run:
+
+| fault restored | result |
+|---|---|
+| `loadBoundary` latches again | 294 passed, **3 failed** |
+| `draw()` returns before the markers | 292 passed, **5 failed** |
+| the shape check removed | 296 passed, **1 failed** |
+| `viewBbox` loses its site fallback | 293 passed, **4 failed** |
+
+The shape check failed only one assertion, and only after a second scenario was added for it. The
+first attempt used a captive-portal login page, which stayed green with the check deleted, so that
+check could not fail and would have shipped as decoration. The assertion that earns it is the
+partial outline in point 3.
+
+**In a browser, at 390x844x3, mobile, touch.** Served with `python -m http.server 8791` from `app/`
+(Herd only serves the main checkout, and no PHP is needed with tiles off), a Brighton fix injected
+before page scripts, and `fetch` patched to reject only `boundary.json` while counting calls.
+
+- Open with the outline failing: **markers, labels, the two cluster bubbles, the nearest ring and the
+  own-position ring are all on screen**, and the notice reads clear of the buttons. Compare the
+  screenshot on the review entry above, where 99.7% of the canvas was bare sea.
+  ![markers survive a failed outline fetch](../attachments/0008-2026-09-10-4.png)
+- Close and reopen: **2** fetches, so the latch is gone.
+- Restore the network and reopen: **3** fetches, the coastline draws, the notice is gone, the markers
+  are unmoved. This is the exact sequence that returned the same dead screen before.
+  ![the coastline comes back on the third open](../attachments/0008-2026-09-10-5.png)
+
+`CACHE` and `BUILD` bumped to `v28-2026-09-10`, since `app/` changed and the batch has not shipped.
+
+**Not fixed, deliberately.** The map still does not retry while it is open; reopening is the recovery
+and the text now says so. A timer or a retry button is more code than the fault is worth, and the
+button that recovers it is already on screen.

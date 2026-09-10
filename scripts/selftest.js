@@ -2847,10 +2847,160 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
               `${(s.vehicles || []).join('/')}`);
 });
 
-console.log(`\n${pass} passed, ${failures.length} failed`);
-if (failures.length) {
-  console.log('\nFAILURES:');
-  failures.forEach(f => console.log('  - ' + f));
-  process.exit(1);
-}
-console.log('All self-tests passed.');
+/* Card 0008, second pass. Every earlier check on app/map.js was a regex over its
+   source, and the fault they all missed - one failed fetch of the 32KB coastline
+   killing the map for the life of the page, every site marker and the own-position
+   dot with it - was found by driving a browser, twice, because reading cannot see
+   it. So this block drives the real file rather than reading it: map.js is
+   evaluated over stubbed globals and a canvas that records what was painted, and
+   every assertion is about the paint. Put back either half of the fault (latch
+   loadBoundary again, or return from draw() before the markers) and it goes red.
+
+   It lives at the end and it is async because loadBoundary is a promise chain, and
+   node runs no microtask inside a synchronous block. The summary moved in with it. */
+(async () => {
+  console.log('\n--- the map survives a failed outline fetch (card 0008) ---');
+
+  const MAPSRC = fs.readFileSync(path.join(ROOT, 'app', 'map.js'), 'utf8');
+  const OUTLINE = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'boundary.json'), 'utf8'));
+  const SITES = NF.rank(DATA.sites, 'forest', BRIGHTON, '').slice(0, 40);
+  const tick = () => new Promise(r => setTimeout(r, 0));
+
+  function harness() {
+    const ops = [];
+    const paint = n => (...a) => ops.push({ op: n, a });
+    const ctx = {
+      setTransform: paint('setTransform'), fillRect: paint('fillRect'),
+      beginPath: paint('beginPath'), moveTo: paint('moveTo'), lineTo: paint('lineTo'),
+      closePath: paint('closePath'), fill: paint('fill'), stroke: paint('stroke'),
+      arc: paint('arc'), fillText: paint('fillText'), strokeText: paint('strokeText'),
+      setLineDash: paint('setLineDash'), drawImage: paint('drawImage')
+    };
+    const node = () => ({
+      hidden: true, textContent: '', style: {},
+      addEventListener() {}, setAttribute() {},
+      classList: { add() {}, remove() {}, toggle() {} },
+      getBoundingClientRect: () => ({ width: 390, height: 640, left: 0, top: 0 }),
+      getContext: () => ctx
+    });
+    const nodes = {};
+    const state = { fetches: 0, mode: 'fail' };
+    const respond = () => {
+      state.fetches++;
+      if (state.mode === 'fail') return Promise.reject(new Error('Failed to fetch'));
+      if (state.mode === 'portal') {                    // a captive portal's login page
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ hello: 'sign in' }) });
+      }
+      if (state.mode === 'truncated') {                 // parts, but no bbox to fit to
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ bbox: null, parts: [] }) });
+      }
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(OUTLINE) });
+    };
+    const map = new Function(
+      'document', 'window', 'getComputedStyle', 'localStorage',
+      'requestAnimationFrame', 'fetch', 'Image', 'NF',
+      MAPSRC + '\nreturn NFMap;'
+    )(
+      { getElementById: id => (nodes[id] || (nodes[id] = node())),
+        // The real bar sits below a safe-area inset, so its height is measured, not
+        // assumed. 55 is a plausible 390px-wide phone: bar top 47 + button 34 = 81.
+        querySelector: sel => (sel === '.map__bar'
+          ? { getBoundingClientRect: () => ({ top: 47, bottom: 81, left: 0, right: 390 }) }
+          : null),
+        documentElement: {}, body: { classList: { add() {}, remove() {} } } },
+      { devicePixelRatio: 1, addEventListener() {} },
+      () => ({ getPropertyValue: () => '' }),
+      { getItem: () => null, setItem() {} },
+      fn => { fn(); return 0; },              // 0, so map.js's own raf guard clears
+      respond,
+      function () {},                          // Image, never loaded here
+      NF
+    );
+    map.init({ getSites: () => SITES, getPos: () => BRIGHTON, onPick() {} });
+    return { map, ops, state };
+  }
+
+  const coastDrawn = ops => ops.some(o => o.op === 'lineTo');   // only the outline traces
+  const markerXs = ops => ops.filter(o => o.op === 'arc').map(o => o.a[0]);
+  const notice = ops => ops.filter(o => o.op === 'fillText' || o.op === 'strokeText')
+                          .map(o => String(o.a[0])).join(' | ');
+
+  const h = harness();
+  h.map.show();
+  await tick(); await tick();
+
+  ok('a failed outline fetch still draws every site marker',
+     markerXs(h.ops).length >= 5, `${markerXs(h.ops).length} markers painted`);
+  const spread = markerXs(h.ops).length
+    ? Math.max(...markerXs(h.ops)) - Math.min(...markerXs(h.ops)) : 0;
+  // Without a boundary there is no bbox to fit to, so the view stays at scale 1 and
+  // the whole country collapses onto one pixel. Markers "drawn" in a heap are markers
+  // lost, so the spread is the assertion, not the count.
+  ok('those markers are spread across the map, not heaped on one pixel',
+     spread > 60, `${spread.toFixed(0)}px between the leftmost and rightmost marker`);
+  ok('no coastline is drawn when the outline failed', !coastDrawn(h.ops));
+  ok('the map says the coastline is missing and how to retry',
+     /Coastline unavailable/.test(notice(h.ops)) && /reopen/i.test(notice(h.ops)),
+     notice(h.ops));
+  ok('the failure message leaks no internal fetch or HTTP string',
+     !/Failed to fetch|HTTP \d/.test(notice(h.ops)), notice(h.ops));
+  // Drawn at y=20 it sat behind Close / Near me / All / Tiles on a 390px screen, so
+  // the map said nothing at all. The bar's top is a safe-area inset and differs per
+  // device, so the assertion is that the text clears the measured bar, not a number.
+  const msgY = h.ops.filter(o => /Text$/.test(o.op) && /Coastline/.test(String(o.a[0])))
+                    .map(o => o.a[2]);
+  ok('the failure message is drawn clear of the map button bar',
+     msgY.length > 0 && msgY.every(y => y > 81), `painted at y=${msgY.join(',') || 'nowhere'}`);
+
+  // The latch. One fetch, ever, was the whole fault: signal coming back changed nothing.
+  h.map.hide();
+  h.ops.length = 0;
+  h.map.show();
+  await tick(); await tick();
+  ok('reopening the map asks for the outline again rather than latching',
+     h.state.fetches === 2, `${h.state.fetches} fetches after two opens`);
+
+  // And when it comes back, it comes back.
+  h.state.mode = 'ok';
+  h.map.hide();
+  h.ops.length = 0;
+  h.map.show();
+  await tick(); await tick();
+  ok('once the outline loads the coastline appears', coastDrawn(h.ops));
+  ok('and the failure message is gone', !/Coastline unavailable/.test(notice(h.ops)),
+     notice(h.ops));
+  ok('the markers are still there with the outline', markerXs(h.ops).length >= 5);
+
+  // A captive portal answers every request with its own page, HTTP 200. That is the
+  // likeliest way this fails in a car park, and it must degrade the same way.
+  const p = harness();
+  p.state.mode = 'portal';
+  p.map.show();
+  await tick(); await tick();
+  ok('a 200 carrying the wrong shape is refused, not half-drawn',
+     !coastDrawn(p.ops) && markerXs(p.ops).length >= 5 &&
+     /Coastline unavailable/.test(notice(p.ops)),
+     `${markerXs(p.ops).length} markers, coastline ${coastDrawn(p.ops)}`);
+
+  // The login page above is caught by anything, because reading .parts off it throws.
+  // This one is the case the explicit shape check is actually for: enough of an outline
+  // to be accepted, and no bbox to fit or clamp against. Accept it and the map has no
+  // scale limits, so every marker lands on the same pixel and nothing says why.
+  const t = harness();
+  t.state.mode = 'truncated';
+  t.map.show();
+  await tick(); await tick();
+  const tSpread = markerXs(t.ops).length
+    ? Math.max(...markerXs(t.ops)) - Math.min(...markerXs(t.ops)) : 0;
+  ok('an outline with no bbox is refused rather than accepted and fitted to nothing',
+     /Coastline unavailable/.test(notice(t.ops)) && tSpread > 60,
+     `spread ${tSpread.toFixed(0)}px, said: ${notice(t.ops) || '(nothing)'}`);
+
+  console.log(`\n${pass} passed, ${failures.length} failed`);
+  if (failures.length) {
+    console.log('\nFAILURES:');
+    failures.forEach(f => console.log('  - ' + f));
+    process.exit(1);
+  }
+  console.log('All self-tests passed.');
+})();
