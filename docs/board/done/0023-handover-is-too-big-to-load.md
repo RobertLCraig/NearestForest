@@ -114,15 +114,15 @@ preamble 3,835; everything else under 3,300. The Plan expected the Status block 
 carry dated news, but `## Current state` carries more than twice as much of it, so that is the block
 that was folded. 1,476 bytes had to go.
 
-**What was folded.** The four dated build reports inside `## Current state` — one for card 0020 and
-three for 0004, 0015 and 0016 — 5,391 bytes of five paragraphs each written as news. They were
+**What was folded.** The four dated build reports inside `## Current state`, one for card 0020 and
+three for 0004, 0015 and 0016, 5,391 bytes of five paragraphs each written as news. They were
 replaced by two lines saying what is true now: which cards are built, which are not yet deployed,
 the dates, the current self-test count and cache key, and a pointer to each card's own comment
 thread in `ai-review/`, where the detail already lives.
 
 **Criterion #2 was checked mechanically, not by eye.** Every numeric token in the removed text was
 extracted and searched for across `docs/`. One did not survive: `430`, from card 0015's render
-widths — and it is on card 0015 itself, in the full measurement table. Every other date, count and
+widths, and it is on card 0015 itself, in the full measurement table. Every other date, count and
 decision is still in DATA-MODEL, DECISIONS, PRD, the surviving HANDOVER sections, or the card that
 produced it.
 

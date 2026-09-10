@@ -91,7 +91,7 @@ These three arrived in the lane the same day and after `0048` was written, which
 rather than a miscount.
 
 **2026-09-08** RESULT: partial
-TESTS: +0 new, all green (227 passed, 0 failed — `node scripts/selftest.js`)
+TESTS: +0 new, all green (227 passed, 0 failed, `node scripts/selftest.js`)
 TOUCHED: docs/board/human-review/0014-say-what-happens-to-a-location.md
 TOUCHED: docs/board/todo/0053-card-0019-entered-human-review-without-the-required-section.md
 TOUCHED: docs/board/in-progress/0051-cards-0012-0013-0014-entered-human-review-without-the-required-section.md
@@ -102,7 +102,7 @@ OUT-OF-SCOPE: 0053
 this card found two of its three targets already fixed and wrote the section for `0014` only.
 
 The ask on `0014` is the one already at the bottom of the card: untick `#2` and send it back to
-`todo/`, or write on the thread why the reviewer is wrong. `#2` is the criterion the finding hits —
+`todo/`, or write on the thread why the reviewer is wrong. `#2` is the criterion the finding hits -
 the footer names the **Tiles** layer as the one exception, and tapping a map button hands the chosen
 forest and the reader's address to Google, Apple or Waze via `navUrl` in `app/core.js`. The
 self-test finding (one phrase pinned out of three) sits under Tasks rather than a criterion, so it is
@@ -117,7 +117,7 @@ project's suite is `node scripts/selftest.js`, one node script over `app/`, and 
 `docs/board/`. The check the criterion names is the grep, and it was watched failing on `0014`
 before the edit and passing after. The suite was run either way and is green.
 
-**Criterion `#2` is left open.** It says `proves: manual` — whether an ask reads clearly in three
+**Criterion `#2` is left open.** It says `proves: manual`, whether an ask reads clearly in three
 lines is a reader's judgement, and an unattended session cannot make it. The section is written; a
 person has to say it lands.
 

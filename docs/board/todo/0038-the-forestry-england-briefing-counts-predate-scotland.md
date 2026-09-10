@@ -37,9 +37,9 @@ longer exists, and one of them is presented as checked. Measured 2026-09-06 agai
 `app/data/sites.json`, which holds 1,180 records: 550 forests (274 English, 276 Scottish) and 630
 car parks.
 
-- `:189` — the "what is verified and what is not" table lists `904 locations, 274 forests, 630 car
+- `:189`, the "what is verified and what is not" table lists `904 locations, 274 forests, 630 car
   parks` as **Verified** against the generated dataset. It is 1,180 and 550 today.
-- `:109` — "rows and markers reading `Unnamed car park`. 170 of the 630 car parks". Card 0004 names
+- `:109`, "rows and markers reading `Unnamed car park`. 170 of the 630 car parks". Card 0004 names
   177 of them after their nearest forest, so most of those rows no longer read that way.
 
 What it costs. This file exists to be handed to a session with no repository access, so nothing in
@@ -55,16 +55,16 @@ were expected to live. Nothing points from the dataset to the outreach folder.
 ## Links
 
 **Relates to**
-- `0036` — corrected the same stale 904 in three code and build files, and found these two while
+- `0036`, corrected the same stale 904 in three code and build files, and found these two while
   checking that no other live count had moved. Out of its scope: it was scoped to those three files.
-- `0027` — the send. This briefing is read as part of doing that card, so this should be fixed first.
-- `0016` — grew the dataset from 904 to 1,180 and added the 276 Scottish forests.
-- `0004` — derived the 177 car park names that `:109` predates.
+- `0027`, the send. This briefing is read as part of doing that card, so this should be fixed first.
+- `0016`, grew the dataset from 904 to 1,180 and added the 276 Scottish forests.
+- `0004`, derived the 177 car park names that `:109` predates.
 
 ## Not this card
 Not editing `docs/outreach/forestry-england-enquiry.md` unless a count in it is also wrong; check
 it, since the handover repeats the email in full and the two must be edited together. Not changing
-what the email asks for — that is card 0018 and card 0027.
+what the email asks for, that is card 0018 and card 0027.
 
 ## Acceptance
 <!-- AC:BEGIN -->
@@ -72,7 +72,7 @@ what the email asks for — that is card 0018 and card 0027.
       record, forest and car park counts `app/data/sites.json` holds today.
       proves: `dataset counts in comments match sites.json`
 - [x] WHEN the briefing describes what a car park row shows, THE FILE SHALL account for the 177
-      derived names card 0004 added. proves: `manual` — prose, not a number a test can read back.
+      derived names card 0004 added. proves: `manual`, prose, not a number a test can read back.
 <!-- AC:END -->
 
 ## Tasks
@@ -118,7 +118,7 @@ session drafting an email *to* Forestry England, and a bare "550 forests" on a *
 exactly the number that would get quoted back to them as a count of their own sites.
 
 `:109` was wrong in two ways, not one. It said "170 of the 630 car parks have no name". Measured
-today: **196** publish no usable name (170 `Unknown` plus 7 bare `Car Park` — card 0004's 177 —
+today: **196** publish no usable name (170 `Unknown` plus 7 bare `Car Park`, card 0004's 177 -
 plus 19 that were already `Unnamed car park`), and after 0004 only **19** still read that way. So
 the line now gives 196 and 19, says the two screenshots at `:104` are from 2026-08-14 and predate
 the fix, and says a replacement shot must come from a build containing 0004 rather than from the
@@ -133,7 +133,7 @@ Not settled from the repository, and left for the reviewer rather than guessed: 
 stamped 2026-08-15. I stamped it 2026-09-06, which is when I measured it, on the reading that a
 `Verified` claim with no date is the weaker of the two forms.
 
-Nothing under `app/` changed, so no `CACHE` bump, per the card's Plan. No browser check applies —
+Nothing under `app/` changed, so no `CACHE` bump, per the card's Plan. No browser check applies -
 this card touches documentation and a test only.
 
 ### 2026-09-08 review (v20260908123456-4d89)

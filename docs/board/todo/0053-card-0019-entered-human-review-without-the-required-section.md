@@ -75,7 +75,7 @@ the reviewer disproved and send it back to `todo/`, or say on the thread why the
 The findings are the two `defect` verdicts at the end of `## Direction`, and both are about the same
 rule applied unevenly. `scope`: the Scottish footer sentence now reads as Forestry England's own
 template with Forestry and Land Scotland's name dropped into it, while the card, the build note and
-the HTML comment directly above the line all say Scotland takes the generic wording — so the app
+the HTML comment directly above the line all say Scotland takes the generic wording, so the app
 puts a first-party-looking credit into the mouth of an agency that publishes none. `breakage`: the
 `attribution` field `build_dataset` stamps into `app/data/sites.json` in `scripts/parse.py` still
 carries the generic string the card retired, and `ok('attribution present', ...)` in
@@ -181,7 +181,7 @@ Everything else checks out. The eleven-card re-grep matches `0056` exactly. The 
 
 VERDICT: defect
 
-**2026-09-10** RESULT: done — the `breakage: defect` above is fixed.
+**2026-09-10** RESULT: done, the `breakage: defect` above is fixed.
 TESTS: +0 new, all green (279 passed, 0 failed)
 TOUCHED: docs/HANDOVER.md
 OUT-OF-SCOPE: none
@@ -218,7 +218,7 @@ already owned by DATA-MODEL and DECISIONS, and 42,299 after this fix. Cards `002
 **The work is done. The proof named for it is worthless, and that is the finding.** Both halves
 matter, so take them in order.
 
-**#1, the outcome — met, verified with a check that can actually fail.** The `proves:` line names a
+**#1, the outcome, met, verified with a check that can actually fail.** The `proves:` line names a
 plain substring search, so I used an anchored one per file instead:
 
     grep -c '^## What I need from you' docs/board/ai-review/0019-use-forestry-englands-own-attribution-wording.md
@@ -227,18 +227,18 @@ plain substring search, so I used an anchored one per file instead:
 It sits at line 6, under the title at line 4, with only the two-line frontmatter above it. Nothing
 stands between a reader and the ask.
 
-**#2, manual — met.** The first paragraph under the heading is "**One call.** Untick whichever
+**#2, manual, met.** The first paragraph under the heading is "**One call.** Untick whichever
 criteria below the reviewer disproved, so the card goes back to `todo/` ... **or** write on the thread
 that the reviewer is wrong and the card stands. Doing neither is the fail: it returns to this lane,
 unchanged, on the next run." Ask, both pass routes and the fail, in one paragraph, imperative, first.
-That is the README's shape. The findings it restates trace to real code — `build_dataset` in
-`scripts/parse.py` and `ok('attribution present', ...)` in `scripts/selftest.js` — so the ask is not
+That is the README's shape. The findings it restates trace to real code, `build_dataset` in
+`scripts/parse.py` and `ok('attribution present', ...)` in `scripts/selftest.js`, so the ask is not
 describing something that does not exist.
 
 **Now the defect. Criterion #1's named check cannot fail, for two separate reasons.**
 
 *It is vacuous.* The check is "`grep -rL "## What I need from you" docs/board/human-review/*.md` not
-naming `0019`". `0019` is no longer in that folder — it is in `ai-review/`, moved by commit `9fcf175`.
+naming `0019`". `0019` is no longer in that folder, it is in `ai-review/`, moved by commit `9fcf175`.
 The check therefore passes because its subject is absent, not because the section is present. I could
 delete `## What I need from you` from `0019` right now and the named check would still report a pass.
 
@@ -263,8 +263,8 @@ the card sitting in it has no ask.
 
 Sweeping the whole board, twelve cards mention the phrase without carrying the heading, and eleven of
 the twelve are cards in this very series (`0045`–`0053`, `0056`). **The check is systematically blind
-to exactly the cards this work produces.** Anchoring it — `grep -c '^## What I need from you'` per
-file, or `grep -rLE '^## What I need from you'` — costs one character and removes the whole class.
+to exactly the cards this work produces.** Anchoring it, `grep -c '^## What I need from you'` per
+file, or `grep -rLE '^## What I need from you'`, costs one character and removes the whole class.
 
 That is a defect in the criterion, not in the build. A reviewer may not untick it, so it is recorded
 here for a person.
@@ -300,7 +300,7 @@ The card's own commits, read separately from the branch:
 `git show --name-only --format= <sha> | grep -E '^(app|scripts)/'` returns nothing for either.
 `app/index.html` and the `attribution` string in `scripts/parse.py` are untouched, which is what
 `## Not this card` demanded. `0019` gained 38 lines and lost none, so its `## Acceptance`, its thread
-and its verdicts are intact — no criterion unticked, no lane move, no reviewer finding acted on.
+and its verdicts are intact, no criterion unticked, no lane move, no reviewer finding acted on.
 
 The `docs/HANDOVER.md` edit in the second commit is beyond the Plan's "only `0019` changes", and it is
 the right kind of beyond: it exists solely to close the 2026-09-09 `breakage: defect`, it is declared
@@ -321,7 +321,7 @@ It held, with the reason in the same item and `0022` explicitly called out as un
 also dropped from the "built and not yet deployed" batch at line 319. The two texts now agree.
 
 `node scripts/selftest.js`: `280 passed, 0 failed`. It reads `app/` and `scripts/` and cannot see
-`docs/board/`, so it proves this card broke no code — which it could not have, having touched none.
+`docs/board/`, so it proves this card broke no code, which it could not have, having touched none.
 
 One piece of fresh drift, not this card's: lines 320 and 342 say `0019` "sits in `human-review/`", and
 it is now in `ai-review/`. That was done by `9fcf175` after this card's work, and the brief's own rule

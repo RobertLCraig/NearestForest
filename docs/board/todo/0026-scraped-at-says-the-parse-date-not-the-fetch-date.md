@@ -86,12 +86,12 @@ recorded date honest and nothing more. Not re-fetching anything.
 Work in the NearestForest repository, on a branch off `main`. Only `scripts/fetch.py`,
 `scripts/parse.py`, `scripts/selftest.js` and `docs/DATA-MODEL.md` are touched.
 
-The stamp is `TODAY` at `scripts/parse.py:16`, used at lines 340, 501 and 575 — the English forests,
+The stamp is `TODAY` at `scripts/parse.py:16`, used at lines 340, 501 and 575, the English forests,
 the car parks and the Scottish forests. All three need the same treatment.
 
 `scripts/fetch.py` currently records no date at all. The cheapest place to put one is a sidecar the
 fetcher already controls: either the file modification time of the cached page, or one JSON index
-under `data/raw/` mapping page to download date. Prefer the explicit index — a modification time is
+under `data/raw/` mapping page to download date. Prefer the explicit index, a modification time is
 changed by any file copy, and this worktree is itself a copy, so it would lie the first time somebody
 moved the repository.
 

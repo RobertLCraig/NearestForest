@@ -215,7 +215,7 @@ verdicts still on the thread, and that pass decides whether the finding is this 
 
 **acceptance: defect**
 
-**#1 — DISPROVED, today, in the very sentence this card wrote.** The criterion reads "WHEN
+**#1, DISPROVED, today, in the very sentence this card wrote.** The criterion reads "WHEN
 `docs/HANDOVER.md` states how many self-tests pass, THE FILE SHALL state the number the suite prints
 that day."
 
@@ -225,7 +225,7 @@ that day."
       held back**, waiting on Rob in `human-review/`. 279 self-tests pass (`node scripts/selftest.js`,
       measured 2026-09-09)
 
-279 against 280. The file is one out. This is not board drift next door to the card — it is the exact
+279 against 280. The file is one out. This is not board drift next door to the card, it is the exact
 fault the card exists to remove, alive in the exact sentence the card rewrote, thirteen days after it
 was written. The criterion is ticked and false. **I may not untick it; a person must.**
 
@@ -236,7 +236,7 @@ whatever is printed next to it. The durable fix is to stop carrying the number a
 `a0d9ff7` has since done for every lane count in this file ("`ls docs/board/human-review` is what
 waits on Rob"). That is a different card's shape, not an untick.
 
-**#2 — met.** The same sentence names `node scripts/selftest.js` and carries the date it was measured,
+**#2, met.** The same sentence names `node scripts/selftest.js` and carries the date it was measured,
 and `docs/HANDOVER.md:476` names the same command in the run block with "expect: all passed, 0
 failed". The two do not disagree about the command. Only the number is wrong.
 
@@ -256,7 +256,7 @@ under `**Relates to**` clears it.
 
 VERDICT: defect
 
-**scope: sound — the 2026-09-08 finding is withdrawn in full**
+**scope: sound, the 2026-09-08 finding is withdrawn in full**
 
 The earlier reviewer accused this card of shipping a map-attribution feature, new parse rules, a
 regenerated campsite dataset, 174 lines of new tests and about twenty new board cards. **None of that
@@ -273,8 +273,8 @@ This card's build is one commit:
 Four files: the brief, this card, and two new cards which the log declares as `OUT-OF-SCOPE`.
 `git show --name-only --format= 7a0e0de | grep -E '^(app|scripts)/'` returns **nothing**. No
 `mapHint()`, no `parse_campsites.py`, no `campsites.json`, no `selftest.js`. Those belong to card
-`0020`'s campsite work sharing the branch. The "## Not this card" fences — record counts, and a
-doc-reading test — were not crossed.
+`0020`'s campsite work sharing the branch. The "## Not this card" fences, record counts, and a
+doc-reading test, were not crossed.
 
 The earlier "left half done" note said the brief had moved from 225 to 235 inside the same branch.
 That is true and it is the acceptance finding above, not a scope one.
@@ -297,12 +297,12 @@ No "twenty-nine cards", no "eleven cards wait on you", no `0045` named as ready.
 back under its size budget: **40,722 bytes** against 40,960.
 
 So the ask on this card is two thirds void. What survives is the one count the card's own criterion
-governs, and it is wrong: 279 printed, 280 measured. That is the irony worth recording — the sweep
+governs, and it is wrong: 279 printed, 280 measured. That is the irony worth recording, the sweep
 this card was returned over has been done by somebody else, and the single number it was actually
 accountable for is the one still broken.
 
 `node scripts/selftest.js`: `280 passed, 0 failed`. The suite reads `app/` and `scripts/` only and
-cannot see `docs/`, so it proves the card broke no code — which it could not have, having touched
+cannot see `docs/`, so it proves the card broke no code, which it could not have, having touched
 none.
 
 **No UI surface.** This card's commit changes markdown only. There is no screen to drive and no

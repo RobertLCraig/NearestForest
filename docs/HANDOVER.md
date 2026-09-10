@@ -9,8 +9,10 @@
 Britain minus Wales in two of its three tabs.** Forests is one ranked list of 550 sites from two
 agencies; Campsites covers England, Scotland and Wales; Car parks is England only, because no open
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
-**The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 2.
-**Five built cards are not yet deployed** and ship as one batch; see "Current state".
+**The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 4.
+**Three built cards are not yet deployed**; see "Current state". **The suite going green proves
+less here than it looks**: the 2026-09-10 adversarial pass found three checks that cannot fail, and
+"What's next" item 1 is fixing them.
 **This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and
 every one was stale within a day, so the rule now is: **list the folder, do not read a number.**
 `ls docs/board/todo` and `ls docs/board/in-progress` are what an agent can pick up;
@@ -21,7 +23,7 @@ because two different cards carried that number. `0022` now means only the foote
 The last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
 checkout. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-07. What each card did is on its own comment thread under `docs/board/`, and
+_Last updated: 2026-09-10. What each card did is on its own comment thread under `docs/board/`, and
 the commit log is the narrative; what outlived a build is in the sections below, in DATA-MODEL and
 in DECISIONS. Do not append a run report here._
 
@@ -165,26 +167,26 @@ sites on-device. That split is deliberate and is the thing the two-method compar
 
 ## Key files / structure
 
-- `app/` — everything that gets served, and nothing else. The vhost docroot symlinks here.
-- `app/core.js` — all pure logic (distance, bearing, sunset, opening state, deep links, ranking).
+- `app/`, everything that gets served, and nothing else. The vhost docroot symlinks here.
+- `app/core.js`, all pure logic (distance, bearing, sunset, opening state, deep links, ranking).
   Loaded as `window.NF` in the browser and `require()`d by the tests, so the tests exercise the
   shipped code rather than a copy. **Put new logic here, not in `app.js`.**
-- `app/app.js` — DOM and events only. **All sheet opening and closing goes through
+- `app/app.js`, DOM and events only. **All sheet opening and closing goes through
   `showSheet` / `closeSheet`.** A part-dragged sheet carries an inline `transform`, so a path
   that sets `hidden` directly will eventually reopen a panel that is off-screen.
 - **UI icons are inline `<svg>` pasted from the Mo~oM 2.2 pack** (`C:\Dev\Mo~oM 2.2/Icons-SVG`,
   outline style), with `stroke="#11181C"` swapped for `currentColor` and a comment naming the source
   `Section/Vector-N`. Do not add an icon as a linked file: inline is what keeps the offline rule and
-  the precache list honest. See DECISIONS 2026-08-08. `scripts/make_icons.py` is a different thing —
+  the precache list honest. See DECISIONS 2026-08-08. `scripts/make_icons.py` is a different thing -
   it generates the *app* icon (the conifer), which is a real PNG because a manifest needs one.
-- `app/api/nearest.php` — mirrors `haversineMi()` from `core.js`. Change one, change both.
-- `app/.htaccess` — also carries the security headers (DECISIONS 2026-08-10). **The CSP has no
+- `app/api/nearest.php`, mirrors `haversineMi()` from `core.js`. Change one, change both.
+- `app/.htaccess`, also carries the security headers (DECISIONS 2026-08-10). **The CSP has no
   `unsafe-inline`, so no inline script, inline handler or `style=` attribute may enter
   `index.html`**; self-tests fail on all four rather than letting it show up as a blank screen on
   a phone. **The `sw.js` cache block must stay below the general `.js` one**: both match `sw.js`
   and the last `Header set` wins, and reversed, the file reads as though the strict value were in
   force while `no-cache` is what actually ships. That was the live behaviour until 2026-08-10.
-- `app/sw.js` — precaches everything. **`CACHE` must be bumped whenever the data or app changes**,
+- `app/sw.js`, precaches everything. **`CACHE` must be bumped whenever the data or app changes**,
   or installed copies keep the old dataset forever. `deploy.ps1` refuses to ship an `app/` change
   that did not bump it, and `core.js` `BUILD` must match the cache name (a self-test enforces it;
   the footer shows it, which is how you tell what a phone is actually running).
@@ -195,16 +197,16 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   **The fetch handler must never write to the cache and must skip `/api/`.** `api/tiles.php` is
   same-origin, so a "cache any same-origin GET" rule quietly fills the offline cache with map
   tiles until iOS evicts the whole thing, app included. Self-tests enforce both. See DECISIONS.
-- `app/.htaccess` — **the shell is deliberately `Cache-Control: no-cache`.** The service worker
+- `app/.htaccess`, **the shell is deliberately `Cache-Control: no-cache`.** The service worker
   cache name already versions it, so HTTP-caching code and data buys nothing and breaks updates for
   the reason above. Only images carry a long max-age (`604800`). Do not "optimise" this back: `.js`
   was served `max-age=3600` until 2026-08-08, and that is what filled a fresh cache with old bytes.
-- `scripts/fetch.py` — resumable and cached; re-running costs zero requests for pages already held.
+- `scripts/fetch.py`, resumable and cached; re-running costs zero requests for pages already held.
   **It records the download date of every file it saves into `data/raw/fetched.json`** (card 0026),
   rewritten after each page so an interrupted run still leaves dated HTML. That index is the only
   honest source of a page's age: a modification time is rewritten by any copy of the tree, and a
   build worktree is a copy.
-- `scripts/parse.py` — the only place the HTML shape is understood, for **both** forest sites.
+- `scripts/parse.py`, the only place the HTML shape is understood, for **both** forest sites.
   Exits non-zero rather than emitting a partial dataset. `build_forests()` reads Drupal field divs,
   `build_fls()` cuts sections out by heading, and `COUNTRY_RANGE` keeps the England box tight while
   `GB_LAT_RANGE` covers everything. **`fls_section()` accepts h1 to h4 on purpose**: the same
@@ -228,7 +230,7 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   it. 8,501 features in, 3,574 out, every exclusion counted and printed. Widening it to include the
   2,370 records that simply carry no caravan tag is a one-line change, and it is the first thing to
   reach for if real use says the list is too thin.
-- `app/map.js` — the canvas map: outline, markers, pan, pinch, tap, plus the optional tile layer.
+- `app/map.js`, the canvas map: outline, markers, pan, pinch, tap, plus the optional tile layer.
   Markers that overlap are grouped into a counted bubble via `NF.clusterPoints`; the grouping
   radius is in screen pixels because "do these overlap" is a screen question, not a map one.
   Reads the same ranked list the rows are built from, so the two cannot disagree about what is
@@ -244,30 +246,30 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   `rgba(0,0,0,.72)`, a pill that hugs the text, dark `text-shadow` cleared. **`.72` is not a taste call and must not be lightened**: a pure white tile
   composites the pill to `rgb(71)`, so white on it is 9.29:1, and that bounds the worst case at
   every zoom without anyone sampling a basemap.
-- `app/api/tiles.php` — Thunderforest proxy. Exists so the key never reaches the browser, since this
+- `app/api/tiles.php`, Thunderforest proxy. Exists so the key never reaches the browser, since this
   repo is public. Whitelists styles, range-checks z/x/y, and never echoes `curl_error` because that
   string embeds the request URL and the URL carries the key. **Access control is `Sec-Fetch-Site`
   plus a per-address daily cap, and the `Referer` check is neither of them.** Why that is, what the
   `Referer` check failed to stop, and why the cap must never read `X-Forwarded-For` are all in
   DECISIONS 2026-08-10, "The tile proxy authenticates the browser, and caps the address"; card 0012
   carries the fix. Read that entry before changing any of the three.
-- `app/data/boundary.json` — 32KB Great Britain outline, generated by `scripts/build_boundary.py`
+- `app/data/boundary.json`, 32KB Great Britain outline, generated by `scripts/build_boundary.py`
   from Natural Earth. Generated, never hand-edited, and precached so the map works offline.
-- `scripts/deploy.ps1` / `scripts/deploy.sh` — the local trigger and the server-side half. The host
+- `scripts/deploy.ps1` / `scripts/deploy.sh`, the local trigger and the server-side half. The host
   and username live in `~/.ssh/config`, not in this now-public repo. **`deploy.sh` pulls in stage 1
   and re-execs itself before doing anything else. Do not collapse that.** It is part of what the
   pull updates, and bash reads a script incrementally, so carrying straight on runs a splice of the
   old and new file. Its header comment explains it.
-- `.gitattributes` — pins LF on anything the Linux host executes. A CRLF `deploy.sh` dies with a
+- `.gitattributes`, pins LF on anything the Linux host executes. A CRLF `deploy.sh` dies with a
   `^M` interpreter error, which is a baffling way to meet a line ending.
-- `docs/build/IOS-SHORTCUT.md` — the Shortcut recipe, since `.shortcut` files cannot be generated.
-- `docs/outreach/` — drafted correspondence to outside parties, in markdown, which is the source.
+- `docs/build/IOS-SHORTCUT.md`, the Shortcut recipe, since `.shortcut` files cannot be generated.
+- `docs/outreach/`, drafted correspondence to outside parties, in markdown, which is the source.
   **What the three files are, and why the email text lives in two of them that must be edited
   together, is on card 0027**, which is the card that sends it.
-- `docs/img/2026-08-14_Screenshots/` — six phone screenshots, **untracked pending a call on whether
+- `docs/img/2026-08-14_Screenshots/`, six phone screenshots, **untracked pending a call on whether
   14MB of PNGs belong in a repo the server pulls on every deploy.** Which shot shows what, and which
   three go with the enquiry, is on card 0027; card 0015 uses the other two as evidence.
-- `HUMAN_ACTIONS.md` — what is left for a person, and the recurring data-refresh procedure.
+- `HUMAN_ACTIONS.md`, what is left for a person, and the recurring data-refresh procedure.
 
 ## Decisions locked
 
@@ -298,86 +300,89 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   validation on both endpoints held against array parameters, `1e400`, traversal in every string
   parameter and a clamp test on `n`. `.git`, `.htaccess`, `docs/`, `scripts/` and all three
   `tiles.key` paths are unreachable, TLS is 1.2/1.3 with a valid certificate, and no key appears in
-  any of the 20 commits. Cards 0011-0014 carry what was fixed. Two things are worth keeping in
-  mind rather than re-deriving: `api/nearest.php` re-parses the whole dataset on every request, and
-  that is **not** a DoS lever and does not need caching. **Re-measured 2026-09-06 (card 0034) against
-  the 736,457-byte (719 KB), 1,180-record `app/data/sites.json` that ships today**, on the PHP
-  built-in server (`php -S`), asking from Brighton: **a warm request is 5.3 ms end to end**, of which
-  reading and `json_decode`-ing the whole file is **3.7 ms**, and **ten in flight at once all finish
-  in ~55 ms** — the 53 ms worst is queueing behind a single-threaded `php -S`, not degradation.
-  Caching the parse would buy under 4 ms. The 2026-08-10 figure was ~65 ms on a 515 KB file, but
-  **that is not a comparison**: its harness is unrecorded. **Card 0034's own script over-reports its
-  first run**, charging `ForEach-Object -Parallel` runspace start-up to it — ~65 ms once, ~19 ms
-  every run after. Re-time with a warmed client, not that script;
-  and the `%{HTTP_HOST}` open-redirect shape in `.htaccess` was tested and is not reachable, since
-  an unknown `Host` 404s before the rewrite runs. It was replaced with a literal anyway.
+  any commit. Cards 0011-0014 carry what was fixed. Two things are worth keeping in mind rather than
+  re-deriving. **`api/nearest.php` re-parses the whole dataset on every request, and that is not a
+  DoS lever and does not need caching**; card 0034 in `done/` re-took the timings on 2026-09-06
+  against the file that ships today and carries every figure, the harness and the reason its own
+  script over-reports a first run. And the `%{HTTP_HOST}` open-redirect shape in `.htaccess` was
+  tested and is not reachable, since an unknown `Host` 404s before the rewrite runs. It was replaced
+  with a literal anyway.
 - **Built 2026-08-15:** the **Campsites** tab, card 0020, from OpenStreetMap plus Forestry and Land
-  Scotland's Stay the Night scheme — a second data file under a second licence.
-- **Built and not yet deployed, as one batch:** **0004** (177 car parks named after their nearest
-  forest) and **0016** (Scotland in the Forests tab), both 2026-08-29; **0015** (the tile
-  attribution pill), 2026-08-29, rendered and closed by a second run the same day; and **0022** (one
-  clause of the footer credits), 2026-09-05. **0019, the rest of the footer credits, is built but
-  held back**, waiting on Rob in `human-review/`. 279 self-tests pass (`node scripts/selftest.js`,
-  measured 2026-09-09) and `CACHE` / `BUILD` are at `v24-2026-09-08`, bumped seven times by card 0020
-  as it tightened the campsite filter; **every exclusion, its count and its reasoning are in
-  DATA-MODEL's drop table**, which is the doc that owns them. See
-  "What's next" item 1 for what is still owed before they ship.
-  **What each card measured, found and deliberately left alone is on its own comment thread** in
-  `ai-review/`; the facts that outlived the build are in DATA-MODEL and DECISIONS, and the FLS
-  licence gap 0016 left for a person is in Blockers below.
-- **In progress:** nothing.
-- **Known bugs / broken:** none open. Five have been found and fixed here since 2026-08-08 and
-  **every one was found by running the thing, never by reading it.** The worst was the service
-  worker writing map tiles into the app's offline cache until iOS evicted the app along with them;
-  DECISIONS 2026-08-08 "The offline cache holds ASSETS and nothing else" carries it in full.
-  **That is what card 0001 check 5 exists for: the offline path is not testable by inspection.**
-  What each bug left behind is a do-not-undo note above: on `sw.js`, on `.htaccess`, on
-  `deploy.sh` and on the committed-key guard. Read those rules rather than re-deriving them.
+  Scotland's Stay the Night scheme, a second data file under a second licence.
+- **Built and not yet deployed:** **0004** (177 car parks named after their nearest forest) and
+  **0016** (Scotland in the Forests tab), both 2026-08-29, plus **0022** (one clause of the footer
+  credits), 2026-09-05. **0015 and 0019 were in this batch and are not any more**: the 2026-09-10
+  adversarial pass returned both to `todo/` with a defect each, so shipping them today ships a known
+  fault. `CACHE` / `BUILD` are at `v24-2026-09-08`; **every campsite exclusion, its count and its
+  reasoning are in DATA-MODEL's drop table**, which is the doc that owns them.
+  **What each card measured, found and deliberately left alone is on that card's own comment
+  thread**; the facts that outlived a build are in DATA-MODEL and DECISIONS, and the FLS licence gap
+  0016 left for a person is in Blockers below.
+- **In progress:** 0020 (Campsites, one criterion left that only a person can close) and 0021 (the
+  card-rewrite pass, now unblocked because 0025 was answered on 2026-09-10).
+- **Known bugs / broken, and this list stopped being empty on 2026-09-10.** An adversarial pass over
+  every card then in `ai-review/` returned 15 of 17 with a defect, and the pattern is the same one
+  that has caught this project before: **the tests could not fail.** Comment out any security header
+  in `.htaccess` and the suite stays green. Falsify three of the four counts in `core.js` and it
+  stays green. Delete the whole scheme check in `parse.py` and it stays green. Two live faults in
+  shipped code: **the map latches dead after one failed coastline fetch** and never retries, taking
+  every marker with it (card 0008), and **the tile layer blanks permanently after one refused tile**
+  while still claiming a basemap (card 0012). Each card in `todo/` carries its own finding and one
+  concrete fix.
+  **Five older bugs were found and fixed here since 2026-08-08 and every one was found by running
+  the thing, never by reading it.** The worst was the service worker writing map tiles into the
+  app's offline cache until iOS evicted the app along with them; DECISIONS 2026-08-08 "The offline
+  cache holds ASSETS and nothing else" carries it in full. **That is what card 0001 check 5 exists
+  for: the offline path is not testable by inspection.** What each bug left behind is a do-not-undo
+  note above: on `sw.js`, on `.htaccess`, on `deploy.sh` and on the committed-key guard.
 
 ## What's next (in order)
 
-The queue is [docs/board/](board/), one card per file. At the head:
+The queue is [docs/board/](board/), one card per file; run `ls docs/board/todo` for it. **The
+adversarial pass on 2026-09-10 filled that lane, so the order below overrides card numbers.**
 
-1. **Look at 0004 on a screen, then deploy 0004, 0015, 0016 and 0022. 0019 is held out.** A reviewer
-   disproved part of 0019, so it sits in `human-review/` and its `## What I need from you` is the
-   ask; deploying it now would ship a Scottish credit line wearing Forestry England's first-party
-   template and the retired `attribution` string still in `app/data/sites.json`. **0022 is the same
-   footer paragraph** and is unaffected: it added one clause, so check how that clause wraps.
-   For **0004**, check the dim italic
-   against the **dark** theme, where it has the least contrast to spare, and check a map label, since
-   "Car park near Bedgebury Nat…" truncates at 22 characters. **0015 no longer needs a desktop look**
-   — it got one, and its layout and contrast both hold; what it still wants is the phone, which the
-   0018 screenshots need anyway, so fold it into that rather than blocking the deploy on it.
-   Then `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v24-2026-09-08`.
-   **Serving a worktree is a solved problem now** and is worth reusing on 0004:
-   `php -S 127.0.0.1:8791 -t app` from the worktree, since Herd only ever serves `C:\Dev\NearestForest`.
-   **0016 raises the stakes on the offline check**, item in Blockers below: the precache grew by
-   about 190 KB and the Forests tab doubled, so a cold offline launch is now testing more than it was.
-2. **Re-fetch `data/raw/`, because card 0026 made the parser refuse it.** `scraped_at` is now the
+1. **Fix the tests that cannot fail, before anything else.** Three cards and each is small.
+   **0011**: every `.htaccess` header check is an unanchored text search, so commenting out the CSP,
+   HSTS, nosniff, Referrer-Policy or Permissions-Policy leaves the suite green, which is a green
+   suite on an app serving no security headers. **0013**: the scheme allow-list in `validate()` in
+   `parse.py` has no test at all; replacing the whole block with `pass` changes nothing. **0036**:
+   the comment above `safeHref` carries four numbers and the guard reads one. Until these land,
+   every other green run on this project means less than it looks like.
+2. **The two live faults in shipped code.** **0008**: `loadBoundary` latches, so one failed fetch of
+   the 32 KB coastline kills the map for the life of the page, and because `draw()` returns before
+   the marker block it also erases every site marker and the position dot. **0012**: one refused
+   tile blanks the layer permanently while the button still reads "Tiles on" and the credit still
+   claims a basemap, because `t.failed` in `map.js` is written and never read.
+3. **Then look at 0004 on a screen and deploy 0004, 0016 and 0022.** **0015 and 0019 are held out**,
+   both returned with a defect on 2026-09-10; each card carries its own. For **0004**, check the dim
+   italic against the **dark** theme, where it has the least contrast to spare, and check a map
+   label, since "Car park near Bedgebury Nat…" truncates at 22 characters. Then
+   `pwsh ./scripts/deploy.ps1`; `CACHE` and `BUILD` are already bumped to `v24-2026-09-08`.
+   **Serving a worktree is a solved problem**: `php -S 127.0.0.1:8791 -t app` from the worktree,
+   since Herd only ever serves `C:\Dev\NearestForest`.
+   **0016 raises the stakes on the offline check** in Blockers below: the precache grew by about
+   190 KB and the Forests tab doubled, so a cold offline launch now tests more than it did.
+4. **Re-fetch `data/raw/`, because card 0026 made the parser refuse it.** `scraped_at` is now the
    date `fetch.py` downloaded the page, read back from `data/raw/fetched.json`, and a page cached
    before that index existed has an age nobody can recover. So `python scripts/parse.py` names those
-   552 pages and exits 1, which is the change working. Until somebody deletes `data/raw/` and re-runs
-   `scripts/fetch.py`, `app/data/sites.json` keeps the stamps it has. **A re-fetch also refreshes the
-   data**, so it is a dataset change to look at, not a formality. **Card 0029 is built**, so that
-   failing parse no longer costs the shipped dataset: both parsers now report and exit *before* they
-   write, and the last good file survives a refusal.
-3. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
+   pages and exits 1, which is the change working. **`data/raw/fetched.json` is absent from this
+   checkout entirely**, so the refusal is total, and re-running `fetch.py` cannot repair it: it
+   skips any page already over 20,000 bytes. Only deleting `data/raw/` and starting again will.
+   **A re-fetch also refreshes the data**, so it is a dataset change to look at, not a formality.
+   **Card 0029 is built**, so a failing parse no longer costs the shipped dataset: both parsers
+   report and exit *before* they write.
+5. **Open the card for the colliding marker labels.** 0015's "Not this card" promises one and it
    still does not exist. The 2026-08-14 screenshots show it ("Bedgebury National Pi…" over "Hemsted
-   Fores…"). Worth
-   opening, and **0004 has raised the stakes**: 14 car parks now share the label "Car park near Dalby
-   Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map truncates
-   most derived names before the forest is reached. In the list this is fine, because each row still
-   carries its own distance and bearing. On the map it is not.
-4. **An adversarial pass over `ai-review/`**. Run `ls docs/board/ai-review` for the queue; no count
-   is written here, because every count written here has gone stale. The one worth naming is
-   **0020 campsites**, the largest
-   single change since the map. 0020 is worth real scepticism on three points: the filter that
-   decides what a campervan can get into, whether the ODbL Collective Database argument holds, and
-   whether 3,574 more markers have broken the map's clustering or its label collisions. Nothing reaches `done/` without somebody trying
-   to break it. **0008 deserves the most scepticism:** its gestures have only ever run against a
-   stubbed canvas in node, never a real finger, and nobody has watched 630 car park markers render
-   on a phone. `/code-review` is the tool.
-5. Everything else needs a person: see below.
+   Fores…"), and **0004 has raised the stakes**: 14 car parks now share the label "Car park near
+   Dalby Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map
+   truncates most derived names before the forest is reached. In the list this is fine, because each
+   row carries its own distance and bearing. On the map it is not.
+6. **0020 has never had an adversarial pass** and it is the largest single change since the map. It
+   sits in `in-progress/` with one criterion left that only a person can close. Worth real
+   scepticism on three points: the filter that decides what a campervan can get into, whether the
+   ODbL Collective Database argument holds, and whether 3,574 more markers have broken the map's
+   clustering or its label collisions. The `review-card` skill is the tool.
+7. Everything else needs a person: see below.
 
 **Scotland is answered and built** (card 0016, answered Yes on 2026-08-18, built 2026-08-29). The
 forest tabs took on a second agency and a second scraper, knowingly. **Wales is still open**, card
@@ -393,14 +398,11 @@ by hand and every one was wrong within a day. The bullets below say what a card 
 for the cards where that is not obvious from the title. A card in that folder and not below still
 needs Rob, and its own `## What I need from you` section is the ask.
 
-**0034 re-took the "`api/nearest.php` needs no caching" measurement on 2026-09-06 and the conclusion
-held**; the figures, with the date and the file size they were taken on, are in "Current state"
-above. Otherwise what remains is the adversarial pass over `ai-review/` and the re-fetch that card
-0026 left. **Everything below fits in one conversation except 0043**, which is a build the size of
-the Campsites tab rather than a question. **0016 is struck through**: it is answered, and kept only
-for the one licence question it left behind.
+**Everything below fits in one conversation except 0043**, which is a build the size of the
+Campsites tab rather than a question. **0016 is struck through**: it is answered, and kept only for
+the one licence question it left behind.
 
-- **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
+- **0001 check 5**, aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
   offline cache went from ~550 KB to ~1.7 MB and the campsite data is precached with everything
   else. Tap into the Campsites tab while offline as part of it. **Card 0016 added a third reason**:
@@ -410,45 +412,35 @@ for the one licence question it left behind.
   It must be re-run from a cold launch on v8 or later, and it is worth deleting the app from the
   Home Screen and re-adding it first, so the check starts from a clean cache rather than one this
   bug already filled.
-- **0010** — rotate the Thunderforest key, which reached a chat transcript. Hygiene, not an
+- **0010**, rotate the Thunderforest key, which reached a chat transcript. Hygiene, not an
   incident: nothing leaked into the repo and the server copy is 600 above the web root.
 
 **Rob cannot send from `enhanceify.co.uk`, and it blocks 0010 alone**, because Thunderforest checks
 the sending address against the account. **0017 and 0018 are not blocked**: neither cares which
 address the email leaves from, so do not let them queue behind it. The DNS measurement behind this,
 and the reason the fix belongs on the enhanceify-V2 board, is on card 0010.
-- **0002** — build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
-- **0018** — **do we write to Forestry England, and with which asks?** Three costed options and a
-  recommendation. The only hard reason left is the trade mark: OGL settles the data and permits
-  commercial use, but not the use of their name in a store listing. **Its third ask contradicts the
-  PRD non-goal "No App Store release"**, the same way 0016 and 0017 contradict the England-only one.
-- **0027** — **the send**, split out of 0018 on 2026-09-05 because the two together were 325 lines.
-  It carries the two `[confirm]` claims only Rob can settle, the placeholders, the address and the
-  fail date. **Read `docs/outreach/forestry-england-enquiry-review.md` first**: three cold reviewers
-  all predicted the draft as written earns no reply, and nobody has acted on any of it.
-- ~~**0016**~~ — answered Yes on 2026-08-18 and built on 2026-08-29. **One thing it leaves for a
-  person: the FLS licence.** They publish no copyright or re-use page anywhere, so the position rests
-  on The National Archives' default rather than on a first-party offer. Worth an email in the same
-  batch as 0018. See DECISIONS 2026-08-29.
-- **0017** — how much of Wales to ship. No longer blocked behind 0016, but still behind one email: NRW's own
-  metadata says the recreation data is OGL with no access restrictions, while data.gov.uk says the
-  same dataset needs their prior approval before use in an internet application. The email is
-  drafted on the card. Recheck 2026-09-11, so not due.
-- **0003** — a decision with options and a recommendation already on the card, waiting on real
-  trips rather than analysis. Recheck 2026-09-19, so not due.
-- **0025** — when a card's ask must sit above `## Why`, does the ask win or the problem statement?
-  Three options and a recommendation on the card. **Still unanswered**, and card 0021 cannot close
-  its last criterion until it is. Card 0033 moved it out of `todo/` and into `human-review/` on
-  2026-09-06, so a sweep of that folder now finds it.
-- **0030** — **five seconds, but only possible in one hour.** The card is built and repaired the
+- **0002**, build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
+- **0018**, whether to write to Forestry England and with which asks. **Its third ask contradicts
+  the PRD non-goal "No App Store release"**, the same way 0016 and 0017 contradict the England-only
+  one, so answering it may move the PRD.
+- **0027**, the send itself. **Read `docs/outreach/forestry-england-enquiry-review.md` first**:
+  three cold reviewers all predicted the draft as written earns no reply, and nobody has acted on
+  any of it.
+- ~~**0016**~~, answered and built. **One thing it leaves for a person: the FLS licence**, which
+  rests on a default rather than a first-party offer. See DECISIONS 2026-08-29. Worth an email in
+  the same batch as 0018.
+- **0017**, how much of Wales to ship, blocked on one email about a licence contradiction the card
+  sets out. Recheck 2026-09-11.
+- **0003**, waiting on real trips rather than on analysis. Recheck 2026-09-19.
+- **0030**, **five seconds, but only possible in one hour.** The card is built and repaired the
   fetch-date self-test; its remaining check asks for the suite to be seen passing between 00:00 and
   01:00 local while BST is in force. Its build run reproduced the same divergence at 05:03 with a
   `TZ` override and would accept that as evidence, but that is not the check as written.
-- **0024** — **built to 3 of 4 and asking to be closed there.** Six runs all reached the same
-  finding: its last criterion wants the convention check at zero, and the one failure is a missing
-  `## Links` reason in card 0026, which is card 0028's job. 0028 is built and sits in `ai-review/`,
-  so this may now close with no work on it; that call is Rob's, not a session's.
-- **0043 (accounts and personal location tracking)** — **unbuilt, and the loop will not start it.**
+- **0024**, **built to 3 of 4 and asking to be closed there.** Its last criterion wants the board
+  convention check at zero and it is not at zero. Two things about the card are stale and it says
+  so: it counts a file that has since moved lanes, and it measures cards against a line budget the
+  required `human-review/` ask section pushed them past. That tension is Rob's to settle.
+- **0043 (accounts and personal location tracking)**, **unbuilt, and the loop will not start it.**
   All seven of its criteria say `proves: manual`, so an unattended session can close none of them.
   It also needs an authentication and data service that the current static Hostinger deployment
   cannot host, and the card forbids creating a paid service without a person driving it. **It was
@@ -487,12 +479,15 @@ pwsh ./scripts/deploy.ps1
 
 ## Suggested skills / next tools
 
-- `/handover resume` — to pick this up in a fresh session.
-- `/checkpoint` — after any work, to update the docs and commit in one step.
-- `/code-review` — the natural next move on the cards sitting in `ai-review/`, and worth
-  running over `scripts/parse.py` before trusting a re-scrape, since it is the one file that
-  silently depends on someone else's HTML staying the same shape.
-- `/run` — to drive the app and actually look at the map, rather than inferring it from a stubbed
+- `/handover resume`, to pick this up in a fresh session.
+- `/checkpoint`, after any work, to update the docs and commit in one step.
+- `/review-card`, the adversarial pass any built card owes before `done/`. **Hand it to a separate
+  agent**, because the builder passing the builder is the self-report that lane exists to remove.
+  The 2026-09-10 pass split 17 cards across four agents by what each card touched, told none of them
+  to run a git command so they could share one checkout, and let the parent do every lane move.
+- `/code-review`, worth running over `scripts/parse.py` before trusting a re-scrape, since it is
+  the one file that silently depends on someone else's HTML staying the same shape.
+- `/run`, to drive the app and actually look at the map, rather than inferring it from a stubbed
   canvas, which is the gap card 0008 admits to.
 
 ## Sibling docs

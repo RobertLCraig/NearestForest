@@ -123,7 +123,7 @@ rather than from the count:
   but that is not the check as written, so the line says both.
 - **0024** is built to 3 of 4 and its last four run entries all ask to be closed there. Its open
   criterion depends on card `0028`, which is now built and in `ai-review/`, so the line says it may
-  close with no work — and says the call is Rob's, because a session cannot make it.
+  close with no work, and says the call is Rob's, because a session cannot make it.
 - **0022** is unbuilt and the loop will not start it: all seven criteria are `proves: manual`, and
   it needs an authentication service the static Hostinger deployment cannot host.
 

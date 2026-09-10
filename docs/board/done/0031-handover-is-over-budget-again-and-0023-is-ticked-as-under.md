@@ -145,7 +145,7 @@ not the same as stale, and the hook asks for a stale block.
 **Two blocks were folded, not one, and the second was needed to meet #1.** The Plan named the
 `_Last updated:_` stack and it was right: 3,337 bytes of per-card run narrative across three dates,
 plus a Status block that had become the same thing. Folding the whole preamble to what is true now
-took the file to **37,975** — under budget, but only 2,985 bytes of headroom. `0023` left 2,432 and
+took the file to **37,975**, under budget, but only 2,985 bytes of headroom. `0023` left 2,432 and
 four cards ate it in a day, so that would have reopened this card rather than closed it. The second
 fold was `## Current state`'s "Known bugs / broken", 1,900 bytes narrating five bugs fixed on
 2026-08-08 and 08-10 as though this session had just fixed them. Final: **37,533 bytes, 3,427 under
@@ -185,7 +185,7 @@ because that is the number 0032 exists to make checkable.
 class of fault and I did not fix it: `## Current state` says 219 self-tests pass and the suite prints
 225. That is **card 0032**, raised rather than fixed. `## Key files` at 9,570 bytes remains the
 heaviest section and is the next candidate if the budget is lost again, but it is live rather than
-stale, so folding it means deciding which do-not-undo notes a fresh session can do without — a
+stale, so folding it means deciding which do-not-undo notes a fresh session can do without, a
 judgement this card did not have the standing to make. No browser check applies; nothing outside
 `docs/` was touched.
 

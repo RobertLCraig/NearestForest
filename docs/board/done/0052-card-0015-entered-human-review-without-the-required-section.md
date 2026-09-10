@@ -95,7 +95,7 @@ title.
 one card in the lane that no open card carries.
 
 **2026-09-09** RESULT: partial
-TESTS: +0 new, all green (279 passed, 0 failed — `node scripts/selftest.js`)
+TESTS: +0 new, all green (279 passed, 0 failed, `node scripts/selftest.js`)
 TOUCHED: docs/board/human-review/0015-attribution-is-unreadable-over-tiles.md
 TOUCHED: docs/board/todo/0056-eleven-more-human-review-cards-have-no-required-section.md
 TOUCHED: docs/board/in-progress/0052-card-0015-entered-human-review-without-the-required-section.md
@@ -104,7 +104,7 @@ OUT-OF-SCOPE: 0056
 **The section is written on `0015`, and the ask is the one already at the bottom of that card.**
 Untick `#1` and send it back to `todo/`, or say on its thread why the reviewer is wrong. `#1` is the
 criterion the `breakage: defect` verdict reaches: the verdict grants that the shipped pill is
-readable, and the only thing it disproves is the guard the card built to keep it that way — the
+readable, and the only thing it disproves is the guard the card built to keep it that way, the
 regex `/background:rgba\(0,0,0,\.(7[2-9]|[89]\d)\)/` in `scripts/selftest.js`, which rejects both
 `.8` and `0.72`. `#2` and `#3` were graded `sound`, so nothing points at them. The section says the
 choice of which box comes off, if any, is Rob's, because an agent cannot untick on a reviewer's
@@ -118,7 +118,7 @@ suite here is `node scripts/selftest.js`, one node script over `app/`, and it ca
 `docs/board/`. The check the criterion names is the grep, and it was run before the edit, naming
 `0015`, and after, not naming it. The suite was run either way and is green at 279.
 
-**Criterion `#2` is left open.** It says `proves: manual` — whether an ask reads clearly in three
+**Criterion `#2` is left open.** It says `proves: manual`, whether an ask reads clearly in three
 lines is a reader's judgement, and an unattended session cannot make it.
 
 **Re-grepping the lane leaves eleven cards without the heading**, which is more than the two `0051`

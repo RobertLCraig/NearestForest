@@ -84,7 +84,7 @@ security, which `0011` to `0014` covered. Not the PWA, which never calls this en
 - [x] Re-run the ten-concurrent measurement against the current 719 KB `app/data/sites.json`
 - [x] Write the new figure, its date and the file size it was taken on into `## Current state`
 - [x] If the figure has moved enough to change the conclusion, raise the caching card; do not build it here
-      — it has not; no caching card raised, and why is in the thread below
+     , it has not; no caching card raised, and why is in the thread below
 
 ## Plan
 Work in the NearestForest repository, on a branch off `main`. Only `docs/HANDOVER.md` changes unless
@@ -122,7 +122,7 @@ taken on is now 719 KB and that nobody has re-timed it; taking the measurement i
 acceptance asked for, so it left it here.
 
 **2026-09-06** RESULT: done
-TESTS: +0 new, all green — 225 passed, 0 failed (`node scripts/selftest.js`). No test was added
+TESTS: +0 new, all green, 225 passed, 0 failed (`node scripts/selftest.js`). No test was added
 because criterion #1 is `proves: none`: the check is the measurement itself, and this project has no
 PHP suite at all (no `vendor/`, no Pest, no Pint, contrary to the standard run instructions).
 TOUCHED: docs/HANDOVER.md; docs/board/todo/0036-the-904-record-count-outlived-card-0016.md;
@@ -145,7 +145,7 @@ for the nine before it. The card's Plan says as much. Caching the parse would bu
 request, so it is **not** a DoS lever and does not need caching.
 
 **I did not raise the caching card**, because the figure did not move enough to change the
-conclusion — it moved the other way.
+conclusion, it moved the other way.
 
 What I could not settle from the repository, and wrote into the brief rather than guessing past.
 **The 2026-08-10 measurement's harness is not recorded anywhere**, so the old ~65 ms and my numbers
@@ -163,7 +163,7 @@ re-timed" claim, in `## Blockers / open questions`. **I deliberately left the la
 and it changes the moment this session ends.
 
 **Raised `0036`.** While checking the dataset numbers I found three shipped files still describing it
-as 904 records — `app/api/nearest.php`, `docs/build/IOS-SHORTCUT.md` and `app/core.js` — where it now
+as 904 records, `app/api/nearest.php`, `docs/build/IOS-SHORTCUT.md` and `app/core.js`, where it now
 holds 1,180. The `core.js` one is wrong twice: it also says every dataset URL is a
 `forestryengland.uk` page, and 276 of the 550 are `forestryandland.gov.scot`. The `safeHref()` guard
 it sits above is fine, since it checks scheme and never host. Two other 904s in the tree are correct
@@ -247,12 +247,12 @@ The criterion asks the brief to cite a response time measured against the `app/d
 ships **today**, with the date and the file size. `docs/HANDOVER.md`, `## Current state`, lines
 302–310, carries all four:
 
-- the conclusion — `api/nearest.php` re-parses the whole dataset per request and "that is **not** a
+- the conclusion, `api/nearest.php` re-parses the whole dataset per request and "that is **not** a
   DoS lever and does not need caching"
-- the date — "Re-measured 2026-09-06 (card 0034)"
-- the size and record count — "the 736,457-byte (719 KB), 1,180-record `app/data/sites.json` that
+- the date, "Re-measured 2026-09-06 (card 0034)"
+- the size and record count, "the 736,457-byte (719 KB), 1,180-record `app/data/sites.json` that
   ships today"
-- the times and the harness — 3.7 ms parse, 5.3 ms warm request, ten at once in ~55 ms, on the PHP
+- the times and the harness, 3.7 ms parse, 5.3 ms warm request, ten at once in ~55 ms, on the PHP
   built-in server
 
 **The cited numbers match the real file exactly.** Measured now:
@@ -260,21 +260,21 @@ ships **today**, with the date and the file size. `docs/HANDOVER.md`, `## Curren
     wc -c app/data/sites.json                          ->  736457
     node -e "d=require('./app/data/sites.json'); ..."  ->  records 1180  counts {"forest":550,"carpark":630}
 
-736,457 bytes, and 550 + 630 = 1,180 records. Not rounded, not approximate — the same digits.
+736,457 bytes, and 550 + 630 = 1,180 records. Not rounded, not approximate, the same digits.
 
 I tried three ways to break it. Does the endpoint read anything else, so that "the whole dataset" is
 the wrong thing to have timed? `app/api/nearest.php`'s `$dataPath` reads `sites.json` and never
 `campsites.json`, so no. Does the retired "nobody has re-timed it" claim survive anywhere? Grepping
 `docs/HANDOVER.md` for `re-timed`, `re-taken` and `515 KB` finds only the one honest mention that the
 2026-08-10 figure was taken on a 515 KB file and is explicitly not offered as a comparison. And is the
-warning about the measurement harness still there — the one saying `ForEach-Object -Parallel` charges
+warning about the measurement harness still there, the one saying `ForEach-Object -Parallel` charges
 runspace start-up to its first batch and produces a spurious ~65 ms? Yes, at line 310, which is the
 single most useful thing on this card, because the next person to re-run it would otherwise read the
 old number back out of their own tooling.
 
 VERDICT: sound
 
-**scope: sound — the 2026-09-08 finding is withdrawn in full**
+**scope: sound, the 2026-09-08 finding is withdrawn in full**
 
 The earlier reviewer said "the diff is 70 files" and charged this card with `mapHint()` in
 `app/core.js`, the 904 → 1,180 rewrites in `app/core.js` / `app/api/nearest.php` /
@@ -295,7 +295,7 @@ The sharpest charge was that the card "raised `0036` *and* did the work" on the 
 That is false. Neither commit names `app/core.js`, `app/api/nearest.php` or
 `docs/build/IOS-SHORTCUT.md`. `git log -- app/api/nearest.php app/core.js docs/build/IOS-SHORTCUT.md`
 puts their most recent changes on the campsite-filter commits, which are card `0020`'s. This card
-raised `0036`, declared it `OUT-OF-SCOPE`, and left the work alone — which is exactly what its own
+raised `0036`, declared it `OUT-OF-SCOPE`, and left the work alone, which is exactly what its own
 Plan told it to do.
 
 VERDICT: sound

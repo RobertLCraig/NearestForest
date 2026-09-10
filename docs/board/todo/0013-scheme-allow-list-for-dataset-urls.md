@@ -3,7 +3,7 @@
 ## What I need from you
 
 **One answer.** Untick criterion `#2` below, so the card returns to `todo/` and the missing test
-gets written — **or** write on the thread that the reviewer is wrong, and the card stands as done.
+gets written, **or** write on the thread that the reviewer is wrong, and the card stands as done.
 Doing neither is the fail: the card comes straight back here, unchanged, on the next run.
 
 ---
@@ -12,7 +12,7 @@ Doing neither is the fail: the card comes straight back here, unchanged, on the 
 sends the card back here. Only you can untick one; an agent reviewing a card is forbidden to.
 
 **Cause.** The reviewer's `breakage` verdict at the bottom: nothing tests the build-time half. The
-scheme check lives in `validate()` in `scripts/parse.py`, and no test drives it — delete those four
+scheme check lives in `validate()` in `scripts/parse.py`, and no test drives it, delete those four
 lines and the suite still reports 227 passed. The app-side half was attacked and held.
 
 **Why it needs you.** The other two reviewers graded the card `sound`, so *which* box is wrong is a

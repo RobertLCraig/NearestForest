@@ -217,7 +217,7 @@ verdicts still on the thread, and that pass decides whether the finding is this 
 
 Ran both criteria rather than reading the ticks.
 
-**#1 — met.** `docs/board/ai-review/0026-scraped-at-says-the-parse-date-not-the-fetch-date.md` carries,
+**#1, met.** `docs/board/ai-review/0026-scraped-at-says-the-parse-date-not-the-fetch-date.md` carries,
 under `**Relates to**`:
 
     - `0023` - it folded this note out of HANDOVER's prose into DATA-MODEL's divergences, which is
@@ -227,7 +227,7 @@ That is the relationship stated in one line, which is what the README asks for. 
 `0026`'s moves through `ai-review/`, `human-review/` and back, because it lives in the card file and
 not in a path.
 
-**#2 — the fix holds; the board-wide number does not, and cannot be this card's to hold.** Re-run
+**#2, the fix holds; the board-wide number does not, and cannot be this card's to hold.** Re-run
 today from this repository root:
 
     php C:\Dev\ProgressBoard\artisan board:convention --path="C:\Dev\NearestForest" --cards
@@ -238,7 +238,7 @@ today from this repository root:
 
 Three failing, down from the eleven the 2026-09-08 reviewer saw. **`0026` is not among them**, so the
 edit this card made is still doing its job. All three are cards written after this work, and a card
-session may not edit cards outside its scope. The criterion as written — "zero open cards failing" —
+session may not edit cards outside its scope. The criterion as written, "zero open cards failing" -
 asserts a board-wide property that no single card can keep true past the next card somebody writes.
 That is a weakness in the criterion rather than in the build, and a reviewer may not untick it.
 
@@ -247,7 +247,7 @@ been proof of much either. It is a floor, not a ceiling.
 
 VERDICT: sound
 
-**scope: sound — and the 2026-09-08 finding's factual claims are withdrawn**
+**scope: sound, and the 2026-09-08 finding's factual claims are withdrawn**
 
 The fence breach is real and I am not pretending otherwise. `## Plan` says "One card file changes and
 nothing else", and commit `af34af4` ("correct the three handover lines this work made false") edits
@@ -262,14 +262,14 @@ I read this card's own commits, not the branch diff:
 card touched no code at any point.
 
 **The claimed regression did not happen.** The earlier verdict says the HANDOVER edits "pushed
-`docs/HANDOVER.md` back over the 40 KB budget — a live regression created by an out-of-scope edit".
+`docs/HANDOVER.md` back over the 40 KB budget, a live regression created by an out-of-scope edit".
 Measured across that exact commit:
 
     git show af34af4^:docs/HANDOVER.md | wc -c   ->  40986
     git show af34af4:docs/HANDOVER.md  | wc -c   ->  40981
 
 The file was **already** 26 bytes over the 40,960 budget before the edit, and the edit left it five
-bytes smaller — exactly what this card's own log claimed and the earlier review disbelieved. The file
+bytes smaller, exactly what this card's own log claimed and the earlier review disbelieved. The file
 today is **40,722 bytes, under budget**. So the out-of-scope edit deleted three statements this work
 had made false, shrank the file, and created no regression. `0030` and `0031` were raised as new
 cards and declared `OUT-OF-SCOPE` on the log, which is the ordinary way to report what you may not
@@ -284,7 +284,7 @@ VERDICT: sound
 **breakage: sound**
 
 `node scripts/selftest.js` prints `280 passed, 0 failed`. It reads `app/` and `scripts/` and cannot
-see `docs/board/`, so it proves only that this card broke no code — which is the whole of what is
+see `docs/board/`, so it proves only that this card broke no code, which is the whole of what is
 provable here, because the card touched no code.
 
 **No UI surface, and I am writing that down as a claim rather than skipping it.** Both of this card's

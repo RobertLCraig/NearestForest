@@ -118,7 +118,7 @@ put back to 904, and no number outside those three files moved.
 `0034` only changed `docs/HANDOVER.md`, so correcting comments in shipped files was outside it.
 
 **2026-09-06** RESULT: done
-TESTS: +2 new, all green (227 passed, 0 failed — `node scripts/selftest.js`)
+TESTS: +2 new, all green (227 passed, 0 failed, `node scripts/selftest.js`)
 TOUCHED: scripts/selftest.js
 TOUCHED: app/api/nearest.php
 TOUCHED: docs/build/IOS-SHORTCUT.md
@@ -145,7 +145,7 @@ message, because three separately named checks would not match the name the card
 
 Measured, not assumed: 1,180 records, 550 with a `url` (274 `www.forestryengland.uk`, 276
 `forestryandland.gov.scot`), 630 car parks with no `url` at all. The `core.js` comment now says all
-of that, and also says out loud that `safeHref()` checks the scheme and never the host — the point
+of that, and also says out loud that `safeHref()` checks the scheme and never the host, the point
 the card makes in `## Why` and the thing a reader could not otherwise tell.
 
 `CACHE` in `app/sw.js` and `BUILD` in `app/core.js` bumped `v16-2026-09-05` -> `v17-2026-09-06`, as
@@ -162,7 +162,7 @@ and `0039` for `docs/DATA-MODEL.md:168`, which says 904 records carry the stale 
 when 1,180 do. Both cards ask for a row added to this card's `carried` table rather than a new test.
 
 Not checked in a browser: this is a worktree and Herd serves `C:\Dev\NearestForest`. Nothing visual
-changed — the diff under `app/` is two comments and two version strings.
+changed, the diff under `app/` is two comments and two version strings.
 </content>
 
 ### 2026-09-08 review (v20260908115742-c766)

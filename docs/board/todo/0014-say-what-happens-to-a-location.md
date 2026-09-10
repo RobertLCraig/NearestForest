@@ -6,7 +6,7 @@ no_outward_effect: "sent" in criterion #1 is the footer promising that nothing l
 ## What I need from you
 
 **One call.** Untick criterion `#2` below, so the card goes back to `todo/` and the footer wording
-gets fixed — **or** write on the thread that the reviewer is wrong and the card stands as done.
+gets fixed, **or** write on the thread that the reviewer is wrong and the card stands as done.
 Doing neither is the fail: it comes straight back to this lane, unchanged, on the next run.
 
 ---

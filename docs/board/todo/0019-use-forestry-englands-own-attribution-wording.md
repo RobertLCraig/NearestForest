@@ -6,7 +6,7 @@ no_outward_effect: "published" in criteria #1 and #4 is Forestry England's own w
 ## What I need from you
 
 **One call.** Untick whichever criteria below the reviewer disproved, so the card goes back to
-`todo/` and an agent fixes the two credit lines — **or** write on the thread that the reviewer is
+`todo/` and an agent fixes the two credit lines, **or** write on the thread that the reviewer is
 wrong and the card stands. Doing neither is the fail: it returns to this lane, unchanged, on the
 next run.
 

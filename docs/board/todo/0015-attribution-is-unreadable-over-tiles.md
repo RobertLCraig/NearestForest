@@ -108,13 +108,13 @@ every zoom level because no tile can be brighter than white.
 
 **AC #1 is left open on purpose, and it is the only thing missing.** The contrast is proven, but
 nobody has looked at it. This ran in a worktree, which Herd does not serve, and the browser tool
-was not permitted in this session, so there was no desktop render either — let alone the phone
+was not permitted in this session, so there was no desktop render either, let alone the phone
 check the card asks for. That is Task 2, still open. What needs eyes is layout, not colour: does the
 pill wrap to two lines at 390px, and does the wrapped pill still clear the home bar. Serve `app/`
 from `C:\Dev\NearestForest`, open the map, tap **Tiles**, and look.
 
 **Two things I could not settle from the repository.** The suite the card names,
-`.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat`, does not exist here — this project has no
+`.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat`, does not exist here, this project has no
 `vendor/` and no PHP test suite. `node scripts/selftest.js` is the suite, per CLAUDE.md, and it
 passes at **190, 0 failed** (186 before; 4 new cover the attribution, the toggle, the opacity floor
 and the shared safe-area rule). And the `--pad` used for the pill's `max-width` is the page padding,
@@ -129,7 +129,7 @@ for a phone and this was a desktop render.
 `C:\Dev\NearestForest`, but nothing stops a session serving this worktree itself:
 `php -S 127.0.0.1:8791 -t app <router>`, with a throwaway router doing two jobs. It stood in for
 `api/tiles.php`, which cannot run here because the Thunderforest key lives on the server and not in
-the repo, and returned **a pure white 256px tile** — which is not a compromise but the exact worst
+the repo, and returned **a pure white 256px tile**, which is not a compromise but the exact worst
 case the card says to design against, and the same bound the .72 figure was picked from. It also
 served `index.html` with a script appended that opens the map and presses **Tiles**, because a
 headless browser cannot tap a button. Chrome on this machine ignores `--window-size` and renders at
@@ -146,7 +146,7 @@ in `%TEMP%` and is deleted; nothing under `app/` was touched.
 | 390 | 98–293, 195 wide | 195 | 3 | 44px |
 | 430 | 108–323, 215 wide | 215 | 2 | 44px |
 
-So the two questions the last run left are answered. **It wraps** — to three lines at 320 and 390,
+So the two questions the last run left are answered. **It wraps**, to three lines at 320 and 390,
 not the two that was guessed, and 430 is the width where it drops to two. **The wrapped pill still
 clears the home bar**: the gap is 44px at every width, which is the 34px inset plus the 10px the
 rule asks for, so the wrap grows the pill upward and never downward. The pill is centred to the
@@ -158,7 +158,7 @@ Tiles off was rendered too, and is untouched: full-width hint, no pill, the dim 
 glow over the bundled outline, same 44px gap. That is #2 and #3 seen rather than assumed.
 
 **What this check does not cover, and it is two things.** The basemap was synthetic white, not the
-real Outdoors style — which bounds legibility rather than sampling it, since no tile can be brighter
+real Outdoors style, which bounds legibility rather than sampling it, since no tile can be brighter
 than white at any zoom, but it does mean nobody has yet seen the pill over an actual
 Thunderforest tile. And it was a desktop browser, not a phone: the safe-area inset was simulated,
 not reported by iOS. **Task 2 stays open for both reasons.** Card 0018 needs fresh phone screenshots

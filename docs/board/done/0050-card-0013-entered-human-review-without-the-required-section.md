@@ -112,7 +112,7 @@ verdict says `validate()` in `scripts/parse.py` is the only place AC `#2` lives 
 it. Which box to untick is still Rob's call, and the section says so under "Why it needs you".
 
 Neither criterion here could be given a test. `#1` is `proves: none` and `#2` is `proves: manual`, and
-this project's suite is `node scripts/selftest.js` over the app — it cannot read the board. I ran it
+this project's suite is `node scripts/selftest.js` over the app, it cannot read the board. I ran it
 anyway to show nothing broke: 227 passed, 0 failed. There is no PHP suite in this repository, so
 `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist here and were not run.
 

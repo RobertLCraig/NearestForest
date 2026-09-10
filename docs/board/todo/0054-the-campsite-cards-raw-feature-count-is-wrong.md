@@ -3,7 +3,7 @@
 ## Why
 Card `0020`'s acceptance criterion #2 justifies having no open/closed badge with the clause "since
 only 96 of 8,496 records carry any opening hours". The cached Overpass responses hold **8,501**
-features, not 8,496: counted 2026-09-08 from `data/raw/osm/` — 6,133 England, 905 Scotland, 1,463
+features, not 8,496: counted 2026-09-08 from `data/raw/osm/`, 6,133 England, 905 Scotland, 1,463
 Wales. `docs/HANDOVER.md` already says 8,501 ("8,501 features in, 3,675 out"), so the repository
 carries two figures for one measurement and the one inside the acceptance criterion is the wrong one.
 
@@ -24,7 +24,7 @@ data was re-fetched or the query widened afterwards. Nothing checks prose that l
   guard reads `app/data/sites.json` and checks only `app/app.js`.
 
 ## Not this card
-Not a change to what criterion #2 requires. The rule — no open/closed badge — is correct and stays
+Not a change to what criterion #2 requires. The rule, no open/closed badge, is correct and stays
 word for word; only the count in its justifying clause is wrong. Not a re-fetch of `data/raw/osm/`,
 and not a rebuild of `app/data/campsites.json`: the shipped dataset is right and nothing about it
 changes. Not a general audit of numbers written on other cards. Not extending the `0036` guard to
@@ -46,7 +46,7 @@ this fault is worth.
 - [x] Add the assertion to `scripts/selftest.js`, next to the `card 0036` prose-count block: read the
       card file, pull the number out of criterion #2, and compare it to the summed `elements` count
       of `data/raw/osm/*.json`. **`data/raw/` is gitignored**, so the assertion must skip with a
-      printed reason when the cache is absent rather than fail — a skipped check that says so is
+      printed reason when the cache is absent rather than fail, a skipped check that says so is
       honest, a check that fails on a clean clone is noise.
 
 ## Plan
@@ -66,7 +66,7 @@ it is cheap, and if the answer differs, say so in `## Comments` rather than sile
 
 **2026-09-08** Raised from card `0020`'s build session, which found the discrepancy and could not fix
 it: a session working a card may not reword that card's own criteria, and this is a criterion's text.
-The count of 8,501 is measured, not inferred — `elements` arrays in the three cached Overpass
+The count of 8,501 is measured, not inferred, `elements` arrays in the three cached Overpass
 responses, 6,133 + 905 + 1,463.
 
 **2026-09-10** RESULT: done
@@ -77,7 +77,7 @@ OUT-OF-SCOPE: none
 **The count was re-measured today, before anything was changed**, and it has not moved: 6,133
 England plus 905 Scotland plus 1,463 Wales is **8,501**, counted from the `elements` arrays of the
 three files in `data/raw/osm/`. So 8,501 is the figure written into criterion #2, replacing 8,496.
-Nothing else in that sentence changed, and the rule it states — no open/closed badge — is word for
+Nothing else in that sentence changed, and the rule it states, no open/closed badge, is word for
 word what it was.
 
 **The other figure in the same clause was counted in the same pass, and it is right.** 96 of the
@@ -90,8 +90,8 @@ rather than hard-coding a path, sums the `elements` arrays in `data/raw/osm/*.js
 Three runs:
 
 - with the card corrected: `PASS`, 280 passed, 0 failed
-- with 8,496 put back: `FAIL — card says 8,496, data/raw/osm holds 8501`, 279 passed, 1 failed
-- with `data/raw/osm` moved aside: `SKIP — data/raw/osm is gitignored and absent, nothing to count`,
+- with 8,496 put back: `FAIL, card says 8,496, data/raw/osm holds 8501`, 279 passed, 1 failed
+- with `data/raw/osm` moved aside: `SKIP, data/raw/osm is gitignored and absent, nothing to count`,
   279 passed, 0 failed
 
 The skip prints its reason and is not counted as a pass, which is what the task asked for: a clean
@@ -100,7 +100,7 @@ worse than no check.
 
 **Nothing outside the fence.** `data/raw/osm/` was not re-fetched, `app/data/campsites.json` was not
 rebuilt, no other card's numbers were audited, and the `0036` guard was not taught to read board
-prose in general — it reads this one criterion, which is the whole of the fault.
+prose in general, it reads this one criterion, which is the whole of the fault.
 
 ### 2026-09-10 review
 
@@ -130,7 +130,7 @@ says 96 stands; independently counted, it does. Nothing to change.
 **The test can go red.** Put `8,496` back into line 57 and the run said:
 
     FAIL  card 0020 quotes the raw OSM feature count correctly
-          — card says 8,496, data/raw/osm holds 8501
+         , card says 8,496, data/raw/osm holds 8501
 
 Restored byte-exact from a copy taken beforehand, green again. The skip path is honest in shape too:
 it prints its reason and calls no `ok()`, so an absent cache neither fails a clean clone nor

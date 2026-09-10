@@ -149,7 +149,7 @@ repository and outside this card.
 facts and both need saying, in that order, because the second one is not a complaint that the work is
 missing.**
 
-**#1, the outcome — met, and I verified it with a check capable of returning red.** The `proves:` line
+**#1, the outcome, met, and I verified it with a check capable of returning red.** The `proves:` line
 names a plain substring search, which is the thing under attack here, so I anchored it and ran it per
 file against wherever each of the eleven now lives:
 
@@ -169,10 +169,10 @@ All eleven, `^## What I need from you` at line 3, directly under the title at li
 prose match. The substring check did not hide a miss among the eleven, and I want that on the record
 before the rest, because the finding below is about proof and not about missing work.
 
-I also swept the lane as it stands today, both ways, and both come back empty — seventeen cards in
+I also swept the lane as it stands today, both ways, and both come back empty, seventeen cards in
 `human-review/`, every one carrying the heading as a heading.
 
-**#2, manual — met on the sample I read.** `0036` opens "**One choice, and I recommend the first.**"
+**#2, manual, met on the sample I read.** `0036` opens "**One choice, and I recommend the first.**"
 then two numbered routes then `**What's wrong.**`; `0044` opens with an imperative untick-or-say-why
 line. Ask first, imperative, inside three lines of the heading, with pass and fail underneath. The
 README's shape.
@@ -208,8 +208,8 @@ cards in this series: `0045`, `0046`, `0047`, `0048`, `0049`, `0050`, `0051`, `0
 and `0042`. **The check is systematically blind to precisely the cards this work produces.**
 
 That is not academic. The loop has moved a returned card into `human-review/` eleven times in this
-series alone. The moment it moves this card or `0053` there — and both are returned builds sitting in
-`ai-review/`, which is exactly the population it moves — the lane will contain a card with no ask, and
+series alone. The moment it moves this card or `0053` there, and both are returned builds sitting in
+`ai-review/`, which is exactly the population it moves, the lane will contain a card with no ask, and
 this card's own check will report the lane clean. The last line of `## Comments` above says "All 42
 cards in the lane now carry the section", and it is that sentence, resting on that check, which is the
 one a future reader should not trust.
@@ -234,7 +234,7 @@ Twelve markdown files: the eleven named in `## Why`, plus this card. Nothing els
 `git show --name-only --format= c394e96 | grep -E '^(app|scripts)/'` returns nothing. Each of the
 eleven gained 29–34 lines and the deletions are all in this card's own checkbox lines.
 
-I checked the fence line by line. No criterion unticked anywhere — the eleven `## Acceptance` blocks
+I checked the fence line by line. No criterion unticked anywhere, the eleven `## Acceptance` blocks
 are untouched. No lane move in this commit. No reviewer finding acted on. No entry-guard added, which
 the card correctly said belongs in `C:\Dev\ProgressBoard`. The `## Plan`'s own admission that it was
 wrong about these being documentation cards rather than returned builds is the right thing to have
@@ -260,17 +260,17 @@ figures. Three commits later, four of them are false:
 | `0034` is in `human-review/` | it is in `ai-review/` | `9fcf175` |
 
 The session that made those changes appended a correcting entry to the five sibling cards that had
-landed in `done/` — `0023`, `0031`, `0040`, `0041` and `0044` all now carry "went 42,299 bytes at the
+landed in `done/`, `0023`, `0031`, `0040`, `0041` and `0044` all now carry "went 42,299 bytes at the
 start of this session to **40,722**". It missed `0034`, which had gone to `ai-review/` instead. So
 **card `0034`'s `## What I need from you` still tells Rob the brief "is 42,299 bytes today", when it is
-40,722 and under budget** — and the whole ask on that card is premised on the brief being over. That is
+40,722 and under budget**, and the whole ask on that card is premised on the brief being over. That is
 a live, wrong instruction at the top of a card, and it is this card's to fix because this card wrote
 it. One sentence in
 `docs/board/ai-review/0034-the-no-caching-decision-rests-on-a-smaller-dataset.md`, no untick needed.
 
 **The deeper finding is the pattern, not the one number.** Cards `0032`, `0040`, `0041` and `0044`
 exist because `docs/HANDOVER.md` carried hand-typed counts that nothing re-measured. This card's fix
-for eleven cards was to hand-type six more counts into each of them — sixty-odd unmeasurable numbers,
+for eleven cards was to hand-type six more counts into each of them, sixty-odd unmeasurable numbers,
 in a section that is not append-only and that a reader treats as current. The brief itself has since
 gone the other way: `a0d9ff7` deleted every card list and count from it and told the reader to
 `ls docs/board/human-review` instead. The sections would have been shorter and permanently true had

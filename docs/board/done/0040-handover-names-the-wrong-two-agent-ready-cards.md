@@ -108,7 +108,7 @@ anyway to show the docs edit broke nothing: 227 passed, 0 failed. There is no PH
 `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
 
 I left the `human-review/` and `ai-review/` counts alone, as `## Not this card` requires. Both are
-stale — the file says eight person-waiting cards and names eight, the folder holds eleven; it says
+stale, the file says eight person-waiting cards and names eight, the folder holds eleven; it says
 nineteen in `ai-review/`, the folder holds twenty-seven. That is card `0041`.
 
 ### 2026-09-08 review (v20260908133410-397d)
