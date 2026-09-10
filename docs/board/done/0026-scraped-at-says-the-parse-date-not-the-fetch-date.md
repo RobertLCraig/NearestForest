@@ -345,3 +345,174 @@ Upstream moved a little in the eleven days since the last build. Counts are unch
 and 630 car parks. One English record was renamed at source, `fe-new-forest-reptile-centre` is now
 `fe-the-old-reptiliary`; one Scottish record moved 0.8 miles, `fls-winding-walks`; and 22 records
 changed their opening times, parking or facilities text. Nothing was added or lost on balance.
+
+**Correction, 2026-09-10.** That last figure is wrong and card `0019`'s reviewer counted it properly.
+**22 is a count of FIELDS, not of records: 19 records differ** in anything other than `scraped_at`,
+and one of those 19 is `fls-winding-walks`, which differs only in its coordinates. The 22 breaks down
+as `opening_summary` 12, `opening_times` 5, `parking` 4, `facilities` 1. Everything else in the
+paragraph above holds exactly.
+
+### 2026-09-10 review
+
+**suite**
+
+Read this first, because it changes what everything below was measured against. **The worktree this
+pass was given is 14 commits behind `main`** (`d7f8240`, against `main` at `0f2ce34`), so it does not
+contain `5e24785` at all: its `app/data/sites.json` still reads `2026-08-29` on all 1,180 records and
+its `BUILD` is still `v24-2026-09-08`. Reviewing what was handed to me would have been reviewing the
+state the last pass already reviewed. So I extracted `main` read-only with `git archive main` into a
+temporary tree outside the repository and attacked that. No git command in this pass changed any
+state, in any tree.
+
+`data/raw/` is gitignored and absent from every worktree, and this card's whole subject is
+`data/raw/fetched.json`, so **I linked the real cache in read-only** from `C:\Dev\NearestForest\data\raw`:
+directory junctions for `pages/` and `fls/`, plain copies of `index.json`, `carparks.json`,
+`search-forests.html`, `fetched.json` and `osm/`. `parse.py` writes to `app/data/sites.json` and to
+nothing else, which I checked before linking rather than after. The real cache is byte-for-byte
+untouched: `fetched.json` still holds 554 keys and still carries its 02:36 timestamp.
+
+`node scripts/selftest.js` on that tree: **284 passed, 0 failed**, and all three of this card's tests
+ran, under `--- staleness: scraped_at is the fetch date, not the parse date (card 0026) ---`. Without
+the cache linked it reads 283, and the missing one is card 0020's raw OpenStreetMap count, which
+prints `SKIP` when `data/raw/osm` is absent. Nothing to do with this card. Green again at the end,
+after every mutation below was reverted.
+
+**acceptance: sound**
+
+I did not read the criteria and agree with them. Six separate breaks, each watched red, each
+reverted, and none of them left the temporary tree:
+
+1. **#1**, `record_fetch()` returns before writing. RED: *"the fetcher wrote the pages but left no
+   data/raw/fetched.json to read a date back from"*.
+2. **#1 on the resume path**, the merge dropped so a second run replaces the index rather than adding
+   to it. RED, and the message names what survived: *"fetched.json = {"fls/pages/a-glen-2.html":...,
+   "pages/a-forest-2.html":...}, wanted all four pages dated"*. The two-process shape of that test is
+   load-bearing and it works.
+3. **#2 at the car park stamp**, `fetched_on("carparks.json")` replaced by `TODAY`. RED, naming all
+   three build sites: *"England 2026-08-08 (wanted 2026-08-08), Scotland 2026-08-20 (wanted
+   2026-08-20), car park 2026-09-10 (wanted 2026-08-25)"*.
+4. **#2 at the English stamp**, the same swap on the forest build. RED, and it also took down #3 and
+   card 0029's `a failed parse leaves the previous dataset untouched`, because bypassing `fetched_on`
+   bypasses the guard that lives inside it. That coupling is correct, not duplication.
+5. **#3**, `fetched_on()` reduced to `fetched.get(rel) or TODAY`, which is the original bug exactly.
+   RED: *"parse.py exited 0 on a page with no recorded download date"*, plus 0029's guard.
+6. **#3 at its quieter half**, still exits 1 but stops naming the page. RED: *"exited 1 but never
+   named pages/test-forest.html"*. So the "and name the page" clause of the criterion is guarded and
+   not decoration.
+
+**None of the three is a test that cannot fail**, which is what the previous review pass across this
+board found elsewhere and is what I went looking for hardest.
+
+**The 1,180-record claim, and the honest problem with checking it.** `app/data/sites.json` on `main`
+carries `scraped_at: 2026-09-10` on all 1,180 records, 0 null, 630 of them car parks. But today the
+download date and the parse date are **the same date**, so the shipped file on its own cannot tell
+the fix from the bug. Anybody reading that file and calling it proof has proved nothing. Three things
+do prove it:
+
+- Re-running `parse.py` in the isolated tree against the real 552-page cache exits 0, writes 1,180
+  sites and reports no problems, and the result is **byte-identical** to the shipped file, 736,659
+  bytes both. So the committed dataset really is the build output of today's cache.
+- `data/raw/fetched.json` holds a date for every one of the 274 English pages, 278 Scottish pages and
+  `carparks.json`, which is every key `fetched_on()` ever asks for.
+- I back-dated three of those keys to `2019-03-04` in the isolated copy and rebuilt. Exactly the right
+  records moved: `fe-alice-holt-forest`, `fls-glenmore` and all 630 car parks, which share one stamp,
+  while `generated_at` stayed `2026-09-10`. The stamp follows the recorded download date and not the
+  clock, on the real data and not only in a fixture.
+
+**The re-key in `5e24785` is not a loosened test.** That commit moved the DATA-MODEL prose guard from
+`still read` to `records now read`, which is the sort of edit that quietly turns a check into a
+comment, so I broke it three ways. Wrong count: RED, *"says 1181, dataset holds 1180"*. Wrong date in
+the same sentence: RED, *"says 1180, dataset holds 0"*. Re-worded so neither regex matches: RED, *"no
+count matching ... found"*. Both halves of the claim are still pinned, and a missing match fails
+rather than passes.
+
+VERDICT: sound
+
+**scope: sound**
+
+Fences, checked against `main` rather than against the card's account of itself.
+`scripts/parse_campsites.py` still takes its stamp from the Overpass response and never calls
+`fetched_on`. No app-side staleness warning exists. `TODAY` survives in `parse.py` only at
+`generated_at`, which is honestly the build date.
+
+**One fence was crossed, and it is the point of the card's last entry rather than a slip.**
+`## Not this card` says "Not re-fetching anything", and task 4 was closed by a re-fetch. It was done
+under card `0019`, on Rob's explicit authorisation, recorded on this thread on 2026-09-10 before the
+work. A scope fence exists to stop an agent quietly widening its own job; it is not a veto on the
+person who owns the repository. The tension is real and it is written down, which is the whole of
+what I would ask for. What came with it was consequential and nothing more: `app/core.js` and
+`app/sw.js` moved to `v26-2026-09-10` because the precached dataset changed, and the DATA-MODEL
+divergence moved to `### Closed`.
+
+One discrepancy the parent session should know: on `main` this card sits in `ai-review/`, and in the
+worktree I was given it is still in `human-review/`. Same card, two lanes, because of the 14-commit
+gap. The `ai-review/` copy is the live one.
+
+VERDICT: sound
+
+**breakage: sound**
+
+The last pass graded this lens `defect` and its finding was specific: `CLAUDE.md` tells every session
+to run the pipeline, and after this card the pipeline exits 1 on Rob's machine. **That finding does
+not stand against today's tree, and I measured it rather than assumed it.** `python scripts/parse.py`
+against the real cache, in the isolated tree, exits 0: 1,180 sites, 719 KB, *"Stage 2 complete, no
+problems."* The line in `CLAUDE.md` is true again. It was repaired by re-fetching rather than by
+adding a warning beside it, which is the better of the two repairs the finding asked for, and a
+warning added now would itself be the false sentence.
+
+**The mechanism behind that finding is still live, and it should not vanish with the finding.**
+`fetch.py` cannot re-date a file it already has: `fetch_page` and `fetch_fls_page` return `cached` for
+anything over 20,000 bytes and the two index fetchers do the same at 100,000, and only the download
+branch calls `record_fetch`. So an undated cached file stays undated through any number of `fetch.py`
+runs, and deleting it by hand is the only repair. That is not theory today: `fls/destinations.html`,
+`fls/index.json`, `index.json` and `fls/stay-the-night.*` are sitting in `data/raw/` right now with no
+recorded date, because they took the cached branch during this morning's run while everything around
+them was re-downloaded. **Nothing fails, because `fetched_on()` never asks for any of those four**, it
+asks only for `pages/`, `fls/pages/` and `carparks.json`. If a per-page file ever lands in that state
+the build stops until a person deletes it, and `fetched_on()`'s own message says so in those words.
+Worth a card if it ever bites; not worth holding this one.
+
+**Security, per the board README's three questions.** This card produced code.
+
+1. **Weakest point.** The cache filename is built out of remote content. `fetch.py:133` takes the
+   `slug` from an href on forestryengland.uk and does `slug.replace("/", "__")`; `fetch.py:225` takes
+   the Scottish slug as the last segment of a link out of the FLS index attribute and does not even
+   do that. Forward slashes are neutralised, backslashes are not, and this runs on Windows, so an
+   upstream page serving a slug containing `..\` steers both the cache write and the key written into
+   `fetched.json` outside `data/raw/`. It predates this card. This card made that same untrusted
+   string a key in one more file.
+2. **Unchecked.** `fetched.json` is trusted absolutely and validated not at all, and I proved it end
+   to end rather than asserting it: setting one key to the string `tomorrow, ish` produced a shipped
+   record reading `"scraped_at": "tomorrow, ish"`, which `validate()` waves through because it only
+   checks the field is present, and which the detail sheet then prints verbatim under DATA CHECKED.
+   Anything that can write `data/raw/` can make the dataset claim any age it likes, and the one field
+   meant to answer "is a re-scrape due" would answer confidently and wrongly. Related: the index is
+   `json.load`ed at import in `parse.py:39` with no `try`, so a half-written one gives a raw
+   `JSONDecodeError` traceback instead of one of this project's named reasons. It still exits 1 and
+   still writes nothing, so the dataset is safe; it is the "failed-with-reason" half of the house rule
+   that is missing, not the "fails loudly" half.
+3. **Leak on failure.** Relative cache paths and nothing else, `pages/hicks-lodge.html` and its
+   siblings. No credentials, no absolute paths, no third-party data. The list is long rather than
+   sensitive.
+
+VERDICT: sound
+
+**I looked at it in a browser, and the earlier "no UI surface" claim is now out of date.** Served
+`main` on `php -S 127.0.0.1:8803`, unregistered the service worker and deleted the
+`nearest-forest-v26-2026-09-10` cache before reading anything, then hard-reloaded. All three build
+paths reach the screen and all three now read the download date: an English forest
+([1](../attachments/0026-2026-09-10-1.png)), a Scottish one ([2](../attachments/0026-2026-09-10-2.png))
+and a car park ([3](../attachments/0026-2026-09-10-3.png)), each showing DATA CHECKED 2026-09-10, with
+the footer on `build v26-2026-09-10`. The fourth is the one that actually proves the card's claim on a
+screen: rebuilt with `pages/alice-holt-forest.html` back-dated in the isolated tree, the sheet reads
+**DATA CHECKED 2019-03-04** while the same build still says generated 2026-09-10
+([4](../attachments/0026-2026-09-10-4.png)). The screen shows the age of the page, not the age of the
+build. Server stopped, isolated tree restored and re-verified byte-identical to the shipped file.
+
+**Where it should go.** `done/`. All three criteria are proved rather than asserted, each by breaking
+the behaviour and watching the named test go red, and the claim the last task rested on is now true of
+the shipped file as well as of the generator. The one finding that returned this card last time is
+disproved against today's tree, which is what a fresh pass was asked to decide. The residual noted
+under breakage is a property of `fetch.py`'s cache branch, it is armed by nobody today, and it belongs
+on a card of its own if it ever costs anybody an hour. Nothing here needs an untick and nothing here
+is a person's to answer.
