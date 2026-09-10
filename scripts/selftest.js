@@ -1105,6 +1105,63 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
 }
 
 console.log('');
+console.log('--- the build refuses a bad url (card 0013) ---');
+{
+  // Card 0013 shut this door at both ends: NF.safeHref refuses a bad scheme at render
+  // time, and validate() in scripts/parse.py refuses to EMIT one. Only the render half
+  // was ever tested. The 2026-09-07 review deleted the four lines in validate() and the
+  // suite still reported 227 passed, so the build-side half of the card's own criterion
+  // #2 was a claim with nothing behind it. Both ends are deliberate, because the app
+  // ships the dataset rather than deriving it, and a test on one end is not a test on
+  // the other.
+  //
+  // validate() is called directly rather than driven through a fixture tree, because a
+  // fixture cannot produce a `javascript:` url: build_forests() constructs the address
+  // from the page slug, so the only way an attacker's scheme reaches this function is
+  // from upstream markup this suite cannot forge. The function is the unit under test.
+  const { spawnSync } = require('child_process');
+  const PY = process.env.PYTHON || 'python';
+  const PYENV = Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' });
+  const rec = (id, url) => ({ id: id, source: 'forest', country: 'England',
+    name: 'Test', lat: 54.0, lng: -2.0, scraped_at: '2026-09-10', url: url });
+  const cases = [
+    ['ok-https', 'https://www.forestryengland.uk/bedgebury', null],
+    ['ok-scotland', 'https://forestryandland.gov.scot/visit/destinations/aberfoyle', null],
+    ['ok-no-url', null, null],
+    ['bad-javascript', 'javascript:alert(1)', 'not https'],
+    ['bad-data', 'data:text/html,<script>alert(1)</script>', 'not https'],
+    ['bad-http', 'http://www.forestryengland.uk/x', 'not https'],
+    ['bad-protocol-relative', '//evil.example.com/x', 'not https'],
+    ['bad-offsite', 'https://evil.example.com/x', 'off-site'],
+  ];
+  const stub = [
+    'import importlib.util, json, os, sys',
+    'spec = importlib.util.spec_from_file_location("nf_parse", os.path.join("scripts", "parse.py"))',
+    'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+    'sites = json.loads(sys.argv[1])',
+    'm.problems.clear()',
+    'm.validate(sites)',
+    'print(json.dumps(m.problems))',
+  ].join('\n');
+  const r = spawnSync(PY, ['-c', stub, JSON.stringify(cases.map(([id, url]) => rec(id, url)))],
+                      { cwd: ROOT, encoding: 'utf8', env: PYENV });
+  let reported = null;
+  try { reported = JSON.parse(((r.stdout || '').trim().split('\n').pop() || '').trim()); }
+  catch (e) { reported = null; }
+  // Spelled out rather than reusing the `tail` helper, which is scoped to a later block.
+  const said = ((r.stdout || '') + (r.stderr || '')).trim().split('\n').slice(-3).join(' / ');
+  const wrong = !reported ? ['validate() produced no readable report: ' + said]
+    : cases.map(([id, , want]) => {
+        const hit = reported.find(p => p.startsWith(id + ' url is'));
+        if (want === null) return hit ? `${id} was refused and should not have been: ${hit}` : null;
+        if (!hit) return `${id} was ACCEPTED and should have been refused as ${want}`;
+        return hit.includes(want) ? null : `${id} was refused as the wrong thing: ${hit}`;
+      }).filter(Boolean);
+  ok('the build refuses a url that is not an https page on a publishing agency host',
+     wrong.length === 0, wrong.join(' | '));
+}
+
+console.log('');
 console.log('--- update path ---');
 {
   const sw = fs.readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');

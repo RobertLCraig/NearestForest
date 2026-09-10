@@ -1,24 +1,5 @@
 # Scheme allow-list for dataset URLs
 
-## What I need from you
-
-**One answer.** Untick criterion `#2` below, so the card returns to `todo/` and the missing test
-gets written, **or** write on the thread that the reviewer is wrong, and the card stands as done.
-Doing neither is the fail: the card comes straight back here, unchanged, on the next run.
-
----
-
-**What's wrong.** All three boxes below are ticked, so every unattended run finds nothing to do and
-sends the card back here. Only you can untick one; an agent reviewing a card is forbidden to.
-
-**Cause.** The reviewer's `breakage` verdict at the bottom: nothing tests the build-time half. The
-scheme check lives in `validate()` in `scripts/parse.py`, and no test drives it, delete those four
-lines and the suite still reports 227 passed. The app-side half was attacked and held.
-
-**Why it needs you.** The other two reviewers graded the card `sound`, so *which* box is wrong is a
-judgement, not a lookup. The security itself is not at risk either way: the app refuses a bad URL
-today, and the untested part is only the build refusing to emit one.
-
 ## Why
 The detail sheet builds `<a href="' + esc(site.url) + '">` from a field that originates on a
 website nobody here controls. `esc()` escapes `"` and `'`, so an attribute breakout is impossible,
@@ -48,6 +29,10 @@ the three map deep links are built by `NF.navUrl` from coordinates, not from dat
       BUILD SHALL report it and exit non-zero rather than emit the dataset.
 - [x] #3 WHEN the shipped dataset is checked, THE APP SHALL find every URL passes the same guard
       the renderer applies.
+- [x] #4 WHEN the self-tests run, THE SUITE SHALL drive `validate()` in `scripts/parse.py` itself,
+      so deleting the build-side scheme check turns the run red rather than leaving criterion #2 a
+      claim with nothing behind it.
+      proves: `the build refuses a url that is not an https page on a publishing agency host`
 <!-- AC:END -->
 
 ## Tasks
@@ -56,6 +41,8 @@ the three map deep links are built by `NF.navUrl` from coordinates, not from dat
 - [x] `parse.py` validates scheme and host in `validate()`, which already exits non-zero
 - [x] Self-tests: the guard against `javascript:`, `data:`, `http:`, protocol-relative and
       leading-whitespace forms, plus a sweep of every URL in the shipped dataset
+- [x] A self-test that calls `validate()` directly with a good url and each bad form, so the
+      build-side half of the rule is driven rather than assumed
 
 ## Plan
 `safeHref` goes in `core.js` rather than `app.js` because CLAUDE.md says pure logic goes there, and
@@ -224,3 +211,47 @@ offending id and the offending URL to a developer's terminal and exiting non-zer
 `sites.json` is written.
 
 VERDICT: defect
+
+**2026-09-10** RESULT: done
+TESTS: +1 new, all green (286 passed, 0 failed)
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+Picked up as part of the brief's "What's next" item 1, the tests that cannot fail. **One criterion
+was added and was written before the code.** No existing box was touched: both reviewers graded
+acceptance `sound` and the finding is that criterion `#2` had nothing driving it, which is a missing
+test rather than an untrue claim. `#4` now says the test must exist.
+
+**`validate()` is called directly rather than driven through a fixture tree**, and that is a
+departure from the reviewer's suggestion, so here is why. The reviewer proposed a fixture page with
+a `javascript:` URL. That cannot be built: `build_forests()` constructs each address from the page
+slug, so a fixture cannot carry an attacker's scheme at all, and a test that cannot express the
+attack is not a test of it. The four lines under attack are a pure function of a record, so the
+record is what to hand them. The stub imports `scripts/parse.py` by path, clears `problems`, calls
+`m.validate(...)` on eight synthetic records and prints the report as JSON.
+
+**Eight cases, and the three that must be ACCEPTED matter as much as the five refused.** A test that
+only checks refusals passes just as well when the function refuses everything, which would be a
+build that can never ship. So it pins a Forestry England page, a Forestry and Land Scotland page and
+a record with no url at all as accepted, alongside `javascript:`, `data:`, `http:`, a
+protocol-relative `//evil.example.com` and an off-site `https://evil.example.com`.
+
+**Proved red twice, in both directions.**
+
+- Delete the four lines in `validate()`, exactly the reviewer's attack: `FAIL, bad-javascript was
+  ACCEPTED and should have been refused as not https`, and the same for `data:`, `http:`,
+  protocol-relative and off-site. 285/1. Under the old suite that deletion was green.
+- Drop `forestryandland.gov.scot` from `URL_HOSTS`, which breaks the accept side instead: `FAIL,
+  ok-scotland was refused and should not have been`. 281/5, because three sibling fixture tests go
+  red too, which is the build correctly refusing to write a dataset it does not trust.
+- Restored both, and `git diff` confirms `scripts/parse.py` byte-identical. 286 passed, 0 failed.
+
+**One small thing found and fixed while writing it.** The failure path first called the `tail`
+helper, which is scoped to a later block, so a run where python produced no output would have
+thrown a `ReferenceError` instead of reporting a failure. That is an error handler that cannot
+report an error, in a test whose whole subject is a check that cannot fail. Spelled out inline.
+
+**Nothing under `app/` changed**, so `CACHE` and `BUILD` are untouched at `v26-2026-09-10` and there
+is nothing to deploy. **No browser check, and that is a claim rather than a skip**: this build
+touched only `scripts/selftest.js`, and the render half of the rule already has browser evidence on
+this card from 2026-08-10.
