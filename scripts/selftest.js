@@ -23,6 +23,24 @@ function near(name, got, want, tol) {
   ok(name, Math.abs(got - want) <= tol, `got ${got}, wanted ${want} ±${tol}`);
 }
 
+/* Card 0011, second pass. Every assertion about app/.htaccess used to search the whole
+   file, comments included, so prefixing a directive with `#` left the suite green. The
+   2026-09-10 review commented out the CSP, HSTS, nosniff, Referrer-Policy and
+   Permissions-Policy one at a time and got 280 passed, 0 failed on each: a green run on
+   an app serving no security headers, which is the exact state the 2026-08-10 pen test
+   found and this card exists to end. Nobody attacks a file this way; you comment a header
+   out to test something and forget to put it back, and the suite says nothing.
+
+   Strip the comments once, here, and read only what Apache would act on. That also closes
+   the quieter half: the file explains `frame-ancestors` in prose three lines above the
+   directive, so a comment could satisfy a check on its own. Every present and future
+   .htaccess assertion gets this for free by reading the return value. */
+const stripHtaccessComments = s => s.split('\n').filter(l => !/^\s*#/.test(l)).join('\n');
+function htaccessDirectives() {
+  return stripHtaccessComments(
+    fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8'));
+}
+
 const BRIGHTON = { lat: 50.8168, lng: -0.0894 };   // Marine Gate, Marine Drive, BN2 5TP
 
 console.log('\n--- geometry ---');
@@ -915,7 +933,7 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
 console.log('');
 console.log('--- hardening (adversarial review, 2026-08-10) ---');
 {
-  const htaccess = fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8');
+  const htaccess = htaccessDirectives();
   const appjs = fs.readFileSync(path.join(ROOT, 'app', 'app.js'), 'utf8');
   const indexhtml = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8');
   const tiles = fs.readFileSync(path.join(ROOT, 'app', 'api', 'tiles.php'), 'utf8');
@@ -954,9 +972,17 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // phone, which is the only other place it would show up.
   ok('no inline <script> in index.html',
      !/<script(?![^>]*\bsrc=)[^>]*>/i.test(indexhtml));
-  ok('no inline event handlers in index.html',
-     !/\son[a-z]{3,}\s*=\s*["']/i.test(indexhtml));
-  ok('no style attributes in index.html markup', !/\sstyle\s*=\s*["']/i.test(indexhtml));
+  // Card 0011, second pass. These two read index.html ALONE, and index.html is not where
+  // the markup lives: `renderList` and the detail sheet in app/app.js build HTML strings
+  // and assign them with innerHTML, which is the very reason this card's `## Why` says the
+  // policy has to be strict. An onclick= or style= added inside one of those template
+  // strings passed the suite and failed only as a dead button on somebody's phone. The
+  // .htaccess comment already claims "no inline event handler anywhere in the app", so
+  // widening these to every shipped file is making the test say what the file says.
+  const markup = indexhtml + '\n' + shipped;
+  ok('no inline event handler in any shipped markup',
+     !/\son[a-z]{3,}\s*=\s*["']/i.test(markup));
+  ok('no style attribute in any shipped markup', !/\sstyle\s*=\s*["']/i.test(markup));
   ok('no eval or Function constructor in the shipped JS',
      !/\beval\s*\(|\bnew\s+Function\s*\(/.test(shipped));
 
@@ -970,6 +996,20 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   ];
   wantHeaders.forEach(([name, re]) => ok('.htaccess sets ' + name, re.test(htaccess)));
   ok('the CSP carries no unsafe-inline or unsafe-eval', !/unsafe-(inline|eval)/.test(htaccess));
+
+  // Prove the strip rather than trusting it. Comment out the WHOLE REAL FILE and require
+  // every header pattern above to fail on it. Without the strip this assertion is red,
+  // which is the point: it is the only thing standing between the six checks above and
+  // the state the 2026-09-10 review measured, where all five headers were commented out
+  // and the suite still read 280 passed, 0 failed. A pattern added to wantHeaders later
+  // is covered automatically, because this reads the same list.
+  const allCommented = stripHtaccessComments(
+    fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8')
+      .split('\n').map(l => '# ' + l).join('\n'));
+  const survived = wantHeaders.filter(([, re]) => re.test(allCommented)).map(([n]) => n);
+  ok('a commented-out security header fails the suite', survived.length === 0,
+     `${survived.length} of ${wantHeaders.length} checks still pass with every directive ` +
+     `commented out: ${survived.join(', ')}`);
 
   // sw.js matches both FilesMatch patterns and the last `Header set` wins, so the
   // stricter block has to be the later one. Reversed, the file reads as though the
@@ -1118,7 +1158,7 @@ console.log('--- update path ---');
      `tabs [${tabTokens.join(', ')}] rank nothing: [${orphanTabs.join(', ')}] ` +
      `is no source in the data, which holds [${[...dataSources].join(', ')}]`);
 
-  const ht = fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8');
+  const ht = htaccessDirectives();
   ok('the app shell is not HTTP-cached', /\(html\|css\|js\|json\|webmanifest\)/.test(ht) &&
      /Cache-Control "no-cache"/.test(ht));
 

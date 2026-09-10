@@ -3,30 +3,6 @@ no_outward_effect: "send" in criterion #2 is the server emitting HTTP response h
 ---
 # Security response headers
 
-## What I need from you
-
-**One call.** A reviewer says one task on this card was left half done, and no session may untick a
-box. Either untick criterion #1 and send this card back to `todo/`, or write here why the reviewer is
-wrong and leave it ticked.
-
-**Pass** is either of those, written as one dated line in `## Comments` below.
-
-**Fail** is leaving all five boxes ticked with nothing written. The card then reads as finished, the
-loop finds no work on it, and it comes straight back to this lane. That is what has happened so far.
-
-**Why it needs you.** The reviewer's finding sits under task 4, not under a criterion, and it graded
-the acceptance itself `sound`. So which box, if any, is untrue is a judgement, and only a person may
-change a tick.
-
-**What's wrong.** `scripts/selftest.js` checks "no inline handler" and "no `style=`" against
-`app/index.html` only. The markup the strict policy exists to defend is built by `innerHTML` inside
-`app/app.js`, which those two checks never read. A future `onclick=` or `style=` in one of those
-strings passes the suite and fails only as dead buttons on a phone.
-
-**Cause.** The card was built, reviewed, and returned with the finding. A reviewer is forbidden from
-editing acceptance, so it came back with 5 of 5 ticked; every unattended session since has read the
-boxes, found nothing open, and promoted it again.
-
 ## Why
 An adversarial review and penetration test on 2026-08-10 (prompted by the app being shared with
 other people) found the live site serving exactly one security header, and it was not ours:
@@ -82,6 +58,14 @@ targets honours the CSP form.
 - [x] #4 WHEN `sw.js` is requested, THE APP SHALL send the `no-store` value the file specifies
       rather than a value silently overridden by a later block.
 - [x] #5 WHEN the tile layer is switched on, THE APP SHALL still draw tiles under the CSP.
+- [x] #6 WHEN the self-tests read `app/.htaccess`, THE SUITE SHALL judge only the directives Apache
+      would act on, so commenting a security header out turns the run red.
+      proves: `a commented-out security header fails the suite`
+- [x] #7 WHEN the self-tests check that the app stays inside the CSP, THE SUITE SHALL read every
+      shipped file that builds markup rather than `index.html` alone, so an inline handler or a
+      style attribute in a template string fails the run.
+      proves: `no inline event handler in any shipped markup`
+      and `no style attribute in any shipped markup`
 <!-- AC:END -->
 
 ## Tasks
@@ -94,6 +78,12 @@ targets honours the CSP form.
 - [x] Load the deployed app in a browser and confirm nothing is CSP-blocked
 - [x] Confirm the same on the phone, the only place iOS Safari's CSP behaviour is real
 - [x] Open the map on the phone with Tiles on, the one part the first screenshot did not cover
+- [x] Strip comments from `.htaccess` once, in both blocks that read it, so no assertion can be
+      satisfied by a commented-out line or by prose in a comment
+- [x] Prove that strip with a check that runs the header patterns over an all-commented copy of the
+      real file and requires every one of them to fail
+- [x] Widen the inline-handler and style-attribute checks from `index.html` to every shipped script,
+      which is what `.htaccess` already claims in its own comment
 
 ## Plan
 The CSP is strict because it can be: no build step, no CDN, no inline script, no inline handler.
@@ -298,3 +288,58 @@ report endpoint would be an external request in an app whose whole point is maki
 violation on somebody's phone is visible to nobody. That is a cost worth stating, not a defect.
 
 VERDICT: defect
+
+## Comments
+
+**2026-09-10** RESULT: done
+TESTS: +1 new, 2 widened, all green (285 passed, 0 failed)
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+Picked up because the brief's "What's next" makes this item 1: until the tests that cannot fail are
+fixed, every other green run on this project means less than it looks like. **Two criteria were
+added and were written before the code.** No existing box was touched. The 2026-09-10 reviewer
+graded acceptance `sound` and both findings sat under a task rather than under a criterion, so there
+was nothing to untick; what was missing was a criterion saying the tests must be able to fail, and
+that is what #6 and #7 now say.
+
+**The stale `## What I need from you` block is gone.** Rob answered the queue on 2026-09-10 and the
+block still asked him to untick a box, which is the opposite of what he decided.
+
+**Finding one, the unanchored `.htaccess` searches, fixed once rather than six times.** The reviewer
+suggested anchoring each pattern. Stripping the comments in one place is smaller and covers more:
+every present and future assertion about that file reads only the directives Apache would act on,
+and it also closes the quieter half, which is that the file explains `frame-ancestors` in prose
+three lines above the directive, so a comment could have satisfied a check on its own. Both blocks
+that read `.htaccess` now go through the same helper.
+
+**Finding two, the CSP-satisfiable checks, widened to what the card is actually about.** They read
+`index.html` alone, and `index.html` is not where the markup lives: `renderList` and the detail
+sheet in `app/app.js` build HTML strings and assign them with `innerHTML`, which is the reason this
+card's `## Why` says the policy has to be strict. They now read every shipped script as well. The
+`.htaccess` comment already claimed "no inline event handler anywhere in the app", so this is making
+the test say what the file says.
+
+**Every claim below was measured, then the file restored and confirmed byte-identical with `git
+diff`.**
+
+- Comment out `Strict-Transport-Security`: `FAIL .htaccess sets Strict-Transport-Security`. 284/1.
+- Comment out the other four headers together: **five** failures, not four, because
+  `frame-ancestors 'none'` lives on the CSP line and goes with it. 280/5. That is the exact run the
+  reviewer measured as 280 passed, 0 failed, now red.
+- Replace the strip with an identity function: `FAIL a commented-out security header fails the
+  suite, 6 of 6 checks still pass with every directive commented out`. 284/1. That check reads the
+  same `wantHeaders` list as the assertions it guards, so a pattern added later is covered without
+  anybody remembering to.
+- Put `onclick="alert(1)" style="color:red"` inside the list template in `app/app.js`: both widened
+  checks red. 283/2. Under the old tests this run was green.
+
+**Nothing under `app/` changed**, so `CACHE` and `BUILD` are untouched at `v26-2026-09-10` and there
+is nothing to deploy.
+
+**No browser check, and that is a claim rather than a skip.** This card's change is entirely inside
+`scripts/selftest.js`. The headers themselves cannot be observed locally in any case: `php -S` does
+not read `.htaccess`, because that file is Apache configuration, and the live site is out of bounds
+for an unattended session. The 2026-09-10 reviewer drove the app at `127.0.0.1:8792` to confirm the
+other half of criterion #1, that the app stays inside the policy, and nothing since then has
+touched a file the browser loads.
