@@ -210,7 +210,29 @@ ok('every English record is still inside the England bbox',
         .every(s => s.lat >= 49.5 && s.lat <= 56.2 && s.lng >= -6.8 && s.lng <= 2.2));
 ok('no British National Grid leakage',
    sites.every(s => Math.abs(s.lat) < 90 && Math.abs(s.lng) < 180));
-ok('attribution present', /Open Government Licence/.test(DATA.attribution || ''));
+/* Card 0019, third build. This was `ok('attribution present', /Open Government Licence/...)`,
+   four words that appear in the retired wording and the replacement alike, on the file that
+   actually ships. It stayed green through the whole of the defect it was accused of hiding,
+   and it stayed green after the build that claimed to have removed it: the build replaced a
+   DIFFERENT test, the one reading what parse.py writes into a temp tree, and left this one
+   here. The 2026-09-10 reviewer put the retired credit back into app/data/sites.json and got
+   284 passed, 0 failed, then replaced it with a sentence crediting nobody and got the same.
+
+   The footer and the generator are now both pinned on the three names. This is the third
+   record of the same obligation and the only one on the file that travels: a copy of
+   sites.json handed to somebody carries no index.html and no parse.py. It also closes the
+   route that has now opened twice, where the generator is fixed, the shipped file is not
+   rebuilt, and the run is green while the file is wrong. */
+{
+  const credit = DATA.attribution || '';
+  const short = ['Forestry England', 'Forestry and Land Scotland', 'Forestry Commission']
+                  .filter(a => !credit.includes(a));
+  ok('the shipped dataset credit names every agency in it',
+     /Open Government Licence/.test(credit) && short.length === 0,
+     `app/data/sites.json credits ${credit ? JSON.stringify(credit) : 'nobody at all'}` +
+     (short.length ? `, leaving out ${short.join(', ')}` : '') +
+     '. Rebuild it: python scripts/fetch.py && python scripts/parse.py');
+}
 ok('every record names the country it is in',
    sites.every(s => s.country === 'England' || s.country === 'Scotland'),
    JSON.stringify(DATA.counts_by_country));

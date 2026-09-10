@@ -77,6 +77,10 @@ that alone unless they ask.
 - [x] #7 WHEN the self-tests run, THE APP SHALL fail if the footer and the parser name different
       agencies, so the two records of one obligation cannot drift apart again.
       proves: `the footer and the dataset credit name the same agencies`
+- [x] #8 WHEN the self-tests read the credit on the SHIPPED `app/data/sites.json`, THE SUITE SHALL
+      require it to name every agency whose records are in it, so a dataset built before the
+      generator was fixed fails the run instead of passing on four common words.
+      proves: `the shipped dataset credit names every agency in it`
 <!-- AC:END -->
 
 ## Tasks
@@ -89,6 +93,7 @@ that alone unless they ask.
       way `campsites.json` already names OpenStreetMap
 - [x] Replace the four-word `attribution present` substring check with one that asserts the wording,
       and add a check that the footer and the parser name the same agencies
+- [x] Re-key `attribution present` onto the agency names, on the shipped file
 - [ ] Deploy
 
 ## Plan
@@ -420,3 +425,232 @@ because the sentence wraps and a re-wrap would otherwise have zeroed the count s
 
 **`CACHE` and `BUILD` bumped again to `v26-2026-09-10`.** `app/data/sites.json` is precached by the
 service worker, so a changed dataset needs a new cache name or a phone keeps the old one forever.
+
+### 2026-09-10 review, second build
+
+**Where this was run, because it was not the usual place.** The worktree I was given sits 15 commits
+behind `main` and contains neither build commit, so nothing in it was reviewable. I read `main`
+instead, materialised read-only with `git archive main` into a scratch tree, and ran no git command
+that changes state. The suite shells out to `git ls-files` once, so I shimmed that single call to
+read the main checkout read-only rather than initialise anything. `data/raw/` is gitignored and
+therefore absent from a worktree: without it one check skips and the run is 283, so I copied it in
+from `C:\Dev\NearestForest\data\raw` and the run is **284 passed, 0 failed**, as claimed. The browser
+pass served the scratch tree for the same reason.
+
+**acceptance: sound**
+
+Seven criteria, seven `proves:` tests. I ran each, then broke the thing it guards and confirmed it
+goes red. Every one did, on the right test, with a message that names the actual fault.
+
+- **#1, #4 first string.** Replaced "Crown Copyright, courtesy Forestry England, licensed under the"
+  with a generic line. FAIL `the footer uses Forestry England's own published attribution wording`.
+  283/1.
+- **#1, #4 second string.** Gutted the car park sentence. FAIL `the footer credits the Open
+  Government Licence for the car park data`. 283/1.
+- **#2.** Put "Personal use;" back at the front of the non-affiliation sentence. FAIL `the footer
+  makes no personal-use claim`. 283/1. The build's claim that the hyphenated "personal-use" in the
+  HTML comment cannot satisfy `/personal use/i` on the paragraph's behalf holds.
+- **#3.** Deleted the non-affiliation sentence. FAIL `the footer disclaims affiliation with both`.
+  283/1.
+- **#5.** Put the old Scottish template back in place of the generic wording: FAIL with `the generic
+  Scottish credit is not in the footer`. Then added the old template alongside the new sentence:
+  FAIL with `the footer still carries "Crown Copyright, Forestry and Land Scotland", which is
+  Forestry England's template with another agency's name in it`. 283/1 both times. Both halves of
+  that check are independently load-bearing, exactly as the build says.
+- **#6.** Dropped "from Forestry and Land Scotland" out of `ATTRIBUTION` in `scripts/parse.py`. FAIL
+  `the OGL file the parser writes names every agency in it`, quoting the credit it actually wrote and
+  naming the missing agency. 282/2. This one drives the real `parse.py` in a temp tree and reads the
+  file it wrote, so it cannot be satisfied by the source text alone.
+- **#7.** Dropped "Forestry Commission" from `app/index.html` only, leaving `parse.py` untouched.
+  FAIL `the footer and the dataset credit name the same agencies`, and **#6 stayed green**, so #7
+  fails on its own account and is not a duplicate of #6. 282/2. Breaking the constant's shape instead
+  gives `no ATTRIBUTION constant found in scripts/parse.py`.
+
+Seen on a screen as well as in the source, since three of these are user-facing. Chrome at 390x844
+against `php -S 127.0.0.1:8802` on the reviewed tree, with the service worker unregistered and the
+`nearest-forest-v26-2026-09-10` cache deleted before anything was read: the stale page does serve
+first, exactly as the build note warns. The footer renders as four sentences, wraps cleanly,
+`scrollWidth` equals `clientWidth` so there is no horizontal overflow, and the credit text measures
+8.0:1 against the page background. The build stamp reads `v26-2026-09-10` and matches the cache name.
+
+![the About footer at 390x844](../attachments/0019-2026-09-10-3.png)
+![the credit paragraph on its own](../attachments/0019-2026-09-10-4.png)
+
+No criterion is disproved and no box should come off.
+
+VERDICT: sound
+
+**scope: sound**
+
+The two commits touch only what the card names. Nothing went near the map's Thunderforest and
+OpenStreetMap credit, which is `0015`, and no date was added to the attribution, which
+`## Not this card` rules out.
+
+The re-fetch is the one place this card reached outside itself, and it was declared rather than
+hidden: Rob was asked at the moment it mattered and chose to re-scrape rather than ship the weaker
+credit, and closing `0026`'s last task as a side effect is written on both threads. Deploy is openly
+unticked and belongs to Rob, which is declared, not a defect. Deleting `## What I need from you` is
+right: Rob answered that ask on this thread on 2026-09-10 and the block still asked him to untick a
+box he had decided to leave ticked.
+
+Two loose ends that are not worth returning the card on their own.
+
+- `## Not this card` still reads "Not changing what data is collected or displayed", and the re-fetch
+  changed 20 records of displayed data. Permission outranks the line, but the line was not amended to
+  record that it was crossed, so the card now contradicts itself in the same way its own scope finding
+  did. One sentence fixes it.
+- `0053` sits in `todo/` with both criteria ticked, and its criterion #1 asserts that
+  `docs/board/human-review/0019-...md` contains `## What I need from you`. That file no longer exists
+  in that lane and the section is correctly gone. `0053` is now stale, which is `0053`'s problem, but
+  somebody should know before they pick it up.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding one. The guard the card says it removed is still in the tree, and it is still green on the
+exact defect it was accused of hiding.**
+
+`scripts/selftest.js` line 195, unchanged by either commit:
+
+`ok('attribution present', /Open Government Licence/.test(DATA.attribution || ''));`
+
+`DATA` is the shipped `app/data/sites.json`. That is verbatim the test the 2026-09-08 review named
+and the 2026-09-10 review named again. The build's comment says, in bold, "**The old guard could not
+fail and is gone**". It is not gone. What was replaced is a different test, `every OGL file the parser
+writes carries its own licence statement`, which reads a file `parse.py` writes into a temp tree. The
+build knew both existed, because the comment it left in place at line 1436 still says the OGL half
+"was pinned only on the file already committed here (`attribution present`, above)".
+
+Proved three ways, not argued.
+
+- Set the shipped `app/data/sites.json` `attribution` back to the retired string, "Contains public
+  sector information licensed under the Open Government Licence v3.0.". **284 passed, 0 failed.**
+- Replaced it with "Nothing here credits anyone under the Open Government Licence.", which names no
+  agency at all. **284 passed, 0 failed.**
+- Ran the suite against the tree at `406ebbb`, the state the first commit shipped and which its own
+  message describes as still holding the old credit. **284 passed, 0 failed.** The suite was green
+  through the whole of that defect, which is the second time on this one card.
+
+So the obligation is now pinned on the footer and on the parser, and not on the file that actually
+ships. That file is the one the service worker precaches, the one the app fetches, and the one a copy
+travels as, which is the entire argument criterion #6 is written on.
+
+The fix is one line and it is smaller than the finding: re-key `attribution present` off four words
+and onto the three agency names, the way its two siblings already are. It needs a criterion of its
+own, and only a builder or Rob may add one, so I have not.
+
+**Finding two, small, and this project raises cards for exactly this.** "22 records changed their
+opening times, parking or facilities text" is a field count, not a record count. Measured against
+both files: 19 shared records differ in anything other than `scraped_at`. Eighteen of them differ in
+`opening_summary`, `opening_times`, `parking` or `facilities`, and one, `fls-winding-walks`, differs
+only in `lat` and `lng`. The 22 is `opening_summary` 12, `opening_times` 5, `parking` 4,
+`facilities` 1. Adding the renamed record, which also changed its `opening_times`, gives 19 records
+carrying changed text, not 22. Everything else in the claim holds exactly.
+
+**A limit worth naming, which is declared and so is not a defect.** The drift guard compares agency
+names and not wording, as its own comment says it does on purpose. I replaced "Open Government
+Licence. " with "OGL. " inside `ATTRIBUTION`, which strips Forestry England's published statement out
+of the credit on the file that travels while leaving the three names in place: **284 passed, 0
+failed**. The rule this card exists to set, that a provider's own wording beats the generic line, is
+pinned on the screen and not on the file. Worth knowing when the next agency is added.
+
+**What I checked and found genuinely good, because most of this build is.**
+
+- The shipped dataset is a real build output, not a patched one. I copied `data/raw/` into the scratch
+  tree and ran `scripts/parse.py` there. It reproduced `app/data/sites.json` **byte for byte**.
+- The cache matches the counts on the thread exactly: 274 English pages, 278 Scottish, 554 entries in
+  `fetched.json`, every one dated 2026-09-10.
+- The dataset diff is otherwise as claimed. Counts unchanged at 550 forests and 630 car parks, 904
+  English and 276 Scottish. One id removed and one added, and the rename carries through `id`, `name`,
+  `url` and `opening_times` consistently with the coordinates unmoved. `fls-winding-walks` moved 0.825
+  miles. All 1,180 records read `scraped_at: 2026-09-10`. No record carries a dangling reference to
+  the old id, and no code or doc outside the two card threads mentions it.
+- The re-key of `dataset counts in comments match sites.json` is not a weakening. Claimed a date no
+  record carries: FAIL, `says 1180, dataset holds 0`. Claimed 1,179: FAIL, `says 1179, dataset holds
+  1180`. Re-wrapped the sentence between "now" and "read": FAIL, `no count matching ... found`. So the
+  `\s+` covers the wrap it was added for and a different wrap still fails loudly, which is the house
+  rule. One consequence to carry: the check is now keyed on a struck-through line under `### Closed`,
+  so the suite goes red the day somebody prunes closed notes out of DATA-MODEL. This is the second
+  wording this one check has been keyed to and a third is already implied by that.
+- `app/data/sites.json` is in the service worker's `ASSETS`, so the `CACHE` bump was necessary, and the
+  in-step check on `CACHE` and `BUILD` still passes.
+
+**The three questions.**
+
+1. **Where is it weakest.** The credit on the file that travels. `app/data/sites.json` is fetched by
+   the app, precached by the service worker and served to anyone who asks, and nothing in the suite
+   asserts anything about its `attribution` beyond four words that survive almost any rewrite. Nobody
+   is attacking this. The route in is the one that has now happened twice: the generator gets fixed,
+   the shipped file does not get rebuilt, and the run stays green while the file is wrong.
+2. **What is unchecked.** Nothing compares `app/data/sites.json` with `scripts/parse.py`, so a build
+   output can be older than its generator and no test notices. The pipeline sat in exactly that state
+   for five days with a green suite. There is no input to validate on this path, no entry point and no
+   permission boundary; the unchecked thing is the machine-facing copy of the credit, still.
+3. **What does it leak.** Nothing. Static text and a Python constant. No user data, no tenant, no id,
+   no stack trace. When this fails it fails as an unmet licence obligation on a redistributed file,
+   which is a legal exposure rather than a data one.
+
+**One thing seen while I was down there, and it is not this card's.** The OpenStreetMap link in the
+paragraph below the credit, `#osm-credit a`, is unstyled: `rgb(0, 0, 238)` on `rgb(15, 26, 18)`, a
+contrast ratio of **1.90:1** against a 4.5:1 minimum. It is an attribution link that is close to
+unreadable on the phone, it is visible in the screenshot above, and it predates this card entirely.
+It belongs with `0015` or a new card, and I raise it here only because nobody else has been looking
+at this footer.
+
+VERDICT: defect
+
+**Where it should go.** `todo/`, with every one of the seven criteria left ticked, because none is
+disproved and the acceptance is fully and honestly met. One piece of work: re-key `attribution
+present` at `scripts/selftest.js` line 195 so it asserts the three agency names against the shipped
+`app/data/sites.json`, and correct the "22 records" figure on the thread to 19 records and 22 fields
+while you are there. This is not the trap that stuck this card in `human-review/` for two days: that
+trap was a finding no criterion covered and no builder could act on, and this one is a named line in
+a named file with an obvious replacement. It does need an eighth criterion, and a reviewer may not
+write one, so a builder should add it before starting. `Deploy` stays openly unticked and is Rob's.
+
+**2026-09-10** RESULT: done, third build
+TESTS: 1 re-keyed, all green (286 passed, 0 failed)
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+**The finding is right and the sentence it caught was mine.** I wrote, in bold, that the old guard
+"could not fail and is gone". It was not gone. I replaced a different test, the one reading what
+`parse.py` writes into a temp tree, and left `attribution present` sitting at the top of the file
+reading the shipped dataset through the same four words it always had. Worse, the comment I left
+beside the replacement still pointed at it by name, so the evidence that both existed was in the
+diff I wrote. **Criterion #8 was added and written before the code**, because a reviewer may not
+write one and this needed a criterion of its own.
+
+**The re-keyed check names the three agencies against `app/data/sites.json`**, which makes it the
+third record of one obligation and the only one on the file that travels: a copy handed to somebody
+carries no `index.html` and no `parse.py`. Its failure message quotes the credit it actually found
+and ends with the rebuild command, because the fix for this failure is always a rebuild and the
+person hitting it will not know that.
+
+**Proved red on the reviewer's own attack.** Setting the shipped credit back to the retired string
+gives `FAIL, app/data/sites.json credits "Contains public sector information licensed under the Open
+Government Licence v3.0.", leaving out Forestry England, Forestry and Land Scotland, Forestry
+Commission. Rebuild it: python scripts/fetch.py && python scripts/parse.py`. 285/1. That exact state
+was 284 passed, 0 failed an hour ago. Restored, `git diff` clean, 286 passed, 0 failed.
+
+**This closes the route that opened twice on this card**: the generator gets fixed, the shipped file
+does not get rebuilt, and the run stays green while the file is wrong. It cannot now.
+
+**The "22 records" figure is corrected, and I counted it myself rather than taking the reviewer's
+word.** Against `406ebbb`, 19 shared records differ in anything other than `scraped_at`. The 22 is a
+field count: `opening_summary` 12, `opening_times` 5, `parking` 4, `facilities` 1, and separately
+`lat` and `lng` on `fls-winding-walks`, which is the one record differing in nothing else. The
+correction is also on card `0026`, which carried the same figure.
+
+**Two loose ends the reviewer flagged, both actioned elsewhere rather than here.** `0053` asserts
+that this card in `human-review/` carries a `## What I need from you` section; that file is not in
+that lane any more and the section is correctly gone, so `0053` is stale and needs picking up on its
+own terms. The unstyled OpenStreetMap link in the footer, measured at 1.90:1 against a 4.5:1
+minimum, predates this card entirely and belongs with `0015`. Neither is this card's to fix and
+neither is quietly dropped.
+
+**Nothing under `app/` changed**, so `CACHE` and `BUILD` stay at `v27-2026-09-10`, bumped by card
+`0057` earlier today. **No browser check, and that is a claim rather than a skip**: this build
+touched only `scripts/selftest.js`, and the footer already has browser evidence twice on this thread,
+mine and the reviewer's.
