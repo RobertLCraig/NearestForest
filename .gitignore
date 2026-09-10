@@ -9,6 +9,11 @@ data/raw/
 Thumbs.db
 *.log
 
+# Git worktrees the agent harness creates when a review runs in isolation. They are
+# whole checkouts of this repository, so committing one would commit the repo into
+# itself, and they are deleted when the review ends.
+.claude/worktrees/
+
 # Tile provider API key. It lives above the web root on the server and must never
 # be committed: this repository is public.
 tiles.key
