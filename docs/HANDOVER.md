@@ -10,9 +10,9 @@ Britain minus Wales in two of its three tabs.** Forests is one ranked list of 55
 agencies; Campsites covers England, Scotland and Wales; Car parks is England only, because no open
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
 **The pipeline runs clean**: `data/raw/` was re-fetched on 2026-09-10 and the dataset rebuilt.
-**Built cards are waiting to deploy**; see "Current state". **The suite going green proves
-less here than it looks**: the 2026-09-10 adversarial pass found three checks that cannot fail, and
-"What's next" item 1 is fixing them.
+**Built cards are waiting to deploy**; see "Current state". **The three checks that could not fail
+are fixed** (0011, 0013, 0036, all built 2026-09-10 and awaiting review), so a green run now means
+more than it did. Assume there are others and keep looking.
 **This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and
 every one was stale within a day, so the rule now is: **list the folder, do not read a number.**
 `ls docs/board/todo` and `ls docs/board/in-progress` are what an agent can pick up;
@@ -342,13 +342,13 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 The queue is [docs/board/](board/), one card per file; run `ls docs/board/todo` for it. **The
 adversarial pass on 2026-09-10 filled that lane, so the order below overrides card numbers.**
 
-1. **Fix the tests that cannot fail, before anything else.** Three cards and each is small.
-   **0011**: every `.htaccess` header check is an unanchored text search, so commenting out the CSP,
-   HSTS, nosniff, Referrer-Policy or Permissions-Policy leaves the suite green, which is a green
-   suite on an app serving no security headers. **0013**: the scheme allow-list in `validate()` in
-   `parse.py` has no test at all; replacing the whole block with `pass` changes nothing. **0036**:
-   the comment above `safeHref` carries four numbers and the guard reads one. Until these land,
-   every other green run on this project means less than it looks like.
+1. **Keep hunting checks that cannot fail.** The three the 2026-09-10 pass named are built and are
+   in `ai-review/`: 0011 stripped comments from `.htaccess` before any assertion reads it, 0013
+   drives `validate()` in `parse.py` directly because a fixture cannot carry an attacker's scheme,
+   and 0036 guards all four numbers in the `safeHref` comment rather than the first. **The shape to
+   look for is a check that reads one file when the claim spans several**, or a substring loose
+   enough to match what it is supposed to reject. Break the guarded thing and watch the run; that is
+   the only way any of these three were found.
 2. **The two live faults in shipped code.** **0008**: `loadBoundary` latches, so one failed fetch of
    the 32 KB coastline kills the map for the life of the page, and because `draw()` returns before
    the marker block it also erases every site marker and the position dot. **0012**: one refused
