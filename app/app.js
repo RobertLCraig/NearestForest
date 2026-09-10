@@ -12,6 +12,15 @@ var TARGET = null;            // site queued for the map chooser
 var RENDERED = [];            // last ranked list; holds the _mi/_bear copies
 var LS_KEY = 'nf.lastpos';
 
+/* Who published a page, keyed on the host of the page itself, with `www.` already
+   stripped by the caller. A host not listed here is shown bare rather than guessed at.
+   Add an entry when a new agency is scraped; do NOT add a branch on site.source, which
+   is what put "Forestry England page" over 276 Scottish links. */
+var AGENCY_BY_HOST = {
+  'forestryengland.uk': 'Forestry England page',
+  'forestryandland.gov.scot': 'Forestry and Land Scotland page'
+};
+
 var $ = function (s) { return document.querySelector(s); };
 var listEl = $('#list'), statusEl = $('#status'), emptyEl = $('#empty'), metaEl = $('#meta');
 
@@ -201,7 +210,6 @@ function openSheet(site) {
     if (site.operator) h += field('Operator', site.operator);
     if (site.phone) h += field('Phone', site.phone);
     if (site.opening_times) h += field('Opening times', site.opening_times);
-    if (site.country) h += field('Country', site.country);
   } else {
     h += field('Opening times', site.opening_times, { missing: 'Not published' });
     h += field('Parking', site.parking);
@@ -212,20 +220,25 @@ function openSheet(site) {
          '</div></dd>';
   }
   if (site.status) h += field('Status', site.status);
+  /* Shared, not campsite-only. Every record has carried `country` since card 0016, and
+     while this row sat inside the campsite branch a Scottish CAMPSITE said Scotland and a
+     Scottish FOREST said nothing. Moving it out is the fix; do not branch it back. */
+  if (site.country) h += field('Country', site.country);
   h += field('Coordinates', site.lat.toFixed(5) + ', ' + site.lng.toFixed(5));
   /* NF.safeHref, not site.url: a dataset URL only reaches an href through the
      scheme check. noreferrer as well as noopener, so following the link does not
      tell Forestry England which page sent you. */
   var moreHref = NF.safeHref(site.url);
   if (moreHref) {
-    /* A campsite's website is whatever OpenStreetMap holds for it, so the link text
-       must not claim it is a Forestry England page. Show the host instead: it is the
-       one honest label available, and it lets you see where a tap will take you. */
-    var label = 'Forestry England page';
-    if (site.source === 'campsite') {
-      label = site.stay_the_night ? 'Forestry and Land Scotland page'
-                                  : moreHref.replace(/^https:\/\/(www\.)?/, '').split('/')[0];
-    }
+    /* The label is a claim about WHO published the page behind the link, so read it off
+       the link's own host and never off site.source. source is forest/carpark/campsite
+       and says nothing about an agency, so anything not special-cased took the default:
+       card 0016's 276 Scottish forests all read "Forestry England page" over a
+       forestryandland.gov.scot link. A host cannot disagree with the link beside it, and
+       an unknown one shows bare, which is the one honest label always available and lets
+       you see where a tap will take you. */
+    var host = moreHref.replace(/^https:\/\/(www\.)?/, '').split('/')[0];
+    var label = AGENCY_BY_HOST[host] || host;
     h += field('More', '<a href="' + esc(moreHref) + '" target="_blank" rel="noopener noreferrer">' +
                esc(label) + '</a>', { raw: true });
   }

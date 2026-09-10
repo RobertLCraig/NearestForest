@@ -694,7 +694,11 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
   {
     const esc020 = new Function(
       appjs020.match(/function esc\(s\) \{[\s\S]*?\r?\n\}\r?\n/)[0] + 'return esc;')();
+    // AGENCY_BY_HOST is lifted out of app.js source alongside the block, the same way esc
+    // is above, so these cases read the real shipped table rather than a copy of it. A
+    // fixture table would pass while the app shipped an empty one.
     const more020 = new Function('site', 'moreHref', 'field', 'esc',
+      appjs020.match(/var AGENCY_BY_HOST = \{[\s\S]*?\r?\n\};\r?\n/)[0] +
       "var h = '';\n" +
       appjs020.match(/ {2}if \(moreHref\) \{[\s\S]*?\r?\n {2}\}\r?\n/)[0] +
       'return h;');
@@ -714,6 +718,40 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
        `an OpenStreetMap website reads "${osm.text}" and points at "${osm.href}", ` +
        `a Stay the Night car park reads "${stn.text}", ` +
        `a Forestry England forest reads "${fe.text}"`);
+
+    // Card 0057 #1. The four cases above all passed while every one of card 0016's 276
+    // SCOTTISH FORESTS read "Forestry England page" over a forestryandland.gov.scot link,
+    // because the label was picked from `site.source` and a Scottish forest is a `forest`
+    // like an English one. Nothing here distinguished them, so the gap was invisible. The
+    // fix reads the label off the link's own HOST, which cannot disagree with the link it
+    // sits beside; these cases pin that, including the unknown host that must stay bare
+    // rather than take anybody's name. Every Scottish forest in the shipped file is checked
+    // too, so this cannot pass on a fixture while the dataset says otherwise.
+    const fls = link({ source: 'forest' }, 'https://forestryandland.gov.scot/visit/glentrool');
+    const unknown = link({ source: 'forest' }, 'https://naturalresources.wales/glasfynydd');
+    const scots = sites.filter(s => s.country === 'Scotland' && s.url);
+    const mislabelled = scots.filter(s => link(s, s.url).text !== 'Forestry and Land Scotland page');
+    ok('a link is labelled by the agency that published it, never by another agency',
+       fls.text === 'Forestry and Land Scotland page' &&
+       fe.text === 'Forestry England page' &&
+       unknown.text === 'naturalresources.wales' &&
+       scots.length > 0 && mislabelled.length === 0,
+       `a Scottish forest reads "${fls.text}", an English one reads "${fe.text}", ` +
+       `an unrecognised host reads "${unknown.text}", and ${mislabelled.length} of ` +
+       `${scots.length} shipped Scottish records are labelled as another agency` +
+       (mislabelled.length ? ` (e.g. ${mislabelled[0].id} reads "${link(mislabelled[0], mislabelled[0].url).text}")` : ''));
+
+    // Card 0057 #2. `country` has been on every record since card 0016, and this row was
+    // written inside the campsite branch, so a Scottish CAMPSITE stated Scotland and a
+    // Scottish FOREST stated nothing on the same screen. Structural rather than rendered,
+    // because the fault is WHICH branch the line sits in: the campsite branch is the same
+    // source block the two assertions above lift, so a line moved back inside it fails here.
+    const campBranch = appjs020.match(/ {2}if \(site\.source === 'campsite'\) \{[\s\S]*?\r?\n {2}\}/)[0];
+    ok('the detail sheet shows Country for every source, not only for campsites',
+       /field\('Country'/.test(appjs020) && !/field\('Country'/.test(campBranch),
+       !/field\('Country'/.test(appjs020)
+         ? 'openSheet no longer emits a Country row at all'
+         : 'the Country row is back inside the campsite-only branch, so a Scottish forest is silent about Scotland');
   }
 
   // Acceptance #3, on the one screen a reader actually looks a place up on. Every other
