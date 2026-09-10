@@ -140,3 +140,143 @@ clearing one batch at a time since 2026-09-07 are cleared. **The fault itself is
 scheduler still moves a card into this lane without adding the section, so the twelfth card to
 arrive will have the same defect. That fix belongs in `C:\Dev\ProgressBoard`, which is outside this
 repository and outside this card.
+
+### 2026-09-10 review
+
+**acceptance: defect**
+
+**The eleven sections exist. The check named to prove they exist cannot fail. Those are two separate
+facts and both need saying, in that order, because the second one is not a complaint that the work is
+missing.**
+
+**#1, the outcome — met, and I verified it with a check capable of returning red.** The `proves:` line
+names a plain substring search, which is the thing under attack here, so I anchored it and ran it per
+file against wherever each of the eleven now lives:
+
+    0023  lane=done       heading=1  titleline=1  headingline=3
+    0026  lane=ai-review  heading=1  titleline=1  headingline=3
+    0028  lane=ai-review  heading=1  titleline=1  headingline=3
+    0031  lane=done       heading=1  titleline=1  headingline=3
+    0032  lane=ai-review  heading=1  titleline=1  headingline=3
+    0034  lane=ai-review  heading=1  titleline=1  headingline=3
+    0036  lane=ai-review  heading=1  titleline=1  headingline=3
+    0038  lane=ai-review  heading=1  titleline=1  headingline=3
+    0040  lane=done       heading=1  titleline=1  headingline=3
+    0041  lane=done       heading=1  titleline=1  headingline=3
+    0044  lane=done       heading=1  titleline=1  headingline=3
+
+All eleven, `^## What I need from you` at line 3, directly under the title at line 1. Not one is a
+prose match. The substring check did not hide a miss among the eleven, and I want that on the record
+before the rest, because the finding below is about proof and not about missing work.
+
+I also swept the lane as it stands today, both ways, and both come back empty — seventeen cards in
+`human-review/`, every one carrying the heading as a heading.
+
+**#2, manual — met on the sample I read.** `0036` opens "**One choice, and I recommend the first.**"
+then two numbered routes then `**What's wrong.**`; `0044` opens with an imperative untick-or-say-why
+line. Ask first, imperative, inside three lines of the heading, with pass and fail underneath. The
+README's shape.
+
+**Now the defect, and it is in the criterion.**
+
+*The named check is vacuous.* It reads "`grep -rL "## What I need from you" docs/board/human-review/*.md`
+naming none of the eleven". **Zero of the eleven are still in `human-review/`.** Five went to `done/`
+and six to `ai-review/` when commit `9fcf175` moved nineteen cards. The check therefore passes because
+its subjects have left the folder, not because they carry the section. I could strip the heading out of
+all eleven right now and the check would still report a pass. A criterion whose proof cannot go red is
+the thing the board's own rule about `proves:` exists to prevent: "Naming the test is what makes a
+criterion a check rather than a sentence." This one is a sentence.
+
+*The named check is also blind, and I can show it live rather than argue it.* `grep -L` is a substring
+search and matches a card's prose as readily as its heading. Run both forms over `ai-review/`, the lane
+this card now sits in, and they disagree:
+
+    grep -rL "## What I need from you" docs/board/ai-review/*.md
+      0005-deploy-via-cloudflare-and-hostinger-mcp.md
+      0054-the-campsite-cards-raw-feature-count-is-wrong.md
+
+    # anchored: files where grep -c '^## What I need from you' == 0
+      0005-deploy-via-cloudflare-and-hostinger-mcp.md
+      0053-card-0019-entered-human-review-without-the-required-section.md
+      0054-the-campsite-cards-raw-feature-count-is-wrong.md
+      0056-eleven-more-human-review-cards-have-no-required-section.md
+
+**This card is one of the two the substring search hides.** It says "What I need from you" eight times
+and carries the heading zero times, so its own check certifies it as compliant. Sweeping the whole
+board, twelve cards mention the phrase without carrying the heading, and eleven of those twelve are
+cards in this series: `0045`, `0046`, `0047`, `0048`, `0049`, `0050`, `0051`, `0052`, `0053`, `0056`,
+and `0042`. **The check is systematically blind to precisely the cards this work produces.**
+
+That is not academic. The loop has moved a returned card into `human-review/` eleven times in this
+series alone. The moment it moves this card or `0053` there — and both are returned builds sitting in
+`ai-review/`, which is exactly the population it moves — the lane will contain a card with no ask, and
+this card's own check will report the lane clean. The last line of `## Comments` above says "All 42
+cards in the lane now carry the section", and it is that sentence, resting on that check, which is the
+one a future reader should not trust.
+
+Anchoring costs one character: `grep -rLE '^## What I need from you' docs/board/human-review/*.md`, or
+`grep -c '^## What I need from you'` per file. That, plus naming the eleven files by path rather than
+by lane, would make the criterion both honest and capable of failing.
+
+**So: the work is sound, the criterion is not.** The fix is a criterion rewrite, which is a person's
+untick, not a rebuild. A reviewer may not untick, so it is recorded here.
+
+VERDICT: defect
+
+**scope: sound**
+
+The card's own commit is clean, and I read it rather than the branch:
+
+    git show --stat c394e96   "0056: the last eleven human-review cards get their ask section"
+      12 files changed, 396 insertions(+), 6 deletions(-)
+
+Twelve markdown files: the eleven named in `## Why`, plus this card. Nothing else.
+`git show --name-only --format= c394e96 | grep -E '^(app|scripts)/'` returns nothing. Each of the
+eleven gained 29–34 lines and the deletions are all in this card's own checkbox lines.
+
+I checked the fence line by line. No criterion unticked anywhere — the eleven `## Acceptance` blocks
+are untouched. No lane move in this commit. No reviewer finding acted on. No entry-guard added, which
+the card correctly said belongs in `C:\Dev\ProgressBoard`. The `## Plan`'s own admission that it was
+wrong about these being documentation cards rather than returned builds is the right thing to have
+written down.
+
+VERDICT: sound
+
+**breakage: defect**
+
+`node scripts/selftest.js` prints `280 passed, 0 failed`, matching this card's log. It reads `app/`
+and `scripts/` and cannot see `docs/board/`, so it proves the card broke no code, which it could not
+have, having touched none.
+
+**What broke is the durability of the eleven new sections, and it broke the same day.** The log above
+says "**Every count in the new sections was measured today, not copied.**" It then lists six measured
+figures. Three commits later, four of them are false:
+
+| Written into the sections | True now | Changed by |
+|---|---|---|
+| `docs/HANDOVER.md` is 42,299 bytes | **40,722**, and under the 40,960 budget | `a0d9ff7` |
+| `human-review/` holds 42 cards | **17** | `9fcf175` |
+| `ai-review/` holds 3 | **17** | `9fcf175` |
+| `0034` is in `human-review/` | it is in `ai-review/` | `9fcf175` |
+
+The session that made those changes appended a correcting entry to the five sibling cards that had
+landed in `done/` — `0023`, `0031`, `0040`, `0041` and `0044` all now carry "went 42,299 bytes at the
+start of this session to **40,722**". It missed `0034`, which had gone to `ai-review/` instead. So
+**card `0034`'s `## What I need from you` still tells Rob the brief "is 42,299 bytes today", when it is
+40,722 and under budget** — and the whole ask on that card is premised on the brief being over. That is
+a live, wrong instruction at the top of a card, and it is this card's to fix because this card wrote
+it. One sentence in
+`docs/board/ai-review/0034-the-no-caching-decision-rests-on-a-smaller-dataset.md`, no untick needed.
+
+**The deeper finding is the pattern, not the one number.** Cards `0032`, `0040`, `0041` and `0044`
+exist because `docs/HANDOVER.md` carried hand-typed counts that nothing re-measured. This card's fix
+for eleven cards was to hand-type six more counts into each of them — sixty-odd unmeasurable numbers,
+in a section that is not append-only and that a reader treats as current. The brief itself has since
+gone the other way: `a0d9ff7` deleted every card list and count from it and told the reader to
+`ls docs/board/human-review` instead. The sections would have been shorter and permanently true had
+they done the same, and pointing at a folder costs a reader five seconds rather than a wrong decision.
+
+**No UI surface.** This card's commit changes markdown only. There is no screen to drive and no
+screenshot to take, and I am writing that down as a claim rather than skipping it.
+
+VERDICT: defect

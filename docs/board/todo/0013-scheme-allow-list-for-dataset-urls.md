@@ -122,3 +122,105 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+**suite**
+
+`node scripts/selftest.js`, green at `280 passed, 0 failed` before and after. The earlier pass
+measured 227; the count has moved because the tree has, which is why I re-measured its finding
+rather than repeating it.
+
+**acceptance: defect**
+
+**#1 - the app renders no link for a bad URL. Sound, and attacked in a running browser** rather
+than in node. I served the app with `php -S 127.0.0.1:8792 -t app`, opened a detail sheet, and
+replaced the record's `url` with each payload in turn:
+
+| planted `url` | what the sheet did |
+|---|---|
+| `javascript:alert(document.domain)` | no MORE row, no `<a>` at all |
+| `data:text/html,<script>alert(1)</script>` | no MORE row |
+| `http://evil.example.com/` | no MORE row |
+| `  javascript:alert(1)` (leading whitespace) | no MORE row |
+| `javascript&colon;alert(1)` | no MORE row |
+| `https://evil.example.com/"onmouseover="alert(1)` | link rendered, **no breakout** |
+
+![the sheet with the breakout payload planted in the record's url](../attachments/0013-2026-09-10-1.png)
+
+That last one is the one worth writing down, and the screenshot above is it: an ordinary-looking
+MORE row, because the payload stayed inside the attribute. The rendered element was
+`<a href="https://evil.example.com/&quot;onmouseover=&quot;alert(1)" target="_blank"
+rel="noopener noreferrer">`, and its attribute list is exactly `href`, `target`, `rel` - `esc()`
+turned both quotes into entities and no event handler was created. Escaping and scheme-checking are
+doing the two different jobs the card says they do. Breaking `safeHref` to accept `http` turns
+`safeHref rejects plain http` red, and pointing `app.js` at `site.url` directly turns
+`app.js puts site.url through safeHref rather than straight into the href` red, so both guards have
+tests that can fail.
+
+**#2 - the build refuses a bad URL. This is the criterion with no test, and the 2026-09-07 finding
+is confirmed against today's tree.** I replaced the entire scheme-and-host block in `validate()` in
+`scripts/parse.py` - both the `startswith("https://")` branch and the `URL_HOSTS` branch - with
+`pass`, and the suite reported **280 passed, 0 failed**. Nothing anywhere drives it. The criterion
+is a sentence, not a check.
+
+**#3 - the shipped dataset passes the same guard.** Sound. `every dataset url survives safeHref`
+and `every dataset url is on a publishing agency host` both sweep `DATA.sites`, and the campsite
+file gets its own sweep.
+
+VERDICT: defect
+
+**scope: sound**
+
+The card's footprint is `safeHref` in `core.js`, the MORE link in `openSheet`, the `url` block in
+`validate()` in `parse.py`, and the `safeHref` tests. The fences hold: no other dataset field was
+sanitised, and the only other href write in the app is still `window.location.href = url` fed by
+`NF.navUrl` from coordinates, untouched. `URL_HOSTS` has since gained
+`forestryandland.gov.scot` from card 0016, which widens #2's wording while keeping its closed-list
+intent.
+
+VERDICT: sound
+
+**breakage: defect**
+
+The app end held everything I threw at it, live and in node. The build end is not merely untested,
+and this is the part the earlier finding understated: **`safeHref` deliberately does not check the
+host** - its own comment says so - so the rule "a link in the detail sheet may only reach the
+agency that published the record" exists in exactly two places, the untested `URL_HOSTS` check in
+`parse.py` and the dataset sweep in `selftest.js`. Delete the four lines in `parse.py` and one of
+the two is gone silently. The sweep would still catch it on the next run, so this is depth rather
+than a live hole, but the untested half is not redundant with the tested one.
+
+The fix is small and the tooling is already in the file: `selftest.js` has a fixture harness,
+`runParse`, that copies `parse.py` into a temp tree and asserts a non-zero exit on a bad page. A
+fixture whose page URL is `javascript:alert(1)`, plus an assertion that the exit is non-zero and
+`sites.json` was not written, closes criterion #2 in about ten lines beside the ones already there.
+
+VERDICT: defect
+
+**security**
+
+**Weakest, said as an attacker would use it.** The dataset is scraped from websites nobody here
+controls and then *shipped as a file*, so the attacker is upstream, not a visitor. They cannot get
+script execution: `safeHref` refuses anything but `https://` and `esc()` stops the breakout, both
+confirmed above in a real browser. What they can get is a **link**. `safeHref` never looks at the
+host, so if a scrape ever picked up a URL on a host of the attacker's choosing, the detail sheet
+would render it as a live "Forestry England page" link, in a trusted app, next to a real forest.
+That is phishing with the app's own credibility, and the only thing standing in front of it at
+build time is the check I just proved nothing tests.
+
+**What is unchecked on any path in.** Nothing here takes input from a user; the input is upstream
+HTML, and every other dataset field goes through `esc()` at every render site. The second writer
+worth naming is `safe_url` in `scripts/parse_campsites.py` - a different generator, filling a
+different file, feeding the same renderer - which cannot emit anything `safeHref` then refuses and
+has its own sweep. The stored position in `localStorage` is the one input that comes back into the
+app from outside its own run, and it is type-checked but not range-checked; that belongs to 0014,
+not here.
+
+**What it leaks when it fails.** Nothing. A refused URL is an absent field: the sheet simply has no
+MORE row, no error, no message, nothing that tells anybody a record was rejected or that a
+rejection rule exists. The build end fails the other way round and correctly so, printing the
+offending id and the offending URL to a developer's terminal and exiting non-zero before
+`sites.json` is written.
+
+VERDICT: defect

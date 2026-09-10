@@ -139,3 +139,93 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+**suite**
+
+`node scripts/selftest.js`, green at `280 passed, 0 failed` before and after. I also read the
+footer in a running browser (`php -S 127.0.0.1:8792 -t app`) at 414x896, which is the width this
+paragraph was written for.
+
+**acceptance: defect**
+
+**#1 - the statement is at the bottom of the list. Sound, and looked at rather than grepped.** The
+footer renders under the last row, all three clauses present and legible, above the OGL and ODbL
+credits, and nothing is pushed off the page.
+
+![the footer as it reads on a phone](../attachments/0014-2026-09-10-1.png)
+
+**#2 - the app is doing what it says. Defect, and it is narrower than the earlier finding claimed.**
+I traced the location itself and it genuinely never leaves the device. `navUrl` in `app/core.js`
+builds the maps link from the **forest's** coordinates and not the user's - live, from the running
+app, the Google button resolves to
+`https://www.google.com/maps/dir/?api=1&destination=50.758118%2C-4.000430&travelmode=driving` -
+so "Your location stays on this phone", which is the sentence in bold and the one the self-test
+pins, is exactly true. Every runtime request is a same-origin relative path.
+
+![the hand-off the footer does not mention](../attachments/0014-2026-09-10-2.png)
+
+What is not true is the wider clause beside it: **"nothing you do is sent anywhere"**. Tapping
+**Navigate** hands Apple, Google or Waze the forest you chose and your address, and on the live
+site, under `Referrer-Policy: strict-origin-when-cross-origin`, it also hands them
+`forestlocator.enhanceify.co.uk` as the referring origin. This is not a technicality invented by a
+reviewer: card 0013 added `rel="noreferrer"` to the two links in the detail sheet *for exactly this
+reason*, so the app already treats "the destination should not learn where you came from" as worth
+a line of code - and the one action the whole app exists to perform is the one that does not get
+it. Criterion #2 is "the statement checked against the code", which is precisely this check, so the
+finding is this card's to carry.
+
+I cannot untick the box and have not. A person must.
+
+VERDICT: defect
+
+**scope: defect**
+
+Nothing over the fence: no "forget my location" control, no expiry on the stored position, no
+separate privacy page. The half-done part is the guard, and I measured both halves of it today
+rather than reasoning about the regex:
+
+- deleting the **entire Tiles caveat** from the footer - the sentence beginning "The one exception
+  is" through "It is off unless you turn it on." - leaves the suite at **280 passed, 0 failed**;
+- deleting **"There are no accounts, no tracking and no analytics, and nothing you do is sent
+  anywhere."** leaves the suite at **280 passed, 0 failed**;
+- only changing "Your location stays on this phone" turns
+  `the app states its privacy position in the footer` red.
+
+Criterion #1 names three things and the task said the test existed "so a future edit cannot quietly
+drop it". One of the three is pinned. The neighbouring licence checks in the same block pin each
+obligation separately and are the model to copy; two more `flat.includes(...)` lines finish it.
+
+VERDICT: defect
+
+**breakage: defect**
+
+Both findings above are the breakage, and they point the same way: the footer is the only thing in
+this app that makes a promise, and the promise is one clause wider than the code. Neither is
+exploitable and neither breaks a screen. What breaks is the card's own claim.
+
+VERDICT: defect
+
+**security**
+
+**Weakest, said as an attacker would use it.** There is nothing here to attack - no server, no
+account, no session. The realistic adversary is a future contributor, and the weak point is that
+this card shipped a *promise* with no runtime enforcement and, as measured above, a guard covering
+one sentence in three. The thing that actually stops an analytics snippet or a font from a CDN is
+`connect-src 'self'` in the CSP, which lives on card 0011 and can be commented out of `.htaccess`
+without turning the suite red. So the honest statement is that the footer's claim is currently
+enforced by habit and by a header nobody re-verifies, not by this card.
+
+**What is unchecked on any path in.** The stored position. `loadStale` in `app/app.js` reads
+`localStorage`, type-checks `lat` and `lng` as numbers and applies them with no range check and no
+expiry, indefinitely. Anything that can write to that origin's storage can move where the app
+thinks the user is - though anything that can write there has already won - and the absence of an
+expiry means a position taken once is remembered until the browser data is cleared. Both are
+explicitly out of this card's scope and are noted, not charged.
+
+**What it leaks when it fails.** Nothing server-side; there is nothing to leak. The disclosures
+that exist are the two the footer should be naming: the tile proxy's access log, which it does
+name, and the maps hand-off, which it does not. Neither carries the user's own position.
+
+VERDICT: defect

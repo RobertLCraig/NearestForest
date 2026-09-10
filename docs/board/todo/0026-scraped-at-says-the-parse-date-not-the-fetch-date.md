@@ -213,3 +213,115 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+**suite**
+
+`node scripts/selftest.js` from the repository root, before touching anything: **280 passed, 0
+failed**. All three tests this card names ran, under `--- staleness: scraped_at is the fetch date,
+not the parse date (card 0026) ---`, and I read them out of the run log rather than off the card.
+Restored tree re-run at the end: **280 passed, 0 failed**.
+
+**acceptance: sound**
+
+I did not read the criteria and agree with them. I broke each guarded behaviour in turn and watched
+the named test go red, then put the file back byte-exact.
+
+**#1 `fetch records a download date alongside every cached page`.** Made `record_fetch()` in
+`scripts/fetch.py` return before writing anything. RED: *"the fetcher wrote the pages but left no
+data/raw/fetched.json to read a date back from"*. Restored, green.
+
+**#2 `scraped_at is the page's download date, not the parse date`.** The card claims three stamps.
+I attacked the third rather than the first, because it is the one with different code around it -
+`scripts/parse.py:578`, where car parks take one stamp for the whole ArcGIS file. Replaced it with
+`TODAY`. RED, and the failure named all three build sites: *"England 2026-08-08 (wanted
+2026-08-08), Scotland 2026-08-20 (wanted 2026-08-20), car park 2026-09-10 (wanted 2026-08-25)"*.
+So the test really does cover all three, and it uses three dates that are not each other and not
+today. Restored, green.
+
+**#3 `parse fails loudly on a cached page with no download date`.** Replaced the body of
+`fetched_on()` with `return fetched.get(rel) or TODAY`, which is the exact original bug. RED:
+*"parse.py exited 0 on a page with no recorded download date"* - and it also took down
+`a failed parse leaves the previous dataset untouched`, card 0029's guard, which is the right
+coupling rather than a duplicate. Restored, green.
+
+No criterion is disproved. Nothing here is a test that cannot fail.
+
+VERDICT: sound
+
+**scope: sound**
+
+Stated up front: this pass ran **no git command**, three reviewers being in this checkout at once,
+so I reviewed the tree as it stands rather than the card's commit. The earlier pass did read the
+commit and found the fences held; what I can check today agrees with it.
+
+`scripts/parse_campsites.py` still takes its stamp from the Overpass response and has no
+`fetched_on` call, so the fence in `## Not this card` holds. No app-side staleness warning exists.
+`TODAY` survives in `parse.py` only for `generated_at`, which is honestly the build date. Nothing
+was re-fetched: `app/data/sites.json` still reads `2026-08-29` on all **1,180** records, which I
+counted rather than took from the card.
+
+Task 4 is still open and still correctly open.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I re-measured the earlier reviewer's finding instead of reading it, and it is worse today than the
+entry above describes.
+
+**`data/raw/fetched.json` does not exist in this checkout at all.** Not partial - absent. So every
+one of the **277** cached HTML pages under `data/raw/`, plus `carparks.json`, `index.json` and
+`search-forests.html`, is undated, and `parse.py` refuses the lot. (The card says 552 pages; the
+cache holds 277 `.html` files today. The count moved, the conclusion did not.)
+
+**`CLAUDE.md` lines 23-25 still say:** *"Run the pipeline ...
+`python scripts/fetch.py && python scripts/parse.py && python scripts/build_boundary.py`, then
+`node scripts/selftest.js`."* No warning anywhere near it. That file is auto-loaded into every
+session that opens this project, so it is the first thing a fresh agent reads and the command it
+will run. It exits 1.
+
+**Re-running the fetcher cannot repair it**, which I confirmed in the code rather than by running
+it: `fetch.py:134` and `:226` return `("cached", ...)` for any page already on disk over 20,000
+bytes, so a second `fetch.py` never re-downloads and never records a date. `fetched_on()`'s own
+error message is accurate about this - it says *delete it from `data/raw/` and re-run* - so the
+repair instruction exists in the one place a session only reaches after the failure.
+
+**Why I am calling this the card's and not next door.** The builder saw the obligation and acted on
+it: four edits to `docs/HANDOVER.md` exist precisely because a red step nobody warned about reads as
+a broken repository. That reasoning is inside this card. It was applied to the handover and not to
+the file that loads itself into every session, which is the same obligation left half done rather
+than a new one. `## Not this card` fences off re-fetching; it does not fence off saying so.
+
+**It does not need an untick and it must not wait for one.** No criterion here is disproved, so
+there is nothing for a person to untick, and that is exactly why this card looped: every session
+looked for an open box and found none. The action is additive - add one sentence beside the pipeline
+line in `CLAUDE.md` saying the pipeline exits 1 on a cache predating card 0026, that only deleting
+`data/raw/` and re-fetching repairs it, and that this is the change working. Two lines. A builder can
+do it with the acceptance untouched.
+
+**Security, per the board README's three questions.** This card produced code.
+
+1. **Weakest point.** The cached filename is built from remote content: `fetch.py:133` takes the
+   `slug` off an href on forestryengland.uk and does `slug.replace("/", "__")` before joining it to
+   `data/raw/pages/`. Forward slashes are neutralised, backslashes are not, and this runs on Windows,
+   so an upstream page serving an href containing `\` steers both a cache write and the key written
+   into `fetched.json` outside the intended directory. It predates this card; this card made that
+   same string a key in a second file, so it is now the weak point in one more place.
+2. **Unchecked.** `fetched.json` is trusted absolutely and validated not at all. Its contents become
+   `scraped_at` on every shipped record, so anything that can write `data/raw/` can make the whole
+   dataset claim any age it likes, and the one field meant to answer "is a re-scrape due" would
+   answer confidently and wrongly. It is also `json.load`ed at import in `parse.py:24` with no
+   `try`, so a truncated index gives a traceback rather than one of this project's named reasons.
+   Local-only, machine-facing, no permission boundary crossed - but unchecked is unchecked.
+3. **Leak on failure.** Relative cache paths and nothing else: `pages/hicks-lodge.html` and its
+   siblings. No credentials, no absolute paths, no third-party data. The failure list is long rather
+   than sensitive.
+
+**No UI surface, and I am claiming that rather than skipping it.** This card changed
+`scripts/fetch.py`, `scripts/parse.py`, `scripts/selftest.js` and two docs. Nothing under `app/` was
+touched, `app/data/sites.json` is unchanged, and `BUILD`/`CACHE` are untouched at `v24-2026-09-08`.
+There is no screen whose behaviour differs, so there is nothing a browser could show.
+
+VERDICT: defect

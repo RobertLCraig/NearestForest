@@ -156,3 +156,119 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+Served `php -S 127.0.0.1:8791 -t app` and drove it in Chrome at 390x844x3, mobile, touch.
+`node scripts/selftest.js`: **280 passed, 0 failed**. Headless Chrome will not grant the
+geolocation prompt, so a position fix was injected before page scripts ran (Brighton,
+50.8168/-0.0894), and the list ranked Friston Forest first, so the app was exercised with a real
+position rather than the alphabetical fallback. **The card's own note says the gestures have only
+ever run against a stubbed canvas in node and never a real pointer. That is what I went after.**
+
+**acceptance: sound**
+
+Four of the six were put in front of a browser for the first time.
+
+**#1 offline draw.** Seen. Coastline, 12 labelled markers, cluster bubbles and the own-position ring,
+all from `data/boundary.json` and `sites.json` with the tile layer off and no other request.
+![the map drawing offline with outline and markers](../attachments/0008-2026-09-10-1.png)
+
+**And the latch does not disprove this criterion.** The criterion says "with no network connection".
+`./data/boundary.json` is in `ASSETS` in `app/sw.js`, precached with `cache:'reload'`, so in the
+genuine no-signal case an installed copy is served the file from the service worker and the fetch
+*succeeds*. The failure the latch guards is a fetch that fails, which is not the same event as
+having no network: it is a captive portal, an evicted cache, or a flaky first visit. Real, and
+covered under breakage, but it is not this criterion.
+
+**#2 own position.** Seen. The white ring sits distinctly against the flat green site dots, and
+`fitToInterest` opened the view centred near it with the nearest six in frame.
+
+**#3 same sheet.** Proven with a real pointer, not by reading the wiring. A tap dispatched at the
+Friston Forest marker opened the sheet reading "Friston Forest / 10.8 miles E of you / RIGHT NOW /
+Closed · Opens 08:00 / BN20 0AT …" with `#sheet-nav` present and labelled **Navigate**. Same sheet
+the list opens.
+
+**#4 tab filter.** Seen. Switching to Campsites redrew the map with campsite markers only:
+Housedean Farm, Alfriston Camping Park, Rushey Hill, and no forests.
+![tiles off on the Campsites tab](../attachments/0015-2026-09-10-3.png)
+
+**#5 pan and pinch, against a real pointer at last.** I neutralised `setPointerCapture` only, because
+synthetic pointers cannot be captured, and drove the real `onDown`/`onMove`/`onUp` handlers with
+real DOM `PointerEvent`s on the real canvas: a one-finger pan, a two-finger pinch out, six hard
+pinch-ins, then twelve hard flings in one direction trying to throw the country off-screen. Nothing
+threw, and every gesture moved the render (canvas signature and luminance centroid changed at each
+step). The clamp held: after twelve flings the map is jammed into one corner with most of the screen
+empty sea, but land, clusters and the own-position ring are all still on screen, so the view is not
+lost. ![after twelve hard flings, still clamped on screen](../attachments/0008-2026-09-10-2.png)
+Then **Near me** restored the opening view pixel-for-pixel, so the "no way back" half of the
+criterion has a way back that I used. `clampView` allows the centre out to the bbox plus half a
+viewport, which at low zoom is generous enough to look wrong before it is wrong; that is a comfort
+note, not a breach of what #5 says.
+
+**#6 loud build.** `build` and `main` in `scripts/build_boundary.py` collect `failures`, write
+nothing, and `sys.exit(1)`.
+
+VERDICT: sound
+
+**scope: sound**
+
+The fence held. Markers come from the ranked list the rows use and no second dataset appears.
+Coordinates stay WGS84 in storage: `encode()` in `build_boundary.py` writes fixed-point lat/lng and
+`decodeRing`/`draw` project with `NF.projX`/`projY` at draw time. Tapping calls `hooks.onPick`, the
+existing `openSheet`, so no routing rode in. The tile code now in `app/map.js` (`getTile`,
+`drawTiles`, `api/tiles.php`) is card `0009`'s and is separable by its own markers and comments;
+I was instructed to run no git command this pass, so I did not re-read the commit the 2026-09-07
+entry checked, and I am relying on that entry for the commit-level split rather than re-deriving it.
+
+VERDICT: sound
+
+**breakage: defect**
+
+The latch is real, it is this card's own code, and it is worse than the earlier finding said. I
+reproduced it in a browser instead of reading it: `fetch` was patched to reject only
+`boundary.json`, counting calls.
+
+- First open: **1** fetch, failed. Map paints "Map outline unavailable (Failed to fetch). The list
+  still works."
+- Close and reopen: still **1**. No retry, as reported.
+- **Then I restored the network and reopened again: still 1.** The map never asks a second time.
+  A user whose signal comes back, closes the map and opens it again gets the same dead screen, and
+  the only recovery is knowing to fully reload the page. That is the part the earlier finding did
+  not reach, and it is what makes this more than cosmetic in an app whose whole premise is bad
+  signal.
+
+The cost is not the coastline. `draw()` returns straight after the error text, before the marker
+block, so a missing 32KB outline erases **every site marker and the own-position dot**, data that
+never depended on it. I sampled the canvas in that state: 99.7% of pixels are the background sea
+colour and the only non-background pixels are the two lines of error text. Nothing else drew.
+![one failed fetch and the whole map is gone](../attachments/0008-2026-09-10-3.png)
+
+No self-test builds the failure case, so nothing goes red if this gets worse.
+
+**The three questions.**
+
+1. **Where is it weakest.** The map trusts one fetch, once, for the life of the page. The way
+   somebody hits it is not an attacker: it is the car-park Wi-Fi that answers every request with a
+   captive-portal login page, which is the exact environment this app exists for. One such reply and
+   the map is dead until the page is reloaded, while the button that opens it keeps working and the
+   hint underneath still reads "Tap a marker for details. Pinch to zoom." with no markers to tap.
+2. **What is unchecked.** The response shape. `loadBoundary` does `r.json()` and then reads `d.bbox`
+   and `d.parts` with no validation, so a 200 carrying well-formed JSON of the wrong shape throws
+   inside the `.then`, lands in the same `.catch`, and degrades to the identical dead map rather
+   than to markers-without-outline. Nothing else here takes input: there is no entry point, no
+   permission check to miss and no background job.
+3. **What it leaks when it fails.** `loadError` is `err.message` painted onto the canvas, so the
+   user sees a raw fetch or HTTP-status string ("Failed to fetch", "HTTP 404"). It names no host,
+   path or internal id beyond what the user already has, and there is no other tenant's data here to
+   leak. Low value, but it is an internal error string on a user-facing surface.
+
+**Is the finding this card's to carry?** Yes: `loadBoundary` and `draw` are this card's code and
+nobody else's. **But it disproves no criterion**, for the reason under #1 above, so nothing needs
+unticking and the deadlock does not need Rob to break it. The fix is two small changes in
+`app/map.js`: stop latching so `show()` can retry, and move the marker block above the error return
+so markers and the own-position dot survive a missing outline. One self-test on the failure path.
+
+VERDICT: defect
+
+**Where it should go.** `todo/`, with all six criteria left ticked and the fix above as the work.

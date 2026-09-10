@@ -225,3 +225,122 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+Served `php -S 127.0.0.1:8791 -t app` and drove it in Chrome at 390x844x3, mobile, touch, with a
+Brighton position fix injected. `node scripts/selftest.js`: **280 passed, 0 failed**.
+
+**acceptance: sound**
+
+**#1 is no longer taken on trust. I put the pill over a real light basemap and looked at it.** The
+two previous passes could not: the Thunderforest key lives only on the server, so `api/tiles.php`
+returns 503 here. Rather than call that a blocker, I did two things.
+
+First I turned tiles on with the proxy failing, which is the failure path this card and `CLAUDE.md`
+both care about. The layer reports on, the tiles never arrive, and **the bundled outline is still
+underneath** with every marker and the own-position ring intact, so a failed tile degrades to the
+offline map instead of a blank one. The credit pill draws over it.
+![tiles on, tiles failing, outline and pill both intact](../attachments/0015-2026-09-10-1.png)
+
+Then I forced the exact worst case the card says to design against, by making tile images resolve to
+a generated pure-white 256px PNG. I measured the canvas before screenshotting: the basemap reads
+**(255,255,255)**, including the pixel directly behind the pill. That is a whiter basemap than
+Thunderforest Outdoors can ever produce, and the pill still reads cleanly.
+![the credit pill over a pure white basemap](../attachments/0015-2026-09-10-2.png)
+The computed style is `rgba(0, 0, 0, 0.72)` with `rgb(255, 255, 255)` text and `text-shadow: none`.
+Composited over white that is `rgb(71)`, and white on `rgb(71)` is **9.29:1** by the WCAG formula,
+over AA and over AAA. Since no tile can be brighter than white, the bound holds at every zoom. The
+card's `.72` reasoning is correct and is now confirmed on a screen rather than on paper.
+
+**#2 off state.** With tiles off on the Forests tab the hint is bare `map__hint`: the dim text and
+its dark glow, no pill, full width. Untouched, as the criterion says.
+
+**One thing the next reader needs, because #2 as worded is no longer true of this tree.** With tiles
+**off** but the **Campsites** tab active, the hint *does* get the pill and reads "Campsite data (c)
+OpenStreetMap contributors, ODbL". I saw it.
+![tiles off, campsites drawn, pill applied](../attachments/0015-2026-09-10-3.png)
+That is card `0020` deliberately extending the pill to the ODbL obligation, with its own self-tests
+pinning it (`with the layer off the OSM markers still carry their credit`). So #2 was **superseded,
+not broken**: it was true when this card shipped, and a later card changed the rule on purpose. It
+is not a defect against 0015 and no box comes off for it, but anyone reading #2 as a live guarantee
+that the off state never gets a pill would be wrong.
+
+**#3 safe area.** Measured rather than eyeballed. At 390px the pill spans 98 to 293, 195 wide,
+centred to the pixel, wrapping to three lines, with a 10px gap below it (`--safe-b` is 0 in desktop
+Chrome, so 0 plus 10). The `bottom` rule lives on the base `.map__hint` and the modifier sets no
+`bottom`, so both states take the inset from one rule and the pill grows upward on wrap. I looked
+for a `bottom` or a colour inside the modifier that would override the base; there is none.
+
+VERDICT: sound
+
+**scope: sound**
+
+Only `.map__hint--attrib` in `app/app.css` and the class toggle. `.map__btn` is untouched, so the map
+controls were not restyled. The attribution is still on the map it credits, not moved to a sheet or a
+credits screen. No new element. Marker labels are still colliding and truncating over the map:
+"Bedgebury National Fi..." sits across "Hemsted Forest" in every screenshot above, and
+`## Not this card` puts that outside this card, correctly, so I am recording it as seen and left.
+
+One drift worth noting rather than failing: the toggle has moved since this card shipped. It is now
+`hint.classList.toggle('map__hint--attrib', h.credit)` inside `updateHint`, with the wording decided
+by `NF.mapHint(tilesOn, osm)` in `core.js`. That is `0020`'s refactor, and it preserves this card's
+guarantee, because text and backing are still set on adjacent lines and cannot disagree.
+
+VERDICT: sound
+
+**breakage: defect**
+
+The shipped behaviour holds and I could not break it: the modifier follows the base rule at equal
+specificity so `left:50%`/`right:auto` win, `.map` is the containing block, `app.css` is in `ASSETS`
+with `CACHE` matching `BUILD`, and the off state is untouched. Everything visible on screen is right.
+
+**The defect is in the guard this card shipped, and it is still there today.** In
+`scripts/selftest.js` the check named "the attribution style exists and is opaque enough to read on
+white" is `/background:rgba\(0,0,0,\.(7[2-9]|[89]\d)\)/`. I ran the pattern against the values it
+claims to police, without touching the file:
+
+| CSS | guard |
+|---|---|
+| `rgba(0,0,0,.72)` | PASS |
+| `rgba(0,0,0,.85)` | PASS |
+| `rgba(0,0,0,.8)` | **FAIL** |
+| `rgba(0,0,0,0.72)` | **FAIL** |
+| `rgba(0,0,0,1)` | **FAIL** |
+| `rgba(0,0,0,.71)` | FAIL |
+| `rgba(0,0,0,.5)` | FAIL |
+
+It is correct on the side that matters least and wrong on the side that matters. Rejecting `.71` and
+`.5` is the floor doing its job, but it also rejects `.8`, `0.72` and `1`, which are respectively
+**more** opaque, the **same** value spelled legally, and **fully** opaque. A session that darkens the
+pill, which is the one change this guard should welcome, gets a red suite for a correct edit, and the
+rule the comment states ("at least 72% opaque") is not the rule enforced. It is a spelling check
+wearing an opacity check's name.
+
+**The three questions.**
+
+1. **Where is it weakest.** Nothing here parses input, so the exposure is legal rather than
+   technical: the app draws a commercial provider's basemap, and the credit is a licence condition
+   for doing so. The weak point is any future change that lets the layer render while the credit does
+   not. That is defended properly, because the text and the class are set on adjacent lines in
+   `updateHint` and a self-test pins the toggle, so it holds today.
+2. **What is unchecked.** `updateHint` decides the OSM obligation with
+   `hooks.getSites().some(s => s.source === 'campsite')`. Nothing validates that a record carries
+   `source`, so a dataset change that renamed or dropped that field would silently stop crediting
+   OpenStreetMap while the map kept drawing its data. It fails in the under-crediting direction,
+   which is the direction that costs a licence rather than a pixel.
+3. **What it leaks when it fails.** Nothing. The pill renders two constant strings from `core.js`.
+   `api/tiles.php` failing returns plain text that never echoes the key, and I confirmed the map
+   simply stays plain when it does.
+
+**Is the finding this card's to carry?** Yes, the guard is this card's own Task 3 output. **But it
+lands on the guard, not on criterion #1**, and I proved #1 true on a screen over a whiter basemap
+than the real one. So **no box needs unticking**, which is the answer to the question that has
+deadlocked this card through two loops. The fix is one line: match the declared value and compare it
+as a number rather than as text.
+
+VERDICT: defect
+
+**Where it should go.** `todo/`, all three criteria left ticked, to repair the regex. Task 2, the
+phone check, stays open on its own terms: the basemap I used was synthetic, so nobody has still seen
+this over a live Thunderforest tile, and card `0018` owes that trip anyway.

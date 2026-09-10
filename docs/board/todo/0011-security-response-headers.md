@@ -181,3 +181,120 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+**suite**
+
+The earlier pass said it could find no suite. There is one: `node scripts/selftest.js` from the
+repository root, and it printed `280 passed, 0 failed` before I started and again after I finished.
+Every claim below about a test going red was produced by breaking the guarded thing in a private
+copy of the tree and re-running that suite, then restoring the original bytes.
+
+**How the headers were checked, and why not in a browser.** `php -S` does not read `app/.htaccess`
+- that file is Apache configuration - so this card's headers cannot be observed from a local
+server, and the live site is out of bounds for this pass. So I read `app/.htaccess` directly and
+read what `scripts/selftest.js` asserts about it, then attacked those assertions. I did load the
+app at `http://127.0.0.1:8792/` to confirm the *other* half of criterion #1, that the app stays
+inside the policy: list, detail sheet, map and tile toggle all drive with no script error and no
+CSP-shaped failure in the console.
+
+**acceptance: sound**
+
+Each criterion traced to code, then the test behind it broken to prove it can fail.
+
+**#1** - `Header always set Content-Security-Policy` with `script-src 'self'`, no `unsafe-inline`,
+no `unsafe-eval`. Dropping `always` turns `.htaccess sets Content-Security-Policy` red; adding
+`'unsafe-inline'` turns `the CSP carries no unsafe-inline or unsafe-eval` red. The app is inside
+the policy: every request it makes is a relative same-origin path (`loadJson` in `app.js`,
+`fetch('data/boundary.json')` in `map.js`, the precache in `sw.js`, `api/tiles.php` in `map.js`),
+and the only `url()` in `app.css` is the `data:` grain, covered by `img-src data:`.
+
+**#2** - all four present with `always`. Weakening `max-age` to 600, or removing the nosniff or
+Permissions-Policy line, each turns exactly one assertion red.
+
+**#3** - `frame-ancestors 'none'`; deleting it goes red.
+
+**#4** - the `sw\.js$` block sits below the general one. I swapped the two blocks for real and
+`the sw.js cache block comes after the general js one` went red. I also deleted the general block
+outright to test the `indexOf(-1)` hole in that comparison: it passes, but a neighbouring
+assertion, `the app shell is not HTTP-cached`, catches that case, so the pair holds.
+
+**#5** - tiles are `api/tiles.php`, same origin, so `img-src 'self'` covers them. Confirmed in the
+browser: with Tiles on, twelve tile requests left the page and none was refused by policy (they
+503 locally because the key file lives only on the server).
+
+VERDICT: sound
+
+**scope: defect**
+
+The 2026-09-07 finding is unchanged and I re-measured it against today's tree rather than trusting
+it. Task 4 asked for self-tests that the app stays CSP-satisfiable, listing "no inline script, no
+inline handler, no `style=` in markup, no `eval`". Three of the four read `app/index.html` only:
+
+- `onclick="alert(1)"` added to the `<li>` template inside `renderList` in `app/app.js`: **280
+  passed, 0 failed**.
+- `style="color:red"` in the same string: **280 passed, 0 failed**.
+- a `style="` inside a markup string in `app/core.js`: **280 passed, 0 failed**.
+- the same `onclick=` and `style=` in `index.html`: both red, as intended.
+
+The `eval` check is the one that does the right thing, scanning `app.js`, `core.js`, `map.js` and
+`sw.js` together. `.htaccess` states "no inline event handler anywhere in the app", and the tests
+only check one file of five. The card's own `## Why` names `app.js` building HTML strings as the
+reason the policy is strict, so the gap is in the middle of the thing the card is about. Nothing
+crossed the fence in the other direction: no `X-Frame-Options`, no Cloudflare change, no work
+belonging to 0012, 0013 or 0014 attributable here.
+
+VERDICT: defect
+
+**breakage: defect**
+
+A second, wider hole, and this one is new. **Every `.htaccess` assertion is an unanchored regex
+over the file's text, so commenting a directive out passes.** Measured, one at a time, each by
+prefixing a single `#`:
+
+- `# Header always set Content-Security-Policy ...` -> **280 passed, 0 failed**
+- `# Header always set Strict-Transport-Security ...` -> **280 passed, 0 failed**
+- `# Header always set Permissions-Policy ...` -> **280 passed, 0 failed**
+- `# Header always set X-Content-Type-Options ...` -> **280 passed, 0 failed**
+- `# Header always set Referrer-Policy ...` -> **280 passed, 0 failed**
+
+That is the whole header suite passing on an app that serves no security headers at all, which is
+the exact state the 2026-08-10 penetration test found and this card exists to end. Commenting a
+header out to test something is an ordinary thing to do and forgetting to put it back is the
+ordinary way it goes wrong; the suite would say nothing. The fix is one character per pattern:
+anchor them, `/^\s*Header always set Content-Security-Policy/m`, and the same for the other five
+and for the redirect check.
+
+**What held.** The header values themselves are right and the redirect uses the literal host. The
+directives are not wrapped in `<IfModule mod_headers.c>`, which is the right way round: without
+that guard a host missing `mod_headers` fails loudly instead of silently serving nothing.
+
+VERDICT: defect
+
+**security**
+
+**Weakest, said as an attacker would use it.** The whole control is one file on shared hosting and
+nothing in the repository can prove it is being served. A control-panel edit, a vhost change, or a
+LiteSpeed configuration that ignores `.htaccess` and the CSP is simply gone, with a green suite and
+no symptom on any screen. The use is framing: with `frame-ancestors` absent, an attacker embeds
+the app in a page of their own, overlays it, and lets a visitor tap **Navigate** - which fires
+`window.location.href` to a maps URL with no confirmation step - or waits for the geolocation
+prompt to be granted to what the user thinks is a different site. The 2026-08-10 `curl` check is
+the only evidence the headers ever went out, and it is a month old.
+
+**What is unchecked on the way in.** Nothing on this card takes user input; `.htaccess` is
+configuration. The path worth naming is the one the card does not cover: `app/api/tiles.php`
+writes its own `Content-Type` and `Cache-Control` on every response including its error bodies, and
+its protection from sniffing comes from the global `nosniff` above rather than from anything in the
+script. That coupling is invisible from either file.
+
+**What it leaks when it fails.** Nothing directly: there is no server-side state and no other
+tenant. The residual disclosure is referrer. `Referrer-Policy: strict-origin-when-cross-origin`
+sends the bare origin cross-site, so a maps hand-off tells Google, Apple or Waze that
+forestlocator.enhanceify.co.uk sent this person (card 0014 carries that). The two dataset links
+carry `rel="noreferrer"` and send nothing. There is deliberately no CSP `report-uri`, because a
+report endpoint would be an external request in an app whose whole point is making none, so a
+violation on somebody's phone is visible to nobody. That is a cost worth stating, not a defect.
+
+VERDICT: defect

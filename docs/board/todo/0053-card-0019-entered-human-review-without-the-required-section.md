@@ -211,3 +211,124 @@ It was 42,542 bytes at session start, 41,996 after a separate fold commit that r
 already owned by DATA-MODEL and DECISIONS, and 42,299 after this fix. Cards `0023` and `0031` in
 `human-review/` carry the size problem; this card only had to stop the brief contradicting `0019`.
 
+### 2026-09-10 review
+
+**acceptance: defect**
+
+**The work is done. The proof named for it is worthless, and that is the finding.** Both halves
+matter, so take them in order.
+
+**#1, the outcome — met, verified with a check that can actually fail.** The `proves:` line names a
+plain substring search, so I used an anchored one per file instead:
+
+    grep -c '^## What I need from you' docs/board/ai-review/0019-use-forestry-englands-own-attribution-wording.md
+    1
+
+It sits at line 6, under the title at line 4, with only the two-line frontmatter above it. Nothing
+stands between a reader and the ask.
+
+**#2, manual — met.** The first paragraph under the heading is "**One call.** Untick whichever
+criteria below the reviewer disproved, so the card goes back to `todo/` ... **or** write on the thread
+that the reviewer is wrong and the card stands. Doing neither is the fail: it returns to this lane,
+unchanged, on the next run." Ask, both pass routes and the fail, in one paragraph, imperative, first.
+That is the README's shape. The findings it restates trace to real code — `build_dataset` in
+`scripts/parse.py` and `ok('attribution present', ...)` in `scripts/selftest.js` — so the ask is not
+describing something that does not exist.
+
+**Now the defect. Criterion #1's named check cannot fail, for two separate reasons.**
+
+*It is vacuous.* The check is "`grep -rL "## What I need from you" docs/board/human-review/*.md` not
+naming `0019`". `0019` is no longer in that folder — it is in `ai-review/`, moved by commit `9fcf175`.
+The check therefore passes because its subject is absent, not because the section is present. I could
+delete `## What I need from you` from `0019` right now and the named check would still report a pass.
+
+*It is blind.* `grep -L` is a plain substring search and matches a card's own prose as readily as its
+heading. Run both forms over the lane this card now sits in and they disagree:
+
+    grep -rL "## What I need from you" docs/board/ai-review/*.md
+      0005-deploy-via-cloudflare-and-hostinger-mcp.md
+      0054-the-campsite-cards-raw-feature-count-is-wrong.md
+
+    # anchored, per file: heading count == 0
+      0005-deploy-via-cloudflare-and-hostinger-mcp.md
+      0053-card-0019-entered-human-review-without-the-required-section.md
+      0054-the-campsite-cards-raw-feature-count-is-wrong.md
+      0056-eleven-more-human-review-cards-have-no-required-section.md
+
+**This card is one of the two the substring search hides.** It mentions the phrase ten times and
+carries the heading zero times, so its own check would certify it as compliant. That is not
+hypothetical: the loop has moved returned cards into `human-review/` eleven times in this series
+already, and if it moves this one there, the check this card wrote will report the lane clean while
+the card sitting in it has no ask.
+
+Sweeping the whole board, twelve cards mention the phrase without carrying the heading, and eleven of
+the twelve are cards in this very series (`0045`–`0053`, `0056`). **The check is systematically blind
+to exactly the cards this work produces.** Anchoring it — `grep -c '^## What I need from you'` per
+file, or `grep -rLE '^## What I need from you'` — costs one character and removes the whole class.
+
+That is a defect in the criterion, not in the build. A reviewer may not untick it, so it is recorded
+here for a person.
+
+**A second finding, independent, and a builder can fix it without any untick.** The board convention
+checker fails this card:
+
+    php C:\Dev\ProgressBoard\artisan board:convention --path="C:\Dev\NearestForest" --cards
+    NearestForest   3   37   0057   C:\Dev\NearestForest
+    0032    ai-review       unexplained link: 0029
+    0038    ai-review       unexplained link: 0018
+    0053    ai-review       unexplained link: 0019
+
+`0019` is this card's whole subject and appears throughout its prose, and `## Links` lists `0045`–
+`0052` but not `0019`. One line under `**Relates to**` clears it. Note the interlock: card `0028`'s
+criterion #2 asks the board to report zero failing cards, and this card is one of the three holding
+it false.
+
+VERDICT: defect
+
+**scope: sound**
+
+The card's own commits, read separately from the branch:
+
+    git show --stat 123663d   "say at the top of the attribution card what a person has to answer"
+      0019-use-forestry-englands-own-attribution-wording.md | 38 +++
+      0053-card-0019-entered-human-review-without-...       | 46 ++--
+
+    git show --stat 3f2273a   "0053: stop the brief telling Rob to deploy 0019 while 0019 asks him not to"
+      docs/HANDOVER.md | 13 ++--
+      0053-card-0019-entered-human-review-without-... | 30 +++
+
+`git show --name-only --format= <sha> | grep -E '^(app|scripts)/'` returns nothing for either.
+`app/index.html` and the `attribution` string in `scripts/parse.py` are untouched, which is what
+`## Not this card` demanded. `0019` gained 38 lines and lost none, so its `## Acceptance`, its thread
+and its verdicts are intact — no criterion unticked, no lane move, no reviewer finding acted on.
+
+The `docs/HANDOVER.md` edit in the second commit is beyond the Plan's "only `0019` changes", and it is
+the right kind of beyond: it exists solely to close the 2026-09-09 `breakage: defect`, it is declared
+on the thread, and it is thirteen lines. I am not counting a reviewer-ordered fix as scope growth.
+
+VERDICT: sound
+
+**breakage: sound**
+
+The 2026-09-09 breakage finding was that `docs/HANDOVER.md` told Rob to deploy `0019` in a five-card
+batch while `0019`'s new section asked him to hold it back. I checked the fix survived the brief's
+later rewrite in `a0d9ff7`, which is where a fix like this usually dies:
+
+    docs/HANDOVER.md:341
+    1. **Look at 0004 on a screen, then deploy 0004, 0015, 0016 and 0022. 0019 is held out.**
+
+It held, with the reason in the same item and `0022` explicitly called out as unaffected. `0019` is
+also dropped from the "built and not yet deployed" batch at line 319. The two texts now agree.
+
+`node scripts/selftest.js`: `280 passed, 0 failed`. It reads `app/` and `scripts/` and cannot see
+`docs/board/`, so it proves this card broke no code — which it could not have, having touched none.
+
+One piece of fresh drift, not this card's: lines 320 and 342 say `0019` "sits in `human-review/`", and
+it is now in `ai-review/`. That was done by `9fcf175` after this card's work, and the brief's own rule
+two hundred lines above tells the reader to `ls` the folder rather than trust a lane name.
+
+**No UI surface.** Both commits change markdown only. There is no screen to drive and no screenshot to
+take, and I am recording that as a claim rather than a step I skipped.
+
+VERDICT: sound
+

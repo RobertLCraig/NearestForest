@@ -210,3 +210,89 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+**acceptance: sound**
+
+Ran both criteria rather than reading the ticks.
+
+**#1 — met.** `docs/board/ai-review/0026-scraped-at-says-the-parse-date-not-the-fetch-date.md` carries,
+under `**Relates to**`:
+
+    - `0023` - it folded this note out of HANDOVER's prose into DATA-MODEL's divergences, which is
+      what turned it from a paragraph nobody owned into this card.
+
+That is the relationship stated in one line, which is what the README asks for. It has survived
+`0026`'s moves through `ai-review/`, `human-review/` and back, because it lives in the card file and
+not in a path.
+
+**#2 — the fix holds; the board-wide number does not, and cannot be this card's to hold.** Re-run
+today from this repository root:
+
+    php C:\Dev\ProgressBoard\artisan board:convention --path="C:\Dev\NearestForest" --cards
+    NearestForest   3   37   0057   C:\Dev\NearestForest
+    0032    ai-review       unexplained link: 0029
+    0038    ai-review       unexplained link: 0018
+    0053    ai-review       unexplained link: 0019
+
+Three failing, down from the eleven the 2026-09-08 reviewer saw. **`0026` is not among them**, so the
+edit this card made is still doing its job. All three are cards written after this work, and a card
+session may not edit cards outside its scope. The criterion as written — "zero open cards failing" —
+asserts a board-wide property that no single card can keep true past the next card somebody writes.
+That is a weakness in the criterion rather than in the build, and a reviewer may not untick it.
+
+Also weighed: this checker skips log sections such as `## Comments`, so a zero from it would not have
+been proof of much either. It is a floor, not a ceiling.
+
+VERDICT: sound
+
+**scope: sound — and the 2026-09-08 finding's factual claims are withdrawn**
+
+The fence breach is real and I am not pretending otherwise. `## Plan` says "One card file changes and
+nothing else", and commit `af34af4` ("correct the three handover lines this work made false") edits
+`docs/HANDOVER.md`. What I attacked is whether the harm the earlier reviewer attached to it exists.
+
+I read this card's own commits, not the branch diff:
+
+    git show --stat 743bedf   4 files: 0026, this card, 0030, 0031
+    git show --stat af34af4   2 files: docs/HANDOVER.md, this card
+
+`git show --name-only --format= <sha> | grep -E '^(app|scripts)/'` returns **nothing** for both. This
+card touched no code at any point.
+
+**The claimed regression did not happen.** The earlier verdict says the HANDOVER edits "pushed
+`docs/HANDOVER.md` back over the 40 KB budget — a live regression created by an out-of-scope edit".
+Measured across that exact commit:
+
+    git show af34af4^:docs/HANDOVER.md | wc -c   ->  40986
+    git show af34af4:docs/HANDOVER.md  | wc -c   ->  40981
+
+The file was **already** 26 bytes over the 40,960 budget before the edit, and the edit left it five
+bytes smaller — exactly what this card's own log claimed and the earlier review disbelieved. The file
+today is **40,722 bytes, under budget**. So the out-of-scope edit deleted three statements this work
+had made false, shrank the file, and created no regression. `0030` and `0031` were raised as new
+cards and declared `OUT-OF-SCOPE` on the log, which is the ordinary way to report what you may not
+fix rather than scope growth.
+
+Rob's 2026-09-10 note asks this pass to decide whether the returning finding is this card's to carry.
+**It is not.** There is nothing a builder could act on: reverting those six lines would put three
+false sentences back into the brief.
+
+VERDICT: sound
+
+**breakage: sound**
+
+`node scripts/selftest.js` prints `280 passed, 0 failed`. It reads `app/` and `scripts/` and cannot
+see `docs/board/`, so it proves only that this card broke no code — which is the whole of what is
+provable here, because the card touched no code.
+
+**No UI surface, and I am writing that down as a claim rather than skipping it.** Both of this card's
+commits change markdown only, so there is no screen to drive and no screenshot to take.
+
+Tried to break it three ways. The `0023` entry in `0026` survives every lane move, because it is in
+the file. Nothing under `app/` or `scripts/` reads `docs/board/`, so no code depends on the edited
+text. And the HANDOVER sentence this work deleted ("the convention check reports one failing card,
+0026") has not come back anywhere in the tree.
+
+VERDICT: sound

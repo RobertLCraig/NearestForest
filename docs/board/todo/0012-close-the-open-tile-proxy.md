@@ -178,3 +178,123 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+**suite**
+
+The earlier pass said it could find no suite. There is one: `node scripts/selftest.js`, green at
+`280 passed, 0 failed` before and after this review.
+
+**This pass ran the endpoint instead of reading it.** Every previous check on this card was a
+regex over `app/api/tiles.php`; no test has ever executed the PHP. I served the app with
+`php -S 127.0.0.1:8792 -t app` and drove the real script. It has no `tiles.key` locally - the key
+lives above the web root on the server - so a request that gets *past* the access control lands on
+`503 ... no API key file found`. That makes 503 a clean "allowed through" signal and lets the whole
+gate be measured.
+
+**acceptance: sound**
+
+**#1 cross-origin refused, even with the page suppressing its own Referer.** `Sec-Fetch-Site:
+cross-site` -> 403. `same-site` -> 403. `none` (a pasted URL) -> 403. `SAME-ORIGIN` in capitals ->
+403, so the comparison is case-exact. A foreign `Referer` -> 403. A page cannot set
+`Sec-Fetch-Site`, so `referrerpolicy="no-referrer"` buys an attacker nothing.
+
+**#2 the app's own map still served.** `Sec-Fetch-Site: same-origin` -> 503, i.e. through the gate.
+Confirmed in a browser at 127.0.0.1:8792: twelve tile requests went out on the toggle and every one
+reached the script.
+
+**#3 429 without calling upstream, proved rather than argued.** With the counter pre-seeded to
+2000, the endpoint returns **429 with `Retry-After: 3600`** - *not* the 503 it returns when it
+reaches `readKey()`. The 429 arriving in place of the 503 is the proof that `rateLimit()` runs
+before the key is read and before `curl_init`, so a capped request spends nothing.
+
+**#4 counter failure still serves.** Counter contents replaced with `not-a-number` -> 503 (served
+through). The counter *directory* replaced by a plain file, so `mkdir` cannot succeed -> 503
+(served through). Seeded at 1999 -> served, and the file read 2000 afterwards, so the increment
+works.
+
+**#5 draws as before.** Draw order and default-off unchanged; the bundled outline drew under
+everything throughout.
+
+**Input validation, which no criterion covers and which I attacked anyway:** missing `z`, `z=21`,
+`z=-1`, `z=6.5`, `x=abc`, `x` out of range for the zoom, `s=../../etc/passwd`, `s[]=outdoors` and
+`s=evil` all return 400 with no upstream call. `s=landscape` is accepted, as the whitelist intends.
+
+VERDICT: sound
+
+**scope: sound**
+
+Agreeing with the 2026-09-07 pass and re-checked: `nearest.php` still has no limiter, `STYLES`
+still holds ten entries, `.htaccess` has no WAF or tile rule, there is no server-side tile cache
+and the provider is unchanged. The one growth the earlier pass noted, the `glob`/`unlink` sweep of
+yesterday's counters, is still there, still scoped to its own directory, and still too small to
+bounce a card for.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**1. A refused tile blanks the layer until a full reload, and the app says the opposite.** Measured
+in a browser rather than read off the source. With every tile failing, the toggle reads **Tiles
+on**, `aria-pressed="true"`, and the credit pill under the map reads "Maps (c) Thunderforest, Data
+(c) OpenStreetMap contributors" - an attribution for a basemap that is not on screen. Nothing tells
+the user anything; the only trace is twelve 503s in a console they do not have.
+
+![tiles on, no tiles](../attachments/0012-2026-09-10-1.png)
+
+Then the part that makes it stick: **toggling Tiles off and back on issued zero new requests.**
+Twelve before, twelve after. `getTile` in `app/map.js` caches the failed entry in `tiles` with
+`ok:false`, `t.failed` is set on line 176 and read nowhere, and `setTiles` does not clear the
+cache. So one 429 - which is a thing this card newly created - costs the user the tile layer for
+the rest of the session with no way back except reloading the page, and no clue that reloading is
+the way back. The card's bounded-cost argument ("the map still works") is true and is not this:
+the map working is not the same as the app answering for a control the user just pressed.
+
+**2. The counter filename does not do what its comment says it does.** `rateLimit()` names each
+file `hash('sha256', $ip)` and the comment says "Hashed so the counter directory is not itself a
+log of who used the app". Unsalted SHA-256 over IPv4 is a 2^32 space. I recovered `127.0.0.1` from
+its own counter filename in **108 ms** and measured about 1.2 million hashes a second in
+single-threaded node, which puts the entire address space at roughly an hour on this laptop and
+seconds on a GPU. The directory *is* a log of who used the app, dated, one file per address per
+day; the hash is a speed bump described as a lock. Salting it with a per-install secret is a
+one-line fix, and deleting the sentence is a zero-line one - but leaving a comment that claims a
+protection it does not provide is how the `.htaccess` bug on card 0011 happened.
+
+**3. The CGNAT point from 2026-09-07 stands, and is the least of the three.** `rateLimit()` counts
+per `REMOTE_ADDR` while the 2000/day sizing argument was per user, and UK carriers put many
+subscribers behind one address. It is worth far less than finding 1, because with finding 1 fixed a
+shared-address cap is a visible, recoverable condition instead of a silent dead layer.
+
+VERDICT: defect
+
+**security**
+
+**Weakest, said as an attacker would use it.** An absent `Sec-Fetch-Site` is allowed through on
+purpose, so the browser hotlink case is dead but every non-browser client is not: `curl`, a script,
+a native app, a server-side scraper. One address buys 2000 tiles a day; a few hundred cheap proxies
+or a botnet, each looking exactly like one ordinary user, empty the 150k-a-month free tier inside a
+day. Nothing in the app or the repository notices - the only place that shows is Thunderforest's own
+dashboard, which nobody is watching, and the first symptom for a real user is the silent blank map
+in finding 1. The cost is a quota rather than an outage, which is the card's own bound and is
+correct; the point is that it can be spent deliberately and quietly.
+
+**What is unchecked on any path in.** `X-Forwarded-For` is deliberately ignored and I confirmed it:
+sending `X-Forwarded-For: 9.9.9.9` against a capped address still returns 429, so the key cannot be
+reset by a header. But `HTTP_HOST` is attacker-supplied and it is the right-hand side of the
+`Referer` comparison, so `Referer: https://evil.com/` sent alongside `Host: evil.com` walks through
+that gate. It costs nothing because any client able to set `Host` could simply omit `Referer`
+instead - which means the `Referer` layer protects nothing that `Sec-Fetch-Site` does not, and only
+one of the two layers is load-bearing. The other unchecked input is environmental rather than from
+a request: `sys_get_temp_dir()` is whatever the host says it is, and on shared hosting that is
+commonly a world-writable `/tmp`. A co-tenant who creates `/tmp/nf-tiles` before we do owns the
+rate-limit state and can seed any address to 2000, denying that person the tile layer.
+
+**What it leaks when it fails.** The response bodies are clean and I checked each one: 502 says
+only "Tile upstream unreachable" and never echoes `curl_error`, which would carry the URL and
+therefore the API key; 503 discloses only that a key file is absent; 429 gives a `Retry-After` and
+nothing else; the 400s name the valid ranges, which is help rather than disclosure. The leak is not
+in a response at all - it is the counter directory described in finding 2, which is a reversible,
+dated list of every address that used the app.
+
+VERDICT: defect

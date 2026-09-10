@@ -239,3 +239,114 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+Served `php -S 127.0.0.1:8791 -t app` and read the footer on a 390x844 screen rather than in the
+source. `node scripts/selftest.js`: **280 passed, 0 failed**. I ignored `## What I need from you`,
+which is stale, and reviewed the acceptance and the code. Both disputed points were re-checked
+against today's tree, and I formed my own view on each.
+
+**acceptance: sound**
+
+Seen on screen, not inferred. The footer renders as one paragraph of four sentences that wrap
+cleanly at phone width with no overflow, which was the risk the build note flagged as unchecked.
+![the About footer at 390px](../attachments/0019-2026-09-10-1.png)
+
+**#1** Both halves present. "English forest details: Crown Copyright, courtesy Forestry England,
+licensed under the Open Government Licence." is Forestry England's own published wording, and the car
+park data gets its own sentence naming the OGL v3.0 separately.
+
+**#2** No personal-use claim anywhere in the rendered text. I checked the way it could falsely pass:
+the guard is `/personal use/i` against index.html, and the HTML comment above the paragraph writes
+"personal-use" hyphenated, so the comment cannot satisfy the test on the paragraph's behalf.
+
+**#3** "This app is not affiliated with Forestry England or with Forestry and Land Scotland." is
+present and names both agencies.
+
+**#4** Two `ok()` calls in `scripts/selftest.js` assert both strings against a whitespace-flattened
+copy of index.html, so a re-wrap cannot break them and a missing string fails the run.
+
+Nothing in the acceptance mentions Scotland or `sites.json`, so neither finding below disproves a
+criterion and **no box comes off**. That is the scope judgement the card was waiting for, and it is
+what unsticks it.
+
+VERDICT: sound
+
+**scope: defect**
+
+**The Scottish credit still contradicts its own comment, confirmed in today's tree.** The HTML
+comment at `app/index.html` lines 65 to 66 says "Forestry and Land Scotland publish none, so they
+take the generic OGL wording." The very next sentence in the paragraph, at line 71, reads:
+
+> Scottish forest details: Crown Copyright, Forestry and Land Scotland, licensed under the Open
+> Government Licence.
+
+That is Forestry England's published template with another agency's name substituted. It is not the
+generic "contains public sector information" wording that the comment, this card's own build note,
+and the `## Links` entry for card `0016` all say Scotland takes.
+
+**My own view, since I was asked to form one, is that the finding stands but is narrower than
+"the licence is wrong".** The sentence is factually defensible: Forestry and Land Scotland material
+is Crown Copyright and is released under the OGL, so nothing in it is false, and it is not a licence
+regression in the way dropping the credit would have been. What is not defensible is that the shipped
+file, the comment three lines above it, and the card that shipped both say opposite things about the
+same sentence. One of the two is wrong today whichever way it is settled, and the next person to edit
+that paragraph will read the comment and "fix" the line, or read the line and "fix" the comment. The
+weaker point stands too: putting a first-party-looking statement into the mouth of an agency that
+published none is a thing to do deliberately, and right now nobody can tell whether it was.
+
+I could not attribute the line to a commit, because I was instructed to run no git command on this
+pass. The finding does not need history: the contradiction is entirely inside the current tree.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**The data file still carries the wording this card retired, confirmed by reading it back today.**
+`build_dataset` in `scripts/parse.py` line 752 stamps:
+
+`"attribution": "Contains public sector information licensed under the Open Government Licence v3.0."`
+
+and `app/data/sites.json` holds exactly that string right now. That one file is the shipped dataset
+for English forests **and** Scottish forests **and** car parks, and it names no agency at all, while
+index.html now says an agency's own statement is the credit for their data and the generic line is
+only the fallback. The same rule this card exists to apply is applied on the screen and not on the
+file that travels.
+
+**The guard hides it.** `ok('attribution present', /Open Government Licence/.test(DATA.attribution))`
+in `scripts/selftest.js` tests for four words that appear in the retired wording and the new one
+alike, so it is green either way and would stay green if the string were replaced with almost
+anything. `docs/DATA-MODEL.md` still documents the old string as the field's value.
+
+Nothing in `app/app.js` or `app/api/nearest.php` reads that field, so no screen is wrong today, which
+is exactly why it can rot unnoticed. It is the redistribution credit that is wrong, and
+`app/data/campsites.json` shows the correct shape by naming OpenStreetMap in its own `attribution`.
+
+**The three questions.**
+
+1. **Where is it weakest.** The licence text is only as strong as the test pinning it, and the test
+   pins a four-word substring. Somebody rewording that paragraph can replace the entire credit with
+   any sentence containing "Open Government Licence" and ship green. Nobody is attacking this; the
+   realistic route in is a well-meaning edit for tone or length, which is how the Scottish sentence
+   drifted from its own comment in the first place.
+2. **What is unchecked.** `sites.json` is a build output served to anyone who asks, and nothing
+   compares its `attribution` with the statement in index.html, so the two records of one obligation
+   can drift apart silently. They already have. There is no input to validate here, no entry point
+   and no permission boundary; the unchecked path is the machine-facing copy of the credit.
+3. **What it leaks when it fails.** Nothing. The footer is static text and the field is a constant;
+   there is no user data, no tenant boundary, no id and no stack trace on this path.
+
+**Is the finding this card's to carry?** Yes, on both counts, and that is a change of view from
+treating them as next door. This card rewrote that paragraph and set the rule that a provider's own
+wording beats the generic line, so the Scottish sentence it left contradicting its own comment is its
+own output, and the dataset field is the same obligation missed on the copy that actually travels.
+Neither disproves a criterion, so this is work to finish rather than a box to untick.
+
+VERDICT: defect
+
+**Where it should go.** `todo/`, all four criteria left ticked, with three pieces of work: settle the
+Scottish sentence against its own comment and make the code and the comment agree; make
+`build_dataset` stamp a credit that names the agencies, the way `campsites.json` already does; and
+tighten `attribution present` so it asserts the actual wording instead of four words common to both.
+`Deploy` is still openly unticked on the task list, which is declared rather than hidden.

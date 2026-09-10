@@ -230,3 +230,110 @@ next door to the card rather than inside it. A builder could not act on it and a
 untick a box, so the card sat here fully ticked while every unattended run promoted it again. It is
 not closed and it is not reopened. It goes back for a fresh adversarial pass with the earlier
 verdicts still on the thread, and that pass decides whether the finding is this card's to carry.
+
+### 2026-09-10 review
+
+**suite**
+
+`node scripts/selftest.js` from the repository root: **280 passed, 0 failed**, before and after. The
+test all three criteria name, `dataset counts in comments match sites.json`, ran under
+`--- dataset counts carried in prose (card 0036) ---`. I read that off the run log.
+
+Counted from `app/data/sites.json` myself, not taken from the card: **1,180** records, **550**
+carrying a `url`, **274** `www.forestryengland.uk`, **276** `forestryandland.gov.scot`, **630** with
+no `url`. The card's figures are right.
+
+**acceptance: defect**
+
+**#1 and #2 hold, and I proved them red.** Changed `Every one of the 550 records` to `551` in
+`app/core.js`: RED, *"app/core.js: says 551, dataset holds 550"*. Replaced
+`forestryandland.gov.scot` with another host in the same comment: RED, *"app/core.js names only one
+upstream agency for its dataset URLs"*. Both restored, green. `app/api/nearest.php` and
+`docs/build/IOS-SHORTCUT.md` both read 1,180 and the guard reads both back.
+
+**#3 is disproved, and this is the finding.** It promises: *"THE SUITE SHALL fail if one of these
+carried counts no longer matches `app/data/sites.json`"*. The comment this card wrote above
+`safeHref()` carries four counts. I falsified the other three at once - 274 to **999**, 276 to
+**888**, 630 to **777** - so the comment then read that 999 records are on forestryengland.uk, 888
+on forestryandland.gov.scot and 777 car parks carry no url, out of 550 records total, which is
+arithmetic nobody could defend. The suite said:
+
+    PASS  dataset counts in comments match sites.json
+    PASS  both upstreams really are in the data
+
+Restored, green. So three of the four counts in the guarded comment are not guarded. The `carried`
+table reads exactly one number out of `core.js`, `/Every one of the ([\d,]+) records/`, and the
+second check only tests that both host *names* appear as strings - it never looks at the numbers
+beside them.
+
+This is the card's own promise measured against the card's own artefact, not a wish read into it.
+The earlier reviewer called the same thing a soft spot under `acceptance: sound` and a break under
+`breakage`; having actually falsified the numbers and watched the suite stay green, I put it under
+acceptance, because #3 says "one of these carried counts" and three of them are unreachable.
+
+I am not unticking anything - a reviewer may not. Recording it so a person can.
+
+VERDICT: defect
+
+**scope: sound**
+
+Stated up front: **no git command was run**, so I could not re-open the earlier scope finding, which
+was that the branch carried other cards' commits. That complaint has since dissolved on its own:
+0020 and 0034 have landed, and the tree on `main` today is coherent.
+
+What I could check held. The two fenced files are correct and untouched in substance:
+`docs/DATA-MODEL.md:89` still reads `"counts_by_country": { "England": 904 }`, and I confirmed that
+is the trap the card warned about rather than a miss - 274 English forests plus 630 English car parks
+is exactly **904**. `docs/DECISIONS.md` still carries its 904 inside the dated 2026-08-10 entry,
+which is right, because rewriting an append-only record would falsify it. `safeHref()` itself is
+unchanged: `/^https:\/\/[^\s/?#]/i`, scheme only, never the host - which is what the comment now says
+out loud.
+
+The guard has grown since this card built it, and the growth is other cards' and properly attributed
+in the source: rows for `docs/DATA-MODEL.md`'s stale-date sentence (card 0039) and for both halves of
+`app/app.js`'s campsite hours sentence (card 0020). The mechanism this card built is being reused,
+which is the best evidence it was the right shape.
+
+VERDICT: sound
+
+**breakage: defect**
+
+Same break as under acceptance, stated as drift rather than as a promise: add ten Scottish forests
+tomorrow and 274, 276 and 630 all become false while `node scripts/selftest.js` prints
+`281 passed, 0 failed`. That is precisely the failure this card exists to stop, and the card's own
+rewrite is what enlarged the surface - the comment had one number before it and has four now.
+
+**What a builder does, and it needs no untick.** Three more rows in the `carried` table in
+`scripts/selftest.js` around line 2487, in the shape already there:
+
+    ['app/core.js', /- (\d+)\s*\n?\s*on forestryengland\.uk/, 274-equivalent live count]
+    ['app/core.js', /on forestryandland\.gov\.scot/, 276-equivalent live count]
+    ['app/core.js', /The other ([\d,]+)\s*\n?\s*records, the car parks/, no-url count]
+
+with the expected values computed live from `sites.json` the way the existing rows are, never
+hard-coded. Mind that the comment wraps mid-sentence between numbers and their words, so the
+patterns have to tolerate a newline - that is the reason the existing single row is anchored on
+`Every one of the ([\d,]+) records`, which happens not to wrap. The alternative the card's
+`## What I need from you` offers - delete the three numbers from the comment - also closes it, and
+costs a reader the detail. I would add the rows.
+
+**Security, per the board README's three questions.** The code this card produced is two comments,
+two version strings and a test.
+
+1. **Weakest point.** Not the change - the thing the change describes. `safeHref()` checks the
+   scheme and never the host, so any https URL in the dataset becomes a live link. That is fine
+   while `parse.py` holds `URL_HOSTS` closed to three hosts, and it is the coupling to watch: loosen
+   the parser's allowlist and `safeHref()` will not notice. The comment now says this in the file,
+   which is an improvement on a reader having to derive it.
+2. **Unchecked.** The comment's counts, which is the finding above. Nothing else: the new test reads
+   repository files at development time, takes no input, and runs nowhere near a request.
+3. **Leak on failure.** Record counts and file paths into a developer's terminal. Nothing that
+   identifies a person and nothing an outside party sees.
+
+**No UI surface, and I am claiming it rather than skipping it.** Two shipped files changed and
+neither changes a pixel: a comment in `app/core.js` and the `CACHE` string in `app/sw.js`. `BUILD` in
+`core.js` and `CACHE` in `sw.js` both read `v24-2026-09-08` and match, which the suite enforces and
+which is green. There is no screen whose behaviour differs, so a browser pass would photograph an
+unchanged app.
+
+VERDICT: defect
