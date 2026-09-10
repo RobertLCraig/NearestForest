@@ -130,3 +130,7 @@ already carries in `todo/`, and `0019`, which arrived in the lane on 2026-09-08 
 `0052` were written and which no open card named. `0019` is raised as card `0053`.
 
 **2026-09-08** The loop moved this card from in-progress/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
+
+**2026-09-10** Rob's call, answering the queue: **closed.** The `## What I need from you` sections
+this card added are in the cards it named, so the work is finished and visible, and there is no
+question left on it for a person. Recorded here rather than left to be re-derived from the folder.

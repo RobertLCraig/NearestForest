@@ -79,3 +79,15 @@ Ready to paste into `## Comments`:
     `human-review/` ask stays directly under the title.
 
 ## Comments
+
+**2026-09-10** **Decided:** Option 1, in Rob's words "match the current ruleset". Criterion #1 means
+no solution inside `## Why`, and the `human-review/` ask stays directly under the title, which is
+what `docs/board/README.md` already says. Recorded as a clarification, not a change: nothing outside
+this repository moves, and no card is re-ordered. This unblocks `0021`, whose last criterion waited
+on it, and `0055`, which named it under `needs:`.
+
+**Straight to `done/`, and here is the tension.** `docs/board/README.md` says an answered card lands
+back in `todo/`, because an answer is usually the start of work, and separately that a decision card
+exits `human-review/` for `done/` because there is no artefact to review. Option 1 changes no file,
+so `todo/` would hold a card with nothing in it for a session to do. Taking the second rule and
+recording the choice here, rather than leaving an empty card in the work queue.

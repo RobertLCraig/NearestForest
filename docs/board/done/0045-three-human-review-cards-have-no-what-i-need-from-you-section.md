@@ -192,3 +192,7 @@ not touched, for the reason the first entry gives - card `0044` owns that paragr
 person and the folder holds fourteen. No browser check applies; nothing under `app/` changed.
 
 **2026-09-07** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 2 of 2 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
+
+**2026-09-10** Rob's call, answering the queue: **closed.** The `## What I need from you` sections
+this card added are in the cards it named, so the work is finished and visible, and there is no
+question left on it for a person. Recorded here rather than left to be re-derived from the folder.

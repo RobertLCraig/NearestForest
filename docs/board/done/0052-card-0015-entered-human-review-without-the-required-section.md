@@ -131,3 +131,7 @@ one card, `0056`, following the batching `0045` and `0051` used.
 CLAUDE.md, and it is what was run.
 
 **2026-09-09** The loop moved this card from in-progress/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
+
+**2026-09-10** Rob's call, answering the queue: **closed.** The `## What I need from you` sections
+this card added are in the cards it named, so the work is finished and visible, and there is no
+question left on it for a person. Recorded here rather than left to be re-derived from the folder.

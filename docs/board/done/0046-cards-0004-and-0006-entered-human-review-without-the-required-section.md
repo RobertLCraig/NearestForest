@@ -182,3 +182,7 @@ it. The fix belongs at the move, in `C:\Dev\ProgressBoard`, which this card's ow
 puts outside this repository.
 
 **2026-09-07** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 1 of 2 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
+
+**2026-09-10** Rob's call, answering the queue: **closed.** The `## What I need from you` sections
+this card added are in the cards it named, so the work is finished and visible, and there is no
+question left on it for a person. Recorded here rather than left to be re-derived from the folder.
