@@ -98,3 +98,20 @@ copy comes back marked up, fold the edits in and regenerate.
 **2026-09-05** Split out of `0018`, which was three times this board's 100-line budget. Nothing here
 is new work: the ask, the pass condition, the contact route and the `.docx` note are lifted from that
 card, and the reviews they point at moved to `docs/outreach/` unedited.
+
+**2026-09-10** Folded out of `docs/HANDOVER.md`, which is over its size budget. This is the card
+that sends the thing, so the shape of `docs/outreach/` belongs here.
+
+Markdown is the source, and **`*.docx` is gitignored**, so a Word review copy handed to a person is
+not in the repository; if one comes back marked up, fold the edits into the markdown and regenerate.
+Three files. `forestry-england-enquiry-review.md` is internal notes and is never sent.
+`forestry-england-enquiry.md` is the email itself. `forestry-england-handover.md` is a
+**self-contained** briefing for a session working in Word with no repository access, which is why it
+repeats the email in full rather than linking it. **Both are rendered to Word by one throwaway
+script, so the email text lives in two places that must be edited together.** The Natural Resources
+Wales letter is still inline on card `0017`.
+
+**The screenshots to attach**, from the same fold. `docs/img/2026-08-14_Screenshots/` holds six phone
+shots, untracked. **IMG_5792 (the list), IMG_5796 (the detail sheet) and IMG_5797 (the map chooser)**
+are the three worth attaching to this enquiry. IMG_5794 and IMG_5795 are not: they are card `0015`'s
+evidence of the tile credit being unreadable.

@@ -96,3 +96,16 @@ showed the endpoint was open in practice and not merely in theory. Not server-si
 <!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
 
 **2026-08-18** Key rotation email has now been sent.
+
+**2026-09-10** Folded out of `docs/HANDOVER.md`, which is over its size budget and is not the place
+for another project's DNS. **This is the card that mail routing blocks**, because Thunderforest
+checks the sending address against the account, so the measurement belongs here.
+
+Rob cannot send from `enhanceify.co.uk`. Receiving works, outbound does not. Measured 2026-08-14 by
+direct DNS query against 1.1.1.1: MX points at Cloudflare Email Routing
+(`route1/2/3.mx.cloudflare.net`) and SPF authorises `_spf.mx.cloudflare.net`, while Migadu's own
+records are all still present alongside them (`hosted-email-verify=`, three DKIM CNAMEs,
+`autoconfig`). Cloudflare Email Routing forwards inbound and sends nothing outbound, which matches
+the symptom. **The fix belongs on the enhanceify-V2 board, not this one**, and Rob asked on
+2026-08-14 that it be left alone for now. Cards `0017` and `0018` are **not** blocked by it: neither
+cares which address the email leaves from.

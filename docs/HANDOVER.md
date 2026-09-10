@@ -11,12 +11,13 @@ agencies; Campsites covers England, Scotland and Wales; Car parks is England onl
 dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
 **The pipeline is red on purpose** until `data/raw/` is re-fetched; see "What's next" 2.
 **Five built cards are not yet deployed** and ship as one batch; see "Current state".
-**Three agent-ready cards are open** on 2026-09-07: 0045 in `todo/`, and 0021 and 0044 in
-`in-progress/`; `ai-review/` holds the adversarial-pass queue.
-**Eleven cards wait on a person in `docs/board/human-review/`** (0001, 0002, 0003, 0010, 0017, 0018,
-0024, 0025, 0027, 0030, 0043), counted 2026-09-07. **The accounts and location-tracking card is
-`0043`**: it was renumbered from `0022` by card `0042`, because two different cards carried that
-number. `0022` now means only the footer-credits card in `ai-review/`.
+**This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and
+every one was stale within a day, so the rule now is: **list the folder, do not read a number.**
+`ls docs/board/todo` and `ls docs/board/in-progress` are what an agent can pick up;
+`ls docs/board/human-review` is what waits on Rob; `ls docs/board/ai-review` is the adversarial
+queue. A card is named below only where something about that one card cannot be got from the folder.
+**The accounts and location-tracking card is `0043`**: it was renumbered from `0022` by card `0042`,
+because two different cards carried that number. `0022` now means only the footer-credits card.
 The last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
 checkout. See card 0015's second comment entry and card 0016's.
@@ -261,18 +262,11 @@ sites on-device. That split is deliberate and is the thing the two-method compar
   `^M` interpreter error, which is a baffling way to meet a line ending.
 - `docs/build/IOS-SHORTCUT.md` — the Shortcut recipe, since `.shortcut` files cannot be generated.
 - `docs/outreach/` — drafted correspondence to outside parties, in markdown, which is the source.
-  **`*.docx` is gitignored**, so a Word review copy handed to a person will not be in the repo; if
-  one comes back marked up, fold the edits into the markdown and regenerate. Cards 0018 and 0027 hold
-  the Forestry England one; the Natural Resources Wales one is still inline on card 0017. Three files:
-  `forestry-england-enquiry-review.md` is internal notes and is never sent;
-  `forestry-england-enquiry.md` is the email itself, and `forestry-england-handover.md` is a
-  **self-contained** briefing for a Claude session working in Word with no repo access, which is why
-  it repeats the email in full rather than linking it. **Both are rendered to Word by one throwaway
-  script, and the email text therefore lives in two places that must be edited together.**
+  **What the three files are, and why the email text lives in two of them that must be edited
+  together, is on card 0027**, which is the card that sends it.
 - `docs/img/2026-08-14_Screenshots/` — six phone screenshots, **untracked pending a call on whether
-  14MB of PNGs belong in a repo the server pulls on every deploy.** IMG_5792 (list), 5796 (detail
-  sheet) and 5797 (map chooser) are the ones worth attaching to the enquiry. **5794 and 5795 are
-  evidence for card 0015**: they show the tile attribution as unreadable grey on a pale basemap.
+  14MB of PNGs belong in a repo the server pulls on every deploy.** Which shot shows what, and which
+  three go with the enquiry, is on card 0027; card 0015 uses the other two as evidence.
 - `HUMAN_ACTIONS.md` — what is left for a person, and the recurring data-refresh procedure.
 
 ## Decisions locked
@@ -374,9 +368,9 @@ The queue is [docs/board/](board/), one card per file. At the head:
    Forest" and 13 share "Car park near Hamsterley Forest", and at 22 characters the map truncates
    most derived names before the forest is reached. In the list this is fine, because each row still
    carries its own distance and bearing. On the map it is not.
-4. **An adversarial pass over `ai-review/`** — twenty-nine cards on 2026-09-07 (`ls docs/board/ai-review`,
-   which is the only honest count), among them 0005 deploy, 0006
-   compass, 0008 offline map, 0009 tile layer, and **0020 campsites**, which is the largest
+4. **An adversarial pass over `ai-review/`**. Run `ls docs/board/ai-review` for the queue; no count
+   is written here, because every count written here has gone stale. The one worth naming is
+   **0020 campsites**, the largest
    single change since the map. 0020 is worth real scepticism on three points: the filter that
    decides what a campervan can get into, whether the ODbL Collective Database argument holds, and
    whether 3,574 more markers have broken the map's clustering or its label collisions. Nothing reaches `done/` without somebody trying
@@ -393,21 +387,18 @@ before use in an internet application. The email is drafted on that card.
 
 ## Blockers / open questions
 
-See [docs/board/human-review/](board/human-review/). **Three agent-ready cards are open**, and
-`ls docs/board/todo` plus `ls docs/board/in-progress` are the honest count: on 2026-09-07 they give
-**0045** in `todo/`, the three `human-review/` cards that carry no "What I need from you" section,
-and **0021** and **0044** in `in-progress/` — 0021, the card-rewrite pass, whose last criterion
-waits on decision 0025, and 0044, the card correcting this very paragraph.
-**0033 and 0034 are where this paragraph used to point, and both are built**, sitting in
-`ai-review/` for the adversarial pass; **0034 re-took the "`api/nearest.php` needs no caching"
-measurement on 2026-09-06 and the conclusion held**, and the figures, with the date and file size
-they were taken on, are in "Current state" above. Otherwise what remains is the adversarial pass over `ai-review/` and the
-re-fetch that card 0026 left. **Eleven cards need Rob**, and all eleven are in the lane:
-`ls docs/board/human-review` on 2026-09-07 gives 0001, 0002, 0003, 0010, 0017, 0018, 0024, 0025,
-0027, 0030 and 0043. The folder is the count; the list below covers those eleven, plus the
-struck-through 0016, which is answered and kept only for the one licence question it left behind.
-**Ten of them fit in one conversation; 0043 does not**, because it is a build the size of the
-Campsites tab and not a question:
+**Run `ls docs/board/human-review`, `ls docs/board/todo` and `ls docs/board/in-progress`. This
+section names no counts and lists no card numbers**, because five cards in a row wrote a list here
+by hand and every one was wrong within a day. The bullets below say what a card wants from a person,
+for the cards where that is not obvious from the title. A card in that folder and not below still
+needs Rob, and its own `## What I need from you` section is the ask.
+
+**0034 re-took the "`api/nearest.php` needs no caching" measurement on 2026-09-06 and the conclusion
+held**; the figures, with the date and the file size they were taken on, are in "Current state"
+above. Otherwise what remains is the adversarial pass over `ai-review/` and the re-fetch that card
+0026 left. **Everything below fits in one conversation except 0043**, which is a build the size of
+the Campsites tab rather than a question. **0016 is struck through**: it is answered, and kept only
+for the one licence question it left behind.
 
 - **0001 check 5** — aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
   and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
@@ -422,18 +413,10 @@ Campsites tab and not a question:
 - **0010** — rotate the Thunderforest key, which reached a chat transcript. Hygiene, not an
   incident: nothing leaked into the repo and the server copy is 600 above the web root.
 
-**Rob cannot currently send from `enhanceify.co.uk`, and it blocks exactly one of these cards.**
-Receiving works; outbound does not. Measured 2026-08-14 by direct DNS query against 1.1.1.1: MX
-points at Cloudflare Email Routing (`route1/2/3.mx.cloudflare.net`) and SPF authorises
-`_spf.mx.cloudflare.net`, while Migadu's own records are all still present alongside them
-(`hosted-email-verify=`, three DKIM CNAMEs, `autoconfig`). Cloudflare Email Routing forwards inbound
-and sends nothing outbound, which matches the reported symptom.
-
-**Only 0010 is actually blocked by it**, because Thunderforest checks the sending address against
-the account. **0017 and 0018 are not**: neither cares which address the email leaves from, so both
-can go today from any working address, with the signature set to match. Do not let them queue behind
-the mail fix. **That fix belongs on the enhanceify-V2 board, not this one**, and Rob asked on
-2026-08-14 that it be left alone for now.
+**Rob cannot send from `enhanceify.co.uk`, and it blocks 0010 alone**, because Thunderforest checks
+the sending address against the account. **0017 and 0018 are not blocked**: neither cares which
+address the email leaves from, so do not let them queue behind it. The DNS measurement behind this,
+and the reason the fix belongs on the enhanceify-V2 board, is on card 0010.
 - **0002** — build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
 - **0018** — **do we write to Forestry England, and with which asks?** Three costed options and a
   recommendation. The only hard reason left is the trade mark: OGL settles the data and permits

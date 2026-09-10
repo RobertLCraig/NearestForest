@@ -2,6 +2,10 @@
 
 ## What I need from you
 
+**ANSWERED 2026-09-10, and this card is closed.** Rob chose to have the brief fixed rather than
+have the card reopened. What was done, and which change answered which card, is the last entry in
+`## Comments`. Nothing below is still being asked.
+
 **Untick criteria #1 and #2 and send this card back to `todo/`, or write a dated line on the thread
 saying the reviewer is wrong.** Either one closes it. Doing neither leaves the card exactly here.
 
@@ -187,3 +191,40 @@ VERDICT: defect
 
 
 **2026-09-08** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 1 time between todo and ai-review, all 2 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 2 of 2 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-10** RESULT: closed by Rob's call, with the work done first.
+TESTS: +0 new, all green (280 passed, 0 failed)
+TOUCHED: docs/HANDOVER.md, plus docs/board/human-review/0010 and 0027, which took the folded facts
+OUT-OF-SCOPE: none
+
+**Rob's answer.** Five cards - `0023`, `0031`, `0040`, `0041` and `0044` - were all about
+`docs/HANDOVER.md`, all ticked as fixed and all false. Asked whether to reopen them, replace them
+with one card, or fix the brief now and close all five, he chose the third. This entry is the note
+that says which change answered which card.
+
+**Change 1: the brief now carries no card list and no card count.** That is the fix `0040`, `0041`
+and `0044` each attempted by hand, and each went stale within a day because a list of card numbers
+is wrong the moment anything moves. Three places carried one and all three now say to list the
+folder instead: the status block at the top, the opening of "Blockers / open questions", and item 4
+of "What's next". The bullets under Blockers stay, because they say what a card wants from a person,
+which a folder listing cannot.
+
+**Change 2: one more stale block folded out, and the brief is under budget.** That is `0023` and
+`0031`. `docs/HANDOVER.md` went 42,299 bytes at the start of this session to **40,722**, under the
+40,960 limit. Two blocks moved to the card that owns them, neither cut:
+
+- the DNS measurement behind Rob not being able to send from `enhanceify.co.uk` went to card `0010`,
+  which is the one card it blocks
+- the shape of `docs/outreach/` and which screenshots go with the enquiry went to card `0027`, which
+  is the card that sends it
+
+Every removed string was grepped against the whole tree afterwards and each still has a home.
+
+**Proved, not asserted.** The session-start hook was run by hand against this repository and no
+longer reports the file as over budget, which is criterion #3 on both `0023` and `0031`.
+
+**The tension, said out loud.** `docs/board/README.md` says nothing reaches `done/` without an
+adversarial pass. These five go straight there on Rob's instruction, and the work was done by the
+same session that is closing them, so the ticks record what that session did rather than what a
+reviewer checked. The brief's size and its card lists are both checkable in one command each:
+`Get-Item docs\HANDOVER.md` and `Select-String -Path docs\HANDOVER.md -Pattern '\b00\d\d\b'`.
