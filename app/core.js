@@ -257,7 +257,22 @@
   var OSM_CREDIT = 'Campsite data © OpenStreetMap contributors, ODbL';
   var PLAIN_HINT = 'Tap a marker for details. Pinch to zoom.';
 
-  function mapHint(tilesOn, hasOsmMarkers) {
+  var TILES_FAILED = 'Tiles unavailable. Tap Tiles twice to retry.';
+
+  /* `tilesFailed` means the layer is switched on and not one tile arrived, which is
+     what a 429 from our own cap or a 403 looks like from the map's side. It is a
+     separate state from off, and it was invisible: card 0012 measured the pill
+     reading "Maps © Thunderforest" over a map with no tile on it, for the whole
+     session, with the button still reading "Tiles on". Crediting a basemap that is
+     not on screen is a false attribution as well as a lie to the user, so the
+     credit is withdrawn with the tiles. The campsite markers are an ODbL database
+     drawn either way, so their credit survives and still earns the readable pill. */
+  function mapHint(tilesOn, hasOsmMarkers, tilesFailed) {
+    if (tilesOn && tilesFailed) {
+      return hasOsmMarkers
+        ? { text: OSM_CREDIT + ' · Tiles unavailable.', credit: true }
+        : { text: TILES_FAILED, credit: false };
+    }
     if (tilesOn) return { text: TILE_CREDIT, credit: true };
     if (hasOsmMarkers) return { text: OSM_CREDIT, credit: true };
     return { text: PLAIN_HINT, credit: false };

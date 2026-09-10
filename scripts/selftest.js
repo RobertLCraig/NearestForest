@@ -941,13 +941,13 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
   // out of map.js source over a stub hint element, the way field() is lifted out of app.js
   // above, so what is asserted is the decision and not the spelling of the call.
   {
-    const make020 = new Function('document', 'hooks', 'tilesOn', 'NF',
+    const make020 = new Function('document', 'hooks', 'tilesOn', 'NF', 'tileLayerDead',
       map.match(/function updateHint\(\) \{[\s\S]*?\r?\n  \}\r?\n/)[0] + 'return updateHint;');
-    const run = (tilesOn, drawn) => {
+    const run = (tilesOn, drawn, dead) => {
       const el = { textContent: '', attrib: null,
                    classList: { toggle: (c, on) => { el.attrib = on; } } };
       make020({ getElementById: id => (id === 'map-hint' ? el : null) },
-              { getSites: () => drawn }, tilesOn, NF)();
+              { getSites: () => drawn }, tilesOn, NF, () => !!dead)();
       return el;
     };
     const forest = { source: 'forest' }, camp = { source: 'campsite' };
@@ -956,6 +956,23 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
        /OpenStreetMap/.test(withCamps.textContent) && withCamps.attrib === true &&
        !/OpenStreetMap/.test(forestsOnly.textContent) && forestsOnly.attrib === false,
        `campsites drawn: "${withCamps.textContent}" | forests only: "${forestsOnly.textContent}"`);
+
+    // Card 0012. The same trap one argument along: the THIRD argument decides whether
+    // the map is crediting a basemap it is not showing. Hardcode it to false and the
+    // pill reads "Maps (c) Thunderforest" over a map with no tile on it, which is what
+    // was measured in a browser on 2026-09-10. So drive the real updateHint again.
+    const deadOnly = run(true, [forest], true), deadWithCamps = run(true, [forest, camp], true);
+    ok('a tile layer that produced nothing credits no basemap and says it is unavailable',
+       !/Thunderforest/.test(deadOnly.textContent) &&
+       /unavailable/i.test(deadOnly.textContent) && deadOnly.attrib === false,
+       `"${deadOnly.textContent}"`);
+    ok('the ODbL marker credit survives a dead tile layer',
+       /OpenStreetMap/.test(deadWithCamps.textContent) &&
+       !/Thunderforest/.test(deadWithCamps.textContent) && deadWithCamps.attrib === true,
+       `"${deadWithCamps.textContent}"`);
+    const live = run(true, [forest], false);
+    ok('a tile layer that is working still credits Thunderforest',
+       /Thunderforest/.test(live.textContent) && live.attrib === true, `"${live.textContent}"`);
   }
   {
     const css = fs.readFileSync(path.join(ROOT, 'app', 'app.css'), 'utf8');
@@ -2876,15 +2893,20 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
       arc: paint('arc'), fillText: paint('fillText'), strokeText: paint('strokeText'),
       setLineDash: paint('setLineDash'), drawImage: paint('drawImage')
     };
-    const node = () => ({
-      hidden: true, textContent: '', style: {},
-      addEventListener() {}, setAttribute() {},
-      classList: { add() {}, remove() {}, toggle() {} },
-      getBoundingClientRect: () => ({ width: 390, height: 640, left: 0, top: 0 }),
-      getContext: () => ctx
-    });
+    const node = () => {
+      const n = {
+        hidden: true, textContent: '', style: {}, attrs: {}, on: {},
+        addEventListener(t, f) { (n.on[t] = n.on[t] || []).push(f); },
+        click() { (n.on.click || []).forEach(f => f()); },
+        setAttribute(k, v) { n.attrs[k] = v; },
+        classList: { add() {}, remove() {}, toggle(c, v) { n.attrs[c] = v; } },
+        getBoundingClientRect: () => ({ width: 390, height: 640, left: 0, top: 0 }),
+        getContext: () => ctx
+      };
+      return n;
+    };
     const nodes = {};
-    const state = { fetches: 0, mode: 'fail' };
+    const state = { fetches: 0, mode: 'fail', tileSrcs: [], tilesFail: true };
     const respond = () => {
       state.fetches++;
       if (state.mode === 'fail') return Promise.reject(new Error('Failed to fetch'));
@@ -2913,11 +2935,25 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
       { getItem: () => null, setItem() {} },
       fn => { fn(); return 0; },              // 0, so map.js's own raf guard clears
       respond,
-      function () {},                          // Image, never loaded here
+      // A tile Image that records what was asked for and then succeeds or fails to
+      // order. The whole of card 0012 turns on whether a second request is ever made.
+      function () {
+        const img = this;
+        Object.defineProperty(img, 'src', {
+          get: () => '',
+          set: v => {
+            state.tileSrcs.push(v);
+            setTimeout(() => {
+              if (state.tilesFail) { if (img.onerror) img.onerror(); }
+              else if (img.onload) img.onload();
+            }, 0);
+          }
+        });
+      },
       NF
     );
     map.init({ getSites: () => SITES, getPos: () => BRIGHTON, onPick() {} });
-    return { map, ops, state };
+    return { map, ops, state, nodes };
   }
 
   const coastDrawn = ops => ops.some(o => o.op === 'lineTo');   // only the outline traces
@@ -2995,6 +3031,48 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
   ok('an outline with no bbox is refused rather than accepted and fitted to nothing',
      /Coastline unavailable/.test(notice(t.ops)) && tSpread > 60,
      `spread ${tSpread.toFixed(0)}px, said: ${notice(t.ops) || '(nothing)'}`);
+
+  console.log('\n--- a refused tile does not cost the layer for the session (card 0012) ---');
+  {
+    /* Measured in a browser on 2026-09-10: with every tile answering 429, the toggle
+       still read "Tiles on", the pill still credited Thunderforest, and switching the
+       layer off and on issued ZERO new requests. Twelve before, twelve after. The
+       cache held an unloadable Image per tile and getTile returned it forever. Every
+       check on this file was a regex over its text and none of them saw it, so this
+       drives the button and counts the requests. */
+    const g = harness();
+    g.state.mode = 'ok';
+    g.map.show();
+    await tick(); await tick();
+    const tileBtn = g.nodes['map-tiles'];
+    const hint = () => g.nodes['map-hint'].textContent;
+
+    g.state.tilesFail = true;
+    tileBtn.click();                       // layer on, every tile refused
+    await tick(); await tick();
+    const firstRound = g.state.tileSrcs.length;
+    ok('switching the layer on requests tiles', firstRound > 0, `${firstRound} requested`);
+    ok('the button still reports the layer is on', tileBtn.attrs['aria-pressed'] === 'true');
+    ok('a layer that produced nothing stops crediting a basemap it is not showing',
+       !/Thunderforest/.test(hint()) && /unavailable/i.test(hint()), `"${hint()}"`);
+
+    tileBtn.click();                       // off
+    await tick();
+    tileBtn.click();                       // and on again: this must retry
+    await tick(); await tick();
+    ok('turning the layer off and on asks for the tiles again',
+       g.state.tileSrcs.length > firstRound,
+       `${firstRound} requests before the toggle, ${g.state.tileSrcs.length} after`);
+
+    // And when the cap resets or the signal returns, pressing it again works.
+    g.state.tilesFail = false;
+    tileBtn.click();
+    await tick();
+    tileBtn.click();
+    await tick(); await tick();
+    ok('once tiles arrive the provider is credited again',
+       /Thunderforest/.test(hint()), `"${hint()}"`);
+  }
 
   console.log(`\n${pass} passed, ${failures.length} failed`);
   if (failures.length) {

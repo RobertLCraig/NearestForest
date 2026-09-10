@@ -71,9 +71,56 @@ function readKey(): string
             . 'The map still works without it.');
 }
 
-/* Per-address daily cap. A counter file per address per day, under the system
-   temp directory: no database, no dependency on APCu being compiled in, and the
-   OS clears it up.
+/* Where the counters live. Beside tiles.key in the domain directory, above the web
+   root, in preference to the system temp directory. On shared hosting the temp
+   directory is commonly a world-writable /tmp, so a co-tenant who creates nf-tiles
+   before we do owns the rate-limit state and can seed any address straight to the
+   cap. The domain directory is this account's.
+
+   The key file is what identifies that directory, rather than counting `..` up to
+   it: where tiles.key is readable, that directory is ours by construction. It also
+   keeps a developer's machine clean, since there is no key here and the counters
+   go to the temp directory instead of appearing a level above the checkout. The
+   temp directory is the fallback either way, because a cap that cannot find a home
+   must not take the layer down. */
+function counterDir(): ?string
+{
+    $home = __DIR__ . '/../../../tiles.key';
+    $candidates = is_readable($home)
+        ? [dirname($home) . '/nf-tiles', sys_get_temp_dir() . '/nf-tiles']
+        : [sys_get_temp_dir() . '/nf-tiles'];
+    foreach ($candidates as $dir) {
+        if (is_dir($dir) || @mkdir($dir, 0700, true) || is_dir($dir)) {
+            return $dir;
+        }
+    }
+    return null;
+}
+
+/* A per-install secret, so the counter filenames are not reversible.
+
+   Unsalted SHA-256 over IPv4 is a 2^32 space: a review on 2026-09-10 recovered
+   127.0.0.1 from its own counter filename in 108ms, and put the whole address
+   space at about an hour on a laptop. That made this directory a dated, reversible
+   log of every address that used the app, which is the opposite of what the
+   comment above it claimed. The salt makes the claim true.
+
+   Two requests racing to create it will write different values and one wins; the
+   loser counts under a salt nobody reads again, which costs a handful of tiles
+   once, on one day. That is the same trade the unlocked counter below makes. */
+function counterSalt(string $dir): string
+{
+    $f = $dir . '/.salt';
+    $s = is_readable($f) ? trim((string) @file_get_contents($f)) : '';
+    if (strlen($s) < 32) {
+        $s = bin2hex(random_bytes(16));
+        @file_put_contents($f, $s, LOCK_EX);
+    }
+    return $s;
+}
+
+/* Per-address daily cap. A counter file per address per day, in the directory
+   above: no database, no dependency on APCu being compiled in.
 
    REMOTE_ADDR only. X-Forwarded-For is deliberately NOT consulted: this origin is
    reached directly (the Cloudflare record is unproxied by decision), so any such
@@ -95,14 +142,15 @@ function rateLimit(): void
     if ($ip === '') {
         return;                                    // nothing to count against
     }
-    $dir = sys_get_temp_dir() . '/nf-tiles';
-    if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
+    $dir = counterDir();
+    if ($dir === null) {
         return;                                    // cannot count; never fail closed
     }
 
     $today = gmdate('Ymd');
-    /* Hashed so the counter directory is not itself a log of who used the app. */
-    $file = $dir . '/' . $today . '-' . hash('sha256', $ip) . '.count';
+    /* Salted, so the counter directory is not itself a log of who used the app.
+       See counterSalt(): unsalted, it was one. */
+    $file = $dir . '/' . $today . '-' . hash('sha256', counterSalt($dir) . $ip) . '.count';
 
     $n = is_readable($file) ? (int) @file_get_contents($file) : 0;
     if ($n >= CAP_PER_DAY) {

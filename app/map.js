@@ -38,6 +38,13 @@ var NFMap = (function () {
   var tiles = {};
   var tileCount = 0;
   var MAX_TILES = 300;
+  /* How the layer is actually doing, as opposed to what the button says. `failed`
+     was written on every tile and read nowhere, so a 429 from our own daily cap
+     left the map plain, the button reading "Tiles on" and the credit claiming a
+     basemap, for the rest of the session (card 0012). Counted rather than scanned
+     because the answer is needed on every draw. */
+  var tilesOk = 0;
+  var tilesFailed = 0;
 
   /* ---------- theme ---------- */
   /* Read from the stylesheet rather than duplicated here, so the map follows
@@ -193,6 +200,8 @@ var NFMap = (function () {
        real LRU would cost more code than it saves for a few hundred images. */
     tiles = {};
     tileCount = 0;
+    tilesOk = 0;
+    tilesFailed = 0;
   }
 
   function getTile(z, x, y) {
@@ -203,13 +212,20 @@ var NFMap = (function () {
     var t = { img: new Image(), ok: false, failed: false };
     tiles[k] = t;
     tileCount++;
-    t.img.onload = function () { t.ok = true; schedule(); };
-    /* A failed tile is not an error state for the app: the bundled outline is
-       already underneath it, so the map stays readable and simply stays plain. */
-    t.img.onerror = function () { t.failed = true; };
+    /* The hint is rewritten only when the layer crosses between working and not,
+       never per tile: there can be 300 of them and this writes to the DOM. */
+    t.img.onload = function () { t.ok = true; if (!tilesOk++) updateHint(); schedule(); };
+    /* One failed tile is not an error state: the bundled outline is already
+       underneath it, so the map stays readable and simply stays plain. ALL of them
+       failing is a different thing, and it is the one the user has to be told
+       about, because they just pressed a button that then did nothing. */
+    t.img.onerror = function () { t.failed = true; if (!tilesFailed++) updateHint(); };
     t.img.src = 'api/tiles.php?z=' + z + '&x=' + x + '&y=' + y;
     return t;
   }
+
+  /* The layer is on and has produced nothing at all. */
+  function tileLayerDead() { return tilesFailed > 0 && tilesOk === 0; }
 
   function drawTiles() {
     /* Slippy-map zoom whose tiles are closest to 1:1 with the current scale.
@@ -250,12 +266,20 @@ var NFMap = (function () {
     var hint = document.getElementById('map-hint');
     if (!hint) return;
     var osm = hooks.getSites().some(function (s) { return s.source === 'campsite'; });
-    var h = NF.mapHint(tilesOn, osm);
+    var h = NF.mapHint(tilesOn, osm, tileLayerDead());
     hint.textContent = h.text;
     hint.classList.toggle('map__hint--attrib', h.credit);
   }
 
   function setTiles(on) {
+    /* Switching the layer on throws away whatever is cached, including the failed
+       entries. Without this, one 429 was permanent: the cache held an unloadable
+       Image for every tile on screen, getTile returned it forever, and toggling
+       off and on issued no request at all (card 0012, measured: twelve before,
+       twelve after). Re-fetching a few tiles that would have been reused costs a
+       redraw; the browser holds them for a week anyway, which is the same bet
+       pruneTiles already makes. */
+    if (on && !tilesOn) pruneTiles();
     tilesOn = !!on;
     try { localStorage.setItem(LS_TILES, tilesOn ? '1' : '0'); } catch (e) { /* private mode */ }
     var btn = document.getElementById('map-tiles');

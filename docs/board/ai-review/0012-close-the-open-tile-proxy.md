@@ -1,40 +1,12 @@
 # Close the open tile proxy
 
-## What I need from you
+**Nothing here is waiting on Rob.** The 2026-09-10 review, which Rob asked for in place of a
+decision, found three defects in the layer's behaviour rather than one judgement about his quota.
+All five criteria stay ticked: the review graded acceptance sound both times. The three findings
+were built on 2026-09-10; see the last `## Direction` entry.
 
-**One decision.** A reviewer says this card is not finished, but only you can untick a box. Either
-untick the criteria the finding disproves and send the card back to `todo/`, or say in the thread
-below that the finding is wrong and the card closes as it stands.
-
----
-
-**What's wrong.** The card is ticked 5 of 5 and reads as done, and the reviewer's `breakage: defect`
-verdict at the end of `## Direction` says two things are not:
-
-1. **The cap counts per address, but the sizing argument was per user.** `rateLimit()` in
-   `app/api/tiles.php` keys on `REMOTE_ADDR`, and UK mobile carriers put many subscribers behind one
-   address. So "a real user is nowhere near 2000/day" may not hold for a whole carrier. Criterion #3.
-2. **A 429 or 403 blanks the tiles for the rest of the session, silently.** `getTile()` in
-   `app/map.js` stores the failed tile and nothing retries or tells the user. This card added the new
-   ways to get a non-200, so it created the path. Criteria #2 and #5.
-
-**Cause.** A reviewer is forbidden from editing acceptance, so the card came back with every box
-still ticked. Every unattended session since has found nothing open to do and promoted it again on
-those boxes. Only a person can break that loop.
-
-**Pass** is either one of:
-- one or more of #2, #3 and #5 unticked, and the card moved to `todo/` for the fix; or
-- an entry in the thread saying which part of the finding is wrong and why, with the card left ticked.
-
-**Fail** is leaving it as it is. The card returns to this lane on the next sweep and nothing changes.
-
-**Why it needs you.** The reviewer graded `acceptance: sound` and `scope: sound`, so the finding is
-about a risk the card accepted rather than work it skipped. Whether a shared carrier address is worth
-the code, and whether a silently plain map is a defect or a bounded cost, is a judgement about your
-quota and your users, not a lookup.
-
-**Note on length.** This card is now 173 lines against a 100-line budget. The `## Direction` and
-`## Comments` threads are append-only and hold most of it, so this card could not bring it under.
+**Note on length.** This card is over the 100-line budget. The `## Direction` and `## Comments`
+threads are append-only and hold most of it, so this card could not bring it under.
 
 ## Why
 `api/tiles.php` was a free tile server for the internet, on our Thunderforest quota. It was recorded
@@ -298,3 +270,113 @@ in a response at all - it is the counter directory described in finding 2, which
 dated list of every address that used the app.
 
 VERDICT: defect
+
+### 2026-09-10 build (the three findings)
+
+All five criteria stay ticked. Both reviews graded acceptance sound, so nothing here disproves a
+box; the work was the behaviour around the cap, not the cap.
+
+**Finding 1, the silent dead layer. Two changes in `app/map.js`, plus one in `app/core.js`.**
+
+`t.failed` was written on every tile and read nowhere. It is now counted, alongside successes, and
+`tileLayerDead()` is true when the layer is on and not one tile has arrived.
+
+- **`setTiles` clears the cache when the layer is switched on.** That is the recovery, and its
+  absence was the whole fault: the cache held an unloadable `Image` for every tile on screen, so
+  `getTile` returned it for the rest of the session and toggling issued no request at all.
+- **`NF.mapHint` takes a third argument and withdraws the credit with the tiles.** The pill read
+  "Maps © Thunderforest" over a map with no tile on it, which is a false attribution as well as a
+  lie to the user. It now reads "Tiles unavailable. Tap Tiles twice to retry." The campsite markers
+  are an ODbL database drawn either way, so with the Campsites tab showing, the OpenStreetMap credit
+  survives and keeps its pill; only the Thunderforest half goes.
+- The hint is rewritten only when the layer crosses between working and not, never per tile. There
+  can be 300 of them and it writes to the DOM.
+
+**Finding 2, the counter filenames. Two changes in `app/api/tiles.php`.**
+
+- **Salted.** `counterSalt()` generates a 16-byte per-install secret once, beside the counters. The
+  filename is now `sha256(salt . ip)`. Measured below: unsalted, the review recovered `127.0.0.1`
+  from its own filename in 108ms; salted, the filename no longer matches `sha256(ip)` at all.
+- **Moved out of the world-writable temp directory**, which was the co-tenant risk in the security
+  section above. `counterDir()` prefers the directory holding `tiles.key`, which is the domain
+  directory and this account's. It finds it *by the key file* rather than by counting `..` upwards,
+  which also keeps a developer's machine clean: there is no key here, so the counters go to the temp
+  directory rather than appearing a level above the checkout.
+
+**Finding 3, CGNAT, deliberately not coded.** The review itself ranks it least and says why: with
+finding 1 fixed, a shared-address cap is a visible, recoverable condition rather than a silent dead
+layer. Whether 2000 a day is the right number for a whole carrier is a judgement about Rob's quota
+and stays one; nothing about it is cheaper to decide now than after the first time it happens, and
+the map still works when it does.
+
+**Two things named in the security section and left alone, on purpose.** The `Referer` layer
+protects nothing `Sec-Fetch-Site` does not, since a client able to set `Host` could simply omit
+`Referer`; removing it is a scope change on a card whose Tasks say to keep it for older clients.
+And a lost `.salt` orphans the day's counters and resets the cap once, for everyone, which is the
+same shape of leak the unlocked counter already accepts.
+
+**The suite: 306 passed, 0 failed** (`node scripts/selftest.js`), up from 298.
+
+**Eight new assertions, and not one of them reads the source.** Every check this endpoint has ever
+had was a regex over `app/api/tiles.php` or `app/map.js`, which is why a `failed` flag that nothing
+read survived two reviews. The new checks drive the real button on the real map over a recording
+canvas and a tile `Image` that fails to order, and count the requests.
+
+**Red-proof.** Each part of the fault was put back and the suite run:
+
+| fault restored | result |
+|---|---|
+| `setTiles` no longer clears the failed tiles | 304 passed, **2 failed** |
+| `updateHint` stops asking whether the layer is alive | 303 passed, **3 failed** |
+| a failed tile is written and never read again | 305 passed, **1 failed** |
+
+The first of those reproduces the browser measurement exactly: "6 requests before the toggle, 6
+after."
+
+**The endpoint was run, not read.** `php -S 127.0.0.1:8792 -t app` on PHP 8.4.25. There is no
+`tiles.key` here, so anything reaching `readKey()` returns 503, which makes 503 a clean "allowed
+through" signal.
+
+| probe | result |
+|---|---|
+| `Sec-Fetch-Site: same-origin` | 503, through the gate |
+| `Sec-Fetch-Site: cross-site` | 403 |
+| counter seeded to 2000 | **429**, not 503, so the cap still fires before the key is read |
+| counter contents replaced with `not-a-number` | 503, served through |
+| `.salt` deleted mid-run | 503, served through, new salt written |
+| `z=21`, `x=abc`, `s=../../etc/passwd` | 400 each, no upstream call |
+
+And the filename, which is the finding:
+
+```
+filename hash:   2399971c85e74ad2643593f2594389afd37186473e17929aa55293b3bd67e5a0
+sha256(ip):      12ca17b49af2289436f303e0166030a21e525d266e209267433801a8fd4071a0
+sha256(salt+ip): 2399971c85e74ad2643593f2594389afd37186473e17929aa55293b3bd67e5a0
+```
+
+The directory choice was proved by putting a dummy key file where the real one lives on the server:
+the counters and the salt moved beside it and out of the temp directory. Both probe files were
+deleted afterwards.
+
+**In a browser, at 390x844x3, mobile, touch.** Same server, a Brighton fix injected before page
+scripts, and `Image`'s `src` setter wrapped to count tile requests. Every tile 503s, which is what
+a 429 looks like from the map's side.
+
+| state | tile requests | button | hint |
+|---|---|---|---|
+| map open, layer off | 0 | Tiles | Tap a marker for details. Pinch to zoom. |
+| layer on | 20 | Tiles on | Tiles unavailable. Tap Tiles twice to retry. |
+| off, then on again | **40** | Tiles on | Tiles unavailable. Tap Tiles twice to retry. |
+
+Twenty to forty is the fix. Before it, the same sequence was twenty to twenty, and the hint credited
+a basemap that was not on screen.
+
+![the layer on, no tiles, and the map saying so](../attachments/0012-2026-09-10-2.png)
+
+`CACHE` and `BUILD` are at `v28-2026-09-10`, bumped by card `0008` earlier in the same session.
+
+**One trap worth writing down for the next session.** Chrome served a cached `core.js` and `map.js`
+from a previous review at the same origin, because the PHP development server sends no
+`Cache-Control` and `app/.htaccess` is not read by it. The page reported `BUILD v24-2026-09-08` and
+every new assertion appeared to fail in the browser while the suite was green. Check `NF.BUILD` in
+the console before believing a browser result on `php -S`.
