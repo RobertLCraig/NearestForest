@@ -59,6 +59,12 @@ next card that adds a test has no reason to know the number exists, and nothing 
 - `0029` - one of the two cards that added self-tests after the 219 was typed into the brief, so it
   is half of the evidence that the number drifts whenever anyone adds a test.
 - `0030` - the other one, same reason.
+- `0040`, `0041`, `0044` - raised for the three counts the reviewer found still wrong, and the
+  reason the ask above asks whether that leaves this card done or still owing the sweep.
+- `0045` - the card the brief named as ready to pick up when it was not, which is the third of those
+  stale counts.
+- `0055` - the card `todo/` actually held on the day, which is what showed the `0045` line was
+  stale.
 
 ## Not this card
 Not the size budget, which is `0031`. Not the record counts: `1,180` and `3,681` were checked

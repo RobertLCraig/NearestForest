@@ -59,6 +59,14 @@ even though the README puts a person-only step in the same lane as a decision.
 - `0033` - moved `0025` for the same reason and swept `todo/` for decision cards only. Its comment
   entry names these two as the residue it could not take.
 - `0032` - measured the count in `docs/HANDOVER.md` that these two cards make wrong.
+- `0010` - one of the two cards this one moves. Its remaining work signs in to a third-party account
+  and sends mail, so only a person can do it.
+- `0027` - the other. It sends an email to a public body in Rob's name, and says so in its own
+  frontmatter.
+- `0003`, `0017` - moved into the lane in the same commit as those two, which is why the commit
+  shows four moves where this card names two. `0037` claimed them afterwards.
+- `0037` - raised by this card for the decision cards left behind in `todo/`, and now sitting in
+  this lane with its own ask.
 
 ## Not this card
 Not editing the text of `0010` or `0027`; their shape is fine, their folder is not. Not building a

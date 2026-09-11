@@ -54,6 +54,14 @@ why they were read as parked rather than as waiting on a person; `0018` carries 
 - `0033` - swept `todo/` for `## Options` cards and moved `0025` only. These three match the same
   rule and were not taken.
 - `0035` - moved `0010` and `0027` for the same visibility reason, and left this residue.
+- `0003`, `0017`, `0018` - the three decision cards this card moves, one per line under `## Tasks`
+  with the reason each was missed in `## Why`.
+- `0024` - this card added the lane's required section to `0018` and moved the file, so `0024` now
+  asks Rob to agree a line count that is stale using a command that errors.
+- `0020` - the other card `0024` measures against the line budget, named in that same stale pass
+  condition and not edited here.
+- `0001`, `0002` - two of the eight cards `## Plan` expects to find in `human-review/` once the
+  moves are made. They are the measurement, not work.
 
 ## Not this card
 Not answering any of the three decisions. Not editing their text. Not building a board check that

@@ -34,6 +34,9 @@ England case, and never a Scottish forest, so it has been green throughout.
   this. It sits in `human-review/` and cannot be worked from, which is why this is a separate card.
 - `0019` - the same class of fault one screen up, in the footer credit line. Being fixed separately,
   because it touches `scripts/parse.py` and the shipped dataset and this card touches neither.
+- `0020` - added campsites, met the same wrong default and fixed it with a special case for
+  campsites rather than by changing what decides the label, which is why the default survived to
+  catch Scotland.
 
 ## Not this card
 Not the footer credit wording or the `attribution` string in `app/data/sites.json`; both are `0019`.

@@ -35,6 +35,8 @@ same cause `0045` to `0053` recorded for earlier cards. **The fix belongs at the
 - `0052` - the same defect on `0015`, which it fixed. It found these eleven while re-grepping the
   lane afterwards, which is `0052`'s own last task.
 - `0045` to `0051`, `0053` - the same defect on earlier cards, each naming its own targets.
+- `0043` - the card `0045` could not bring back under the line budget after adding the section, and
+  the precedent `## Plan` follows here when the same squeeze happens again.
 
 ## Not this card
 Not the cards `0045` to `0053` name. Not acting on any reviewer finding inside these eleven, not

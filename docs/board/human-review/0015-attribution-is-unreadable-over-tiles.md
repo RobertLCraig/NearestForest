@@ -58,6 +58,8 @@ properly. They cannot be attached while they show the opposite.
 - `0020` - added the OpenStreetMap credit to the same map hint, so this card now carries two
   licence obligations rather than one.
 - `0001` - the phone check this card's Task 2 still needs is part of the same trip to a real device.
+- `0052` - added the `## What I need from you` section above, which is what put this card over the
+  100-line budget the size note reports.
 
 ## Not this card
 Not the marker labels, which collide and truncate over tiles ("Bedgebury National Pi…" sitting on

@@ -61,6 +61,10 @@ in, so a card born in the wrong lane stays there.
 - `0021` - blocked on `0025`'s answer, and the reason the mislaid card costs something today.
 - `0032` - found this while checking the count of cards waiting on a person in `docs/HANDOVER.md`.
   Its comment entry records both the count it corrected and this.
+- `0003`, `0017`, `0018` - the three cards this card's sweep reported as already answered. None
+  carries a `**Decided:**` entry, so the sweep's conclusion was wrong and they were left in `todo/`.
+- `0037` - moved those three into `human-review/` afterwards, so the board is right today and only
+  this card's write-up is wrong.
 
 ## Not this card
 Not answering `0025`. The answer is Rob's and the recommendation on that card already says which

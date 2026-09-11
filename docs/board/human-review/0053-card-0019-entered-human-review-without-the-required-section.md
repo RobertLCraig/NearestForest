@@ -33,6 +33,9 @@ says the fix belongs at the move, in `C:\Dev\ProgressBoard`, and not in this rep
 - `0045`, `0046`, `0047`, `0048`, `0049`, `0050` - the same defect on earlier batches.
 - `0019` - the card this one is about. It is the card missing the section, and it is the only file
   this card edits; nothing else about it is in scope.
+- `0004`, `0006`, `0008`, `0011`, `0024`, `0030`, `0043` - the earlier cards that reached the lane
+  without the section, each listed in `## Why` beside the card that raised it. They are the evidence
+  that this is the eighth time, and none of them is edited.
 
 ## Not this card
 Not the cards `0045` to `0052` name. Not acting on either reviewer finding in `0019`, not unticking
