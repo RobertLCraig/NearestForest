@@ -2,6 +2,14 @@
 
 ## What I need from you
 
+> **Answered on 2026-09-11 without you, and nothing below is waiting on you now.** Both halves of
+> the ask were things reading settled. A builder unticked `#6` on its own measurement and said so on
+> the thread. The five cards that made the count non-zero were five stale duplicate files, cleared by
+> card `0069`, and the stale blocker named below was cleared by card `0070`. `board:convention`
+> now reports zero open cards failing, so `#6` is ticked and this card has left your queue.
+> The section is kept as written rather than deleted, because it is the record of why the card
+> stopped. See the last entry on `## Comments`.
+
 **One call, and I would take the first.** Untick criterion #6 and send this card to `todo/`, so a
 builder re-measures the board and clears what is left, **or** write on this thread that the
 reviewer is wrong and the card stands. Doing neither is the fail: it comes back to this lane
@@ -110,7 +118,7 @@ everything the card knows and changes only how it is ordered and said. `## Direc
       exactly, in both directions. proves: none - as #2
 - [x] #5 THE REWRITE SHALL preserve every measurement, date and decision the card already carried,
       and SHALL NOT edit `## Direction` or `## Decided`. proves: none - as #2
-- [ ] #6 WHEN this board's rewrite is finished, THE BOARD SHALL report zero open cards failing the
+- [x] #6 WHEN this board's rewrite is finished, THE BOARD SHALL report zero open cards failing the
       checks. proves: none - as #2
 <!-- AC:END -->
 
@@ -502,3 +510,33 @@ section at the top asks Rob for, so half of that ask is now answered by the buil
 him, and what is left of it is a lane move. The card sits in `in-progress/` because that is where the
 later of the two writes left it. `#6` closes when `0069` and `0070` land, and both are being worked
 now.
+
+**2026-09-11** RESULT: done
+TESTS: +0 new; three assertions this card's raised cards added are green
+TOUCHED: docs/board/in-progress/0021-rewrite-this-board-s-cards-for-the-reader.md
+OUT-OF-SCOPE: none
+
+**Criterion #6 is ticked on a fresh measurement, and it is the last one.**
+`php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` prints
+`NearestForest 0 46 0077`: **zero open cards failing**, where the run that unticked this criterion
+measured five. The `--cards` flag prints one line per failing card and printed none.
+
+**What closed it, and neither was prose.** All five failing cards were stale duplicate files, a
+second copy of a card sitting in a second lane carrying older frontmatter than the live one. Card
+`0069` merged all sixteen duplicate pairs and deleted the stale copy of each, which took the count
+to zero on its own. Card `0070` cleared the stale `needs:` this card's own reviewer found on `0055`,
+and its check now covers the general fault. Card `0071` closed the two self-test reds that stopped
+the earlier run reporting a green suite. All three were raised by this card and all three are built.
+
+**The suite is 310 passed, 1 failed**, and this entry can say what the earlier one could not. The
+single red is card `0020` at 206.8 KB against the agent file reader's 200 KB limit, which is card
+`0055`, which is deliberate, and which only Rob can clear by deciding whether that thread may be
+pruned. The two `ModuleNotFoundError` reds are gone: `requests` is declared in `requirements.txt`
+and named in `docs/HANDOVER.md`.
+
+**The ask at the top of this card is answered and marked as answered.** Both halves turned out to be
+things reading settled rather than things Rob had to decide, which is the test `docs/board/README.md`
+applies to that lane. The section is kept rather than deleted, with a note above it, because it is
+the record of why the card stopped.
+
+**Not checked in a browser.** This card touches only `docs/board/`.
