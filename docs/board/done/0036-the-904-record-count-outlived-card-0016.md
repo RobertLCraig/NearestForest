@@ -407,3 +407,44 @@ I could not make it pass while wrong.
 
 VERDICT: sound
 
+### 2026-09-11 review (v20260911193239-366f)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Traced each criterion to code in `scripts/selftest.js`, block `dataset counts carried in prose (card 0036)`, and to the `safeHref` docblock in `app/core.js`.
+
+**#1** The `carried` table rows for `app/api/nearest.php` (`ranking ([\d,]+) sites`) and `docs/build/IOS-SHORTCUT.md` (`rank ([\d,]+) sites on device`) compare against `sites.length`; both files read 1,180. The `core.js` row compares against the count of records with a `url`, and the docblock says 550. Measured from the shipped file: 1,180 records, 550 with a url.
+
+**#2** The `safeHref` docblock names both `forestryengland.uk` and `forestryandland.gov.scot`, with 274 and 276 beside them. I counted 274 and 276.
+
+**#3 and #4** The earlier finding is closed. The `carried` table now holds three further `app/core.js` rows, for the two host splits and `The other ([\d,]+)\s+records, the car parks`, each with its expected value computed live from `sites.json` rather than hard-coded. All four numbers in that docblock are now read back. The patterns use `\s+` where the sentence wraps, so re-wrapping cannot unhook them, and `no count matching` is reported as a failure rather than passing silently.
+
+The named check `dataset counts in comments match sites.json` and `both upstreams really are in the data` both pass. The suite's three current failures are elsewhere: a missing Python `requests` module in two fetch stubs, and card 0020 exceeding the file-reader size limit. Neither touches this card.
+
+VERDICT: sound
+
+**scope: sound**
+
+**What the last build did.** In `scripts/selftest.js`, inside the `dataset counts carried in prose (card 0036)` block, it added exactly three rows to the `carried` table: the `forestryengland.uk` split, the `forestryandland.gov.scot` split, and the no-url car park count. That is verbatim the card's fourth `## Tasks` bullet. No new file, no new test function, no code path.
+
+**Fences held.** `docs/DATA-MODEL.md` still carries `"counts_by_country": { "England": 904, "Scotland": 276 }`, which is correct and is the trap the card named. `docs/DECISIONS.md` is untouched by this pass. `safeHref` in `app/core.js` is unchanged; only the comment above it is read by the new rows.
+
+**The wider diff is not this card's growth.** The other rows in the same `carried` table are attributed in source to their own cards: the three briefing rows to `0038`, the stale-date row to `0039`, both campsite-hours rows to `0020`. Those are reuse of the mechanism this card built, each landing with its own card.
+
+**Nothing left half done.** All four numbers in the `safeHref` comment now report through the one named check, which is what the returning finding asked for.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding: `counterDir()` in `app/api/tiles.php` disagrees with `readKey()` about where the key lives.**
+
+`readKey()` accepts three sources: the `THUNDERFOREST_KEY` environment variable, `../../../tiles.key`, and `../../tiles.key` for the case where the docroot is the repository root. `counterDir()` tests only the first file path. On either of the other two supported layouts the layer works and serves tiles, but the counter directory silently falls back to the system temp directory. That is precisely the world-writable co-tenant case the new docblock above `counterDir()` says it exists to avoid, and its own sentence, "where tiles.key is readable, that directory is ours by construction", is false on those layouts because the key is readable by a route the function never asks about. Nothing fails, nothing logs, and the rate limit is seedable again. The docblock reads as a guarantee the code does not make.
+
+Card 0036's own surface holds. I tried the count rows in `scripts/selftest.js` against the four numbers in the `safeHref()` docblock in `app/core.js`, including the two that wrap mid-sentence, and each has a row with a live expected value. `mapHint()` and `dataChecked()` are both called and both covered.
+
+VERDICT: defect

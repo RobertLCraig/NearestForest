@@ -760,3 +760,61 @@ VERDICT: defect
 
 
 **2026-09-11** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 3 times between todo and ai-review, all 8 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 8 of 8 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+### 2026-09-11 review (v20260911164442-d5f0)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I traced every criterion to code.
+
+**#1** - `app/index.html`, the About `<footer>` paragraph, carries Forestry England's own line verbatim and a separate sentence putting the Open Government Licence v3.0 on the car park data. Both present.
+
+**#2** - no personal-use claim in the footer. Pinned by `the footer makes no personal-use claim` in `scripts/selftest.js`, which tests the unhyphenated phrase, so the hyphenated comment above the paragraph cannot satisfy it.
+
+**#3** - the non-affiliation sentence names both agencies, asserted by `the footer disclaims affiliation with both`.
+
+**#4** - two `ok()` calls assert both strings against a whitespace-flattened copy of index.html, so a re-wrap cannot break them.
+
+**#5** - the Scottish sentence now reads as generic public-sector-information wording, and the test also asserts the absence of `Crown Copyright, Forestry and Land Scotland`, so the substituted template cannot return.
+
+**#6** - `ATTRIBUTION` in `scripts/parse.py` names all three agencies and `build_dataset` stamps it. Pinned by `the OGL file the parser writes names every agency in it`, run against a freshly parsed temp tree.
+
+**#7** - a test reads the `ATTRIBUTION` constant out of parse.py and compares the three names against the footer, failing if either omits one.
+
+**#8** - a separate block checks `DATA.attribution` on the shipped `app/data/sites.json` for all three names. I confirmed the shipped file carries them, so a stale build would fail rather than pass.
+
+I could not find a criterion resting on absent code.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Finding - the documentation half of the retired wording was left behind.**
+
+`scripts/parse.py` now stamps the named `ATTRIBUTION` constant, which credits Forestry England, Forestry and Land Scotland and the Forestry Commission, and `build_dataset` writes it into the `attribution` key. The schema block for `sites.json` in `docs/DATA-MODEL.md` still shows that field's value as `"Contains public sector information licensed under the Open Government Licence v3.0."`, the exact string this card retired.
+
+The previous reviewer's breakage finding named that file alongside the parser and the guard. The build note answers the parser and the guard and says nothing about the doc, so the fix stopped one file short of the finding it was sent back to close. Nothing pins it: the new `the footer and the dataset credit name the same agencies` check compares index.html with parse.py only, so the document can keep contradicting both indefinitely.
+
+**Not over the fence.** The Forestry Commission sentence in the footer, the matching clause in `ATTRIBUTION`, and the test asserting it are card `0022`'s work, and `0022` sits in `done/`, so they arrive here as shipped state rather than as this card growing. `Deploy` is openly unticked.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding - `docs/DATA-MODEL.md` still documents the credit this card retired.**
+
+The `app/data/sites.json` header example in DATA-MODEL.md, in the section describing that file's top-level shape, shows:
+
+`"attribution": "Contains public sector information licensed under the Open Government Licence v3.0."`
+
+That string no longer exists anywhere. `ATTRIBUTION` in `scripts/parse.py` stamps the four-credit sentence, the shipped `app/data/sites.json` carries it, and the footer in `app/index.html` matches. The document is the only record of this field still showing the retired wording, and it is the record a person reads before touching the generator.
+
+This is the same drift the card's own third build set out to close. It built a three-way pin - the shipped-file check in `scripts/selftest.js` ("the shipped dataset credit names every agency in it"), the parse.py check ("the footer and the dataset credit name the same agencies"), and the footer checks - and left the fourth copy out of it. Nothing fails if the doc stays wrong, so it will stay wrong.
+
+The same block's `generated_at` reads `2026-08-29` against a shipped `2026-09-10`, which is the same staleness on the same example.
+
+VERDICT: defect

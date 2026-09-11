@@ -405,3 +405,46 @@ What I checked:
 
 VERDICT: sound
 
+### 2026-09-11 review (v20260911205837-cbca)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**#1, the link label.** `openSheet()` in `app/app.js` derives the label from the link's own host: it lower-cases `moreHref`, strips scheme and `www.`, cuts at the first slash, and looks the result up in `AGENCY_BY_HOST` in the same file, falling back to the bare host. No `site.source` remains in that block, so a Forestry and Land Scotland URL reads as that agency regardless of tab. The table holds exactly the two agencies whose URLs the dataset contains.
+
+I tried to make it claim the wrong agency. A hit needs the text up to the first slash to equal a key exactly, so a userinfo, port or suffix trick lengthens that text and lands on the honest fallback instead.
+
+**#2, the Country row.** The `if (site.country)` row sits in the shared tail of `openSheet()`, after the `Status` row and before `Coordinates`, outside both halves of the campsite branch. Its assertion in `scripts/selftest.js` no longer greps source: it lifts that whole tail and renders it for a forest, a car park, a Scottish campsite, a Welsh campsite and a record with no country, asserting each reads its own value back. That is what the criterion says, and it is red under the previous review's `else`-branch attack.
+
+The #1 sweep labels every Scottish record in the shipped `sites.json` and requires `scots.length > 0`, so it cannot pass vacuously.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope holds.** The card's work is two commits, `3ba3f31` and `e6b9aca`. Between them they touch `app/app.js` (`openSheet`, plus the `AGENCY_BY_HOST` table beside it), `scripts/selftest.js`, `app/core.js` and `app/sw.js` for the cache/build bump, and the card file with its attachments. Nothing else. The 70-file diff handed to me is the branch's accumulation across many cards, not this one: the salt work in `counterSalt` and `counterDir` in `app/api/tiles.php`, the `mapHint` tile-failure state in `app/core.js`, `scripts/parse.py`, `.gitignore`, `docs/DATA-MODEL.md` and `docs/HANDOVER.md` all belong to other commits.
+
+Every fence in "Not this card" is intact. `app/data/sites.json` is absent from both commits, so the pipeline was not re-run. Card `0016` is unedited. The footer credit and the `attribution` string are untouched and still `0019`'s. The car-park case is left alone, and `openSheet` still renders no More row without a `url`.
+
+The bump to `app/core.js` and `app/sw.js` is a declared deviation from the Plan's two files, with its reason stated on the card and enforced by `deploy.ps1`.
+
+Nothing left half done. The two user-visible side effects, a Country row on 630 car parks and the campsite row order moving, were undocumented in the first build and are attached to the card now. `AGENCY_BY_HOST` has exactly one caller.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I ran the suite and read the change.
+
+**Suite state.** `node scripts/selftest.js` reports 304 passed, 3 failed here. All three are unrelated to this card: two `scripts/fetch.py` / `scripts/fetch_campsites.py` stubs fail on a missing Python `requests` module, and one board card is over the file-size limit. Both of card 0057's assertions pass.
+
+**Callers.** Nothing else reads the label. `openSheet()` in `app/app.js` is the only site of `AGENCY_BY_HOST` and of the host expression, `nearest.php` emits the raw `url` with no label and no `country`, and `map.js` renders neither. The `mapHint` signature change in `app/core.js` is another card's and its two-argument callers still behave.
+
+**A doc the change made false.** The Product Requirements Document's per-site detail bullet still promises "link to the Forestry England page". That matched shipped behaviour until this change, because every link took that default. Now half the Forests tab links to Forestry and Land Scotland, so the sentence describes the bug the card removed. The bullet four lines above it was updated for Scotland; this one was not.
+
+**An edge the tests do not build.** The 276-record sweep in `scripts/selftest.js` reads `DATA.sites` only. The 44 Stay the Night records carrying Forestry and Land Scotland URLs live in `campsites.json` and rest on a single fixture.
+
+VERDICT: defect
