@@ -439,3 +439,48 @@ Rob's. `board:convention` reports zero open cards failing.
 
 **Not checked in a browser.** This build touches `scripts/selftest.js` and one new card, and nothing
 under `app/`.
+
+### 2026-09-11 review (v20260911232922-18ce)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**#1** ÔÇö `scripts/selftest.js`, the `one card, one lane (card 0069)` block: it walks `docs/board/` recursively, keys on the leading four digits via `/^\d{4}(?:\D.*)?\.(?:md|markdown)$/i`, groups lanes in `byNumber`, and fails naming `NNNN in <lane> and <lane>`. The assertion is named exactly as the criterion requires, and it also fails on an unreadable directory rather than throwing out of the suite. The four blind spots the earlier review proved (no slug, `.markdown`, upper case, one directory deep) are closed in the regex and the recursive `walk`, so the check now covers what it claimed to.
+
+**#2** ÔÇö I re-ran the card's own duplicate sweep over every lane folder, grouping by the leading four digits rather than by filename. It prints nothing: exactly one file per number across 76 card files. Survivorship spot-checked on `0011`, whose `human-review/` copy carries the appended second review and whose history shows the merge commit rather than the carry-over.
+
+**#3** ÔÇö `human-review/0011` holds the appended review verbatim, and the previous pass compared every deleted blob against its survivor line-set. Nothing I read contradicts it.
+
+**#4** ÔÇö `board:convention --path=$PWD --cards` prints `NearestForest 0 48 0077`. Zero open cards failing.
+
+The suite is 310 passed, 1 failed, and the red is `0020`'s size, which is card `0055`. This card's assertion passes.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Finding: the merge left a card in Rob's queue that is no longer in Rob's queue, and the second build was told and did not act.**
+
+The merge deleted `docs/board/human-review/0021-...`, and the survivor sits in `docs/board/in-progress/`. That file still opens with `## What I need from you`, asking Rob to untick `#6` and send the card to `todo/`. `in-progress` means an agent is building it; none is, and nothing sweeps that lane for asks. The 2026-09-11 scope review named this exactly, said "Say it on `0021` or move it; it is one line either way," and the second build (`1a3ea74`) touched only `scripts/selftest.js`, the `0069` card and the new `0076` card. The ask is still unreachable. That is the card's own output, since `0008` got a dated note for the same class of deletion and `0021` got none. Naming it is a comment, not the lane judgement `## Not this card` forbids, so the fence is no excuse.
+
+Secondary, and only that: the widened match in the `one card, one lane (card 0069)` block of `scripts/selftest.js` now accepts any depth, `.markdown` and upper case, while the sibling `0020` lane check and `0055` size check in the same file keep the narrow pattern. One of three fixed.
+
+VERDICT: defect
+
+**breakage: sound**
+
+**breakage**
+
+I re-ran `node scripts/selftest.js` at HEAD: **310 passed, 1 failed**, the single red being the 206.8 KB `0020` card, which is `0055`'s and not this card's. `php C:\Dev\ProgressBoard\artisan board:convention --path=D:/Dev/NearestForest --cards` prints `NearestForest 0 48`, so zero open cards fail.
+
+**The prior review's defect is closed.** The `0057` finding it said was dismissed on a false measurement is live in `docs/PRD.md`, in the per-site-detail bullet where "link to the Forestry England page" straddles a newline, and it is now carried by `docs/board/todo/0076-...md`, which also picks up the second half about the Forestry and Land Scotland URLs in `app/data/campsites.json` resting on one fixture.
+
+**I attacked the new check rather than reading it.** The walk in the `one card, one lane (card 0069)` block is now recursive, takes `.md` or `.markdown` in any case, and accepts a bare number with no slug, so the four names the earlier pass slipped past it are covered. It groups on the leading four digits, so a retitled second copy is still caught, and an unreadable directory is reported as a named failure instead of throwing out of the suite.
+
+**Two residues, neither a defect here.** Cards living loose directly under `docs/board/` are skipped by design, and the sibling size and blocker checks in the same file still use the narrower filename rule. Nothing about the merge broke a caller, a comment or a path another file depends on.
+
+VERDICT: sound
+
