@@ -1,6 +1,3 @@
----
-needs: 0025
----
 # Rewrite this board's cards for the reader
 
 ## Why
@@ -26,11 +23,15 @@ it was written to.
 
 ## Links
 
-**Blocked by**
-- `0025` - criterion #1 cannot be met while the convention requires the ask directly under the
-  title, and that call is Rob's. Everything else on this card is finished.
-
 **Relates to**
+- `0025` - was this card's blocker and is answered. Option 1, on 2026-09-10: criterion #1 means no
+  solution inside `## Why`, and the `human-review/` ask stays directly under the title. `needs:` and
+  the `Blocked by` line were removed together, because the block is gone.
+- `0069` - raised by this card. Sixteen cards sit in two lanes at once, and the five stale copies
+  among them are the whole of the count criterion #6 has to reach zero.
+- `0070` - raised by this card. Card `0055` is still blocked by `0025`, which is answered.
+- `0071` - raised by this card. Two of the three self-test reds this run are an undeclared Python
+  dependency rather than a fault in the tree, which is why no entry here can claim a green suite.
 - `progressboard#0065` - the estate-wide rewrite this card was seeded from; its pilot over
   ProgressBoard's own 40 cards is the worked example of a pass.
 - `progressboard#0066` - the five checks the count below is measured with, and why each is
@@ -56,7 +57,7 @@ everything the card knows and changes only how it is ordered and said. `## Direc
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a card in a non-terminal lane is rewritten, THE CARD SHALL state the problem in
+- [x] #1 WHEN a card in a non-terminal lane is rewritten, THE CARD SHALL state the problem in
       `## Why` before any solution appears anywhere in it. proves: none - about prose, and no check
       here reads prose
 - [x] #2 WHEN a rewritten card is a decision, THE CARD SHALL say which of the four reasons makes it
@@ -70,7 +71,7 @@ everything the card knows and changes only how it is ordered and said. `## Direc
       exactly, in both directions. proves: none - as #2
 - [x] #5 THE REWRITE SHALL preserve every measurement, date and decision the card already carried,
       and SHALL NOT edit `## Direction` or `## Decided`. proves: none - as #2
-- [x] #6 WHEN this board's rewrite is finished, THE BOARD SHALL report zero open cards failing the
+- [ ] #6 WHEN this board's rewrite is finished, THE BOARD SHALL report zero open cards failing the
       checks. proves: none - as #2
 <!-- AC:END -->
 
@@ -248,3 +249,76 @@ this project has neither.
 **Assumed.** That raising `0025` in `todo/` is right even though it is a decision and the convention
 puts decisions in `human-review/`. The session rules put every new card in `todo/` and forbid me
 moving any card between lanes, so the lane is the scheduler's to correct.
+
+**2026-09-11** RESULT: partial
+TESTS: +0 new, red: `no board card is too large for the agent file reader`, `fetch records a
+download date alongside every cached page`, `a short answer from Overpass is refused rather than
+cached as the dataset`
+TOUCHED: docs/board/in-progress/0021-rewrite-this-board-s-cards-for-the-reader.md
+TOUCHED: docs/board/todo/0069-sixteen-cards-sit-in-two-lanes-at-once.md (new)
+TOUCHED: docs/board/todo/0070-card-0055-is-blocked-by-an-answered-card.md (new)
+TOUCHED: docs/board/todo/0071-the-python-dependency-is-undeclared-and-two-self-tests-fail-without-it.md (new)
+OUT-OF-SCOPE: 0069, 0070, 0071
+
+**I was handed a stale copy of this card, and that is the session's main finding.** This file is
+`docs/board/in-progress/0021-...`. A second file of the same number sits in
+`docs/board/human-review/0021-...`, six days ahead of this one: it has `#1` ticked, the `needs: 0025`
+already removed, a fourth run entry and a full adversarial review on its thread. Fifteen other card
+numbers are duplicated the same way. Commit `b75d8db` on 2026-09-11 committed card files carried
+across uncommitted from another machine, each into the lane it occupied there, beside the tracked
+copy that had since moved on. I worked this file, as instructed, and raised the duplication as
+`0069` rather than deleting anything: sixteen deletions nobody reviewed is not how a count gets
+closed.
+
+**#1 is ticked, and I verified it myself rather than taking the other copy's word.** `0025` was
+answered on 2026-09-10, Option 1, recorded on that card in `done/`: criterion #1 means no solution
+inside `## Why`, and the `human-review/` ask stays directly under the title. So the block is gone,
+and I removed this card's `needs: 0025` and its `Blocked by` line together.
+
+**The sweep, and it went red before it went green.** A throwaway Python script cut each open card at
+the first heading after `## Why` and searched that text for `Option N`, `my recommendation`,
+`I recommend`, `the fix is`, `we should`, `we could`, `I propose`, `proposal`, `Cost:`, `two ways
+out` and `three ways out`. Run against a scratch copy of the board with `Option 1 is a scheme
+allow-list. My recommendation is that we should take it. Cost: one line.` pasted into `0013`'s
+`## Why`, it printed three hits on that line, naming `Option 1`, `My recommendation` and `we
+should`. Run against the real tree it printed `total 0, cards with no ## Why: 0` over all 56 open
+cards. The injection was made on a copy under a temp directory, never on a card in this repository,
+and the script is not committed: it is a keyword proxy for prose, which is why the criterion says
+`proves: none`, and keeping it would dress a proxy up as a test.
+
+**#6 is unticked, and the measurement is why.** `php C:\Dev\ProgressBoard\artisan board:convention
+--path=$PWD --cards` prints `NearestForest 5 58 0071`, failing on `0032`, `0038` and `0053` in
+`todo/` for an unexplained link and on `0013` and `0057` in `ai-review/` for an outward-effect word.
+**All five are stale duplicates, and the live copy of every one already passes the same check.** The
+2026-09-11 reviewer on the other copy of this card found #6 false and could not untick it, because a
+reviewer may not edit acceptance. I am the builder, the finding reproduces against a fresh
+measurement, and a criterion ticked while its own command reports five is the exact shape that
+promoted this card on the boxes last time. So it is open, and it closes when `0069` does.
+
+**#2 to #5 re-checked against the current 56 open cards, not carried forward.** Three open cards
+carry `## Options` and are therefore decisions: `0003`, `0017` and `0018`. Each names its reason
+under `Why it needs you`, local knowledge for `0003`, a cost and a risk Rob owns for `0017`, a trade
+mark and a goodwill judgement for `0018`. The convention check reports no card whose `Blocked by`
+disagrees with its `needs:`. Nothing this run edited `## Direction` or `## Decided` anywhere, and
+the only card content I touched is this file.
+
+**The suite is red at 303 passed, 3 failed, and I am not reporting it as green.** One red is the
+card-size assertion `docs/HANDOVER.md` declares deliberate, on `0020` at 209.8 KB. The other two are
+`ModuleNotFoundError: No module named 'requests'` from the two fetcher stubs: the only third-party
+Python import this project has is declared in no `requirements.txt`, no `pyproject.toml` and nowhere
+in the handover, and neither file exists. That is card `0071`. No code changed this run, so none of
+the three is this card's doing. `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` still do not
+exist and there is no `composer.json`.
+
+**Raised, not fixed: `0055` is blocked by `0025`, which is answered.** The reviewer on the other
+copy of this card recorded it as a defect in prose on that card's thread, so no session could act on
+it. It is now card `0070`. It is out of this card's scope twice over: it is another card's
+frontmatter, and the staleness is not what criterion #4 measures, which is `Blocked by` agreeing
+with `needs:`, and on `0055` those two agree.
+
+**Not settled from the repository.** Which copy of each duplicated card is the one to keep. The
+shortcut is "not the one `b75d8db` added", and I did not trust it as a rule, because a session may
+have written to a stale copy since; `0069` asks for each pair to be read rather than assumed.
+
+**Not checked in a browser.** Nothing this run reaches `app/`, and this is a worktree, which Herd
+does not serve.
