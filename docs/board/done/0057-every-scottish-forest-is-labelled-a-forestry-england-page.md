@@ -353,3 +353,55 @@ The campsite is the one the old test could not see, so it is the one attached.
 Country row they never had, and the campsite sheet's Country row moved from between Opening times
 and Facilities to after Status. Both follow from the row being shared rather than duplicated, both
 are visible above, and neither is worth a branch to undo.
+
+### 2026-09-11 review (v20260911030238-b971)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked the code, not the card's story.
+
+**Criterion #1, the link label.** In `openSheet()` in `app/app.js`, the label no longer comes from `site.source`. It comes from the link's own host, lower-cased, looked up in `AGENCY_BY_HOST` in the same file, falling back to the bare host. A `forestryandland.gov.scot` link therefore reads "Forestry and Land Scotland page". A grep over `app/` and `scripts/` finds one call site and no other place that writes an agency label, so no second path still takes the old default. The machine-facing `app/api/nearest.php` emits no label at all.
+
+**Criterion #2, the Country row.** In the same function, `if (site.country) h += field('Country', site.country)` sits after the `Status` row, outside both halves of the `site.source === 'campsite'` branch, above the `Coordinates` row. Every source reaches it. The campsite branch above it no longer prints a Country row of its own, so there is no duplicate.
+
+I tried the attack the earlier review used, moving the row into the `else` half. That would break the criterion, but the current code does not do it, and the criterion is about behaviour, not about the test. Both criteria trace to real code in one function.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check for card 0057.** The card has two commits, `3ba3f31` and `e6b9aca`. Together they touch `app/app.js`, `scripts/selftest.js`, `app/core.js`, `app/sw.js`, plus the card file and its screenshots. Everything else in the branch diff belongs to other cards.
+
+The fence in `## Not this card` holds:
+
+- `app/data/sites.json` is not in either commit, so the dataset is untouched and the pipeline was not re-run.
+- `scripts/parse.py`, the footer credit and the `attribution` string are untouched, so `0019`'s work is still `0019`'s.
+- Card `0016` is not edited.
+- The `AGENCY_BY_HOST` table in `app/app.js` replaces the `site.source` test, so nothing branches on `country`. The only `country` read is the presence guard in `openSheet()`, which prints a field rather than steering behaviour.
+
+The extra two files are the `BUILD` and `CACHE` bump in `core.js` and `sw.js`. The card names that bump and its reason, so it is declared, not silent.
+
+The second build also lower-cased the host in `openSheet()` and moved the fallback fixture. Both came from the review as measured findings, so they are asked-for work, not growth.
+
+Nothing is left half done. All four tasks are in the code.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I attacked the change and could not break it.
+
+What I checked:
+
+- **Other callers of the label.** `AGENCY_BY_HOST` and the host expression appear once, in `openSheet()` in `app/app.js`. No second renderer exists: `app/map.js` draws no link row, and `app/api/nearest.php` sends raw `url` with no label and no `country`, so the Shortcut path is untouched.
+- **The moved Country row.** `field('Country', ...)` appears once in `openSheet()`, in the shared tail, so campsites cannot get two rows. `docs/DATA-MODEL.md` forbids a country filter, a country tab and branching on where a site is. A presence guard before printing prints no branch on the value, so nothing asserted there is now false.
+- **Case and host edges.** `safeHref()` in `app/core.js` accepts any scheme case, and the label now lower-cases first, so the two agree. A host that misses the table prints bare.
+- **Comments.** The `AGENCY_BY_HOST` comment says `www.` is stripped by the caller. It is.
+- **The suite.** `node scripts/selftest.js` gives 306 passed, 1 failed, and the one failure is the card-size assertion that `docs/HANDOVER.md` says is deliberately red.
+
+VERDICT: sound
+
