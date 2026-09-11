@@ -456,6 +456,12 @@ and the reason the fix belongs on the enhanceify-V2 board, is on card 0010.
 ```bash
 cd C:/Dev/NearestForest
 
+# The one third-party Python module, needed by both fetchers and by build_boundary.py.
+# Without it they raise ModuleNotFoundError and two assertions in the suite below fail
+# for a reason that is not a fault in the tree. A self-test fails if a script ever
+# imports something this file does not name.
+python -m pip install -r requirements.txt
+
 # Rebuild the dataset from scratch. Every fetcher is resumable and skips anything already cached;
 # a cold run is ~2 minutes and reports failures explicitly.
 #

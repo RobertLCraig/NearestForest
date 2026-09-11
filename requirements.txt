@@ -1,0 +1,15 @@
+# The one third-party Python module this project uses. Everything else the scripts
+# import is standard library, and a self-test fails if that stops being true.
+#
+# Install it before running the pipeline:
+#     python -m pip install -r requirements.txt
+#
+# Imported by:
+#   scripts/fetch.py            the Forestry England and Forestry and Land Scotland scrape
+#   scripts/fetch_campsites.py  the Overpass and Stay the Night fetch
+#   scripts/build_boundary.py   the Natural Earth download the map outline is cut from
+#
+# No version pin. Every call here is requests.get with a timeout and a user agent, which
+# has not changed shape since requests 2.0, and pinning would buy a lockfile's upkeep on a
+# project whose whole shape is "no build step".
+requests
