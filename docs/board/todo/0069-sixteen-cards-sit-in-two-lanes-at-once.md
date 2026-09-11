@@ -378,3 +378,64 @@ VERDICT: sound
 `git diff --name-only d20be16 9c06f6c` lists 28 paths. Twenty-seven are under `docs/board/`. The
 twenty-eighth is `scripts/selftest.js`. Nothing under `app/` is touched, no route, no asset, no
 service worker, no `data/`. There is no user-facing surface to check and no server was started.
+
+**2026-09-11** RESULT: done, second build
+TESTS: +0 new, `no board card appears in two lanes` widened
+TOUCHED: scripts/selftest.js, docs/board/todo/0076-the-requirements-document-promises-a-link-to-the-wrong-agency.md (new)
+OUT-OF-SCOPE: 0076 (raised, not fixed)
+
+**The finding is accepted and the measurement behind it was mine and was wrong.** The first build
+entry says card `0057`'s finding was "not raised: the phrase is not in `docs/PRD.md` at HEAD". It is,
+at lines 56 and 57, where the bullet wraps and the phrase straddles the newline. A single-line
+search returned nothing and the finding was written off on it. It was false when written, not
+overtaken: the same two lines are in `docs/PRD.md` at `d20be16` and at `9c06f6c`.
+
+**The cost is exactly what that entry claimed to be guarding against.** `0057` sits in `done/` with
+`VERDICT: defect` as the newest line on its thread and nothing tracked the finding, which is the
+nobody-picks-it-up state card `0070` exists because of. It is now card `0076`, in `todo/`, carrying
+both halves of that verdict: the requirements bullet, and the Scottish-agency label sweep reading
+`sites.json` only while 44 Forestry and Land Scotland URLs sit in `campsites.json`. The second half
+had been left on the thread deliberately, which the review rightly called the same state chosen
+rather than mistaken.
+
+**`0076`'s plan carries the trap that caused this.** Any check it writes has to flatten whitespace
+before matching, the way card `0019`'s two footer assertions already do, because a line-at-a-time
+search over a wrapped bullet is what missed this once.
+
+**Four filenames got past this card's own check and no longer do.** The review committed a second
+copy of a card four ways, every one of them something a person does while tidying: `0067.md` with no
+slug, `0067-dupe.markdown`, `0067-Upper.MD`, and `todo/old/0067-dupe.md` one directory down. Each
+was tracked by git and read by a human as a card, and the `/^\d{4}-.*\.md$/` match saw none of them.
+The walk is now recursive under each lane and matches any name starting with four digits, either
+extension, either case. Proved by putting all four back one at a time: every one is now named
+`0067 in done and todo`, and each was deleted before the next.
+
+**An unreadable directory now fails this assertion rather than the run.** `fs.readdirSync` and
+`fs.statSync` were uncaught and there is no top-level `try` in this suite, so a dangling symlink
+under `docs/board/` threw out of the whole file and took every later assertion with it. Both are
+guarded and report `could not read <path>: <code>` on this assertion.
+
+**The two sibling board checks still carry the old narrow match.** The 200 KB size check is card
+`0055`'s and the raw-count check is card `0054`'s. Widening somebody else's assertion is the
+adjacent thing this board's fences exist to stop, so it is named here and not touched.
+
+**Two prose inaccuracies in the first build entry, which cannot be edited where they sit.** Its
+table says seven pairs "differ in line endings alone"; the survivors carry between two and
+forty-three lines the deleted copies did not, and what was true is that the deleted copies held
+nothing the survivors lacked, which is the direction that mattered for criterion #3. And the mojibake
+"repaired" claim covers the appended text only: `0011`, `0013` and `0019` still hold seven, four and
+nine pre-existing mis-decoded lines each, at identical counts before and after this card, so not its
+doing and not its fence.
+
+**One residue the review flagged and it stands.** Card `0021`'s survivor sits in `in-progress/`
+still carrying its `## What I need from you`, having left Rob's queue as a side effect of a
+deletion. Its own thread records the merge and says half that ask is now answered by the builder
+that unticked criterion `#6`. That `#6` is what cards `0069` and `0070` were the whole of, so the
+card is ready to be re-measured and moved, and doing it here would be a lane judgement this card's
+`## Not this card` forbids.
+
+**The suite is 310 passed, 1 failed**, the one red being `0020` at 206.8 KB, which is `0055` and is
+Rob's. `board:convention` reports zero open cards failing.
+
+**Not checked in a browser.** This build touches `scripts/selftest.js` and one new card, and nothing
+under `app/`.

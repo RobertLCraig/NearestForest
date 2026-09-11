@@ -2867,23 +2867,47 @@ console.log('\n--- one card, one lane (card 0069) ---');
   // days behind the live one.
   // Group by the four-digit number, not by filename: a card can be retitled, and two copies of
   // 0055 under different slugs are still one card in two places.
+  //
+  // The match is deliberately loose about everything EXCEPT the leading number. A review of this
+  // check got past an earlier `/^\d{4}-.*\.md$/` four ways, all of them things a person does while
+  // tidying rather than attacking: `0069.md` with no slug at all, `.markdown`, `.MD`, and one
+  // directory deep. Each was tracked by git, read by a human as a card, and invisible here, and a
+  // guard that quietly stops covering a file is this project's named recurring defect. So: any
+  // name starting with four digits, either extension, any case, at any depth under a lane.
   const boardDir = path.join(ROOT, 'docs', 'board');
   const byNumber = new Map();
-  fs.readdirSync(boardDir)
-    .map(lane => path.join(boardDir, lane))
-    .filter(d => fs.statSync(d).isDirectory())
-    .forEach(d => fs.readdirSync(d)
-      .filter(f => /^\d{4}-.*\.md$/.test(f))
-      .forEach(f => {
-        const num = f.slice(0, 4);
-        if (!byNumber.has(num)) byNumber.set(num, []);
-        byNumber.get(num).push(path.basename(d));
-      }));
+  const cardFiles = [];
+  // Guarded: an unreadable directory or a dangling symlink under docs/board/ used to throw out of
+  // the whole suite with a stack trace, taking every later assertion with it. Loud, but loud in
+  // the wrong shape. It is now a named failure on this assertion.
+  const unreadable = [];
+  const walk = (dir, lane) => {
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+    catch (e) { unreadable.push(`${path.relative(ROOT, dir).replace(/\\/g, '/')}: ${e.code || e.message}`); return; }
+    entries.forEach(ent => {
+      const full = path.join(dir, ent.name);
+      let isDir;
+      try { isDir = ent.isDirectory() || fs.statSync(full).isDirectory(); }
+      catch (e) { unreadable.push(`${path.relative(ROOT, full).replace(/\\/g, '/')}: ${e.code || e.message}`); return; }
+      if (isDir) { walk(full, lane === null ? ent.name : lane); return; }
+      if (lane === null) return;                       // a loose file directly under docs/board/
+      if (!/^\d{4}(?:\D.*)?\.(?:md|markdown)$/i.test(ent.name)) return;
+      cardFiles.push({ num: ent.name.slice(0, 4), lane });
+    });
+  };
+  walk(boardDir, null);
+  cardFiles.forEach(({ num, lane }) => {
+    if (!byNumber.has(num)) byNumber.set(num, []);
+    byNumber.get(num).push(lane);
+  });
   const twice = [...byNumber.entries()]
     .filter(([, lanes]) => lanes.length > 1)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([num, lanes]) => `${num} in ${lanes.sort().join(' and ')}`);
-  ok('no board card appears in two lanes', twice.length === 0, twice.join(' | '));
+    .map(([num, lanes]) => `${num} in ${lanes.slice().sort().join(' and ')}`);
+  ok('no board card appears in two lanes',
+     twice.length === 0 && unreadable.length === 0,
+     twice.concat(unreadable.map(u => `could not read ${u}`)).join(' | '));
 }
 
 console.log('\n--- blockers outlive their answers (card 0070) ---');
