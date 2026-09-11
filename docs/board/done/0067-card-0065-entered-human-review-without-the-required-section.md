@@ -148,3 +148,56 @@ one named path. That is card `0068`, and it is the ninth in this series.
 **Could not settle from the repository:** whether the reviewer's breakage finding on `0065` should
 cost that card a tick. That is exactly the call the new section asks for, and this build does not
 make it.
+
+### 2026-09-11 review (v20260911055655-e4f8)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked the card against both criteria.
+
+**Criterion #1 traces.** In `docs/board/human-review/0065-card-0063-entered-human-review-without-the-required-section.md`, the anchored check `grep -c '^## What I need from you'` returns exactly `1`. The title is the first line and the heading sits directly under it, above `## Why`. No other heading matches.
+
+**Criterion #2 traces.** The first block under the heading is one bold paragraph. It gives the ask, then the pass, then the fail, before the rule and the two explanation blocks. A reader meets all three first.
+
+**I tried to break #2 on strict line counting.** Counting raw lines, the heading and a blank line come before the ask, so the pass and fail land past line three. The criterion is marked `proves: manual`, and the same shape was graded sound on the earlier cards in this lane on the same day. I do not treat it as a fault.
+
+**I tried to break the section's factual claims.** It says the reviewer graded acceptance sound and scope sound and returned the card on a third ground. The review block in that same file confirms it: acceptance sound, scope sound, breakage defect. The description of the finding matches the entry. No count and no bare card number appear in the section.
+
+**The lane sweep now names only the `0066` card**, which the build reported and raised as a new card. That is outside this lens.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked what the build touched, and whether it went past its fence.
+
+**What the build commit did** (`9326b41`): three markdown files only. It edited the target card `docs/board/human-review/0065-card-0063-entered-human-review-without-the-required-section.md`, ticked its own card, and added the new `docs/board/todo/0068-card-0066-entered-human-review-without-the-required-section.md`. Nothing under `app/`, `scripts/` or `data/`.
+
+**Every fence in `## Not this card` held.** The diff of the `0065` card has zero deleted lines. It is one insertion between the title and `## Why`. Both acceptance boxes stay `[x]`, the thread and the review verdicts are untouched, and the file stays in `human-review/` as a modify, not a rename. No check was built and nothing in `C:\Dev\ProgressBoard` was touched.
+
+**Lane moves are not in the build.** The moves of `0066` and `0067` are separate commits that change no content.
+
+**The new card is declared, not quiet.** It is marked `OUT-OF-SCOPE` on the thread, and it is 100 lines, which is the budget the last reviewer asked for after the earlier card was born at 103 lines.
+
+**Half done?** The last task asked for a re-run of the lane grep and a report. The thread names `0066` as the card still missing the heading. The over-budget target card is stated too, at 226 lines.
+
+I tried to break the scope and could not.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this and could not.
+
+- **The claimed check is real.** `grep -c '^## What I need from you'` on the 0065 card returns 1, and the anchored lane sweep now names only the 0066 card, which the build raised as 0068.
+- **Nothing else asserts the rule.** In `scripts/selftest.js`, the block `board cards fit the agent file reader (card 0055)` only measures file size in KB; no assertion anywhere reads card headings, so `proves: none` is accurate. I ran the suite: 306 passed, 1 failed, the failure being the 0020 card only, which `docs/HANDOVER.md` declares deliberate.
+- **No stale caller was left behind.** `docs/HANDOVER.md` points at lane folders, never at card counts or the 0065 file, so growing that card makes nothing there false.
+- **The inherited defect was repaired, not copied.** The prior reviewer faulted `## Links` on the raised card for omitting `0020` while `## Plan` named it. The card this build raised, `docs/board/todo/0068-...`, lists `0020`, `0024` and `0055` in `## Links`, and its `## Plan` carries no hand-typed test count.
+- **The budget claim is honest.** The edited card is 226 lines and says so; the new card is exactly 100, inside the budget stated in `docs/board/README.md`.
+
+VERDICT: sound
+
