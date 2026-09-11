@@ -138,3 +138,58 @@ and holds most of the file.
 docs/board/human-review/*.md` names one file, `0060`. It was already in the lane when this card's
 scope was set to the single path `0059`, so it was raised as `0063` in `todo/` rather than fixed in
 passing.
+
+### 2026-09-11 review (v20260911043850-1c50)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Criterion #1 ÔÇö one anchored hit, directly under the title.** I ran `grep -c '^## What I need from you'` on `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md`. It returns 1. I read the top of the file. The title is the first line and `## What I need from you` is the next heading, above `## Why`. There is no second copy.
+
+**Criterion #2 ÔÇö ask, pass and fail near the top.** The section opens with one bold paragraph. It gives the ask ("Pick one of two routes and write your answer at the bottom of this card") and the fail ("Doing neither is the fail") in its first two sentences. The two routes that make a pass are the next two lines, and explicit **Pass** and **Fail** blocks follow lower down.
+
+**I tried to break it.** Counted strictly, the pass routes sit on the fourth and fifth line under the title, not the third. The criterion says `proves: manual` and calls this a reader's judgement, and a reader meets ask, routes and fail in one unbroken block. I will not fault that.
+
+**The check is not one that always passes.** The same grep names `0060` in this lane, which this card declares out of scope and raises as `0063`.
+
+I could not fault either criterion.
+
+VERDICT: sound
+
+**scope: defect**
+
+**What I checked.** The build is one commit, `51378cc`. It touches only card `0059`, card `0062` itself, and the new `0063`. Nothing under `app/` or `scripts/`. The fence held: in `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md` the only change is the new section. No box was unticked, no thread edited, no lane moved. Raising `0063` is declared out of scope and is this board's practice.
+
+**Finding: the Plan's one prohibition was broken, and the build note claims the opposite.**
+
+`## Plan` on card `0062` says, in bold: "Do not write a count into the section. Point at the folder instead: hand-typed figures in these sections have gone stale within three commits before."
+
+The new `## What I need from you` in `docs/board/human-review/0059-...-again.md` carries three hand-typed figures:
+
+- "it has happened **three times** already"
+- "the **eleven** cards `0056` lists have all left the lane"
+- "**Two** are still in it"
+
+The last one is the one that rots: the moment `0032` or `0038` leaves the lane, the section states a falsehood, which is the exact fault this section exists to report.
+
+The build note in `docs/board/ai-review/0062-...md`, under `## Comments`, states "No count is written into the new section." That is untrue as written. This is the same defect a reviewer already recorded against card `0060`.
+
+VERDICT: defect
+
+**breakage: defect**
+
+Breakage finding on card `0062`.
+
+**The new section in `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md`, under `## What I need from you`, breaks the board's link rule.** It names `` `0032` `` and `` `0038` `` in prose. Neither number appears in that card's `## Links` section, which lists only `0056`, `0053`, `0011`, `0012`, `0054`, `0045` and `0052`.
+
+`docs/board/README.md`, section "Links: say what the relationship IS, never a bare card number", says a card number dropped into a sentence is not a link and that relationships go in a `## Links` section with the reason. The section this build wrote is editable prose, not an append-only thread entry, so the append-only defence does not apply.
+
+This is the same fault the previous reviewer recorded against card `0060`, where a written section named two cards missing from `0021`'s links. The build's own new card `0063`, in its `## Plan`, warns the next session "do not leave a bare card number in it" and cites that finding. The pass that wrote the warning repeated the fault in the same commit.
+
+The build note's claim "both are named in `0059`'s own `## Links` chain" is false as written.
+
+VERDICT: defect
+
