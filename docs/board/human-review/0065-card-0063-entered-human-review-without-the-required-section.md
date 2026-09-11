@@ -1,5 +1,25 @@
 # Card `0063` entered `human-review/` without the required section
 
+## What I need from you
+
+**One decision: does the reviewer's finding cost this card a tick?** Pass is either a box unticked
+here and the card sent back to the build lane, or a line on its thread saying the finding changes no
+criterion. Fail is leaving it as it stands, because the loop then promotes it here again unchanged.
+
+---
+
+**Why it needs you.** A reviewer is forbidden from editing an acceptance block, so the card came back
+with both boxes still ticked, and every unattended session after that found nothing open to do. Only
+you can untick one.
+
+**What's wrong.** The reviewer graded this card's acceptance sound and its scope sound, and returned
+it on a third ground. The build copied a sentence forward into the follow-on card it raised: that
+sentence names another card in the plan while the links section leaves that card out, and the same
+card carries a hand-typed test count, which is the exact staleness this series is about. Neither of
+the two criteria here mentions the follow-on card, so nothing in the acceptance block plainly fails.
+Both readings are defensible and the call is yours. The full finding is the last review entry at the
+bottom of the thread.
+
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card
