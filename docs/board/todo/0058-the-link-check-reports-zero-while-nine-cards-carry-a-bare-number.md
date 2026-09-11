@@ -160,3 +160,52 @@ September. That is card `0059`.
 **Could not settle from the repository:** whether the checker in `C:\Dev\ProgressBoard` should be
 taught the forms it misses. `## Not this card` puts that outside here, so this card is the evidence
 for such a card on that board and not the fix.
+
+### 2026-09-11 review (v20260911031030-cb62)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I re-ran the sweep myself over `todo/`, `in-progress/`, `ai-review/` and `human-review/`, with the card's own rules: cut at the first log heading, drop `## Links`, strip `NNNN-slug.md` filenames, keep four-digit numbers starting `00`. Result: zero cards with a bare number.
+
+**#1** Each of the nine files gained lines under `## Links`, inside the `**Relates to**` group, each with a reason sentence. I read them in commit `9f7a556` for `0032` and `0057`, and the reasons match those cards' own prose.
+
+**#2** My independent sweep agrees at zero. It is also able to report: an earlier variant of my own run that lost the Links text printed 26 cards, so the check is not one that always says zero. Removing `0043` from `0056` would flag it, because `0043` is still named in that card's `## Why`.
+
+**#3** `git show --stat 9f7a556` shows the nine card files gained 2 to 8 lines each and lost none. The only deletions in that commit are on card `0058` itself, which is its own acceptance ticks. No measurement and no append-only section changed.
+
+I tried to break each criterion and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check, card 0058.**
+
+The build for this card is one commit, `9f7a556`. Everything else in the branch diff (the lane moves for `0008`, `0011`, `0012`, `0013`, `0019`, `0021`, `0036`, `0055`, `0057`, the `docs/HANDOVER.md` note and the `scripts/selftest.js` size check) comes from other commits and other cards. So it is not this card's growth.
+
+Inside `9f7a556` there are 197 added lines and 6 removed. The removals are only the acceptance and task ticks on this card's own file. Every one of the nine card edits is a bullet added under `## Links` and nothing else. No `## Comments`, `## Direction` or `## Decided` section on the nine was touched, no measurement changed, no card moved lane.
+
+The fence in `## Not this card` holds. Nothing in `C:\Dev\ProgressBoard` changed, `docs/board/README.md` is untouched, and no card in `done/` or `discarded/` was edited.
+
+I re-ran the sweep myself over `todo/`, `in-progress/`, `ai-review/` and `human-review/`, cutting at the first log heading and carving out `## Links`. It printed nothing, so no mention is left unlinked.
+
+The one growth is the new card `0059` in `todo/`. Raising rather than fixing is the board's own practice, and the build declared it as out of scope.
+
+I tried to find growth and a half-done edge, and found neither.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**What I attacked.** Each new `## Links` line, read as a claim about the repository as it stands today.
+
+**Held.** In `docs/board/human-review/0033-...`, the new line says `0003`, `0017` and `0018` carry no `**Decided:**` entry. I grepped all three: none does. In `docs/board/human-review/0055-...` the card-size ask matches the check `no board card is too large for the agent file reader` in `scripts/selftest.js`, and no added line pushes a card near the 200 KB limit. No shipped code path is touched, so no caller can break.
+
+**Broken.** In `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, the new `## Links` entry states that `0026`'s missing reason "is the single failure the convention check reports, and it is the whole of what criterion #4 is waiting on". The same branch says the opposite twice. Card `0028`, which fixed `0026`, sits in `done/`, and card `0058`'s own log records `board:convention --cards` reporting zero. The line takes a stale sentence out of that card's `## What I need from you` and republishes it as a link reason, so a reader is now told criterion #4 is blocked by a fault that no longer exists. That is a new false statement, not an inherited one.
+
+VERDICT: defect
+
