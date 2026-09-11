@@ -1,5 +1,44 @@
 # Rewrite this board's cards for the reader
 
+## What I need from you
+
+**One call, and I would take the first.** Untick criterion #6 and send this card to `todo/`, so a
+builder re-measures the board and clears what is left, **or** write on this thread that the
+reviewer is wrong and the card stands. Doing neither is the fail: it comes back to this lane
+unchanged on the next run.
+
+**What's wrong.** The 2026-09-11 reviewer graded acceptance and scope `sound` and returned the card
+on `breakage`, with two findings.
+
+1. **The card reports a suite it did not have.** Its last entry says `node scripts/selftest.js` was
+   "green at 306 passed and 0 failed". The suite prints 306 passed, 1 failed, on the card-size
+   assertion `docs/HANDOVER.md` declares deliberate. Card `0058`, written the same day, records the
+   red. A later session reading this card's entry believes the tree was green when it was not, and
+   `## Comments` is append-only, so the sentence cannot be corrected where it sits.
+2. **One rule applied to one card only.** The same entry removed the stale `needs: 0025` from this
+   card, because `0025` is answered and in `done/`.
+   `docs/board/human-review/0055-card-0020-has-outgrown-the-agent-file-reader.md` still carries
+   `needs: 0025` and the matching `Blocked by`. Same stale blocker, same board, not cleared.
+
+**Cause.** Criterion #6 is a state of the whole board rather than a list of files, and the card was
+ticked against one command's output rather than against a board still carrying a stale blocker.
+A reviewer may not untick a criterion, so the card came back with 6 of 6 ticked, every unattended
+session found nothing open, and the loop promoted it on the boxes.
+
+**Pass** is either of:
+- criterion #6 unticked and the card in `todo/`, so a builder clears `0055`'s stale blocker,
+  re-runs `board:convention`, and records the real suite result; or
+- a line here saying the criterion stands as written, with the reason.
+
+**Fail** is leaving all six boxes ticked with the card in this lane.
+
+**Why it needs you.** Only a person may untick a criterion or move a card out of this lane, and a
+reviewer is forbidden from touching acceptance, so nothing is open for an unattended session to
+pick up.
+
+**Note on length.** This card is past the 100-line budget and this section cannot bring it back:
+`## Comments` is append-only and holds most of the file.
+
 ## Why
 **A card on this board opens with the answer and never says what is wrong.** On 2026-08-18 Rob said
 most of the cards he was handed made him work backwards: they lead with candidate solutions and

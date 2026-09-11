@@ -3,6 +3,40 @@ no_outward_effect: "sent" in criterion #1 is a reader following a link between t
 ---
 # The link check reports zero while nine open cards carry a bare card number
 
+## What I need from you
+
+**One call, and I would take the first.** Untick criterion #1 and send this card to `todo/`, so a
+builder corrects one link line, **or** write on this thread that the reviewer is wrong and the card
+stands. Doing neither is the fail: it comes back to this lane unchanged on the next run.
+
+**What's wrong.** The 2026-09-11 reviewer graded acceptance and scope `sound` and returned the card
+on `breakage`, over one of the 39 lines it added. In
+`docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, the new `## Links` entry says
+`0026`'s missing reason "is the single failure the convention check reports, and it is the whole of
+what criterion #4 is waiting on". Card `0028` fixed `0026` and sits in `done/`, and this card's own
+log records `board:convention --cards` at zero. A reader of `0024` is now told its criterion #4 is
+blocked by a fault that no longer exists.
+
+**Cause.** That reason line was copied out of the stale `## What I need from you` block already on
+`0024` rather than re-measured. Criterion #1 asks for "one line saying why the reader is sent
+there", and a reason that is false does not meet it, so #1 is the box the finding lands on. A
+reviewer may not untick one, so the card came back with 3 of 3 ticked, every unattended session
+found nothing open, and the loop promoted it on the boxes.
+
+**Pass** is either of:
+- criterion #1 unticked and the card in `todo/`, so a builder rewrites that one reason line on
+  `0024` against the board as it stands; or
+- a line here saying the criterion stands as written, with the reason.
+
+**Fail** is leaving all three boxes ticked with the card in this lane.
+
+**Why it needs you.** Only a person may untick a criterion or move a card out of this lane, and a
+reviewer is forbidden from touching acceptance, so nothing is open for an unattended session to
+pick up.
+
+**Note on length.** This card is past the 100-line budget and this section cannot bring it back:
+`## Comments` is append-only and holds most of the file.
+
 ## Why
 
 `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` reported

@@ -3,6 +3,50 @@ no_outward_effect: "published" in criteria #1 and #4 is Forestry England's own w
 ---
 # Credit Forestry England the way they ask to be credited
 
+## What I need from you
+
+**One call, and I would take the first.** Send this card to `todo/`, so a builder writes a ninth
+criterion and fixes the one stale line, **or** write on this thread that the finding belongs to
+another card and this one stands. Doing neither is the fail: it comes back to this lane unchanged
+on the next run.
+
+**What's wrong.** All eight criteria are met and the 2026-09-11 reviewer graded acceptance `sound`.
+It returned the card anyway, on `scope` and on `breakage`, both for the same thing.
+`docs/DATA-MODEL.md` still prints the retired credit as the canonical value of the `attribution`
+field:
+
+    "attribution": "Contains public sector information licensed under the Open Government Licence v3.0.",
+
+`ATTRIBUTION` in `scripts/parse.py` and the shipped `app/data/sites.json` both carry the four
+sentences naming Forestry England, Forestry and Land Scotland and the Forestry Commission. So the
+document shows the exact string this card exists to retire, and three review passes have now named
+that file.
+
+**Cause.** No criterion covers the document. The footer, the generator and the shipped file each
+have one; the doc has none, and it is the one record of the obligation nothing pins. A reviewer may
+not write a criterion and may not untick one, so the card came back with 8 of 8 ticked, every
+unattended session found nothing open to pick up, and the loop promoted it again on the boxes.
+Nothing here is disproved. Something is missing.
+
+**Pass** is either of:
+- the card in `todo/`, so a builder adds the ninth criterion and corrects the line; or
+- a line here saying the document belongs to another card, naming which.
+
+**Fail** is leaving the card in this lane with all eight boxes ticked.
+
+**Why it needs you.** Only you may move a card out of this lane, and there is no open box for a
+builder to start from. The last task, `Deploy`, is also yours and stays open either way.
+
+**This section was here before, you answered it, and it was then deleted.** Your answer on
+2026-09-10 was to re-run the card through `ai-review/`. A later build removed the block as stale,
+correctly, because it still asked you to untick a box you had decided against. The card then came
+back to this lane on a fresh finding with nothing under its title. Your answer is still on the
+thread above. This section is written against the 2026-09-11 finding and not against the question
+you have already settled.
+
+**Note on length.** This card is far past the 100-line budget and this section cannot bring it
+back: `## Comments` is append-only and is nearly the whole file.
+
 ## Why
 The app's footer currently reads:
 
