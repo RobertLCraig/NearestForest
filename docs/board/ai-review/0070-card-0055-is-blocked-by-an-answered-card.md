@@ -130,3 +130,190 @@ deliberate. `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --car
 `NearestForest 0 46 0075`: zero open cards failing, unchanged by this card, as `## Plan` predicted.
 
 **Not checked in a browser.** Nothing this card reaches `app/`.
+
+### 2026-09-11 review
+
+**suite**
+
+`node scripts/selftest.js` runs **309 passed, 1 failed**. The one failure is
+`no board card is too large for the agent file reader`, naming
+`docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md is 206.8 KB`. That red belongs to
+card `0055`, is declared in `docs/HANDOVER.md`, and only Rob can clear it. No other assertion fails.
+The build entry's "306 passed, 3 failed" is stale rather than wrong: card `0071` landed the two
+`requests` failures between then and now. `no open card is blocked by a settled card` runs and
+passes, printed under `--- blockers outlive their answers (card 0070) ---`.
+
+**acceptance: defect**
+
+**Criterion #1 holds on both halves.** `docs/board/human-review/0055-card-0020-has-outgrown-the-agent-file-reader.md`
+now opens on its `# ` title: the whole frontmatter block is gone, not left as an empty `---`/`---`
+pair, which is right, because the README says frontmatter carries no required keys and `needs:` was
+its only one. Under `## Links` there is no `**Blocked by**` heading at all, and `0025` sits under
+`**Relates to**` with the answer as its reason line. The two-way rule holds in both directions: the
+card carries no `needs:` and no `Blocked by`, so neither half can name something the other does not.
+I swept the rest of the board for the same pairing, and the three cards still carrying `needs:`
+(`0017` to `0016`, `0020` to `0016`, `0027` to `0018`) each carry exactly one matching `Blocked by`
+line.
+
+**Criterion #2 does not hold, because `SETTLED` is not what the README means by settled.** The check
+sets `const SETTLED = ['done', 'discarded']` and its comment defends that with "docs/board/README.md
+is explicit that an answered card goes back to a work lane and is open work again there". That reads
+the paragraph backwards. What the README says is "**A card that has been answered is settled too, in
+whatever lane it is sitting in**", and it says so specifically to warn against the implementation
+that was built: "a lane test alone read it as an open blocker for ever: on one board, 17 answered
+cards in `todo/` were freezing 8 others". Its closing clause, "It says nothing about the answered
+card itself, which is still open work, still in the queue and still counted", is about how the
+answered card is counted in its own lane, not about whether it still blocks anybody. The separate
+rendering paragraph names a third settled lane outright: `done/`, `discarded/` **and** `ai-review/`
+"(built, with only its acceptance pending)".
+
+**That gap is live on this board today, not theoretical.** `docs/board/human-review/0016-add-scotland-from-forestry-and-land-scotland.md`
+carries under `## Decided` the entry `**2026-08-18** Add Scotland's 278 forests from Forestry and
+Land Scotland: Yes`, and a second entry `**2026-08-29** Built.` The README says an entry under
+`## Decided` is an answer by where it was written. Two open cards still name it as a blocker:
+`0017`, with "it carries the scope call that gates both cards" (that call was answered Yes), and
+`0020`, with "it **measured** that the Forestry and Land Scotland destinations index carries every
+destination's coordinates in one HTML attribute" - a reason written in the past tense about a
+measurement already delivered. Both are the same defect this card was raised for, on the same board,
+and `no open card is blocked by a settled card` is green over both of them. I checked the third and
+it is not one: `0027`'s `needs: 0018` survives, because `0018`'s only `## Decided` entry unblocks the
+sending address and then says "I am still on the fence about what to ask them for", so that
+prerequisite genuinely has not arrived. The check is not merely coarse; it is silent on two of the
+three and right about the third by coincidence of lane.
+
+The criterion's own EARS body says "found only in `done/` or `discarded/`", and the code does exactly
+that, so the code matches the sentence. What it does not match is the name the criterion hands it,
+`no open card is blocked by a settled card`, and the name is the part a future reader trusts. Two
+honest remedies: widen `SETTLED` to include `ai-review/` and to read a `**Decided:**` entry or a
+non-empty `## Decided` section in any lane, or keep the lane test and rename it for what it does
+(`no open card is blocked by a card in done or discarded`) with the hole stated on the card. What is
+not available is a check whose name claims the general rule while its body implements a third of it.
+
+VERDICT: defect
+
+**scope: sound**
+
+The build is two commits and nothing else. `5528c7b` touches one file, `scripts/selftest.js`, +43
+lines and no deletions. `60819b1` touches two, the `0055` card and this card. Nothing under `app/`,
+`scripts/*.py`, `data/`, or `docs/` outside the board.
+
+Every fence in `## Not this card` held. `0055`'s open criterion #1 is still unticked and its
+`## What I need from you` is unchanged; the diff on that card is three deletions of frontmatter and a
+six-line swap inside `## Links`, and nothing else. Its `## Comments` thread is untouched, as is every
+other card's: the only `## Comments` written were this card's own build entry, which is its own
+thread. The check reads the string `needs:` and no other key, so the "not a sweep of every
+frontmatter key" fence held in the code as well as in the prose.
+
+`php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` prints
+`NearestForest 0 46 0075`, which is the figure the build entry claims and the figure `## Plan`
+predicted.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I attacked the check with 28 crafted cards and reproduced every claim in the build entry.
+
+**The red state is real, and I proved it without touching the working tree.** `git archive 5528c7b
+docs/board` into a temp directory, with the check block lifted verbatim out of
+`git show 5528c7b:scripts/selftest.js` lines 2889-2930 and run against it, prints
+`FAIL no open card is blocked by a settled card - 0055 in human-review needs 0025, which is in done`.
+That is the sentence the build entry quotes, character for character. `5528c7b` is the parent of
+`60819b1`, and a `diff` of those 42 lines against the same lines at HEAD reports no change, so the
+fix commit did not quietly soften the check after watching it go red.
+
+**The `0073` claim reproduces exactly.** Scratch `needs: 0025, 0071` on
+`docs/board/todo/0073-...md` gives `0073 in todo needs 0025, which is in done` and says nothing about
+`0071`. It is worth noting what that line now demonstrates: `0071` moved to `ai-review/` between the
+build and this review, and the README calls `ai-review/` settled, so the very line the build entry
+offers as proof of discrimination is today an example of the miss above.
+
+**The single-hit sweep is accurate under its own definition.** I swept `5528c7b` independently by
+reading the head of every board file at that commit rather than trusting the run: exactly four cards
+carried `needs:` (`0017` to `0016`, `0020` to `0016`, `0027` to `0018`, `0055` to `0025`), and `0016`
+and `0018` were both in `human-review/` while `0025` was in `done/`. One lane hit. The measurement is
+sound; the claim "only one card was affected" is what over-reaches, for the reason in acceptance
+above.
+
+**What held under attack.** A `needs:` naming a card in `done/` is named with the right lane. One
+naming a card in `discarded/` is too - that lane is empty, so I created the case, and the message
+reads `which is in discarded`. Several settled numbers on one line are all named, sorted and joined
+with ` | `, so no offender hides behind another. `needs:0025,,  0091 ,` - no space after the colon, a
+double comma and a trailing comma - parses correctly. CRLF files parse. Two separate `needs:` lines
+in one block are both read. A card with no frontmatter, and a card whose frontmatter starts below a
+blank first line, are both skipped rather than half-read. A `needs: 0025` written at column zero in
+the body of a card that has well-formed frontmatter above it is **not** read, which is the case I
+most expected to break. A card sitting in `done/` that itself carries a stale `needs:` is correctly
+not named: the test is about open cards, and a settled card's work order is nobody's problem, which
+is what the README implies and what the code does. A dependency with copies in both `done/` and
+`todo/` is correctly not named, which is the `0069` duplication case `## Plan` anticipated. A card
+naming itself is not named.
+
+**Where it fails open, and this is the weak seam.** The frontmatter parse is hand-rolled, and every
+malformed shape resolves to "no blockers here" rather than to a complaint:
+
+- The opening `--- ` is trimmed before comparison; the closing `---` is compared exactly. So `--- `
+  as the opener still works, and `--- ` as the closer makes `indexOf` miss, `end` go `-1`,
+  `slice(1, 1)` return nothing, and the card's `needs: 0025` vanish from the check. One trailing
+  space.
+- An unterminated block does the same. So does a closer written `----`.
+- `needs: [0025, 0007]` and the YAML block-list form both parse to nothing.
+- `Needs:`, `NEEDS:` and a leading-space `  needs:` are all skipped. YAML keys are case-sensitive, so
+  that is defensible, but nothing anywhere says the card was ignored.
+- A number written `25` rather than `0025`, or a value carrying a reason (`needs: 0025 - it settles
+  where the ask sits`), is silently dropped.
+- A `needs:` naming a number no file on the board carries is silent by construction: the guard is
+  `depLanes.length && depLanes.every(...)`, and the `.length` term exists precisely to stop
+  `[].every` returning true. Skipping a dangling reference is the right call for this card, but
+  nothing else in this suite catches it either, so it is a gap with no owner.
+
+**And one way it fails closed on prose.** If a card's frontmatter is unterminated and a `---`
+horizontal rule appears anywhere later in the body, `indexOf('---', 1)` takes that rule as the closer
+and everything between is parsed as frontmatter. A line reading `needs: 0025` at column zero in that
+prose is then reported as a blocker. I built the case, and it fails the suite.
+
+None of these is reachable by anyone but a card author, and no other assertion in this suite parses
+frontmatter, so nothing cross-checks them.
+
+VERDICT: defect
+
+**security: sound**
+
+1. **Where is it weakest.** The attack is not on the data, it is on the green. A session that wants
+   this assertion quiet does not have to remove a `needs:` line; it can put one space after the
+   closing `---`, or write the blockers as a YAML list, and every `needs:` on that card becomes
+   invisible to the check while still reading as a blocker to a person and to any real YAML parser.
+   The board then reports a card as blocked while the assertion that exists to catch stale blockers
+   says the board is clean. That is this project's own named recurring defect - a check that cannot
+   fail - reachable by a typo rather than by intent.
+2. **What is unchecked.** Everything about the file is taken on faith: that line 0 is a delimiter,
+   that the next `---` closes it, that the value is a comma list of four-digit numbers. There is one
+   crash path rather than a parse path: `fs.readdirSync(boardDir).map(...).filter(d =>
+   fs.statSync(d).isDirectory())` throws on a dangling symlink or an unstattable entry under
+   `docs/board/`, uncaught, and the block sits at line 2889 of a 3,000-line file, so the assertions
+   after it never run and the summary never prints. The process exits non-zero, so nothing fails
+   silently, but the failure lands in the wrong place. There is no network, no shell and no user
+   input: a dependency number reaches only `Map.get`, never a path, a regex or a command, and the
+   filename pattern `/^\d{4}-.*\.md$/` bounds what can become a key.
+3. **What does it leak.** Card numbers and lane names, and nothing else. No file path, no card title,
+   no line of card content, no stack trace. It is a local developer suite writing to stdout, so
+   nothing crosses a trust boundary, and the message is the minimum a reader needs to find the card.
+   This part is right.
+
+VERDICT: sound
+
+**browser check**
+
+**This card has no user-facing surface, and that is a claim rather than a skip.** `git show --stat`
+on both commits lists three files: `scripts/selftest.js`, and two markdown files under `docs/board/`.
+Nothing under `app/`, nothing under `data/`, and no generator that writes into either. There is no
+page a browser could be pointed at to see this card's effect, and the build entry's "Nothing this
+card reaches `app/`" is accurate.
+
+**cleanup**
+
+Every scratch edit is reverted. The `0073` frontmatter was restored from a byte copy, the scratch
+cards in `todo/`, `done/` and `discarded/` were deleted, `docs/board/done/0007-map-view-to-pick-a-forest.md`
+was restored from a copy taken before it was edited, and `git status --short` is empty. The
+red-commit board was reconstructed in a temp directory outside the repository and never in the
+working tree; no `git stash`, `add`, `mv`, `rm` or `commit` was run.
