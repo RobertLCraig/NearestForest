@@ -161,3 +161,54 @@ finds the first heading reads four-day-old history with no sign the rest exists.
 
 `php C:\Dev\ProgressBoard\artisan board:convention --path="$PWD" --cards` reports zero failing cards
 on this worktree, with the two new cards in place.
+
+### 2026-09-11 review (v20260911032733-24e6)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Checked each criterion myself against the files.
+
+**Criterion #1 ÔÇö one anchored hit, directly under the title.** I ran `grep -c '^## What I need from you' <path>` on all five named paths. Each returns 1. I also read the head of each file: in `docs/board/human-review/0012-close-the-open-tile-proxy.md`, `0053-...`, `0054-...` and `0056-...` the heading is the line right after the `#` title; in `0011-security-response-headers.md` it follows the title, with only the YAML frontmatter above the title. No card has a second copy.
+
+**Criterion #2 ÔÇö ask, pass and fail in the first three lines under the title.** Each section opens with one bold paragraph naming two routes and closing with "Doing neither is the fail". So the ask, the pass and the fail all sit inside the first three lines. Each then repeats them under explicit **Pass** and **Fail** labels lower down.
+
+**Tried to break it.** The lane re-grep the card reports is honest: `grep -rLE '^## What I need from you' docs/board/human-review/*.md` names only `0019`, `0021` and `0058`, all raised as card `0060`.
+
+One wrong sentence, not a criterion breach: `0053`'s section says card `0019` "carries its ask under its title". It does not, as the same grep shows.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check, card 0059.**
+
+The build is one commit, `2039b0c`. It touches the five named card files, the card's own file, and two new cards, `0060` and `0061` in `todo/`. Every other file in the branch summary (`0013`, `0019`, `0021`, `0036`, `0057`, `0058`) moved on separate lane-move commits made by the scheduler, not by this build.
+
+The fence in `## Not this card` holds. No criterion was unticked on any of the five. No card was moved out of `human-review/`. No `## Comments`, `## Direction` or `## Decided` block was edited. Nothing under `app/`, `scripts/` or `docs/board/README.md` changed.
+
+Nothing left half done. Each of the five now carries exactly one `^## What I need from you`, placed directly under the title and above `## Why`. Each also carries the over-budget note the third task asks for, including `0012`, whose note sits under "Note on length" in its new section. I re-ran the anchored grep over the lane and got the same three files the log names.
+
+The two new cards are growth, but raising rather than fixing is this board's practice, and the log declares them out of scope.
+
+I tried to find growth and a half-done edge, and found neither.
+
+VERDICT: sound
+
+**breakage: defect**
+
+Finding, breakage lens.
+
+**False claim written into `0056`'s new `## What I need from you`.** The section states "The eleven cards have since moved to other lanes, so the check passes because its subjects are absent", and "Strip the section out of all eleven today and it still reports a pass."
+
+Two of the eleven that `0056` itself lists under its `## Why` are still in the lane: `docs/board/human-review/0032-handover-carries-a-self-test-count-nothing-re-measures.md` and `docs/board/human-review/0038-the-forestry-england-briefing-counts-predate-scotland.md`. Nine moved, two did not. So the stated reason is wrong for two subjects, and the "strip it and it still passes" sentence is false: those two are still measured by any lane-named check. The section is the one thing a person reads before unticking, so a wrong premise there steers the untick.
+
+**Same section, self-falsifying sentence.** It says this card "carries the heading nowhere, so its own check would certify this card as compliant". This pass added the heading. The sentence is false as written the moment the file is saved. `0053`'s section carries the same sentence.
+
+Everything else I attacked held: the five headings are present once each, `0011` is the only card with two `## Comments`, and the `tiles.php` claim in `0012` matches `readKey()` and `counterDir()`.
+
+VERDICT: defect
+
