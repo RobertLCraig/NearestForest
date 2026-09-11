@@ -1,5 +1,18 @@
 # Two cards wait on a decision you already made
 
+> **Discarded 2026-09-11, before Rob read it.** The two stale blockers this card was raised to ask
+> about were cleared by an agent instead, which is where they always belonged: whether card `0016`
+> was answered is settled by reading it, and the board README reserves a person's attention for what
+> reading cannot settle. The adversarial review of card `0070` said so and it was right. Cards
+> `0017` and `0020` now record `0016` under `Relates to` with the answer as the reason.
+>
+> **One thing this card asked for is NOT done, and it is not worth a card.** Card `0016` still
+> carries no `**Decided:**` marker, so no check can see it as answered. Nothing depends on that
+> today. If somebody writes `needs: 0016` again, the blocker check will not catch it, and the note
+> explaining that sits in `scripts/selftest.js` above the check itself.
+>
+> Everything below is as written and is kept only so the reasoning can be read back.
+
 ## What I need from you
 
 **One line, pasted onto card `0016`.**
