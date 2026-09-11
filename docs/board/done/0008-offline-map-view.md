@@ -386,3 +386,13 @@ Edge case I found and dismissed: with no outline and a filter matching nothing, 
 
 VERDICT: sound
 
+**2026-09-11** A second file of this card was merged into this one and deleted, under card `0069`.
+It was the copy commit `b75d8db` carried over from another machine, six days behind this one, and a
+session then promoted it from `todo/` to `human-review/` at 15:40 on the strength of its own stale
+thread. It held two things this file did not, and neither survives as text because both are answered
+above. Its `## What I need from you` asked Rob to untick `#1` and `#2` over the boundary latch; the
+2026-09-10 build entry above fixed the latch and the 2026-09-10 review found it disproved no
+criterion, so there is nothing to untick. Its closing entry was the loop's standard "the reviewer
+returned this card, all 6 criteria ticked, the builder could not act on that finding" line, dated
+2026-09-11, generated from that stale thread and untrue of this one.
+
