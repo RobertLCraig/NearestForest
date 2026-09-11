@@ -1,5 +1,40 @@
 # Card `0059` entered `human-review/` without the required section
 
+## What I need from you
+
+**Pick one of the two routes below and write your answer at the bottom of this card.** Doing neither
+leaves this card parked in the lane for ever, and that is the fail.
+
+1. Send this card back to `todo/` with its boxes left ticked, so a builder can repair the section
+   this card wrote into card `0059`.
+2. Leave this card where it is, and have a new card raised for that same repair.
+
+---
+
+**What's wrong.** The reviewer passed both acceptance criteria and then returned the card on two
+other lenses, both about the section it wrote into card `0059`. That section carries hand-typed
+figures this card's own `## Plan` forbade, and it names cards in prose that do not appear in that
+card's `## Links`. The exact wording is in the review entry further down this thread.
+
+**Cause.** A reviewer may not edit acceptance, so the card came back with every box still ticked.
+Sessions that opened it afterwards found nothing unticked to do, and the loop promoted it again on
+the boxes alone. Nothing in that cycle can reach a finding that lives only in prose.
+
+**Pass** is either of:
+
+- this card sits in `todo/`, both boxes still ticked, with a note here naming what to repair
+- a new card exists for the repair, and this card is closed
+
+**Fail** is unticking a criterion. The reviewer graded both of them sound, so unticking one would
+record a failure that did not happen.
+
+**Why it needs you.** Both routes cost about the same work. They differ in whether this card's own
+record stays honest, and that is a call about what the board should say rather than a fact anyone
+can look up.
+
+**Note on length.** This card is past the board's 100-line budget and this pass could not bring it
+back. `## Comments` is append-only and holds most of the file.
+
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card

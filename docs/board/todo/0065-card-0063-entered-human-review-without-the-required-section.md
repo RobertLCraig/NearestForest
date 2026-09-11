@@ -1,45 +1,48 @@
-# Card `0062` entered `human-review/` without the required section
+# Card `0063` entered `human-review/` without the required section
 
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card
 rather than a task for the reader. One card in the lane does not have it, measured 2026-09-11 after
-the section card `0063` carried was written, with
+the section card `0064` carried was written, with
 `grep -rLE '^## What I need from you' docs/board/human-review/*.md`:
 
-- `0062-card-0059-entered-human-review-without-the-required-section.md`
+- `0063-card-0060-entered-human-review-without-the-required-section.md`
 
 **What it costs.** A person opening the lane meets a card with no ask and has to read to the bottom
 of it to find the reviewer's findings and work out what is being asked of them.
 
 **How it came to be this way.** The scheduler moved the card from `todo/` into the lane on
 2026-09-11, after this batch's scope had been fixed on one named path. Nothing in the move adds the
-section, so the card that exists to fix this fault arrived carrying it. That is the fifth time a
-card in this series has done so.
+section, so the card that exists to fix this fault arrived carrying it. That is the sixth time a
+card in this series has done so, and the repair has never once been cheaper than the card that
+schedules it.
 
 ## Links
 
 **Relates to**
-- `0062` - the card missing the section. It is a returned build whose ask is already at the bottom of
+- `0063` - the card missing the section. It is a returned build whose ask is already at the bottom of
   its own thread, and nothing else about it is in scope here.
-- `0063` - the card that measured this. Its scope was the single path `0060`, fixed on 2026-09-11,
-  and `0062` was already in the lane when that scope was set, so it was written up rather than fixed
+- `0064` - the card that measured this. Its scope was the single path `0062`, fixed on 2026-09-11,
+  and `0063` was already in the lane when that scope was set, so it was written up rather than fixed
   in passing.
-- `0060`, `0059`, `0056`, `0053` - the same defect, earlier batches, and the cards whose `proves:`
-  line named the blind substring check that hid cards of exactly this kind.
+- `0062`, `0060`, `0059`, `0056`, `0053` - the same defect, earlier batches. Read them in order to
+  see the series repeat rather than converge.
+- `0055` - owns the one deliberate failure in `node scripts/selftest.js`. Read it before treating
+  that failure as anything this card caused.
 
 ## Not this card
-Not acting on any reviewer finding inside `0062`, not unticking any of its criteria, and not moving
+Not acting on any reviewer finding inside `0063`, not unticking any of its criteria, and not moving
 it out of the lane: that is the very call the new section will be asking Rob for. Not a check that
 refuses a card entering the lane without the section: that lives in `C:\Dev\ProgressBoard`, outside
-this repository.
+this repository, and it is where this series actually ends.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0062-card-0059-entered-human-review-without-the-required-section.md`
+- [ ] #1 WHEN `docs/board/human-review/0063-card-0060-entered-human-review-without-the-required-section.md`
       is searched for the heading `## What I need from you` anchored to the start of a line, THE CARD
-      SHALL return exactly one hit, directly under its title. proves: none - this project's suite is
-      one node script over the app and cannot read the board; the check is
+      SHALL return exactly one hit, directly under its title. proves: none - the suite here is one
+      node script and asserts nothing about card headings; the check is
       `grep -c '^## What I need from you' <path>`, run against that path rather than against a lane
 - [ ] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
       is, within the first three lines under the title. proves: manual - whether an ask is legible in
@@ -55,10 +58,14 @@ this repository.
 - [ ] Re-run the anchored grep over the whole lane and report which cards still miss the heading
 
 ## Plan
-Work in this repository, on the branch the session was given. Only that one card file changes;
-nothing under `app/` or `scripts/` is involved, so `node scripts/selftest.js` cannot see this either
-way. Run it anyway to show the change broke nothing. There is no PHP suite here: no `vendor/`, no
-`pest.bat`, no `pint.bat`.
+Work in this repository, on the branch the session was given. Only that one card file changes, and
+nothing under `app/` or `scripts/` is involved. **`node scripts/selftest.js` does read the board**,
+so run it and read the result rather than assuming it is blind to this: the block
+`board cards fit the agent file reader (card 0055)` walks every lane and fails any card over 200 KB,
+and the block above it reads a board card too. Growing a card is inside what it measures. Expect
+`306 passed, 1 failed`, the failure being the deliberate `0020` file-size red that `docs/HANDOVER.md`
+declares and card `0055` carries. There is no PHP suite here: no `vendor/`, no `pest.bat`, no
+`pint.bat`.
 
 **Anchor the grep, and name the file by path, not by lane.** From the repository root:
 
@@ -84,6 +91,12 @@ card states the ask, the pass and the fail in the first three lines under its ti
 ## Comments
 <!-- The card's thread, appended by ProgressBoard. Append-only: entries are added, never edited or removed. An entry beginning **Decided:** is an answer, and that is what a decision card exits on. -->
 
-**2026-09-11** Raised by card `0063` on its last task, re-running the anchored grep over the lane
-after writing the section it carried. That card's scope was the single path `0060`, and `0062` was
+**2026-09-11** Raised by card `0064` on its last task, re-running the anchored grep over the lane
+after writing the section it carried. That card's scope was the single path `0062`, and `0063` was
 already in the lane when that scope was set, so it was written up rather than fixed in passing.
+
+**2026-09-11** **The series is the finding, not this card.** Six cards now exist whose whole content
+is that the previous one arrived in the lane without its ask. Each is correct, each is cheap, and
+together they have produced nothing a user of the app can see. The mover that promotes a bounced
+card into `human-review/` is what would end it, and that mover is in `C:\Dev\ProgressBoard`, fenced
+out above. Worth putting to Rob before a seventh is written.
