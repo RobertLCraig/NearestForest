@@ -172,3 +172,209 @@ from this card.
 which is card `0055` and is deliberate. The new assertion passes.
 
 **Not checked in a browser.** Nothing this card reaches `app/`.
+
+### 2026-09-11 review
+
+**suite**
+
+`node scripts/selftest.js` runs **309 passed, 1 failed**. The single red is
+`no board card is too large for the agent file reader`, naming
+`docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md is 206.8 KB`. That one is card
+`0055`'s and only Rob can clear it. Nothing else fails. This card's assertion,
+`no board card appears in two lanes`, runs and passes, printed under
+`--- one card, one lane (card 0069) ---`. The build entry's "305 passed, 3 failed" is stale rather
+than wrong: card `0071` landed the two `requests` reds between then and now.
+
+**acceptance: sound**
+
+**#1 and #2, attacked with ten hand-made duplicates.** I tried to make the assertion green while the
+thing it guards was broken, running the suite once per case and deleting the scratch file after each.
+It named the duplicate in six of ten:
+
+- a copy of `0008` in `todo/` under a **different slug** - named, `0008 in done and todo`
+- the same copy under the **same slug** - named
+- a copy in `discarded/`, which is empty at HEAD and so never walked before - named
+- the same number in **three** lanes at once - named all three, `0008 in discarded and done and
+  todo`, so the message does not truncate and the `.sort()` makes it stable
+- two copies in **one** lane - named, `0008 in done and done`. The check is by number, not by lane
+  pair, which is the stronger behaviour
+- a copy in a lane directory that does not exist yet (`docs/board/blocked/`) - named. The walk reads
+  the directory listing rather than a hard-coded lane list, so a new lane is covered the day it is
+  created and nobody has to remember
+
+It missed four, all of them the same blind spot: `/^\d{4}-.*\.md$/` requires a dash after the number
+and a lower-case `.md`, and the walk is one level deep. So `0008.md` with no slug, `0008-dupe.markdown`,
+`0008-Upper.MD` and `docs/board/todo/nested/0008-nested.md` are all invisible. Every one of those is
+off the `NNNN-slug.md` rule in `docs/board/README.md`, and the two sibling board checks in the same
+file (`0020`'s lane check and `0055`'s size check) share the identical regex, so this is the file's
+existing blind spot rather than a new one. Worth a sweep card if anyone wants it; not a defect here.
+
+One over-reach, and it is arguably correct: `docs/board/attachments/` is walked as if it were a
+lane, because the filter is "is a directory" and nothing else. A `.md` parked there is reported as
+`0008 in attachments and done`. Screenshots are `.png` so nothing fires today.
+
+`git status --short` is clean of my scratch files after the pass.
+
+**#3, verified independently rather than read off the table.** `git show b75d8db --stat` gives the
+sixteen carry-over paths and `git log --diff-filter=D` gives the sixteen deleted ones. For each pair
+I compared the deleted blob at `<deletion>~1` against the survivor at `9c06f6c`, both with
+`diff --strip-trailing-cr` and as a line-set with `comm` under `LC_ALL=C`, and then re-ran the three
+mojibake pairs with `ÔÇö` normalised to `-` on **both** sides.
+
+**Nothing the deleted copy carried is absent from the survivor in fourteen of sixteen.** `0014`,
+`0015`, `0032`, `0036`, `0038`, `0053`, `0054`, `0056` and `0057`: zero lines lost, raw. `0011`,
+`0013` and `0019`: zero lines lost once the mojibake is normalised, which is the repair the entry
+above describes. `0055`: the two lines the deleted copy held are an **unticked** `#2` and an
+unticked task, both ticked on the survivor, so it lost a stale untick and not a tick. `0021`: the
+one line is `- [x] #6`, deliberately unticked by the session that owns that card.
+
+Two pairs did lose text, both fairly declared in the table and neither covered by #3 as written,
+which names ticks, comment entries and frontmatter keys and not prose sections:
+
+- `0008` - a 22-line `## What I need from you` asking Rob to untick `#1` and `#2` over the boundary
+  latch, plus the loop's closing entry. I checked the substance rather than the table: the
+  2026-09-10 build entry on the survivor fixes the latch and the 2026-09-10 review finds it
+  disproved no criterion, so the ask was moot. The deletion is recorded in a dated entry on
+  `done/0008` that says so in its own words. Sound.
+- `0012` - a 32-line ask about the 2026-09-10 findings. The survivor was never edited by this card
+  (`git diff --name-only d20be16 9c06f6c` does not list it), so the only record of that deletion is
+  the table row on this card. I checked the substance anyway: `carrier`, `REMOTE_ADDR` and `429` all
+  appear on the survivor's threads, and its current ask is the later 2026-09-11 `counterDir()`
+  finding. Nothing recoverable is gone, but `0008` got a dated note and `0012` did not, for the same
+  class of deletion.
+
+**Two inaccuracies in the table itself, neither of which cost anything.** The first row says the
+seven pairs "differ in line endings alone". They do not: the survivors of `0053`, `0054` and `0056`
+carry 40, 30 and 43 lines the deleted copy never had, `0032` carries 11, and `0014`, `0015` and
+`0038` carry 2 to 4. The column heading ("only in the deleted copy") is what is true; the sentence
+under it is not. Second, "they are repaired to the hyphen" reads as though those files are now
+clean. The appended review text is clean, but `human-review/0011` still holds 7 lines of `ÔÇö`,
+`done/0013` 4 and `human-review/0019` 9 - identical counts at `d20be16`, `9c06f6c` and HEAD, so this
+card introduced none of it and repaired none of the pre-existing. Forty card files on this board
+carry it. Not this card's to fix; the sentence just claims more than it did.
+
+**#4, re-run from `D:\Dev\NearestForest`.** `php C:\Dev\ProgressBoard\artisan board:convention
+--path=$PWD --cards` prints `NearestForest 0 46 0075`. Zero open cards failing. The 43 has become 46
+because three cards have been raised since.
+
+**Criterion #2's judgement, checked against the history.** The claim holds. `b75d8db` is dated
+2026-09-11 15:24:07 and fourteen of the sixteen deleted paths *are* its blobs, so "the later of the
+two by `git log`" would have kept the carry-over and thrown the live card away in every one of those
+cases. The rule actually applied - the file holding the later state - was applied consistently at
+the level of content across all sixteen. `0021` is the apparent exception and is not one: the file
+`b75d8db` created was the survivor there because the 2026-09-11 unattended session wrote a run entry
+into it afterwards, which is exactly the "a session may have written to a stale copy since" case the
+entry says it checked pair by pair. `git log b75d8db..9c06f6c` on each deleted path confirms the
+"five had" count: `0011`, `0013`, `0019`, `0036`, `0057`.
+
+VERDICT: sound
+
+**scope: sound**
+
+Only one non-document file is touched across `d20be16..9c06f6c`: `scripts/selftest.js`. Nothing
+under `app/`, `scripts/parse.py`, `scripts/fetch*.py`, `data/` or `docs/` outside the board. The
+"not rewriting either copy's prose" fence holds - every appended line is verbatim from the deleted
+copy bar the mojibake repair, which is declared. The three findings were raised as `0072`, `0073`
+and `0074` rather than fixed here, which is the fence being obeyed rather than worked around.
+
+**One residue the next session has to pick up, and it is inherent in the fence rather than a breach
+of it.** Deleting one of two copies necessarily picks a lane. Twice that picked the lane away from
+Rob's queue. `0008`'s human-review copy went and the survivor sits in `done/`, which is recorded and
+right. `0021`'s human-review copy went and the survivor sits in `in-progress/` **still carrying its
+`## What I need from you`**, asking Rob to untick `#6` and send the card to `todo/`. Nothing sweeps
+`in-progress/` for asks, `in-progress` means an agent is building it right now and none is, and the
+commit subject "leave it in in-progress" is the only place this is written down. It is not in the
+table and not in the entry's prose. Say it on `0021` or move it; it is one line either way.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I re-ran the suite, re-ran `board:convention`, and re-checked each of the five defect verdicts the
+merge carried across against the tree at HEAD.
+
+**Three of the five are correctly raised and still true.**
+
+- `0072` restates `0013`'s finding exactly. `git ls-files | grep pycache` prints
+  `scripts/__pycache__/parse.cpython-313.pyc`, and `.gitignore` has rules for the scrape cache,
+  worktrees, keys, drafts and screenshots and none for `__pycache__` or `*.pyc`. Still true.
+- `0073` restates `0019`'s. `docs/DATA-MODEL.md` line 90 shows
+  `"attribution": "Contains public sector information licensed under the Open Government Licence
+  v3.0."` against a shipped `"English forest details: Crown Copyright ..."`, and the example's
+  `generated_at` reads `2026-08-29` against a shipped `2026-09-10`. Both halves still true.
+- `0074` restates `0011`'s. `grep -n Rewrite scripts/selftest.js` returns exactly one line, 1102,
+  and it is the negative `!/RewriteRule.*%\{HTTP_HOST\}/`. Deleting lines 66-69 of `app/.htaccess`
+  satisfies it more easily than leaving them. Still true.
+
+**The `0036` claim holds.** Its finding is `counterDir()` versus `readKey()` in `app/api/tiles.php`,
+and that is word for word the `## What's wrong` of `human-review/0012`, which is in Rob's queue.
+Correctly not raised twice.
+
+**THE FINDING: `0057`'s was dismissed on a measurement that is wrong, and it is still live.** The
+entry says "Not raised: the phrase is not in `docs/PRD.md` at HEAD." It is in `docs/PRD.md` at HEAD,
+at lines 56 and 57:
+
+    - Per-site detail: name, sat-nav postcode, opening times, parking charges, facilities, link to the
+      Forestry England page.
+
+The bullet wraps, so "link to the Forestry England page" straddles a newline and
+`grep -c "link to the Forestry England page" docs/PRD.md` prints `0`. That is the whole of how it
+was missed. `git show d20be16:docs/PRD.md` and `git show 9c06f6c:docs/PRD.md` both carry the same
+two lines, so the claim was false when it was written and not merely overtaken. The reviewer's own
+sentence - "the bullet four lines above it was updated for Scotland; this one was not" - points
+straight at line 52, which is the Great-Britain-minus-Wales bullet, exactly where it says.
+
+The cost is the failure this card's entry names and guards against three paragraphs earlier. `0057`
+sits in `done/` with `VERDICT: defect` as the newest line on its thread, the finding is true, and no
+card anywhere tracks it, so nobody will pick it up. The second half of the same verdict - that the
+276-record sweep in `scripts/selftest.js` reads `DATA.sites` only, while the 44 Forestry and Land
+Scotland URLs in `campsites.json` rest on one fixture - was consciously "left on that card's
+thread", which is the same nobody-picks-it-up state, this time chosen rather than mistaken.
+
+**On leaving `0013`, `0036` and `0057` in `done/` with a defect verdict at the bottom.** Not moving
+them is right: the `## Not this card` fence forbids lane judgements, and unticking is a person's
+call under `docs/board/README.md`, so a merge that started shuffling lanes would be three failures
+instead of one. The mitigation the card chose - carry each live finding out to its own card in
+`todo/` - is the correct one and is the whole reason `0070` exists. Judged on that mechanism, four
+of five were handled properly. It fails on the fifth, and the fifth is the one where a false
+measurement, not a judgement, made the decision. Raise `0057`'s PRD bullet as a card and this
+dimension is sound.
+
+VERDICT: defect
+
+**security: sound**
+
+The card produced one filesystem-reading assertion, so the three questions are worth little here,
+but an unwritten pass cannot be told from one that never happened.
+
+**Where it is weakest.** It is a check that can only be made to lie by naming a file so that it
+stops looking like a card. A second copy committed as `docs/board/todo/0069.md`,
+`0069-dupe.markdown`, `0069-Upper.MD` or `docs/board/todo/old/0069-dupe.md` is tracked by git, is
+read by a human as a card, and is invisible to this assertion - I proved all four above. Nobody
+attacks a board; somebody renames a file while tidying and the guard quietly stops covering it. The
+walk also only runs when the suite runs, so a duplicate committed with no suite run is unguarded
+until the next one.
+
+**What is unchecked on the way in.** Nothing is validated, because nothing is input: the only data
+is the directory listing of `docs/board/`. `fs.readdirSync(boardDir)` and `fs.statSync(d)` are
+uncaught and there is no top-level `try` in `scripts/selftest.js`, so a dangling symlink or an
+unreadable directory under `docs/board/` throws and aborts the whole run with a stack trace rather
+than a named `FAIL` - loud, but loud in the wrong shape, and it takes the remaining assertions down
+with it. There is no permission check because there is no entry point: no route, no job, no
+machine-facing interface. The assertion reads names only and opens no file, so no card's contents
+pass through it.
+
+**What it leaks when it fails.** Card numbers and lane names, and nothing else -
+`0008 in done and todo`. Both are already the names of files in a public repository, and the message
+carries no absolute path, no file contents, no thread text and no environment. `ok()` prints to
+stdout and the process exit code; there is no network call anywhere in the block. The honest limit
+is that this runs on a developer's machine against a repository they already hold, so there is no
+boundary here for it to leak across.
+
+VERDICT: sound
+
+**browser: not applicable, and this is a claim rather than a skip.**
+
+`git diff --name-only d20be16 9c06f6c` lists 28 paths. Twenty-seven are under `docs/board/`. The
+twenty-eighth is `scripts/selftest.js`. Nothing under `app/` is touched, no route, no asset, no
+service worker, no `data/`. There is no user-facing surface to check and no server was started.
