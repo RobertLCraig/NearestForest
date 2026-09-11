@@ -258,3 +258,58 @@ report an error, in a test whose whole subject is a check that cannot fail. Spel
 is nothing to deploy. **No browser check, and that is a claim rather than a skip**: this build
 touched only `scripts/selftest.js`, and the render half of the rule already has browser evidence on
 this card from 2026-08-10.
+
+### 2026-09-11 review (v20260911023010-b4dd)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked all four boxes against the real code.
+
+**#1 no link for a bad URL.** `openSheet` in `app/app.js` builds the "More" row only when `NF.safeHref(site.url)` returns a value. `safeHref` in `app/core.js` trims and tests `^https:\/\/[^\s/?#]`, so `javascript:`, `data:`, `http:`, `//host` and leading-whitespace forms all return null. No other file puts `site.url` in an href.
+
+**#2 build refuses a bad URL.** `validate` in `scripts/parse.py` appends a problem for a non-https url and for a host outside `URL_HOSTS`. `main` prints the problems and exits non-zero **before** the write, and the comment above that gate says so.
+
+**#3 dataset passes the same guard.** `scripts/selftest.js` sweeps `DATA.sites` through `NF.safeHref` and through an on-host check, and sweeps the campsite file too.
+
+**#4 the suite drives `validate()`.** The block in `scripts/selftest.js` spawns python, imports `scripts/parse.py` by path, clears `problems`, and calls `m.validate` on eight records. Three must be accepted, five refused, each with the expected reason. Deleting the scheme or host branch makes it red, and so does a missing report.
+
+I tried to break each one and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope check done. I read commit `7310e77`, which is this card's build.
+
+**What it touched.** Only `scripts/selftest.js`, plus the card file itself. The new block is the one named "the build refuses a bad url (card 0013)". It imports `scripts/parse.py` by path and calls `validate()` on eight made-up records. That is exactly the task the card lists, and nothing else.
+
+**Fence check, from "## Not this card".** No other dataset field was sanitised. No general URL allow-list appeared. The other outbound link is still `window.location.href = url` in `openChooser` in `app/app.js`, fed by `NF.navUrl` from coordinates, untouched. The host-label work in `openSheet` and `AGENCY_BY_HOST` in `app/app.js` belongs to card 0057, not to this commit.
+
+**Nothing half done.** The accept side is driven as well as the refuse side, so a `validate()` that refused everything would go red. The failure path no longer leans on the out-of-scope `tail` helper, so a python run with no output reports a failure instead of throwing.
+
+**One growth, too small to bounce.** The builder added criterion `#4` itself. A builder may do that and no existing box was changed, so it is not a reviewer problem.
+
+I tried to find something over the fence and could not.
+
+VERDICT: sound
+
+**breakage: sound**
+
+**breakage**
+
+I attacked both ends and could not break either.
+
+**The new test can fail.** In `scripts/selftest.js`, the block "the build refuses a bad url (card 0013)" imports `scripts/parse.py` by path, clears `problems`, and calls `validate()` on eight records. Five bad forms must be refused and three good ones must be accepted, so a guard deleted goes red and a guard widened to refuse everything goes red too. If python is missing or `validate`/`problems` is renamed, the stub throws, `reported` is null, and the check reports a failure rather than a pass. No silent-skip path.
+
+**The chain to criterion #2 is complete.** `validate()` in `scripts/parse.py` only records a problem; the abort lives in `main()`, where the `if problems:` gate sits above the write. That half already has a fixture test, "a failed parse leaves the previous dataset untouched".
+
+**The other generator is not a hole left open here.** `safe_url()` in `scripts/parse_campsites.py` has its own hostile-URL fixture test, including the `https://forestryengland.uk@evil.example.com/` userinfo form, plus a plain-http case the guard must keep.
+
+**Case asymmetry found, not a hole.** `safeHref` in `app/core.js` accepts any case; `validate()` tests a lower-case prefix. The build is stricter than the renderer, which is the safe direction.
+
+VERDICT: sound
+
