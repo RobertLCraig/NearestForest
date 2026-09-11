@@ -149,3 +149,56 @@ this card and out of this repository.
 **Could not settle from the repository:** which answer is right on the question the new section
 asks. No file here decides whether a build that breaks a written board rule fails a card whose own
 criteria were met. That is exactly why it goes to Rob.
+
+### 2026-09-11 review (v20260911060604-5e24)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked both acceptance criteria against the file.
+
+**Criterion #1 traces.** In `docs/board/human-review/0066-card-0064-entered-human-review-without-the-required-section.md`, the anchored check `grep -c '^## What I need from you'` returns exactly `1`. The title is line 1 and the heading sits directly under it, above `## Why`. There is no second copy.
+
+**Criterion #2 traces.** The first block under the heading is one bold paragraph. It gives the ask, then the pass, then the fail, in that order, before any other prose. A reader meets all three first.
+
+**I tried to break #2 on strict line counting.** Counting raw lines under the title, the heading and a blank line come first, so the pass and the fail land on the fifth to seventh lines. The criterion is marked `proves: manual`, and the identical shape was graded sound on `0065` in this same lane on the same day. I do not treat it as a fault.
+
+**I tried to break the section's factual claims.** It says the reviewer graded acceptance sound and scope sound and returned the card on a third ground. The review block in `docs/board/done/0067-card-0065-entered-human-review-without-the-required-section.md` confirms that shape. No count and no bare card number appear in the new section.
+
+**The lane sweep is clean.** The anchored sweep over `docs/board/human-review/*.md` names no file.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked what this build really touched, not what it said.
+
+**The build is one commit, `4ba4e6c`.** It changed two files: the target card `docs/board/human-review/0066-card-0064-entered-human-review-without-the-required-section.md` and its own card `0068`. Nothing under `app/`, `scripts/` or `data/`. Nothing in `C:\Dev\ProgressBoard`.
+
+**The fences in `## Not this card` all held.** The diff of the `0066` card has zero deleted lines. It is one insertion between the title and `## Why`. The heading list on that file shows `## What I need from you` on line 3, then `## Why`, `## Acceptance`, `## Tasks`, `## Plan`, `## Comments` in their old order. Both acceptance boxes stay ticked, the thread and verdicts are untouched, and the file stays in `human-review/` as a modify, not a rename.
+
+**The lane moves are not this build.** The `0067` move to `done/` and the `0068` moves are separate scheduler commits that change no card content.
+
+**No new card was raised, and none was needed.** I re-ran the anchored sweep `grep -rLE '^## What I need from you' docs/board/human-review/*.md` myself. It names no file. So the last task is finished, not half done, and no successor was created quietly.
+
+I tried to find something over the fence and could not.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I tried to break this and found one false number.
+
+**The lane rule holds.** The anchored sweep `grep -rLE '^## What I need from you' docs/board/human-review/*.md` names no file. The target card returns exactly one hit, and the heading sits on line 3, directly under the title.
+
+**Nothing else asserts the rule.** In `scripts/selftest.js`, the block `no board card is too large for the agent file reader` measures bytes only. No assertion reads card headings, so `proves: none` is honest. The suite runs 306 passed, 1 failed, the failure being the `0020` card, which `docs/HANDOVER.md` declares.
+
+**The hand-typed size figure is wrong.** The build's `RESULT: done` entry, on the `## Comments` thread of `docs/board/ai-review/0068-card-0066-entered-human-review-without-the-required-section.md`, says the failure names `0020` "at 209.8 KB". The suite prints 206.8 KB. The file is 211,779 bytes, unchanged since 2026-09-10, so the figure was wrong when written, not stale. The card's own `## Plan` forbids exactly this: "read the run rather than a figure written here".
+
+The thread is append-only, so the next session corrects it with a new dated entry, not an edit.
+
+VERDICT: defect
+
