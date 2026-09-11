@@ -324,3 +324,52 @@ That code is in `C:\Dev\ProgressBoard`, outside this repository, and `0058` says
 exist and there is no `composer.json`. The suite is `node scripts/selftest.js`, green at 306 passed
 and 0 failed, up from 218 at the last entry because other cards added tests. No code changed this
 run, so that number is context and not evidence.
+
+### 2026-09-11 review (v20260911024629-6ec8)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each criterion against the board files.
+
+- **#6**: I ran `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD`. It prints `NearestForest 0 35 0060`. Zero open cards fail, on a fresh measurement, not the card's word.
+- **#1**: I swept every open card. All 35 have a `## Why`. None of those `## Why` blocks holds `Option N`, `I recommend`, `we should`, `Cost:` or the other solution words.
+- **#2**: The three decision cards each name the reason. See "Why it needs you" in `docs/board/human-review/0003-straight-line-distance-in-practice.md` (local knowledge), `0017-how-much-of-wales-can-we-actually-ship.md` (a cost and a risk he owns), `0018-write-to-forestry-england.md` (a trade mark and a goodwill risk).
+- **#3**: I looked for card numbers named in prose but absent from `## Links`. Every hit on a rewritten card is inside `## Direction` or `## Comments`, which are append-only, or the number is also in `## Links`. Card `0058` lists `0015` as failing, but `0015` does carry `0052` under `## Links`, so that table entry is stale, not a fault here.
+- **#4**: Four open cards carry `needs:`. Each has one matching `Blocked by` line. No extra `Blocked by` anywhere.
+- **#5**: No `## Direction` or `## Decided` edit shows in the changed cards.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked what this card's own three commits changed: `7d70270`, `ff749c2`, `1db4dc0`. All three touch only `docs/board/`. No code, no `docs/board/README.md`, no lane moves, and nothing in `done/` or `discarded/`. The big code diff in the summary belongs to other cards.
+
+Fence checks:
+- **Nothing deleted.** The 51 removed lines are moved text. I grepped the deleted measurements and they all survive, for example `data-forest-search-map`, the 31-page pager and `sitemap.xml` in `docs/board/human-review/0016-add-scotland-from-forestry-and-land-scotland.md`, and `256x256` in `docs/board/human-review/0012-close-the-open-tile-proxy.md`.
+- **No append-only section touched.** No `## Direction` or `## Decided` edits in any of the three commits.
+- **`Blocked by` matches `needs:` both ways.** Only `0017`, `0020`, `0027` and `0055` carry `needs:`, and each carries the matching `Blocked by`.
+
+Two tasks say to write the count into `## Direction`. That section is retired in `docs/board/README.md`, and the counts went into `## Comments` instead. That is the convention, not a gap.
+
+The nine bare-number cards were pushed out as `0058` rather than fixed here. That is correct: they were written by other cards after the pass.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**What I checked:** I ran the suite and the board checker myself.
+
+The checker is clean: `NearestForest 0 35 0060`. So the zero-failing claim holds today.
+
+**Defect 1. The card reports a green suite. The suite is red.**
+`node scripts/selftest.js` prints `306 passed, 1 failed`. The failing check is the "no board card is too large for the agent file reader" assertion in `scripts/selftest.js`, on `docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md` at 206.8 KB. Card 0021's 2026-09-11 comment says "green at 306 passed and 0 failed". Card 0058, written the same day, says `306 passed, 1 failed`. One of the two is false, and the suite says which. A later session reading that entry will believe the tree was green when it was not.
+
+**Defect 2. A rule applied to one card only.**
+That same entry removed `needs: 0025` from 0021 because 0025 is answered and sits in `done/`. `docs/board/human-review/0055-card-0020-has-outgrown-the-agent-file-reader.md` still carries `needs: 0025` in its frontmatter and a matching `Blocked by`. Same stale blocker, same board, not fixed.
+
+VERDICT: defect
+
