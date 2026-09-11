@@ -36,23 +36,23 @@ outside this repository.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md`
+- [x] #1 WHEN `docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md`
       is searched for the heading `## What I need from you` anchored to the start of a line, THE CARD
       SHALL return exactly one hit, directly under its title. proves: none - this project's suite is
       one node script over the app and cannot read the board; the check is
       `grep -c '^## What I need from you' <path>`, run against that path rather than against a lane
-- [ ] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
+- [x] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
       is, within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the two review verdicts above it, and use the ask
+- [x] Read the card's last comment entry and the two review verdicts above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget afterwards, and say on it if it is not
-- [ ] Re-run the anchored grep over the whole lane and report which cards still miss the heading
+- [x] Check the card is still inside the 100-line budget afterwards, and say on it if it is not
+- [x] Re-run the anchored grep over the whole lane and report which cards still miss the heading
 
 ## Plan
 Work in this repository, on the branch the session was given. Only that one card file changes;
@@ -88,3 +88,51 @@ card states the ask, the pass and the fail in the first three lines under its ti
 **2026-09-11** Raised by card `0062` on its last task, re-running the anchored grep over the lane
 after writing the section it carried. That card's scope was the single path `0059`, and `0060` was
 already in the lane when that scope was set, so it was written up rather than fixed in passing.
+
+**2026-09-11**
+RESULT: done
+TESTS: +0 new, all green. Criterion #1 is `proves: none` and criterion #2 is `proves: manual`, so
+neither gets a test and the build-it-test-first rule does not apply to either. The repository suite
+is `node scripts/selftest.js`: 306 passed, 1 failed, the failure being the card-`0020` file-size
+assertion that `docs/HANDOVER.md` declares deliberate and card `0055` carries. It was red on that
+same single assertion before this work, and this card touched nothing the suite reads. There is no
+PHP suite here, so `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+TOUCHED: docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md
+TOUCHED: docs/board/in-progress/0063-card-0060-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/todo/0064-card-0062-entered-human-review-without-the-required-section.md (new)
+OUT-OF-SCOPE: 0064
+
+**The check was watched going from nothing to one.** Criterion #1 is `proves: none`, so there is no
+test to write, and the harness cannot express this case either way: the suite is one node script over
+`app/` and cannot read the board. What was run instead, against the one named path,
+`git show HEAD:<path> | grep -c '^## What I need from you'` printed `0` before the edit and
+`grep -c '^## What I need from you' <path>` prints `1` after it. The anchored sweep over the lane
+named the path before the edit and does not name it after, so the check is not one that always
+passes.
+
+**The ask is the one already at the bottom of the card.** Its reviewer graded acceptance sound and
+checked both boxes itself, then returned the card on the scope and breakage lenses. Neither finding
+disproves either criterion, so nothing there is proposed for unticking. The section says plainly that
+clearing it needs a builder rather than an untick, and offers the alternative of saying on the thread
+that a finding is wrong. It does not answer the question for Rob.
+
+**The card is past the 100-line budget and the section does not say so.** It is 239 lines after the
+edit and was 205 before. Nothing can be done about that from here: `## Comments` is append-only and
+is most of the file, which is the same tension card `0024` is waiting on Rob to settle. The budget is
+recorded here rather than in the new section, because a figure inside the ask is the very thing the
+reviewer returned the previous card for.
+
+**No count and no bare card number is written into the section**, per `## Plan`. The two reviewer
+findings are described in words, the acceptance box totals the reviewer quoted are left out, and the
+sections it refers to are named by lane and by heading rather than by card number.
+
+**`board:convention --path=$PWD --cards` reports `NearestForest 0 37 0065`**, the last column showing
+this worktree rather than `C:\Dev\NearestForest`. Zero open cards fail the checks after the new card
+was added.
+
+**Raised rather than fixed: `0062` is now in the lane and carries no section.** It is the card that
+raised this one, and the scheduler moved it into `human-review/` after this card's scope was fixed to
+one named path. That is card `0064`, and it is the fifth in this series.
+
+**Could not settle from the repository:** whether either reviewer finding on `0060` is right. That is
+the call the new section asks for, and this build does not make it.

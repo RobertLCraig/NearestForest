@@ -1,5 +1,39 @@
 # Three more `human-review/` cards have no `## What I need from you`, and one of them lost the section it had
 
+## What I need from you
+
+**One answer: send this card back to `todo/` for a builder, or say on this thread that the reviewer
+was wrong.** A pass is either of those, written down. The fail is leaving the card here, because the
+loop then promotes it to you again on its ticked boxes and nobody can move it.
+
+---
+
+**What's wrong.** The work this card asked for was done. A reviewer then read it and returned it
+twice over, on the two lenses at the bottom of this thread. Both faults are in the wording the build
+put into the three other cards, not in what this card set out to do:
+
+- It typed how many acceptance boxes those cards had. That kind of figure is wrong as soon as a box
+  moves, and the build's own plan told it not to write one.
+- On one of the three, the new section names two other cards in a plain sentence without adding them
+  to that card's own `## Links` list. That card carries the rule against exactly that.
+
+**Cause.** Neither fault is anything this card's two criteria describe. The reviewer said so in as
+many words, graded acceptance sound, and checked both boxes itself. A reviewer is forbidden from
+unticking, so the card came back with every box still ticked. Every builder session since has opened
+it, found nothing unticked, and passed it straight back to you.
+
+**Pass** is either of:
+
+- the card sits in `todo/`, with a line on this thread saying the two findings above are the work,
+  and nothing unticked, or
+- this thread carries your line saying a finding is wrong, and the card goes to `done/`.
+
+**Fail** is nothing written here. Next cycle the card arrives back in this lane unchanged.
+
+**Why it needs you.** No agent can clear it. The reviewer may not untick, the builder sees nothing
+open, and the loop reads the boxes. The call is whether wording faults the criteria never mentioned
+are worth a second build, and that is a cost judgement, not a lookup.
+
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card
