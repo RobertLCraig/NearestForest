@@ -343,3 +343,52 @@ not read `.htaccess`, because that file is Apache configuration, and the live si
 for an unattended session. The 2026-09-10 reviewer drove the app at `127.0.0.1:8792` to confirm the
 other half of criterion #1, that the app stays inside the policy, and nothing since then has
 touched a file the browser loads.
+
+### 2026-09-11 review (v20260911020323-f5a0)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each box against the real code.
+
+- **#1** `app/.htaccess` "Security headers" block sets `Content-Security-Policy` with `script-src 'self'`, no `unsafe-inline`, no `unsafe-eval`. The app stays inside it: `loadJson` in `app/app.js`, the boundary fetch in `app/map.js` and the precache in `app/sw.js` all use same-origin relative paths, and the only `url()` in `app/app.css` is the `data:` grain, which `img-src data:` allows.
+- **#2** Same block sets `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`, each with `always`.
+- **#3** `frame-ancestors 'none'` sits inside that same policy.
+- **#4** The `sw\.js$` `FilesMatch` block is below the general one, so `no-store` is the last write and wins.
+- **#5** Tiles come from `app/api/tiles.php`, same origin, so `img-src 'self'` covers them.
+- **#6** `htaccessDirectives` and `stripHtaccessComments` in `scripts/selftest.js` drop every comment line, and the "a commented-out security header fails the suite" check re-runs the same `wantHeaders` list over an all-commented copy of the real file.
+- **#7** The hardening block joins `app.js`, `core.js`, `map.js` and `sw.js` with `index.html` into `markup`, and the inline-handler and style-attribute checks read that join.
+
+I ran `node scripts/selftest.js`. It printed 306 passed, 0 failed. I could not find a criterion with no code behind it.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope check on card 0011, second pass.
+
+**What the change touched.** Only `scripts/selftest.js`: the `stripHtaccessComments` / `htaccessDirectives` helper near the top, and the `--- hardening ---` block. The other files in the branch diff belong to cards 0012, 0013, 0014, 0016, 0019 and 0021, not here.
+
+**Nothing crossed the fence.** No `X-Frame-Options`, no Cloudflare or DNS change, no tile-proxy work, no `href` scheme work, no footer privacy text added by this pass. The `.htaccess` wording edits in the diff are card 0021's reading pass, not this card.
+
+**Nothing left half done.** Both places that read `app/.htaccess` now go through `htaccessDirectives`, which is the task as written. The widened checks join `index.html` with `app.js`, `core.js`, `map.js` and `sw.js`, and those are every shipped script; `innerHTML` appears only in `render` and `openSheet` in `app/app.js`, both covered. The all-commented proof reads the same `wantHeaders` list it guards, so a later pattern is covered without anyone remembering.
+
+I tried to find growth and an unfinished edge and found neither.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I attacked the widened checks and the comment strip.
+
+**Held.** Both `.htaccess` readers go through `htaccessDirectives()` in `scripts/selftest.js`, so no assertion still reads the raw file. Commenting out the general `FilesMatch` block leaves `indexOf` at -1, but `the app shell is not HTTP-cached` in the service-worker block catches that. No shipped file trips the widened regexes today: every `style` write in `app/app.js` (`dragSheet`) and `app/map.js` is `panel.style.x`, with no space before `style`, so CSSOM assignment cannot false-positive.
+
+**Broken.** `docs/HANDOVER.md`, in the `app/.htaccess` bullet of the file map, still says "no inline script, inline handler or `style=` attribute may enter `index.html`". That was true of the old tests. The rule is now every shipped script, and the file map is where a contributor reads the rule. A person following the doc believes a handler inside a `renderList` template string is allowed.
+
+**Gap the tests do not build.** In the hardening block of `scripts/selftest.js`, `no style attribute in any shipped markup` is a text match. `setAttribute('style', ...)` violates `style-src 'self'` and passes both widened checks.
+
+VERDICT: defect
+
