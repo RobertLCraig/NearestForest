@@ -343,3 +343,55 @@ not read `.htaccess`, because that file is Apache configuration, and the live si
 for an unattended session. The 2026-09-10 reviewer drove the app at `127.0.0.1:8792` to confirm the
 other half of criterion #1, that the app stays inside the policy, and nothing since then has
 touched a file the browser loads.
+
+### 2026-09-11 review (v20260911153109-f6ea)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Traced each criterion to code.
+
+**#1** ÔÇö `app/.htaccess`, Security headers block: `Header always set Content-Security-Policy` with `script-src 'self'`, no `unsafe-inline`/`unsafe-eval`. The app stays inside it: `loadJson` in `app/app.js`, the boundary fetch and the tile URL in `app/map.js` (`api/tiles.php?z=...`) are all relative, and the grain is a `data:` SVG covered by `img-src data:`. Worker and manifest fall back to `default-src 'self'`.
+
+**#2** ÔÇö same block sets all four, each with `always`.
+
+**#3** ÔÇö `frame-ancestors 'none'` on the CSP line.
+
+**#4** ÔÇö the `sw\.js$` `FilesMatch` sits below the general one; asserted by the index-order check in the hardening block of `scripts/selftest.js`.
+
+**#5** ÔÇö tiles are same-origin `app/api/tiles.php`, so `img-src 'self'` covers them.
+
+**#6** ÔÇö `stripHtaccessComments` and `htaccessDirectives` in `scripts/selftest.js` feed every `.htaccess` assertion, and the all-commented copy check reuses the same `wantHeaders` list, so a pattern added later is guarded without anyone remembering.
+
+**#7** ÔÇö the inline-handler and style-attribute checks read `markup`, which joins `index.html` with `app.js`, `core.js`, `map.js` and `sw.js`; `eval` reads the same join. No other shipped file builds markup.
+
+I tried to find a criterion with no code behind it and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope: what grew.** Nothing. The commit that fixed the returned finding (`0011: make the security-header tests able to fail`) touches `scripts/selftest.js` and the card file, nothing else. No `X-Frame-Options`, no Cloudflare change, no tile-proxy, `href` or footer work, so all four items in `## Not this card` stay on their side of the fence. The tile-proxy and campsite assertions elsewhere in the suite predate this change and belong to other cards.
+
+**Scope: what was left half done.** I looked for the two previous findings still open and could not find either.
+
+- The `.htaccess` hole is closed at the source rather than per pattern: `stripHtaccessComments` and `htaccessDirectives` in `scripts/selftest.js` are what both readers now call, the hardening block and the block asserting the app shell is not cached. The guard beside `wantHeaders` re-runs that same list over an all-commented copy, so a pattern added later is covered without anyone remembering.
+- The inline-handler and style-attribute checks now read the `markup` join, which is `index.html` plus every file `sw.js` precaches: `app.js`, `core.js`, `map.js`, `sw.js`. No shipped script is missed. The `eval` check already read that set.
+
+Task 4's fourth item, inline `<script>`, stays on `index.html`, which is the only file where a `<script>` tag can execute.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding: the one `.htaccess` assertion that is purely negative is still vacuously satisfiable, and nothing else covers it.**
+
+In the hardening block of `scripts/selftest.js`, `the HTTPS redirect does not echo the request Host` is `!/RewriteRule.*%\{HTTP_HOST\}/` over the stripped text. No assertion anywhere in the suite requires that a redirect exist: `grep` for `Rewrite` and `forestlocator` finds only that one line. So commenting out, or deleting, the whole `<IfModule mod_rewrite.c>` block in `app/.htaccess` leaves the run green. The card's own **Why** makes HTTPS load-bearing rather than cosmetic, because iOS grants `navigator.geolocation` only to secure origins, and that is the failure mode the redirect exists to prevent.
+
+This is the same shape as the defect the strip was added to close, and it survives the strip because `stripHtaccessComments` only helps assertions that require a directive to be present. The comment above the guard says a commented-out directive turns the run red; for the redirect it does not. The fix is one positive assertion that the literal-host `RewriteRule` is present, sitting beside the existing negative one.
+
+VERDICT: defect
+
