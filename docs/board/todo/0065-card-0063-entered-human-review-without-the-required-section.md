@@ -149,3 +149,56 @@ one named path. That is card `0066`, and it is the seventh in this series.
 **Could not settle from the repository:** whether the reviewer's breakage finding on `0063` should
 cost that card a tick. That is exactly the call the new section asks for, and this build does not
 make it.
+
+### 2026-09-11 review (v20260911053131-7a22)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Both criteria trace to the real file.
+
+**Criterion #1.** In `docs/board/human-review/0063-card-0060-entered-human-review-without-the-required-section.md`, the check named by the criterion itself, `grep -c '^## What I need from you'`, returns `1`. The heading sits on line three of the file, directly under the title, with the next heading `## Why` far below. Exactly one hit, in the right place.
+
+**Criterion #2.** The ask, the pass and the fail all sit in the first bold paragraph under the heading, in one unbroken block. The ask is the untick-or-correction question. The pass names the two routes. The fail names leaving the card as it stands. Counted as strict text lines the block runs to five, because the heading and two blank lines come first. The criterion is marked `proves: manual`, so it asks a reader's judgement, and a reader meets all three parts in one paragraph before anything else.
+
+I tried to break it on the earlier reviewer's ground, which faulted card `0062` because its pass sat far below its ask, after a rule and two paragraphs. That fault does not exist here. Ask, pass and fail are in the same paragraph, above the rule.
+
+I found nothing to fault.
+
+VERDICT: sound
+
+**scope: sound**
+
+I attacked the scope of this build and could not break it.
+
+**What the build commit actually touched.** Commit `f8a150a` names three paths, all markdown under `docs/board/`: the target card `0063` in `human-review/`, the build's own card `0065`, and a new `0066` in `todo/`. Nothing under `app/`, `scripts/` or `data/`.
+
+**Every fence in `## Not this card` held.** The diff of the `0063` card is a single insertion hunk between the title and `## Why`. Its `AC:BEGIN` block is byte-identical, both boxes still `[x]`, its thread untouched, and it is still in `human-review/` as a modify rather than a rename. No lane check was built and nothing in `C:\Dev\ProgressBoard` was touched.
+
+**The previous build's scope defect is not repeated.** The `0064` build moved its own card between lanes inside its build commit. Here every lane move is a separate scheduler commit: `af08e54`, `8c43ef0`, `9f7cdcd`. The build commit moves nothing.
+
+**Raising `0066` is declared, not quiet.** It is marked `OUT-OF-SCOPE` on the thread, and it is a faithful renumber of the raised card, 19 lines changed against 19.
+
+**The lane re-grep matches what the note reports.** Only the `0064` card is still named, and it entered the lane before this build.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**breakage: defect**
+
+**Finding: the repair the last reviewer named was not made, and the faulty sentence was copied forward into the card this build raised.**
+
+The review at the bottom of `docs/board/human-review/0064-card-0062-entered-human-review-without-the-required-section.md`, finding 4, says the new card names card `0020` in its `## Plan` while `0020` is absent from that card's `## Links`, and states the repair as "one `## Links` line on `0065`".
+
+In `docs/board/ai-review/0065-card-0063-entered-human-review-without-the-required-section.md`, `## Plan` still reads "the deliberate `0020` file-size red", and its `## Links` lists `0063`, `0064`, `0062`, `0060`, `0059`, `0056`, `0053`, `0055` and no `0020`. The build then wrote the identical sentence into `docs/board/todo/0066-card-0064-entered-human-review-without-the-required-section.md`, whose `## Links` also omits `0020`. Same file also hard-codes `306 passed, 1 failed`, a figure that rots the first time a test is added, on a card in a series about figures going stale.
+
+That is the series' own inheritance fault repeating: a rule held in one card's `## Links` and broken in the next.
+
+The edit to `0063` itself is accurate: 193 to 217 lines, one anchored hit, and the suite claim it corrects matches `scripts/selftest.js`.
+
+VERDICT: defect
+
