@@ -1,5 +1,43 @@
 # Five `human-review/` cards have no `## What I need from you`, and two of them raised the fault
 
+## What I need from you
+
+**Pick one of two routes and write your answer at the bottom of this card. Doing neither is the fail,
+and it is what has happened three times already: this card is fully ticked, so every unattended run
+finds nothing open and the loop promotes it back here on the boxes.**
+
+1. Send this card back to `todo/` so a builder corrects the two wrong sentences it wrote, or
+2. Leave it here and let a new card carry that correction, and say so here.
+
+---
+
+**What's wrong.** The reviewer passed both of this card's criteria and still returned it. The
+sections it wrote are in the right place and read well. Two sentences inside them are untrue:
+
+- The section it wrote into card `0056` says the eleven cards `0056` lists have all left the lane.
+  Two are still in it, `0032` and `0038`. The same section then says a lane-named check would pass
+  even with every section stripped out, and that is false while those two are there.
+- The sections it wrote into `0056` and `0053` each say that card "carries the heading nowhere". This
+  card's own work added the heading, so both sentences were untrue the moment they were saved.
+
+**Cause.** Nothing structural. The builder described the lane from the state before its own change,
+and nothing re-read it afterwards.
+
+**Pass** is either of:
+
+- this card in `todo/` with a note saying the two sentences are the job, or
+- a new card raised for the correction and this card free to move on.
+
+**Fail** is leaving it as it is. The card returns here on the next promotion and nobody reads it.
+
+**Why it needs you.** No untick is available to a builder or a reviewer here. Both criteria were
+judged sound, so unticking one would be recording a failure that did not happen, and a reviewer is
+forbidden from touching acceptance at all. Only you can say whether a sound card with two false
+sentences in its output goes back or goes on.
+
+**Note on length.** This card is past the 100-line budget and this pass could not bring it back.
+`## Comments` is append-only and holds most of the file.
+
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card

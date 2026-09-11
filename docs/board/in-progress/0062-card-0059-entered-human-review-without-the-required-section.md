@@ -36,23 +36,23 @@ this repository.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md`
+- [x] #1 WHEN `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md`
       is searched for the heading `## What I need from you` anchored to the start of a line, THE CARD
       SHALL return exactly one hit, directly under its title. proves: none - this project's suite is
       one node script over the app and cannot read the board; the check is
       `grep -c '^## What I need from you' <path>`, run against that path rather than against a lane
-- [ ] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
+- [x] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
       is, within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the review verdicts above it, and use the ask already
+- [x] Read the card's last comment entry and the review verdicts above it, and use the ask already
       there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget afterwards, and say on it if it is not
-- [ ] Re-run the anchored grep over the whole lane and report which cards still miss the heading
+- [x] Check the card is still inside the 100-line budget afterwards, and say on it if it is not
+- [x] Re-run the anchored grep over the whole lane and report which cards still miss the heading
 
 ## Plan
 Work in this repository, on the branch the session was given. Only that one card file changes;
@@ -87,3 +87,54 @@ card states the ask, the pass and the fail in the first three lines under its ti
 **2026-09-11** Raised by card `0060` on its last task, re-running the anchored grep over the lane
 after writing the three sections it carried. That card's scope was three named paths, and this one
 entered the lane after those were chosen, so it was written up rather than fixed in passing.
+
+**2026-09-11** RESULT: done
+TESTS: +0 new, unchanged at 306 passed / 1 failed - the known deliberate `0020` file-size red
+TOUCHED: docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md
+TOUCHED: docs/board/todo/0063-card-0060-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/in-progress/0062-card-0059-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: 0063
+
+**No test was written, and neither criterion asked for one.** `#1` says `proves: none` and `#2` says
+`proves: manual`, so the test-first rule does not apply to either. **The harness cannot express `#1`
+in any case**, and that is a fact about this repository rather than an excuse: the suite is
+`node scripts/selftest.js` over `app/` and `scripts/`, and the only board file it opens is to measure
+card sizes. What was run instead is the criterion's own named check, watched at zero before the
+change:
+
+    grep -c '^## What I need from you' docs/board/human-review/0059-...-again.md   # 0 before, 1 after
+
+The suite was run to show nothing broke: 306 passed, 1 failed. **The one failure is the deliberate
+red** the brief names, `no board card is too large for the agent file reader`, card `0020` at
+209.8 KB. It was red before this work and is untouched by it. There is no PHP suite here, so
+`.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+
+**The ask was taken from the card, not invented.** `0059` came back with both criteria graded
+`sound` and one `breakage: defect`, and the scheduler's stanza then asked for an untick or a reason
+the finding is wrong. **Neither is available here, and the section says so.** A reviewer graded both
+criteria sound, so unticking one would record a failure that did not happen. The defect is two untrue
+sentences the card wrote into other cards' sections: that `0056`'s eleven subjects have all left the
+lane, when `0032` and `0038` are still in it, and that `0056` and `0053` "carry the heading nowhere",
+which this card's own work had just made false. Both are a builder's edit behind a fully ticked card,
+so the section asks Rob to choose between sending `0059` back to `todo/` for that edit and raising a
+new card for it.
+
+**The reviewer's finding was re-measured, not copied.** `0032` and `0038` are both in
+`docs/board/human-review/` today, so the two-still-in-the-lane claim holds.
+
+**Nothing inside `0059` was acted on, unticked or moved**, per this card's `## Not this card` fence.
+No acceptance block, thread, verdict or lane changed, and nothing under `app/` or `scripts/` was
+touched.
+
+**No count is written into the new section.** It names `0032` and `0038` because the finding is about
+those two files, and both are named in `0059`'s own `## Links` chain; no figure and no lane total
+appears.
+
+**The card is past the 100-line budget and this pass could not bring it back.** It was 216 lines
+before and is 254 after. The new section says so under "Note on length". `## Comments` is append-only
+and holds most of the file.
+
+**Lane re-grep, anchored, after the change.** `grep -rLE '^## What I need from you'
+docs/board/human-review/*.md` names one file, `0060`. It was already in the lane when this card's
+scope was set to the single path `0059`, so it was raised as `0063` in `todo/` rather than fixed in
+passing.
