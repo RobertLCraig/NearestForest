@@ -194,3 +194,196 @@ A reader of `0064` alone still learns a false thing about the suite, which is ho
 
 VERDICT: defect
 
+### 2026-09-11 review
+
+A second adversarial pass, started against `7d0fe26` with the card still in `ai-review/`. The review
+above landed at 05:22 while this one was measuring, and it moved the card to `todo/` — which is where
+these verdicts send it too, so this entry is appended where the card now sits and no further lane
+move was made. It disagrees with parts of the entry above and says so with evidence, under
+**dissent** at the end.
+
+**suite**
+
+I ran `node scripts/selftest.js` from `C:\Dev\NearestForest`. It exists and it runs: `306 passed,
+1 failed`. The one failure is
+`no board card is too large for the agent file reader — docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md is 206.8 KB`,
+the single deliberate red `docs/HANDOVER.md` and card `0055` declare. Card `0020` is not in this
+build's diff, so the red pre-dates the work. No second failure. The build note's `306 / 1` and its
+`206.8 KB` both match what I saw.
+
+**The suite does read the board, and I confirmed that myself rather than taking the note's word.**
+`scripts/selftest.js` line 2836 prints `--- board cards fit the agent file reader (card 0055) ---`;
+lines 2843-2856 set `LIMIT = 200 * 1024`, walk every lane directory under `docs/board/` and fail any
+`.md` over it. The block above it, `card 0020 quotes the raw OSM feature count correctly`, also opens
+a board card, and here it PASSED rather than SKIPped, so `data/raw/osm` is present on this machine.
+This card's corrected `## Plan` is right on both points and the sentence it replaced was wrong.
+
+`php C:\Dev\ProgressBoard\artisan board:convention --path="C:\Dev\NearestForest" --cards` prints
+`NearestForest  0  38  0066  C:\Dev\NearestForest` — 0 failing cards out of 38. That check is known
+to miss some link forms, so I read the links by hand as well; see **breakage**.
+
+VERDICT: sound
+
+**acceptance: sound**
+
+**Criterion #1 — one anchored hit, directly under the title.** I ran the criterion's own named check
+against the one named path:
+`grep -c '^## What I need from you' docs/board/human-review/0062-card-0059-entered-human-review-without-the-required-section.md`
+returns `1`. `head -4` shows line 1 the title, line 2 blank, line 3 the heading; the next heading is
+`## Why` at line 40. Directly under the title, exactly one copy in the file.
+
+**It really was zero before.** `git show 7d0fe26^:<that path> | grep -c '^## What I need from you'`
+returns `0`. The check was watched from nothing to one, as the note says.
+
+**The check is not one that always passes.** `grep -rLE '^## What I need from you'
+docs/board/human-review/*.md` still names
+`docs/board/human-review/0063-card-0060-entered-human-review-without-the-required-section.md`.
+
+**Criterion #2 — ask, pass and fail in the first three lines under the title.** Counted strictly it
+fails: lines 2-4 under the title are a blank, the heading itself and another blank, so the ask begins
+on line 5, the fail lands on line 6 and the two routes on lines 8-11. Counted fairly it holds. I
+counted strictly first and then judged fairly, and I am saying which. The criterion says
+`proves: manual` and calls this a reader's judgement; a reader opening the file meets the ask and a
+fail in one bold two-line paragraph, with the two routes that constitute the pass immediately under
+it, all in one unbroken block above the fold. The reviewers of `0062` and `0063` met the identical
+criterion on near-identical sections, noted the same strict-count failure, and declined to fault it.
+Grading it a defect here would make the same section pass and fail on the same board in one day.
+
+I could not fault either criterion.
+
+VERDICT: sound
+
+**scope: sound**
+
+**What the commit touched.** `git show 7d0fe26 --stat --name-status`: three paths, all markdown under
+`docs/board/`. Nothing under `app/`, nothing under `scripts/`, no data, no code.
+
+**Every fence in `## Not this card` held.** The diff of
+`docs/board/human-review/0062-card-0059-entered-human-review-without-the-required-section.md` is one
+hunk, `@@ -1,5 +1,40 @@`, inserting the new section between the title and `## Why` and changing
+nothing else. No reviewer finding inside `0062` was acted on. Its `<!-- AC:BEGIN -->` block is
+unchanged and both boxes are still `[x]`. Its thread is untouched. It is still in `human-review/`
+(`M`, not a rename). No check that refuses a card entering the lane was built, and nothing in
+`C:\Dev\ProgressBoard` was touched.
+
+**The edit to this card's own `## Plan` is inside the fence, and I looked for a reason to say
+otherwise.** `## Not this card` fences work inside `0062` and building a lane check; it says nothing
+about the card's own working sections, and `## Plan` is not append-only — the board's rule is that it
+is deleted at `done/`. The correction is marked in place with its date and reason, so a reader can
+see what the session was handed and what it changed. It is the one thing that stops this series
+copying the disproved sentence forward a seventh time. The new `- 0055` line in `## Links` is the
+same: `0055` is named in the thread, and the board's link rule requires it in `## Links` with a
+reason, which it now has. Neither is over the fence.
+
+**Raising `0065` is not over the fence either.** It is declared `OUT-OF-SCOPE: 0065` on the thread,
+it is how this board has raised every follow-up in this series, and the reviewer of `0063` blessed
+the same move in as many words. The alternative was fixing `0063` in passing, which the fence forbids.
+
+I tried to find something over the fence and could not.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I re-measured every factual claim in the build note dated 2026-09-11 rather than reading it. Four are
+wrong, two of them flatly. The rules the note certifies against all held; what failed is the
+measuring, which on this card's own subject is the thing that matters.
+
+**Finding 1: "It names `0059` once" is false. It names it twice.**
+`sed -n '3,38p' docs/board/human-review/0062-...md | grep -on '0[0-9][0-9][0-9]'` returns two hits,
+at file lines 7 and 13: "a builder can repair the section this card wrote into card `0059`" and
+"both about the section it wrote into card `0059`". That sentence is the build's own certification
+against the link rule this series has already been returned on, so a miscount inside it is the same
+shape of fault as the one being repaired. The rule itself holds: `0059` is the only card number in
+the new section, and it is in `0062`'s `## Links` with its reason. The note says "already in **this
+card's** `## Links`", meaning `0064`'s, when the rule is about the host card's; `0059` is in both, so
+nothing turns on that part.
+
+**Finding 2: "It was 198 lines before and is 232 after" is false, and the note gives the growth two
+different ways, both wrong.** `wc -l` and `awk 'END{print NR}'` both give **197** before
+(`git show 7d0fe26^:<path>`) and **232** after. Both revisions end in a newline (`tail -c 1 | od -c`
+prints `\n` on each), so there is no off-by-one in the counting. Git agrees: the hunk header is
+`@@ -1,5 +1,40 @@` and the stat is `35 +++++`, so the card grew by **35** lines, not the 34 the note
+claims one paragraph earlier. 197 + 35 = 232 is the only self-consistent set.
+
+**Finding 3: "The edited card is 15.2 KB" is measured in different units from the check it is cited
+against.** The file is 15,180 bytes. `scripts/selftest.js` line 2854 reports size as
+`(c.size / 1024).toFixed(1)` against `LIMIT = 200 * 1024`, so by the metric of the block the sentence
+is arguing about, the card is **14.8 KB**. The conclusion ("nowhere near the limit") survives; the
+figure quoted at the reader does not match the tool it names.
+
+**Finding 4: the new card `0065` names a card number absent from its own `## Links`, and carries a
+suite count that will rot.**
+`docs/board/todo/0065-card-0063-entered-human-review-without-the-required-section.md`, in `## Plan`:
+"Expect `306 passed, 1 failed`, the failure being the deliberate `0020` file-size red that
+`docs/HANDOVER.md` declares and card `0055` carries." `0065`'s `## Links` lists `0063`, `0064`,
+`0062`, `0060`, `0059`, `0056`, `0053` and `0055` — **`0020` is not among them**. This build added a
+`## Links` entry for `0055` on its own card for exactly that reason and did not do the same for
+`0020` on the card it raised. `306` is also a hand-typed figure that goes stale the first time a test
+is added, written into the card that continues a series whose subject is hand-typed figures going
+stale. It sits in `## Plan` rather than in a `## What I need from you` section, so it breaks no
+stated prohibition, and `0020` is named with its meaning in the same clause rather than truly bare —
+which is why this is one finding and not two.
+
+**What I checked and could not fault.** The new section in `0062` carries no count that can rot:
+"two routes" counts its own list, "both criteria" and "two other lenses" are fixed history in an
+append-only thread, and "the board's 100-line budget" is a constant from `docs/board/README.md` that
+the card's own task list ordered the session to write. The note's "No figure, no lane total and no
+other number appears" is therefore overstated — the 100-line figure appears — but writing it was
+compelled by the card, so I am not faulting it. The ask is faithful to what the reviewer found: the
+verdicts on `0062` are acceptance sound, scope defect, breakage defect, and the section says "passed
+both acceptance criteria and then returned the card on two other lenses", names the two defects as
+hand-typed figures and prose card numbers, and makes unticking the fail. That is the reviewer's
+record rather than a restatement of it.
+
+**What the repair is.** Four sentences in a new `## Comments` entry and one `## Links` line on
+`0065`. No rework and no untick: both criteria are sound and stay ticked.
+
+VERDICT: defect
+
+**dissent from the 05:22 review above, with evidence**
+
+Two of its three findings do not survive re-measurement, and one rests on a git artefact.
+
+**Its breakage finding is built on a rename-detection artefact.** It says "`git log` shows the whole
+file was created by the build commit `7d0fe26`, so the build typed that sentence", meaning criterion
+#1's "cannot read the board". The file was not created by `7d0fe26`.
+`git show 7d0fe26^:docs/board/todo/0064-card-0062-entered-human-review-without-the-required-section.md`
+returns an 89-line card carrying that exact acceptance text, and
+`git log --diff-filter=A` on that path names **`37a3622`**, the `0063` build, as its creator. It
+looks like an add in `--stat` only because git's rename detection paired `todo/0064` with `todo/0065`
+at 63% similarity and had no pairing left for `ai-review/0064`. So the build inherited that sentence
+rather than typing it, and "acceptance text is not this card's to edit" is the defence it looks like.
+The same entry adds that the build "rewrote the identical sentence in the `## Acceptance` of `0065`".
+It did not: `0065` criterion #1 reads "the suite here is one node script and asserts nothing about
+card headings", which is a corrected sentence and is true. The underlying observation still stands —
+a reader of `0064`'s acceptance alone learns a false thing about the suite — and it is worth fixing
+when this card is next opened. The reasoning offered for it is not what happened.
+
+**Its acceptance finding grades the same section the board passed twice today.** The reviewers of
+`0062` and `0063` applied this identical criterion to near-identical sections, recorded the identical
+strict-count failure, and declined to fault it on the ground that `proves: manual` makes it a
+reader's judgement. The two fails it calls contradictory are two distinct failure modes — doing
+nothing, and unticking a sound criterion — and both are true.
+
+**Its scope finding names a real fact and I weigh it differently.** The build did move `0064` from
+`todo/` to `ai-review/` inside `7d0fe26`, where `0063` got `board:` move commits of its own, and the
+`TOUCHED:` line still names the `todo/` path the same commit vacated. That is untidy bookkeeping.
+It breaches nothing in `## Not this card`, which fences work inside `0062` and building a lane check,
+and a built card has to reach `ai-review/` somehow. I record it as an observation.
+
+**security**
+
+This card produced no code, so the board's three security questions have nothing to attack. Evidence:
+`git show 7d0fe26 --stat` lists three files, all `.md` under `docs/board/`, and `--name-status`
+confirms no path under `app/`, `scripts/` or `data/`. No entry point, no input, no output, nothing
+that runs. `docs/board/README.md` says a card that produced no code skips this, and I am recording
+that rather than omitting it.
+
+**browser**
+
+No user-facing surface, so no browser run. I confirmed that from the diff rather than from the card's
+say-so: the only files in `7d0fe26` are three markdown cards under `docs/board/`, and nothing under
+`app/` was added, changed or deleted, so no screen of the app differs at this commit from the one
+before it. There is nothing a browser could be pointed at that this build would change.
+
