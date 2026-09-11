@@ -1,5 +1,39 @@
 # Close the open tile proxy
 
+## What I need from you
+
+**One call, and I would take the first.** Send this card back to `todo/` so a builder closes the
+2026-09-11 finding, **or** write on this thread that the finding is wrong and let the card stand.
+Doing neither is the fail: it returns to this lane unchanged on the next run.
+
+**What's wrong.** The map's tile proxy counts how many tiles one address has asked for, so nobody
+can burn your Thunderforest quota. Two functions in `app/api/tiles.php` disagree about where the
+files live. `readKey()` will find the key in three places, but `counterDir()` looks in one. On any
+deploy that uses either of the other two, the key is found, tiles are served, and the counters
+quietly drop to the shared temporary directory. Anyone else on that server can then create the
+folder first, own the count, and switch the map off for a real visitor with no sign of why. The
+comment above `counterDir()` reads as though that case was closed.
+
+**Cause.** One rule, written twice, in two functions. No self-test builds this case: the suite never
+mentions `counterDir`, and the card's own proof only ever placed a key where `counterDir()` looks.
+
+**Pass** is either of:
+- the card in `todo/` with the first paragraph of this card struck, so a builder makes
+  `counterDir()` share `readKey()`'s list of places, or says in the comment that the counters follow
+  one layout only; or
+- a line here saying the deploy only ever uses the one path, so the finding does not bite.
+
+**Fail** is leaving five ticked boxes and the card in this lane.
+
+**Why it needs you.** Only a person may untick, and the reviewer disproved nothing, so nothing is
+open for an unattended session to pick up. Which deploy layouts this project will ever use is also
+your knowledge, not the repository's.
+
+**The paragraph directly below is stale.** It says nothing here is waiting on Rob. That was true
+after the 2026-09-10 review; the 2026-09-11 review returned the card again, which is why this
+section exists. The paragraph is left as written rather than rewritten, since acting on this card's
+history is not this pass's job.
+
 **Nothing here is waiting on Rob.** The 2026-09-10 review, which Rob asked for in place of a
 decision, found three defects in the layer's behaviour rather than one judgement about his quota.
 All five criteria stay ticked: the review graded acceptance sound both times. The three findings

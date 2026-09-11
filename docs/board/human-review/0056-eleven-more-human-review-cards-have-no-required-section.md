@@ -1,5 +1,44 @@
 # Eleven more `human-review/` cards have no `## What I need from you`
 
+## What I need from you
+
+**One call, and I would take the first.** Untick criterion #1 and send this card to `todo/`, so a
+builder rewrites it, **or** write on this thread that the reviewer is wrong and the card stands.
+Doing neither is the fail: it returns to this lane unchanged on the next run.
+
+**What's wrong.** The eleven sections were written and the reviewer checked every one of them by
+hand. What it disproved is the proof, not the work: criterion #1 names a check that cannot go red,
+for two separate reasons.
+
+1. It names a folder rather than the files. The eleven cards have since moved to other lanes, so the
+   check passes because its subjects are absent. Strip the section out of all eleven today and it
+   still reports a pass.
+2. It is a loose text search, which matches a card's own prose as readily as a real heading. This
+   card mentions the phrase many times over and carries the heading nowhere, so its own check would
+   certify this card as compliant. That is not a thought experiment: this card is now sitting in the
+   lane it was written to clear.
+
+**Cause.** The criterion was written as a sentence, not as a check. Anchoring the search to the
+start of a line, and naming the files by path, costs one character and closes both holes. Card
+`0059` was raised with that shape and is the pattern to copy.
+
+**Pass** is either of:
+- criterion #1 unticked and the card in `todo/`, so a builder rewrites it to an anchored per-path
+  check; or
+- a line here saying the criterion stands as written, with the reason.
+
+**Fail** is leaving both boxes ticked with the card in this lane.
+
+**Why it needs you.** Only a person may untick a criterion, and a reviewer is forbidden from
+touching acceptance, so nothing is open for an unattended session to pick up.
+
+**The reviewer's second finding is already closed.** It said card `0034`'s own ask still quoted a
+stale size for `docs/HANDOVER.md`. `0034` was corrected on 2026-09-10 and is in `done/`, so nothing
+is left to do there.
+
+**Note on length.** This card is past the 100-line budget and this section could not bring it back:
+`## Comments` is append-only and holds most of the file.
+
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card

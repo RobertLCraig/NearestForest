@@ -43,23 +43,23 @@ board tooling: both live in `C:\Dev\ProgressBoard`, outside this repository.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN each of the five card files named above is searched for the heading
+- [x] #1 WHEN each of the five card files named above is searched for the heading
       `## What I need from you` anchored to the start of a line, THE CARD SHALL return exactly one
       hit, directly under its title. proves: none - this project's suite is one node script over the
       app and cannot read the board; the check is `grep -c '^## What I need from you' <path>` per
       file, run against the five paths rather than against a lane
-- [ ] #2 WHEN a reader opens any of the five, THE CARD SHALL state the ask, what a pass is and what
+- [x] #2 WHEN a reader opens any of the five, THE CARD SHALL state the ask, what a pass is and what
       a fail is, within the first three lines under the title. proves: manual - whether an ask is
       legible in three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] For each card, read its last comment entry and the review verdicts above it, and use the ask
+- [x] For each card, read its last comment entry and the review verdicts above it, and use the ask
       already there rather than inventing one
-- [ ] Write `## What I need from you` under each title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under each title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check each card is still inside the 100-line budget afterwards, and say on it if it is not
-- [ ] Re-run the anchored grep over the whole lane and report which cards still miss the heading
+- [x] Check each card is still inside the 100-line budget afterwards, and say on it if it is not
+- [x] Re-run the anchored grep over the whole lane and report which cards still miss the heading
 
 ## Plan
 Work in the NearestForest repository, on the branch the session was given. Only the five card files
@@ -96,3 +96,68 @@ the five states the ask, the pass and the fail in the first three lines under it
 **2026-09-11** Raised by card `0058` while adding `## Links` lines to nine cards. The anchored grep
 was run over the lane to check that this card's own numbers were honest, and it named five files.
 `0058`'s scope is `## Links` lines only, so this was written up rather than fixed in passing.
+
+**2026-09-11** RESULT: done
+TESTS: +0 new, all green apart from the one deliberate red (306 passed, 1 failed)
+TOUCHED: docs/board/human-review/0011-security-response-headers.md
+TOUCHED: docs/board/human-review/0012-close-the-open-tile-proxy.md
+TOUCHED: docs/board/human-review/0053-card-0019-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/human-review/0054-the-campsite-cards-raw-feature-count-is-wrong.md
+TOUCHED: docs/board/human-review/0056-eleven-more-human-review-cards-have-no-required-section.md
+TOUCHED: docs/board/todo/0060-three-more-human-review-cards-have-no-required-section.md
+TOUCHED: docs/board/todo/0061-card-0011-carries-two-comments-threads.md
+TOUCHED: docs/board/in-progress/0059-five-human-review-cards-have-no-required-section-again.md
+OUT-OF-SCOPE: 0060, 0061
+
+**No test was written, and neither criterion asked for one.** `#1` says `proves: none` and `#2` says
+`proves: manual`, so the test-first rule does not apply to either. **The harness cannot express `#1`
+in any case**, and that is a statement about this repository rather than an excuse: the suite is
+`node scripts/selftest.js` over `app/` and `scripts/`, and it does not read `docs/board/`. What was
+done instead is the criterion's own named check, run before the change and watched at zero:
+
+    grep -c '^## What I need from you' <path>   # all five read 0 before, 1 after
+
+The suite was run anyway to show nothing broke: 306 passed, 1 failed. **The one failure is the
+deliberate red** the brief names, `no board card is too large for the agent file reader`, card `0020`
+at 209.8 KB. It was red before this work and is untouched by it. There is no PHP suite here, so
+`.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not exist and were not run.
+
+Wrote `## What I need from you` directly under each of the five titles, taking the ask from the
+scheduler's stanza and the `defect` verdicts already at the bottom of each card rather than inventing
+one. **The five asks are not all the same shape, and saying which is which is the point of the
+sections.** `0053` and `0056` need an untick: each reviewer disproved the criterion's named check, not
+the work, so the criterion has to be rewritten. `0012` and `0054` need no untick at all: each finding
+is a builder's fix behind a full set of ticked boxes, so the ask is to reopen the card, not to correct
+it. `0011` is the one with two live routes, an untick of criterion #7 or a new card for the two loose
+ends, and the section recommends the first and says so.
+
+**Nothing inside the five was acted on, unticked or moved**, per this card's `## Not this card` fence.
+No acceptance block, thread, verdict, lane, or file under `app/` or `scripts/` was changed.
+
+**Two things were checked rather than copied.** `0056`'s reviewer named a second finding, a stale size
+for `docs/HANDOVER.md` in card `0034`'s own ask; `0034` was corrected on 2026-09-10 and is in `done/`,
+so the section says that finding is closed instead of repeating it. `0012` opens with a paragraph
+saying nothing is waiting on Rob, which the 2026-09-11 return made false; the new section names it as
+stale and leaves the paragraph as written, because editing this card's history is not this pass's job.
+
+**No count was written into any section.** The five say "the folder" and "the thread" where an earlier
+batch typed figures that were false three commits later.
+
+**All five are past the 100-line budget and this card could not bring any of them back.** Each says so
+in its own section. `## Comments` and `## Direction` are append-only and hold most of every file.
+
+**Lane re-grep, anchored, at this commit.** `grep -rLE '^## What I need from you'
+docs/board/human-review/*.md` names three files: `0019`, `0021` and `0058`. All three arrived in the
+lane after this card was written, so no earlier card carries them. Raised as `0060` in `todo/`.
+**`0019` is a shape nobody has raised before**: it had the section, Rob answered it on 2026-09-10, a
+later session deleted the answered block, and the card then returned to the lane with nothing under
+its title. That is written into `0060`'s `## Why` because it is a different failure from the
+scheduler's move, and a check that only guards arrival will not catch it.
+
+**One more fault, found and not fixed.** `0011` carries two `## Comments` headings, so its newest
+entries sit in a second thread below a `## Direction` block and two review sections, and a reader who
+finds the first heading reads four-day-old history with no sign the rest exists. Swept every lane:
+`0011` is the only card with it. Raised as `0061` in `todo/`.
+
+`php C:\Dev\ProgressBoard\artisan board:convention --path="$PWD" --cards` reports zero failing cards
+on this worktree, with the two new cards in place.

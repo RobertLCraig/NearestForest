@@ -1,5 +1,33 @@
 # Card 0020's criterion #2 quotes a raw feature count that is five out
 
+## What I need from you
+
+**One call, and I would take the first.** Send this card back to `todo/` so a builder fixes the
+guard the 2026-09-11 reviewer broke, **or** write on this thread that the finding is wrong and the
+card stands. Doing neither is the fail: it returns to this lane unchanged on the next run.
+
+**What's wrong.** The number was corrected and a self-test was added to keep it correct. The
+reviewer broke that test in the way a future session would. The test searches the whole of card
+`0020` for the sentence carrying the count, and that sentence appears twice in the file: once in the
+criterion it is meant to guard, and once in a comment quoting the criterion. Reword the criterion to
+drop the number and the test falls through to the quotation, checks that instead, and stays green.
+
+**Cause.** The search is not anchored to the acceptance block. The comment thread is append-only, so
+the decoy sentence sits in that file for good.
+
+**Pass** is either of:
+- the card in `todo/`, so a builder anchors the search to the `AC:BEGIN` / `AC:END` block, which is
+  one line in `scripts/selftest.js`; or
+- a line here saying the bypass does not matter, with the reason.
+
+**Fail** is leaving the one box ticked with the card in this lane.
+
+**Why it needs you.** The reviewer disproved no criterion, so a reviewer could hand nothing back and
+an unattended session finds nothing open. Only a person can reopen it.
+
+**Note on length.** This card is past the 100-line budget and this section could not bring it back:
+`## Comments` is append-only and holds most of the file.
+
 ## Why
 Card `0020`'s acceptance criterion #2 justifies having no open/closed badge with the clause "since
 only 96 of 8,496 records carry any opening hours". The cached Overpass responses hold **8,501**
