@@ -344,3 +344,5 @@ VERDICT: defect
 **Where it should go.** `todo/`, all three criteria left ticked, to repair the regex. Task 2, the
 phone check, stays open on its own terms: the basemap I used was synthetic, so nobody has still seen
 this over a live Thunderforest tile, and card `0018` owes that trip anyway.
+
+**2026-09-11** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, all 3 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 3 of 3 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
