@@ -1,5 +1,29 @@
 # Card `0060` entered `human-review/` without the required section
 
+## What I need from you
+
+**One answer: does the returned review finding need a criterion unticked, or only a correction to
+this card's own build notes?** Pass is either a tick taken off the acceptance box with the card
+handed back to the build lane, or a line on the thread below saying the finding changes no criterion.
+Fail is leaving the card as it stands, because the loop then promotes it here again on a full
+acceptance box while every build session opening it finds nothing left to do.
+
+---
+
+**What's wrong.** The reviewer returned this card on its breakage lens. It faulted neither acceptance
+criterion, and a reviewer may not edit an acceptance box, so the card arrived here with every box
+ticked and nothing a builder was able to act on.
+
+**Cause.** A build note on the thread below states that this project's one test script cannot read
+the board. That is not true. The script walks every lane and fails any card too large for an agent's
+file reader, so growing a card is inside what it measures. The false statement sits in the notes;
+neither criterion ever mentioned the test script.
+
+**Why it needs you.** A reviewer cannot untick, and a builder may not overrule a reviewer, so the
+loop has no move left to make. Whether a wrong sentence in a build note disproves a criterion that
+never spoke about the test script is a judgement about how strict this board's acceptance boxes are,
+and nothing written in the repository settles it.
+
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card
