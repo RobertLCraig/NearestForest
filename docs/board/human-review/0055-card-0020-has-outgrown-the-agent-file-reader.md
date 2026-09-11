@@ -1,6 +1,3 @@
----
-needs: 0025
----
 # Card 0020's thread has outgrown the reader that has to open it
 
 ## What I need from you
@@ -55,11 +52,9 @@ upstream is the defect rather than the log.
 
 ## Links
 
-**Blocked by**
-- `0025` - it settles where a card's ask sits, and pruning a thread rewrites the card, so doing this
-  first would produce a card that then has to be rewritten again.
-
 **Relates to**
+- `0025` - was this card's blocker and is answered. Option 1, on 2026-09-10: a card's ask stays
+  directly under the title, so there is no rewrite waiting to happen and nothing here to wait for.
 - `0020` - the card that is too large, and the source of the measurement above. Its frontmatter now
   carries `not_for_the_loop:`, which stops the growth but does not shrink what is already there.
 - `0021` - the card-rewrite pass over this whole board. It fixes how cards read; this one is about a

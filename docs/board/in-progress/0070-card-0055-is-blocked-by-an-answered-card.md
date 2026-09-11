@@ -43,18 +43,18 @@ it, and a rule written from one example beyond that is a rule nobody measured.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 THE CARD `0055` SHALL carry no `needs:` naming a settled card, and its `## Links` SHALL
+- [x] #1 THE CARD `0055` SHALL carry no `needs:` naming a settled card, and its `## Links` SHALL
       record `0025` as answered rather than as a blocker. proves: `no open card is blocked by a
       settled card`
-- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every open card whose `needs:`
+- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every open card whose `needs:`
       lists a card number found only in `done/` or `discarded/`. proves: `no open card is blocked
       by a settled card`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Write the assertion first and watch it name `0055` before changing `0055`
-- [ ] Remove `needs: 0025` and move the `Blocked by` line to `Relates to` with the answer on it
-- [ ] Re-run the suite and the board convention check
+- [x] Write the assertion first and watch it name `0055` before changing `0055`
+- [x] Remove `needs: 0025` and move the `Blocked by` line to `Relates to` with the answer on it
+- [x] Re-run the suite and the board convention check
 
 ## Plan
 **Where to stand.** This repository, on a branch of `main`. There is no PHP suite here and no
@@ -92,3 +92,41 @@ not change that count; it is a staleness fault the convention check does not loo
 **2026-09-11** Raised by an unattended run of card `0021`. The 2026-09-11 adversarial pass on that
 card recorded this as its second defect, on that card's thread rather than as a card, and the run
 after it could not act on a finding written in prose about a different card.
+
+**2026-09-11** RESULT: done
+TESTS: +1 new, `no open card is blocked by a settled card`
+TOUCHED: scripts/selftest.js, docs/board/human-review/0055-card-0020-has-outgrown-the-agent-file-reader.md
+OUT-OF-SCOPE: none
+
+**The check, and it went red on the real defect first.** It walks every lane folder, reads the
+`needs:` line out of the frontmatter of every card **not** in `done/` or `discarded/`, and for each
+number on it fails when every file carrying that number sits in one of those two lanes. Written and
+run before `0055` was touched, it printed `0055 in human-review needs 0025, which is in done`. It is
+committed in that red state, one commit before the fix, so the proof is in the history rather than
+in this sentence.
+
+**Then two more runs, because red once and green once only shows it changed its mind.** A scratch
+`needs: 0025, 0071` was put on card `0073` and the run named `0073 in todo needs 0025, which is in
+done` and said nothing about `0071`, which is in `todo/`. That is the discrimination the criterion
+asks for, on one line holding both cases: a settled blocker is named and an open one is not. The
+scratch frontmatter was removed and `git status` confirmed the file byte-identical.
+
+**Only one card was affected, and it was the one the card named.** The sweep reads every open card,
+so the single hit is a measurement rather than an assumption.
+
+**What changed on `0055`.** The `needs: 0025` frontmatter block is gone, and with it the whole
+frontmatter, since that was its only key. Under `## Links`, `0025` moved from `Blocked by` to
+`Relates to` with the answer as its reason line, and the `Blocked by` heading went with it because
+nothing was left under it, which is what keeps `Blocked by` and `needs:` agreeing in both
+directions. The card's ask, its acceptance and its `## Comments` are untouched.
+
+**`0055` is still red and still Rob's.** Its criterion #1 asks whether card `0020`'s thread may be
+pruned, that is `proves: manual`, and nothing here goes near it. The card-size assertion stays red
+until he answers.
+
+**The suite is 306 passed, 3 failed, and none of the three is this card's.** Two are the undeclared
+`requests` module, which is card `0071`. One is `0020` at 206.8 KB, which is `0055` and is
+deliberate. `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` reports
+`NearestForest 0 46 0075`: zero open cards failing, unchanged by this card, as `## Plan` predicted.
+
+**Not checked in a browser.** Nothing this card reaches `app/`.
