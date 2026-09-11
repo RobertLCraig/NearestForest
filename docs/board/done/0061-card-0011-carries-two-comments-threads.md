@@ -143,3 +143,54 @@ the bottom instead of appending to the one already there. The card's guess, that
 its `## What I need from you` section and its lane. `## Direction` is untouched, including the
 `2026-09-07` review inside it; the card names that second-thread-by-another-name as a separate
 question and it is not raised here.
+
+### 2026-09-11 review (v20260911042133-89d3)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked both boxes myself against the file.
+
+**Criterion #1 ÔÇö one `## Comments` heading.** I ran `grep -c '^## Comments'` on `docs/board/human-review/0011-security-response-headers.md`. It returns 1. There is no second copy anywhere in the file.
+
+**Criterion #2 ÔÇö every entry kept, in date order.** I listed all headings and dated entries in that file. Six entries sit under the one thread, in this order: the 2026-09-07 loop stanza, Rob's 2026-09-10 call, the 2026-09-10 review, the 2026-09-10 build note, the 2026-09-11 review, the 2026-09-11 loop stanza. That is date order. No entry is missing.
+
+**I tried to break the "nothing was lost" claim.** I repeated the sorted-line diff myself, against the real build commit `f884cbf` and its parent, not against the commit the log names loosely. The only difference is one removed `## Comments` line. Every other line is byte-identical. So no entry was reworded, merged or dropped. Only position moved.
+
+I could not fault either criterion.
+
+VERDICT: sound
+
+**scope: sound**
+
+I attacked the scope of card `0061` and could not break it.
+
+**The build is one commit.** `f884cbf` touches exactly two files: `docs/board/human-review/0011-security-response-headers.md` and the card's own file. Every other file in the branch summary (`0019`, `0021`, `0058`, `0059`, `0060`, `0062`) belongs to commits `9cf62b4` and the scheduler's lane moves, not to this build.
+
+**The fence holds.** In `0011-security-response-headers.md`, `## Direction` and the `2026-09-07` review inside it are byte-identical before and after. `## Acceptance` still shows 7 of 7 ticked, none unticked. `## What I need from you` is unchanged. The card is still in `human-review/`. Its open `breakage: defect` is untouched.
+
+**No entry lost.** Before the change the file had `## Comments` at two places; the scheduler's `2026-09-11` stanza sat inside the first thread, not in `## Direction`, so moving it did not cross the fence. Afterwards one heading remains and all six entries are present.
+
+**Nothing left half done.** All four tasks are visible on the card: both threads listed, the merge done, the date sets given before and after, and the surviving heading named with the source of the moved entries.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I attacked the merge and could not break it.
+
+**Entry preservation, measured not read.** Sorting every non-blank line of `docs/board/human-review/0011-security-response-headers.md` at commit `f884cbf` and its parent and diffing the two sorted lists returns exactly one line, the removed `## Comments`. Every other line is byte-identical, so no entry was reworded or dropped.
+
+**All seven dated markers survive**, including the `2026-08-10` entry inside `## Direction`, which is untouched.
+
+**Nothing outside the card reads the removed heading.** The only other mentions of "two `## Comments`" are dated log entries inside `0059`, which are records of a past measurement, not live assertions.
+
+**`docs/board/README.md`, section "Comments: one thread"**, says `## Direction` and `## Comments` flow into one thread read in file order. The merged file still puts `## Comments` last, so that rule holds.
+
+**Attacked and not a finding.** The moved scheduler stanza says the finding is "at the bottom of ## Direction", which points at the older `2026-09-07` review. That sentence is the loop's boilerplate and was equally wrong in its old position, so this change did not make it false.
+
+VERDICT: sound
+
