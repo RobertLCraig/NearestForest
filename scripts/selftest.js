@@ -2856,6 +2856,36 @@ console.log('\n--- board cards fit the agent file reader (card 0055) ---');
      tooBig.length === 0, tooBig.join(' | '));
 }
 
+console.log('\n--- one card, one lane (card 0069) ---');
+{
+  // Card 0069: the folder a card sits in IS its state, so a card number holding a file in two
+  // lanes has two states, and the two files are never identical -- different ticks, different
+  // frontmatter, different threads. Sixteen arrived at once when a carry-over commit recreated
+  // each card in the lane it had occupied on another machine, beside the copy that had since
+  // moved on. Nothing complained, because nothing read whether a number appears twice. An
+  // unattended session was then handed the stale copy of 0021 and built against a card six
+  // days behind the live one.
+  // Group by the four-digit number, not by filename: a card can be retitled, and two copies of
+  // 0055 under different slugs are still one card in two places.
+  const boardDir = path.join(ROOT, 'docs', 'board');
+  const byNumber = new Map();
+  fs.readdirSync(boardDir)
+    .map(lane => path.join(boardDir, lane))
+    .filter(d => fs.statSync(d).isDirectory())
+    .forEach(d => fs.readdirSync(d)
+      .filter(f => /^\d{4}-.*\.md$/.test(f))
+      .forEach(f => {
+        const num = f.slice(0, 4);
+        if (!byNumber.has(num)) byNumber.set(num, []);
+        byNumber.get(num).push(path.basename(d));
+      }));
+  const twice = [...byNumber.entries()]
+    .filter(([, lanes]) => lanes.length > 1)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([num, lanes]) => `${num} in ${lanes.sort().join(' and ')}`);
+  ok('no board card appears in two lanes', twice.length === 0, twice.join(' | '));
+}
+
 console.log('\n--- ranking from Brighton ---');
 const rankedF = NF.rank(sites, 'forest', BRIGHTON, '');
 const rankedC = NF.rank(sites, 'carpark', BRIGHTON, '');
