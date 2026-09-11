@@ -361,3 +361,71 @@ run in the real tree: `import yaml` appended to `scripts/make_icons.py`, `import
 `scripts/parse.py`, and `requirements.txt` truncated, which produced the expected five-name red.
 Restored with `git checkout --` and a byte-compare of `requirements.txt` against its backup.
 `git status --short` is empty and `git diff --stat` is empty.
+
+**2026-09-11** RESULT: done, second build
+TESTS: +0 new, `the python dependency list names every third-party import in scripts` unchanged in name
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+**Both findings are fixed and each was proved by putting the fault in front of the check.**
+
+**1. The comment that prescribed a remedy that does not work is gone**, and nothing replaced it with
+a workaround. The install-name-versus-import-name case is now written down as what it is: a limit
+with no escape hatch, red however the file is written, and a code change when a second dependency
+arrives whose two names differ. The comment also carries the other end of the same gap, which the
+review named and the old comment did not: declaring the import name satisfies this check while
+breaking `pip install`. And it carries one line telling the next reader not to put the marker idea
+back without making it work first, because the cheapest way to recreate this defect is to reread the
+old comment and think it was a good idea.
+
+Making the marker real was the other option offered and it was refused. There is one dependency, its
+two names match, and building a parser for a case that does not exist is the adjacent thing this
+board's scope fences are for. What was wrong was a file lying to its reader, and that is what is
+fixed.
+
+**2. A python that cannot answer now names why on every path.** The message read `stdlibRun.stderr`
+only, so the two commonest real failures printed a red ending at the colon. It now reads
+`error.code`, then stderr, then stdout, joined, and falls back to `no output on any channel`.
+Measured, each by pointing `PYTHON` at the thing and running the suite:
+
+| what `PYTHON` was | message before | message now |
+|---|---|---|
+| a path with no file on it | nothing after the colon | `ENOENT` |
+| a `.cmd` node refuses to spawn | nothing after the colon | `EINVAL` |
+| `rundll32.exe`, which exits 0 saying nothing | nothing after the colon | `no output on any channel` |
+
+The pre-3.10 case the review tested already named its traceback through stderr and still does.
+
+**3. An unreadable entry is reported rather than thrown**, which the review listed as a limit and
+is worth the one line: `readFileSync` on a directory named `scratchdir.py` threw `EISDIR` and took
+every assertion after it out of the run. The read is now guarded and the failure is named. Proved by
+creating that directory: the suite completes at `308 passed, 2 failed` naming
+`scripts/scratchdir.py could not be read: EISDIR`, where before it died mid-run. Directory deleted,
+`git status` clean, back to `309 passed, 1 failed`.
+
+**4. Criterion #1's second half is now proved by the test that claims to prove it.** The review was
+right that stripping every comment out of `requirements.txt` left the check green while the criterion
+asks for the three importing scripts to be named beside the dependency. The block now reads the raw
+file text, comments included, and fails when a declared dependency's importing script is not named
+in it. Proved by truncating `requirements.txt` to the single word `requests`: red, naming all three
+of `scripts/build_boundary.py`, `scripts/fetch.py` and `scripts/fetch_campsites.py`. Restored, green.
+
+**5. The file match is now case-insensitive**, so `scripts/UPPER.PY` is read. Windows will run it.
+
+**Left alone, and each is a decision rather than an oversight.** The directory read stays flat,
+because criterion #2 is written over `scripts/*.py` and that is what the repository holds; a nested
+`.py` would need the criterion rewritten first. Dynamic imports through `importlib.import_module`
+and `__import__`, and imports after a statement on the same line, are invisible to any line-based
+check and this codebase uses neither form. The exotic requirements grammars the review listed all
+fail closed, which is the safe direction.
+
+**One correction to the first build entry, which cannot be edited where it sits.** It cites line 473
+of `docs/HANDOVER.md` for the `expect: all passed, 0 failed` text. Its own six-line insertion pushed
+that to line 479, and 473 now holds the first pipeline command. The scope call itself stands: that
+line is card `0032`.
+
+**The suite is 309 passed, 1 failed**, the one red being `0020` at 206.8 KB, which is `0055` and is
+Rob's.
+
+**Not checked in a browser.** This build touches `scripts/selftest.js` only, and nothing under
+`app/`.

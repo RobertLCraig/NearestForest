@@ -2938,9 +2938,15 @@ console.log('\n--- the python dependency is written down (card 0071) ---');
   // whose named recurring defect is checks that cannot fail.
   // The standard library is asked for rather than listed here: python knows its own, and a
   // hard-coded list would flag a new stdlib import as third-party the day it is used.
-  // The comparison is by import name. Where a distribution installs under a different name than
-  // it imports, requirements.txt has to carry the import name in a comment for this to see it;
-  // there is one dependency and the two names match, so that case does not arise yet.
+  //
+  // THE COMPARISON IS BY IMPORT NAME, AND THAT IS A KNOWN LIMIT WITH NO ESCAPE HATCH. A
+  // distribution whose install name differs from its import name -- `beautifulsoup4` importing as
+  // `bs4`, `Pillow` as `PIL` -- goes red here however the file is written, because every comment
+  // is stripped before a line is read. Read from the other end, declaring the IMPORT name satisfies
+  // this check while breaking `pip install`. There is one dependency today and its two names match.
+  // When a second arrives and they do not, this block needs a code change, and that is the honest
+  // state of it. An earlier version of this comment offered a comment-marker workaround that the
+  // parser could not see; do not put it back without making it work first.
   const { spawnSync } = require('child_process');
   const PY = process.env.PYTHON || 'python';
   const PYENV = Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' });
@@ -2953,32 +2959,57 @@ console.log('\n--- the python dependency is written down (card 0071) ---');
   try { stdlib = new Set(JSON.parse(stdlibRun.stdout)); } catch (e) { stdlib = null; }
   if (!stdlib) {
     // No silent skip: python is the whole pipeline, so a python that cannot answer is a failure.
+    // Read all three channels. The two commonest real failures say nothing on stderr: a missing
+    // interpreter reports only through `error`, and the Windows Store stub prints its advert to
+    // stdout and exits 0. Reporting stderr alone left both printing a reason-less red, which is
+    // the exact complaint this card's own `## Why` is about.
+    const why = [
+      stdlibRun.error && (stdlibRun.error.code || stdlibRun.error.message),
+      (stdlibRun.stderr || '').trim(),
+      (stdlibRun.stdout || '').trim(),
+    ].filter(Boolean).join(' / ').slice(0, 300) || 'no output on any channel';
     ok('the python dependency list names every third-party import in scripts', false,
-       `could not read sys.stdlib_module_names from ${PY}: ${(stdlibRun.stderr || '').trim().slice(0, 200)}`);
+       `could not read sys.stdlib_module_names from ${PY}: ${why}`);
   } else {
-    const declared = fs.existsSync(REQ)
-      ? new Set(fs.readFileSync(REQ, 'utf8').split(/\r?\n/)
-          .map(l => l.replace(/#.*$/, '').trim())
-          .filter(Boolean)
-          .map(l => l.split(/[<>=!~\[;]/)[0].trim().toLowerCase())
-          .filter(Boolean))
-      : new Set();
+    const reqText = fs.existsSync(REQ) ? fs.readFileSync(REQ, 'utf8') : '';
+    const declared = new Set(reqText.split(/\r?\n/)
+      .map(l => l.replace(/#.*$/, '').trim())
+      .filter(Boolean)
+      .map(l => l.split(/[<>=!~\[;]/)[0].trim().toLowerCase())
+      .filter(Boolean));
     const missing = [];
-    fs.readdirSync(scriptsDir).filter(f => f.endsWith('.py')).sort().forEach(f => {
-      fs.readFileSync(path.join(scriptsDir, f), 'utf8').split(/\r?\n/).forEach(line => {
+    const importers = new Map();
+    // Flat, and deliberately so: criterion #2 is written over `scripts/*.py`, which is what the
+    // repository holds. readFileSync on a directory named `x.py` would throw and take every later
+    // assertion with it, so the read is guarded and an unreadable file is reported, not skipped.
+    fs.readdirSync(scriptsDir).filter(f => /\.py$/i.test(f)).sort().forEach(f => {
+      let src;
+      try { src = fs.readFileSync(path.join(scriptsDir, f), 'utf8'); }
+      catch (e) { missing.push(`scripts/${f} could not be read: ${e.code || e.message}`); return; }
+      src.split(/\r?\n/).forEach(line => {
         const m = /^\s*(?:import\s+(.+)|from\s+([A-Za-z_][\w.]*)\s+import\b)/.exec(line);
         if (!m) return;
         const mods = m[2] ? [m[2]] : m[1].split(',');
         mods.map(s => s.trim().split(/\s+as\s+/)[0].split('.')[0])
           .filter(Boolean)
           .forEach(mod => {
-            if (mod === '' || mod === '__future__' || stdlib.has(mod)) return;
-            if (declared.has(mod.toLowerCase())) return;
-            missing.push(`scripts/${f} imports ${mod}`);
+            if (mod === '__future__' || stdlib.has(mod)) return;
+            if (!declared.has(mod.toLowerCase())) { missing.push(`scripts/${f} imports ${mod}`); return; }
+            if (!importers.has(mod)) importers.set(mod, []);
+            if (!importers.get(mod).includes(f)) importers.get(mod).push(f);
           });
       });
     });
-    if (!fs.existsSync(REQ) && missing.length === 0) missing.push('requirements.txt does not exist');
+    if (!reqText && missing.length === 0) missing.push('requirements.txt does not exist');
+    // Criterion #1's second half: the file names the scripts that import each dependency, so a
+    // reader knows what breaks without it. Read against the raw text, comments included, because
+    // that is where a human-readable list belongs. Without this the criterion named a test that
+    // settled only half of itself.
+    importers.forEach((files, mod) => files.forEach(f => {
+      if (!reqText.includes(`scripts/${f}`)) {
+        missing.push(`requirements.txt declares ${mod} without naming scripts/${f}, which imports it`);
+      }
+    }));
     ok('the python dependency list names every third-party import in scripts',
        missing.length === 0, [...new Set(missing)].join(' | '));
   }
