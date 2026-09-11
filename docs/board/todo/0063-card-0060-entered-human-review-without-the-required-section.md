@@ -136,3 +136,56 @@ one named path. That is card `0064`, and it is the fifth in this series.
 
 **Could not settle from the repository:** whether either reviewer finding on `0060` is right. That is
 the call the new section asks for, and this build does not make it.
+
+### 2026-09-11 review (v20260911045527-2824)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Both boxes check out against the real file.
+
+**Criterion #1.** I ran `grep -c '^## What I need from you'` on `docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md`. It returns 1. I read the top of the file. The title is line one, the heading is the next heading, above `## Why`. No second copy anywhere in the file.
+
+**Criterion #2.** The first block under the heading is one bold paragraph. Its first sentence gives the ask, two named routes. Its second sentence names the pass. Its third names the fail. Ask, pass and fail all sit inside that one block.
+
+**I tried to break it.** Counted as raw lines, the heading itself eats the first two lines under the title, so the ask starts on the fourth. The criterion says `proves: manual` and calls this a reader's judgement. A reader meets ask, pass and fail in one unbroken block at the top. I will not fault that.
+
+**The check is not one that always passes.** The same anchored sweep over the lane still names `docs/board/human-review/0062-card-0059-entered-human-review-without-the-required-section.md`, which this card puts out of scope and raises as `0064`.
+
+I could not fault either criterion.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check on the build for card 0063.**
+
+**What was touched.** The build commit `37a3622` changes three files: the card `0060` in `human-review/`, its own card, and a new `0064` in `todo/`. Nothing under `app/` or `scripts/`.
+
+**The fence held.** In `docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md`, the only change is the new `## What I need from you` block at the top. No acceptance box was unticked, no thread entry edited, no lane moved, and neither reviewer finding was acted on. That is exactly what `## Not this card` allows. The lane move of `0062` and the renumber to `0064` come from scheduler commits, not from this build.
+
+**Nothing grew.** Raising `0064` is declared `OUT-OF-SCOPE` on the thread, and this board raises follow-ups that way.
+
+**One task landed on a different file.** The task said to check the 100-line budget and say so on the card if it is over. The budget note is on the build's own card in `docs/board/ai-review/0063-...md`, under `## Comments`, not on `0060`. The build states the reason: a hand-typed figure inside the ask is what a reviewer returned the previous card for. `0060` is 239 lines and mostly append-only thread, so nothing there was fixable anyway. I will not fault that.
+
+I tried to find something over the fence and could not.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding: the change asserts the suite cannot see the board, and the suite does.**
+
+`scripts/selftest.js`, in the block printed as `board cards fit the agent file reader (card 0055)`, walks every lane under `docs/board/` and fails any card over 200 KB. The block above it, `card 0020 quotes the raw OSM feature count correctly`, also reads a board card. So the board is inside what the suite measures.
+
+The build note in `docs/board/ai-review/0063-card-0060-entered-human-review-without-the-required-section.md`, under `## Comments`, says "the suite is one node script over `app/` and cannot read the board" and "this card touched nothing the suite reads". Both are false. The change added 34 lines to a card in a lane the size check sweeps.
+
+The same false claim is copied forward into `docs/board/todo/0064-card-0062-entered-human-review-without-the-required-section.md`, under `## Plan`: "nothing under `app/` or `scripts/` is involved, so `node scripts/selftest.js` cannot see this either way". The next builder in this series will inherit it and will not think to re-run the size check after growing a card.
+
+Nothing is red today. `0020` at 206.8 KB is the only failure, and it pre-dates this work.
+
+VERDICT: defect
+
