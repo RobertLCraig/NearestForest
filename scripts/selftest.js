@@ -2833,6 +2833,29 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
   }
 }
 
+console.log('\n--- board cards fit the agent file reader (card 0055) ---');
+{
+  // Card 0055: a session sent to work card 0020 could not read it. The whole-file read limit
+  // is 200 KB and that card's comment thread had grown past it, so every run on it started
+  // with a truncated view. The defect is upstream of the log -- something kept writing with
+  // nothing new to say -- but the reader is what breaks, so the reader's limit is what this
+  // measures. Every lane, because a card moves between them and the limit does not.
+  const LIMIT = 200 * 1024;
+  const boardDir = path.join(ROOT, 'docs', 'board');
+  const tooBig = fs.readdirSync(boardDir)
+    .map(lane => path.join(boardDir, lane))
+    .filter(d => fs.statSync(d).isDirectory())
+    .flatMap(d => fs.readdirSync(d)
+      .filter(f => f.endsWith('.md'))
+      .map(f => path.join(d, f)))
+    .map(p => ({ p, size: fs.statSync(p).size }))
+    .filter(c => c.size > LIMIT)
+    .map(c => `${path.relative(ROOT, c.p).replace(/\\/g, '/')} is `
+              + `${(c.size / 1024).toFixed(1)} KB`);
+  ok('no board card is too large for the agent file reader',
+     tooBig.length === 0, tooBig.join(' | '));
+}
+
 console.log('\n--- ranking from Brighton ---');
 const rankedF = NF.rank(sites, 'forest', BRIGHTON, '');
 const rankedC = NF.rank(sites, 'carpark', BRIGHTON, '');

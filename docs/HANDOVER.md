@@ -14,6 +14,9 @@ dataset of Scottish forest car parks exists. Map complete (bundled outline plus 
 project's recurring defect**, not a closed chapter: four were fixed on 2026-09-10 and a reviewer
 found two more the same day, both in builds whose notes claimed a red-proof that had not been done.
 A green run means more than it did. Assume there are others and keep looking.
+**`node scripts/selftest.js` is deliberately red on exactly one assertion**, `no board card is too
+large for the agent file reader`: card `0020` is 209.8 KB against a 200 KB reader limit, and only
+Rob may prune a comment thread. Card `0055` carries the ask. Do not exempt the card to get green.
 **This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and
 every one was stale within a day, so the rule now is: **list the folder, do not read a number.**
 `ls docs/board/todo` and `ls docs/board/in-progress` are what an agent can pick up;

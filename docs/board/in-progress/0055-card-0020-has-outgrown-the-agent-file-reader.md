@@ -3,6 +3,37 @@ needs: 0025
 ---
 # Card 0020's thread has outgrown the reader that has to open it
 
+## What I need from you
+
+**One answer, and the suite is red until it comes.**
+
+1. May the twenty near-identical run entries on card `0020` be pruned down to one paragraph?
+   Yes / no.
+
+---
+
+**Why it is your call.** `docs/board/README.md` permits pruning a comment thread only when a person
+decides to, so criterion #1 says `proves: manual` and no unattended run may close it.
+
+**Why the suite is red.** Criterion #2 is built: `scripts/selftest.js` now fails if any card under
+`docs/board/` is over the 200 KB whole-file read limit. The only card over it is `0020`, at
+**209.8 KB**. The check is doing its job; the run reads:
+
+```
+FAIL  no board card is too large for the agent file reader
+      — docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md is 209.8 KB
+```
+
+It goes green the moment `0020` is under the limit. No other card is near it.
+
+**If yes, what gets cut.** The 20 entries that each open `RESULT: partial` and close on `#8 needs a
+person`. What is worth keeping from them is the list of parser and fetcher faults they found and the
+self-tests that now watch each one, which is a paragraph. Nothing is deleted until each entry's
+measurements are checked against `docs/DATA-MODEL.md` and `docs/DECISIONS.md` and anything missing
+is moved there first.
+
+**If no,** the alternative is to raise the limit in the check, and that defeats the check.
+
 ## Why
 **A session sent to work card `0020` cannot read the card.** On 2026-09-09 the file reader refused
 it: `0020-campsites-tab-from-openstreetmap.md` is **208 KB, over the 200 KB whole-file limit**, so
@@ -46,7 +77,7 @@ to #7 are met and watched by 279 self-tests.
       THE FILE SHALL be under the 200 KB whole-file read limit, with every measurement, decision and
       finding it carried still findable somewhere in the repository. proves: manual - only Rob may
       decide to prune a thread, per `docs/board/README.md`.
-- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail if any card under `docs/board/`
+- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail if any card under `docs/board/`
       exceeds 200 KB, so the next one is caught before a reader is. proves: `no board card is too
       large for the agent file reader`
 <!-- AC:END -->
@@ -57,7 +88,7 @@ to #7 are met and watched by 279 self-tests.
       `docs/DECISIONS.md`. What outlived a build belongs there, not on the thread. Move what is
       missing, then cut. Use the `check nothing was lost by diffing numbers` method: grep the
       deleted figures and URLs against the whole tree rather than reading the prose.
-- [ ] Add the size assertion to `scripts/selftest.js`, beside the other repository-shape checks.
+- [x] Add the size assertion to `scripts/selftest.js`, beside the other repository-shape checks.
 
 ## Plan
 Stand in the NearestForest repository, on a branch of `main`. Run `node scripts/selftest.js` first;
@@ -80,3 +111,39 @@ a fresh `Read` of the card returns the whole file rather than the read-size hook
 
 **2026-09-09** Raised by the twenty-first unattended run of card `0020`, which found the card
 unreadable at its own session start and had no criterion left it could close.
+
+**2026-09-11** RESULT: partial
+TESTS: +1 new, red: `no board card is too large for the agent file reader`
+TOUCHED: scripts/selftest.js, docs/board/in-progress/0055-card-0020-has-outgrown-the-agent-file-reader.md
+OUT-OF-SCOPE: none
+
+Built #2, left #1 open. #1 says `proves: manual` on its own face, and the README permits pruning a
+thread only when a person decides to, so an unattended run may not close it. The ask is now at the
+top of this card.
+
+**The new check walks every lane folder under `docs/board/` and fails on any `.md` over 200 KB**
+(204,800 bytes), naming each offender and its size in KB. It sits with the other repository-shape
+checks, after the card `0020` raw-count check that already reads the board.
+
+**Red-proof, three runs.** Written first, run first, and red on the real defect rather than on a
+fixture: `306 passed, 1 failed`, naming
+`docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md is 209.8 KB`. Then, to show it is
+not a check stuck red, a scratch copy with `LIMIT` raised to 300 KB, patch confirmed present by
+`grep -c` before running, gave `307 passed, 0 failed`. Then, to show it reads every lane and not
+just the one the defect happens to sit in, a 320 KB scratch file dropped into `docs/board/done/` was
+caught by that same 300 KB copy. Both scratch files were deleted and their absence checked.
+
+**The suite is red at HEAD, on purpose, and only on this one assertion.** Criterion #2 is written as
+"THE SUITE SHALL fail if any card exceeds 200 KB", and one card does, so the criterion is met by the
+run being red. It turns green when `0020` is pruned, which is #1, which is Rob's. The alternative
+was an exemption for `0020`, and a check with a hole cut in it for the only thing it catches is this
+project's named recurring defect rather than a fix.
+
+209.8 KB, not the 208 KB the Why section measured on 2026-09-09: the card took a further comment
+entry in between. Both readings are over the limit and neither is wrong.
+
+**What I could not settle from the repository.** Whether a pruned thread should keep its entry dates
+as a one-line index, or collapse to a paragraph with no dates at all. The README says the writer
+upstream is the defect and does not say what the remains should look like. Left for the prune.
+
+**Not checked in a browser.** Nothing here reaches `app/`, so there is nothing to look at.
