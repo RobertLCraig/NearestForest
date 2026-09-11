@@ -3038,7 +3038,8 @@ console.log('\n--- the python dependency is written down (card 0071) ---');
     ok('the python dependency list names every third-party import in scripts', false,
        `could not read sys.stdlib_module_names from ${PY}: ${why}`);
   } else {
-    const reqText = fs.existsSync(REQ) ? fs.readFileSync(REQ, 'utf8') : '';
+    const reqExists = fs.existsSync(REQ);
+    const reqText = reqExists ? fs.readFileSync(REQ, 'utf8') : '';
     const declared = new Set(reqText.split(/\r?\n/)
       .map(l => l.replace(/#.*$/, '').trim())
       .filter(Boolean)
@@ -3056,18 +3057,29 @@ console.log('\n--- the python dependency is written down (card 0071) ---');
       src.split(/\r?\n/).forEach(line => {
         const m = /^\s*(?:import\s+(.+)|from\s+([A-Za-z_][\w.]*)\s+import\b)/.exec(line);
         if (!m) return;
-        const mods = m[2] ? [m[2]] : m[1].split(',');
+        // Cut a trailing comment before splitting. `import os  # noqa` used to report a module
+        // called "os  # noqa", which is a false red naming something that does not exist.
+        const mods = m[2] ? [m[2]] : m[1].replace(/#.*$/, '').split(',');
         mods.map(s => s.trim().split(/\s+as\s+/)[0].split('.')[0])
           .filter(Boolean)
           .forEach(mod => {
             if (mod === '__future__' || stdlib.has(mod)) return;
-            if (!declared.has(mod.toLowerCase())) { missing.push(`scripts/${f} imports ${mod}`); return; }
+            if (!declared.has(mod.toLowerCase())) {
+              // Say what the honest fix is, here and not only in the comment above. The cheapest
+              // way out of this red is to declare the IMPORT name, which goes green and breaks
+              // `pip install` when the two names differ. Whoever reads the failure needs that.
+              missing.push(`scripts/${f} imports ${mod}, which requirements.txt does not list`
+                + ' (list the name pip installs, not the name python imports, and name this file beside it)');
+              return;
+            }
             if (!importers.has(mod)) importers.set(mod, []);
             if (!importers.get(mod).includes(f)) importers.get(mod).push(f);
           });
       });
     });
-    if (!reqText && missing.length === 0) missing.push('requirements.txt does not exist');
+    // An absent file and an empty one are different facts and used to print the same sentence.
+    // A present, empty requirements.txt over stdlib-only scripts is correct and must pass.
+    if (!reqExists && missing.length === 0) missing.push('requirements.txt does not exist');
     // Criterion #1's second half: the file names the scripts that import each dependency, so a
     // reader knows what breaks without it. Read against the raw text, comments included, because
     // that is where a human-readable list belongs. Without this the criterion named a test that

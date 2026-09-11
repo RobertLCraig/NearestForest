@@ -632,3 +632,44 @@ truncated and restored with `git checkout --`. Everything else ran in `%TEMP%` a
 with CRLF line endings under `core.autocrlf`, so the working file differs byte-for-byte from the
 copy I took beforehand while its blob hash is identical to `HEAD`. Nothing tracked changed, and the
 check parses both, which a CRLF fixture confirmed.
+
+**2026-09-11** RESULT: done, third build
+TESTS: +0 new, no assertion renamed
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+**The second review passed this card and I have fixed its three recorded findings anyway**, because
+a finding parked on a card in `done/` is a finding nobody picks up, which is what cards `0070` and
+`0076` both exist because of. Each is one line and each was put in front of the check before and
+after.
+
+**1. A trailing comment on a plain import no longer makes up a module.** `import os  # noqa` was
+reported as `scripts/make_icons.py imports os  # noqa`, naming something that does not exist and
+sending the reader to look for it. The comment is cut before the line is split. Proved by appending
+that exact line to `scripts/make_icons.py`: red before, green now, restored with `git checkout --`.
+
+**2. An empty requirements file and a missing one are different facts and now read differently.**
+The existence test was `!reqText`, so a present but empty file over stdlib-only scripts reported
+`requirements.txt does not exist`, which is false. It reads `fs.existsSync` again. Proving it needed
+the condition built rather than described, since this repository's scripts do import a third-party
+module: the three `import requests` lines were commented out on scratch copies, and then a present
+empty file passes while an absent one reports it is absent. All four files restored with
+`git checkout --` and `git status` confirmed clean.
+
+**3. The failure message now carries the warning that was only in the comment.** The review's
+sharpest point was that the cheapest exit from an `imports bs4` red is to declare `bs4`, which goes
+green and breaks `pip install`, and that the comment saying so is above code the reader may never
+open. The red now reads `scripts/X imports bs4, which requirements.txt does not list (list the name
+pip installs, not the name python imports, and name this file beside it)`. Proved by appending
+`import bs4` to `scripts/make_icons.py`.
+
+**Left alone.** The substring risk the review was asked to press did not exist: naming one script
+does not satisfy another whose name contains it, in either direction, because the path prefix and
+the extension pin both ends. `scripts/fetch.pyc` satisfying `scripts/fetch.py` is contrived and
+stays. Stale names in `requirements.txt` are still uncaught, which is a different assertion.
+
+**The suite is 310 passed, 1 failed**, the one red being `0020` at 206.8 KB, which is `0055` and is
+Rob's. The second review's note is right that my previous entry's 309 was true when written and that
+card `0069` added an assertion afterwards.
+
+**Not checked in a browser.** This build touches `scripts/selftest.js` only.
