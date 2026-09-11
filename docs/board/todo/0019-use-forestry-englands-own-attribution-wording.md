@@ -654,3 +654,63 @@ neither is quietly dropped.
 `0057` earlier today. **No browser check, and that is a claim rather than a skip**: this build
 touched only `scripts/selftest.js`, and the footer already has browser evidence twice on this thread,
 mine and the reviewer's.
+
+### 2026-09-11 review (v20260911023838-dd33)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I traced each of the 8 criteria to real code.
+
+- **#1** `app/index.html` footer paragraph: "Crown Copyright, courtesy Forestry England, licensed under the Open Government Licence", plus a separate car park sentence naming OGL v3.0. Self-test pins both in the footer block of `scripts/selftest.js` (the `flat`-based block).
+- **#2** No personal-use claim in that paragraph; guard `the footer makes no personal-use claim` tests `/personal use/i`, and the HTML comment writes it hyphenated, so it cannot self-satisfy.
+- **#3** "not affiliated with Forestry England or with Forestry and Land Scotland" present, asserted.
+- **#4** Two `ok()` calls assert both strings against a whitespace-flattened copy.
+- **#5** Scottish sentence now uses generic wording, and the test also pins the ABSENCE of "Crown Copyright, Forestry and Land Scotland", so the old clone cannot return.
+- **#6** `ATTRIBUTION` in `scripts/parse.py`, written into `build_dataset`, names all three agencies.
+- **#7** `the footer and the dataset credit name the same agencies` parses the `ATTRIBUTION` constant out of parse.py and compares names with the footer.
+- **#8** `the shipped dataset credit names every agency in it` reads `DATA.attribution` from `app/data/sites.json`; I read that file and it carries all three names.
+
+I tried the two known false-pass routes (the four-word substring guard, and the comment satisfying the personal-use test). Both are closed.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Scope check, plain words.**
+
+Over the fence: I found nothing. The Forestry Commission wording in `app/index.html` (footer paragraph), in `ATTRIBUTION` in `scripts/parse.py`, and in the `ok()` call in `scripts/selftest.js` was put there by card `0022`, which is in `done/` and says so in its own log. It is not this card's growth. The map, the store text and the extra date were all left alone, as `## Not this card` asks.
+
+Left half done: `docs/DATA-MODEL.md`, the `sites.json` header example, still prints the retired value:
+
+```
+"attribution": "Contains public sector information licensed under the Open Government Licence v3.0.",
+```
+
+The real file now carries the four-credit string from `ATTRIBUTION` in `scripts/parse.py`. So the data model document describes a field value that no longer exists. The 2026-09-08 review named this exact file in the same finding the build says it fixed, and the build touched only `app/index.html`, `scripts/parse.py` and `scripts/selftest.js`. The fix is one line in the document.
+
+`Deploy` is openly unticked. That is declared, not hidden.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding ÔÇö `docs/DATA-MODEL.md` still documents the retired credit.**
+
+The canonical-representation JSON block in `docs/DATA-MODEL.md`, under "Canonical representation", shows the `attribution` field as:
+
+```
+"attribution": "Contains public sector information licensed under the Open Government Licence v3.0.",
+```
+
+`ATTRIBUTION` in `scripts/parse.py` now stamps four sentences naming Forestry England, Forestry and Land Scotland and the Forestry Commission, and `app/data/sites.json` carries that. So the data model doc describes a value the generator can no longer produce, and it shows the exact string this card exists to retire.
+
+This is the one record of the obligation nothing pins. The footer is pinned by the wording tests in `scripts/selftest.js`, the generator is pinned by the footer/parse.py drift check there, and the shipped file is pinned by `the shipped dataset credit names every agency in it`. The doc is pinned by nothing, so it is the next place the credit rots, and a person reading it to write a consumer would copy the wrong line. Both earlier review passes named this file and it is still wrong today.
+
+Everything else I tried held: the drift check reads `ATTRIBUTION` out of `scripts/parse.py` by regex and fails if the names disagree, and `app/api/nearest.php` reads no attribution field.
+
+VERDICT: defect
+
