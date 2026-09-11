@@ -2886,6 +2886,49 @@ console.log('\n--- one card, one lane (card 0069) ---');
   ok('no board card appears in two lanes', twice.length === 0, twice.join(' | '));
 }
 
+console.log('\n--- blockers outlive their answers (card 0070) ---');
+{
+  // Card 0070: `needs:` is the board's work order and is read in both directions, so a blocker
+  // that names an already-answered card misreports what is stuck behind what, and it costs the
+  // reader a page load to find that out. One card cleared a stale `needs: 0025` from itself and
+  // left the identical line on the other card naming the same answered blocker, and nothing here
+  // read for it, so it survived a day and a review that recorded it only in prose.
+  // Settled means answered, which is done/ and discarded/ and no other lane: docs/board/README.md
+  // is explicit that an answered card goes back to a work lane and is open work again there.
+  const boardDir = path.join(ROOT, 'docs', 'board');
+  const lanesOf = new Map();
+  fs.readdirSync(boardDir)
+    .map(lane => path.join(boardDir, lane))
+    .filter(d => fs.statSync(d).isDirectory())
+    .forEach(d => fs.readdirSync(d)
+      .filter(f => /^\d{4}-.*\.md$/.test(f))
+      .forEach(f => {
+        const lane = path.basename(d);
+        if (!lanesOf.has(f.slice(0, 4))) lanesOf.set(f.slice(0, 4), []);
+        lanesOf.get(f.slice(0, 4)).push({ lane, file: path.join(d, f) });
+      }));
+  const SETTLED = ['done', 'discarded'];
+  const stale = [];
+  [...lanesOf.entries()].forEach(([num, where]) => {
+    where.filter(w => !SETTLED.includes(w.lane)).forEach(w => {
+      const head = fs.readFileSync(w.file, 'utf8').split(/\r?\n/);
+      if (head[0].trim() !== '---') return;
+      const end = head.indexOf('---', 1);
+      const needs = head.slice(1, end < 0 ? 1 : end)
+        .filter(l => /^needs:/.test(l))
+        .flatMap(l => l.replace(/^needs:/, '').split(','))
+        .map(s => s.trim()).filter(Boolean);
+      needs.forEach(dep => {
+        const depLanes = (lanesOf.get(dep) || []).map(x => x.lane);
+        if (depLanes.length && depLanes.every(l => SETTLED.includes(l))) {
+          stale.push(`${num} in ${w.lane} needs ${dep}, which is in ${[...new Set(depLanes)].join(' and ')}`);
+        }
+      });
+    });
+  });
+  ok('no open card is blocked by a settled card', stale.length === 0, stale.sort().join(' | '));
+}
+
 console.log('\n--- ranking from Brighton ---');
 const rankedF = NF.rank(sites, 'forest', BRIGHTON, '');
 const rankedC = NF.rank(sites, 'carpark', BRIGHTON, '');
