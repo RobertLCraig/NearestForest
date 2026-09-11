@@ -151,3 +151,46 @@ lane when this card's scope was fixed to the single path `0062`, so it was raise
 whether this series should continue at all. The first is the call the new section asks for. The
 second is written on `0065` and is Rob's, because the mover that creates the fault is in
 `C:\Dev\ProgressBoard`, outside this repository and outside every card in the series.
+
+### 2026-09-11 review (v20260911051949-1aa8)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+Criterion #1 holds. In `docs/board/human-review/0062-card-0059-entered-human-review-without-the-required-section.md`, `grep -c '^## What I need from you'` returns 1, and the heading sits directly under the title with no second copy.
+
+Criterion #2 does not hold. It asks for the ask, the pass and the fail within the first three lines under the title. In that same file, the first block under the heading gives the ask ("Pick one of the two routes below") and states the fail ("Doing neither leaves this card parked in the lane for ever, and that is the fail"). It does not state the pass. The pass is a separate bolded block much further down, after the numbered routes, a horizontal rule, a "What's wrong" paragraph and a "Cause" paragraph. A second, different fail ("Fail is unticking a criterion") sits below that and contradicts the fail given at the top, so a reader who stops at three lines takes away the wrong fail.
+
+The build's own comment entry defends this by pointing at the reviewer's ruling on card `0063`. That ruling turned on ask, pass and fail sitting in one unbroken block. Here they do not. The tick on #2 is not supported by the file.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Finding: the build moved its own card between lanes inside its build commit.**
+
+Commit `7d0fe26` is the only commit that touches `docs/board/ai-review/0064-card-0062-entered-human-review-without-the-required-section.md`, and in the same commit the file `docs/board/todo/0064-...md` disappears. So the build promoted card `0064` from `todo/` into `ai-review/` itself.
+
+Every other lane move in this board's history is a separate scheduler commit with a `board:` subject: `ef09483`, `87c69d2`, `caea625`, `e286fac`, `149868f`, `1dea232`. The comparable previous build, `37a3622`, changed only card files and let `e286fac` do the move afterwards.
+
+The card's `## Plan` says "Work in this repository, on the branch the session was given. Only that one card file changes." Its `## Tasks` list contains no lane move. The `TOUCHED:` lines in its own `## Comments` entry name the `todo/` path for `0064`, so the thread does not record where the file actually ended up. That is a change the card did not ask for and a record that does not match the tree.
+
+The `0062` fence held: no acceptance box, thread entry, verdict or lane changed there, and nothing under `app/` or `scripts/` was touched.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding: the false claim the last reviewer rejected is copied forward again, in a file this build wrote from scratch.**
+
+In `docs/board/ai-review/0064-card-0062-entered-human-review-without-the-required-section.md`, under `## Acceptance`, criterion #1 still says the project suite "is one node script over the app and cannot read the board". `scripts/selftest.js`, in the block `board cards fit the agent file reader (card 0055)`, walks every lane under `docs/board/` and fails a card over 200 KB, so the board is inside what the suite reads. That sentence is the exact thing the 2026-09-11 breakage review on card `0063` graded a defect.
+
+The build's own `## Comments` entry on the same file calls the sentence "imprecise" and says "acceptance text is not this card's to edit". That defence does not hold. `git log` shows the whole file was created by the build commit `7d0fe26`, so the build typed that sentence. In the same commit it rewrote the identical sentence in the `## Acceptance` of `docs/board/todo/0065-card-0063-entered-human-review-without-the-required-section.md`. One rule, two places, fixed in one.
+
+A reader of `0064` alone still learns a false thing about the suite, which is how this series keeps inheriting it.
+
+VERDICT: defect
+
