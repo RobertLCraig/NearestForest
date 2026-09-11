@@ -49,12 +49,20 @@ it, and a rule written from one example beyond that is a rule nobody measured.
 - [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every open card whose `needs:`
       lists a card number found only in `done/` or `discarded/`. proves: `no open card is blocked
       by a settled card`
+- [x] #3 THE SUITE SHALL also fail when that card number is in `ai-review/`, or carries an entry
+      marked `**Decided:**` in any lane, because `docs/board/README.md` calls both settled.
+      proves: `no open card is blocked by a settled card`
+- [x] #4 WHEN a card's frontmatter cannot be read reliably, THE SUITE SHALL fail naming that card
+      rather than reading it as carrying no blockers. proves: `every needs: on this board can be
+      read`
 <!-- AC:END -->
 
 ## Tasks
 - [x] Write the assertion first and watch it name `0055` before changing `0055`
 - [x] Remove `needs: 0025` and move the `Blocked by` line to `Relates to` with the answer on it
 - [x] Re-run the suite and the board convention check
+- [x] Widen `settled` to what the board README actually says, and prove each half separately
+- [x] Make every unreadable frontmatter shape report rather than pass
 
 ## Plan
 **Where to stand.** This repository, on a branch of `main`. There is no PHP suite here and no
@@ -317,3 +325,75 @@ cards in `todo/`, `done/` and `discarded/` were deleted, `docs/board/done/0007-m
 was restored from a copy taken before it was edited, and `git status --short` is empty. The
 red-commit board was reconstructed in a temp directory outside the repository and never in the
 working tree; no `git stash`, `add`, `mv`, `rm` or `commit` was run.
+
+**2026-09-11** RESULT: done, second build
+TESTS: +1 new, `every needs: on this board can be read`; `no open card is blocked by a settled card` widened
+TOUCHED: scripts/selftest.js, docs/board/human-review/0075-two-cards-wait-on-a-decision-you-already-made.md (new)
+OUT-OF-SCOPE: 0075 (raised, not fixed)
+
+**The finding is accepted in full and it was the right call.** `SETTLED` was `done` and `discarded`,
+and the comment above it cited `docs/board/README.md` for the opposite of what that file says. The
+README treats `ai-review/` as settled in the same sentence as the other two, and then says an
+answered card is settled "in whatever lane it is sitting in", and it says that specifically to warn
+against the lane-only test I wrote. Two criteria have been added rather than the existing two
+reworded, so nothing that was claimed before is quietly restated.
+
+**Settled is now three lanes or an answer.** `done/`, `discarded/`, `ai-review/`, or a card carrying
+an entry marked `**Decided:**` wherever it sits. Proved as four separate runs against a scratch
+probe card, each one a single change from the last:
+
+| probe | result |
+|---|---|
+| blocker sits in `ai-review/` | named, "which is in ai-review" |
+| same file moved to `todo/` | silent |
+| same file in `todo/`, carrying `**Decided:** Option 1` | named, "which is answered on its own thread" |
+| same file, the entry rewritten as steering under `## Decided` | silent |
+
+The second and fourth rows are the point. A check that names everything is not a check.
+
+**Placement under `## Decided` is deliberately NOT read as an answer, and the review's own remedy
+would have made this worse.** It offered widening to "an answered card in any lane", and the obvious
+reading of that on this board is the `## Decided` heading, because two cards use it. One of those is
+`0018`, whose only entry there reads "I am still on the fence about what to ask them for". Card
+`0027` says in as many words that there is nothing to send until `0018` is answered. Inferring from
+the heading names `0027`'s live blocker as stale and pushes somebody to clear it, which is a worse
+failure than the miss it closes. So the marker is the rule, the reason is in the code comment, and
+the cost is on the board rather than hidden.
+
+**That cost is card `0075`, in `human-review/`.** Card `0016` is answered Yes and built, carries no
+marker because it predates the merged thread, and `0017` and `0020` both still declare they need it.
+This check cannot see it. `0075` asks Rob for the one line that makes it visible, and says the suite
+is meant to go RED naming both cards the moment he pastes it. Applying that mark myself is answering
+in his name, which is the one thing `human-review/` exists to prevent.
+
+**Every shape that failed open now reports.** The review listed the seam and it was real: a single
+trailing space on a closing `---` hid a live blocker. A second assertion, `every needs: on this board
+can be read`, fails on anything the parse cannot trust. Eight shapes were put in front of it, each
+restored before the next:
+
+| shape | before | now |
+|---|---|---|
+| closing `---` with a trailing space | silent | blocker named |
+| frontmatter opened and never closed | silent | reported as unreadable |
+| `Needs:` rather than `needs:` | silent | reported, naming the key as written |
+| `needs: [0025, 0071]` | silent | blocker named |
+| `needs: 25` | silent | reported as not a four-digit number |
+| `needs: 0025 - it settles the ask` | silent | blocker named |
+| `needs:` at column zero in the body, no frontmatter | silent | reported with its line number |
+| a settled and an open number on one line | open one named too | only the settled one named |
+
+**Left as it was, with the reason.** A `needs:` naming a number no card on this board carries is
+still silent. That is a dangling reference rather than a stale blocker, it is a different fault, and
+naming it under this assertion would make the name a lie. Dynamic and mid-line forms are out of
+reach of any line-based read.
+
+**One correction to the first build entry, which cannot be edited where it sits.** It says "only one
+card was affected" and calls that a measurement. Under the definition it used that was true; under
+the README's definition it was not, and the three cards carrying `needs:` today are `0017`, `0020`
+and `0027`. The first two are `0075`. The third is correctly still blocked.
+
+**The suite is 310 passed, 1 failed**, the one red being `0020` at 206.8 KB, which is `0055` and is
+Rob's. `board:convention` is unchanged.
+
+**Not checked in a browser.** This build touches `scripts/selftest.js` and one new card, and nothing
+under `app/`.

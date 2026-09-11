@@ -2893,8 +2893,24 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
   // reader a page load to find that out. One card cleared a stale `needs: 0025` from itself and
   // left the identical line on the other card naming the same answered blocker, and nothing here
   // read for it, so it survived a day and a review that recorded it only in prose.
-  // Settled means answered, which is done/ and discarded/ and no other lane: docs/board/README.md
-  // is explicit that an answered card goes back to a work lane and is open work again there.
+  //
+  // SETTLED IS NOT A LANE TEST, and the first build of this check got that wrong.
+  // docs/board/README.md says a board renders `needs:` treating `done/`, `discarded/` AND
+  // `ai-review/` (built, with only its acceptance pending) as settled, and then says a card that
+  // has been answered "is settled too, in whatever lane it is sitting in", because answering moves
+  // a card back to a WORK lane. A lane-only test therefore reads an answered card as an open
+  // blocker for ever, which is the failure that README paragraph exists to warn about.
+  //
+  // An answer is an entry marked `**Decided:**`. PLACEMENT UNDER A `## Decided` HEADING IS NOT
+  // READ AS ONE, and that is a measured call rather than laziness. Card 0018's only `## Decided`
+  // entry is Rob writing "I am still on the fence about what to ask them for", and card 0027 says
+  // in as many words that there is nothing to send until 0018 is answered. Inferring an answer from
+  // the heading would name 0027's live blocker as stale and push somebody to clear it, which is a
+  // worse failure than the miss it would close.
+  // The cost of that call is recorded rather than hidden: card 0016 IS answered ("Yes", 2026-08-18)
+  // and built, carries no `**Decided:**` marker because it predates the merged thread, and cards
+  // 0017 and 0020 both still declare they need it. This check does not catch that pair. Card 0075
+  // carries the ask.
   const boardDir = path.join(ROOT, 'docs', 'board');
   const lanesOf = new Map();
   fs.readdirSync(boardDir)
@@ -2907,26 +2923,53 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
         if (!lanesOf.has(f.slice(0, 4))) lanesOf.set(f.slice(0, 4), []);
         lanesOf.get(f.slice(0, 4)).push({ lane, file: path.join(d, f) });
       }));
-  const SETTLED = ['done', 'discarded'];
+  const SETTLED_LANES = ['done', 'discarded', 'ai-review'];
   const stale = [];
+  const malformed = [];
+  // Why a card is settled, said in the reader's words, or null.
+  const settledBecause = (num) => {
+    const where = lanesOf.get(num) || [];
+    if (!where.length) return null;                       // names no card on this board: not ours
+    const lane = where.find(w => SETTLED_LANES.includes(w.lane));
+    if (lane) return `in ${lane.lane}`;
+    const answered = where.find(w => /^\s*(?:\*\*\d{4}-\d{2}-\d{2}\*\*\s*)?\*\*Decided:\*\*/m
+      .test(fs.readFileSync(w.file, 'utf8')));
+    return answered ? 'answered on its own thread' : null;
+  };
+  // The frontmatter parse is hand-rolled, so every shape it cannot read reliably is REPORTED.
+  // Silently reading a malformed block as "no blockers here" is the check-that-cannot-fail shape
+  // this project keeps being caught by: one trailing space on a closing `---` hid a real blocker.
   [...lanesOf.entries()].forEach(([num, where]) => {
-    where.filter(w => !SETTLED.includes(w.lane)).forEach(w => {
-      const head = fs.readFileSync(w.file, 'utf8').split(/\r?\n/);
-      if (head[0].trim() !== '---') return;
-      const end = head.indexOf('---', 1);
-      const needs = head.slice(1, end < 0 ? 1 : end)
-        .filter(l => /^needs:/.test(l))
-        .flatMap(l => l.replace(/^needs:/, '').split(','))
-        .map(s => s.trim()).filter(Boolean);
-      needs.forEach(dep => {
-        const depLanes = (lanesOf.get(dep) || []).map(x => x.lane);
-        if (depLanes.length && depLanes.every(l => SETTLED.includes(l))) {
-          stale.push(`${num} in ${w.lane} needs ${dep}, which is in ${[...new Set(depLanes)].join(' and ')}`);
+    where.filter(w => !SETTLED_LANES.includes(w.lane)).forEach(w => {
+      const lines = fs.readFileSync(w.file, 'utf8').split(/\r?\n/);
+      if (lines[0].trim() !== '---') {
+        // No frontmatter at all is the common, correct case. A `needs:` at column zero in the body
+        // is not: it is a blocker no view can show, which the README forbids in as many words.
+        const loose = lines.findIndex(l => /^needs\s*:/i.test(l));
+        if (loose >= 0) malformed.push(`${num} in ${w.lane} carries a needs: line outside frontmatter, at line ${loose + 1}`);
+        return;
+      }
+      const end = lines.findIndex((l, i) => i > 0 && l.trim() === '---');
+      if (end < 0) { malformed.push(`${num} in ${w.lane} opens frontmatter and never closes it`); return; }
+      const fm = lines.slice(1, end);
+      fm.forEach((l) => {
+        const m = /^(\s*)(needs)(\s*):(.*)$/i.exec(l);
+        if (!m) return;
+        if (m[1] !== '' || m[2] !== 'needs' || m[3] !== '') {
+          malformed.push(`${num} in ${w.lane} writes its needs key as "${l.trim().split(':')[0]}", which no reader of this board looks for`);
+          return;
         }
+        m[4].replace(/[[\]]/g, ' ').split(',').map(s => s.trim()).filter(Boolean).forEach(tok => {
+          const dep = /^(\d{4})\b/.exec(tok);
+          if (!dep) { malformed.push(`${num} in ${w.lane} needs "${tok}", which is not a four-digit card number`); return; }
+          const why = settledBecause(dep[1]);
+          if (why) stale.push(`${num} in ${w.lane} needs ${dep[1]}, which is ${why}`);
+        });
       });
     });
   });
   ok('no open card is blocked by a settled card', stale.length === 0, stale.sort().join(' | '));
+  ok('every needs: on this board can be read', malformed.length === 0, malformed.sort().join(' | '));
 }
 
 console.log('\n--- the python dependency is written down (card 0071) ---');
