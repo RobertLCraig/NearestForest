@@ -156,3 +156,48 @@ to three named paths. That is card `0062`.
 
 **Could not settle from the repository:** whether any of the three findings is right. Each section
 offers the alternative of saying so on the thread, and none of them answers the question for Rob.
+
+### 2026-09-11 review (v20260911034328-5a74)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked both boxes myself.
+
+**Criterion #1 ÔÇö one anchored hit, right under the title.** I ran `grep -c '^## What I need from you'` on each of the three paths. Each returns 1. I also listed the headings in order: in `0019-use-forestry-englands-own-attribution-wording.md` and `0058-the-link-check-reports-zero-while-nine-cards-carry-a-bare-number.md` the title sits under the YAML frontmatter and the new heading is the next heading, above `## Why`. In `0021-rewrite-this-board-s-cards-for-the-reader.md` the heading follows the title directly. No card has a second copy.
+
+**Criterion #2 ÔÇö ask, pass and fail in the first three lines under the title.** Each section opens with one bold paragraph. It names two routes, says which the writer would take, and closes with "Doing neither is the fail". So ask, pass and fail all sit inside the opening paragraph. Each card then repeats them under explicit **Pass** and **Fail** headings lower down.
+
+**Tried to break it.** I re-ran the lane sweep `grep -rLE '^## What I need from you' docs/board/human-review/*.md`. It names only `0059-five-human-review-cards-have-no-required-section-again.md`, which the log declares out of scope and raises as card `0062`. So the check is not one that always passes, and the three named paths are genuinely fixed.
+
+I found nothing the acceptance lens can fault.
+
+VERDICT: sound
+
+**scope: defect**
+
+Scope check on card `0060`.
+
+**Fence held.** In `docs/board/human-review/0019-...md`, `0021-...md` and `0058-...md` the only change is the new `## What I need from you` block inserted under the title. No `## Acceptance` box was touched, no `## Comments` entry edited, no card moved out of the lane. The `0059` and `0060` lane moves in the branch are separate scheduler commits, not the build commit `9cf62b4`. Nothing under `app/`, `scripts/` or `docs/board/README.md` changed. The new card `0062` is growth, but raising rather than fixing is this board's practice and the log declares it out of scope.
+
+**One task left half done.** `## Plan` says "Do not write a count into a section", because hand-typed figures go stale. All three new sections carry them. `0019`'s section says "All eight criteria are met" and "came back with 8 of 8 ticked", while the same section asks Rob to send the card to `todo/` so a builder adds a **ninth** criterion. The figure goes stale by the very action the section requests. `0021`'s section says "6 of 6 ticked" and `0058`'s says "3 of 3 ticked" and "one of the 39 lines it added", each stale the moment a box moves.
+
+The build's log states "No count is written into any of the three sections." That claim is false as written.
+
+VERDICT: defect
+
+**breakage: defect**
+
+Finding, breakage lens.
+
+**The new section on `0021` breaks `0021`'s own criterion #3.** In `docs/board/human-review/0021-rewrite-this-board-s-cards-for-the-reader.md`, the added `## What I need from you` names card `0058` ("Card `0058`, written the same day, records the red") and card `0055` (its stale `needs: 0025`). Neither number appears in that card's `## Links` section, which lists only `0025`, `progressboard#0065`, `progressboard#0066`, `0023` and `0024`. Criterion #3 on that same card says a card naming another "SHALL name it in a `## Links` section with the relationship type and one line of why, and SHALL NOT leave a bare card number in a sentence as the only mention of it." Both mentions are in `## What I need from you`, which is editable, so the append-only defence does not apply here.
+
+This is the exact fault card `0058` exists to measure, added by the pass that was told not to write a count and to point at the file instead. The other two are clean: `0019`'s section names no card, and `0058`'s section names `0024`, `0026` and `0028`, all three already under its `## Links`.
+
+Headings themselves hold: one anchored hit per file, each directly under the title, and the lane sweep now names only `0059`, which was raised as `0062`.
+
+VERDICT: defect
+
