@@ -327,3 +327,62 @@ before page scripts, and `fetch` patched to reject only `boundary.json` while co
 **Not fixed, deliberately.** The map still does not retry while it is open; reopening is the recovery
 and the text now says so. A timer or a retry button is more code than the fault is worth, and the
 button that recovers it is already on screen.
+
+### 2026-09-11 review (v20260911015452-a3c5)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each box against the real code.
+
+- **#1 offline draw.** `loadBoundary` and `draw` in `app/map.js` read only `data/boundary.json`; that file and `map.js` sit in `ASSETS` in `app/sw.js` under the bumped `CACHE`. Tiles start off: `init` reads `nf.tiles` and `setTiles` defaults false, so no other request goes out.
+- **#2 own position.** `draw` in `app/map.js` paints your dot last at 7px with an inverted fill and ink ring, unlike the small site dots. `show` calls `fitToInterest`, which frames you plus the nearest six.
+- **#3 same sheet.** `onUp` in `app/map.js` calls `hooks.onPick`, wired in `app/app.js` to `openSheet`, the same function the list rows use. The Navigate button lives in that sheet.
+- **#4 tab filter.** `draw` uses `hooks.getSites`, which returns `RENDERED`, set by `render` in `app/app.js` from `NF.rank` with the active tab. The map cannot disagree with the list.
+- **#5 pan and zoom.** `onDown`, `onMove`, `onUp`, `zoomAbout`, `clampView` and `computeScaleLimits` in `app/map.js`. `viewBbox` gives bounds even with no outline, so the clamp still holds.
+- **#6 loud build.** `build` and `main` in `scripts/build_boundary.py` collect `failures`, return before writing, and exit non-zero.
+
+I tried to break each one and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked the latest build (the latch fix) against the card's fence.
+
+**What it changed, and whether the card asked for it**
+
+- `loadBoundary` in `app/map.js` drops the latch and adds a `pending` guard. This is the review's fix, inside this card's own code.
+- `draw` in `app/map.js` wraps only the land block in `if (boundary)`. Markers and the own-position dot stay. Nothing else moved.
+- The shape check inside `loadBoundary` and the rewritten notice text in `draw` answer the review's own findings 2 and 3. Not new scope.
+- `viewBbox` in `app/map.js`, read by `clampView`, `computeScaleLimits` and `fitAll`, is the one addition the review did not name. It is still this card's criterion 5 machinery, and it uses `hooks.getSites()`, the same ranked list the rows use. No second dataset, so the fence holds.
+- `BUILD` in `app/core.js` and `CACHE` in `app/sw.js` both read `v28-2026-09-10`. That is a listed task of this card, and they agree.
+
+**Left half done**
+
+Only the stated one: no retry while the map is open. The build says so plainly and the on-screen text tells the user the recovery. That is a scoped-down choice written down, not a silent gap.
+
+No tile code, no routing, no reprojection in storage rode in.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I read `app/map.js`, `app/app.js`, `app/sw.js` and `scripts/selftest.js`, and ran the suite: **306 passed, 0 failed**.
+
+What I tried to break, and could not:
+
+- **The retry path.** `loadBoundary` in `app/map.js` guards on `boundary` only, and clears `pending` in its tail `then`, so a failed open leaves both null and the next `show()` issues a fresh request. A success clears `loadError`.
+- **Markers without an outline.** `draw` wraps only the land block in `if (boundary)`. The marker, cluster, nearest-ring, label and own-position blocks all run after it.
+- **The view with no bbox.** `viewBbox` feeds `clampView`, `computeScaleLimits` and `fitAll`, so the site bbox stands in. Every caller of those three is inside `app/map.js` and none was missed.
+- **Callers of the changed hooks.** `NFMap.init` in `app/app.js` supplies `getSites` and `getPos`; `viewBbox` only uses hooks that already existed.
+- **Stale claims.** The comments in `loadBoundary` and `draw` match the code. The precache claim holds: `ASSETS` in `app/sw.js` lists `./data/boundary.json` and `CACHE` is bumped to `v28-2026-09-10`, matching `BUILD` in `app/core.js`.
+- **Shape check.** A 200 with `parts` but no `bbox` throws, and the suite fails when that check is removed.
+
+Edge case I found and dismissed: with no outline and a filter matching nothing, `viewBbox` returns null and pan is unclamped, but the next non-empty render re-clamps and "Near me" restores the view.
+
+VERDICT: sound
+
