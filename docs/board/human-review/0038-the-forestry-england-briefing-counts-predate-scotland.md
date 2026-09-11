@@ -60,6 +60,8 @@ were expected to live. Nothing points from the dataset to the outreach folder.
 - `0027`, the send. This briefing is read as part of doing that card, so this should be fixed first.
 - `0016`, grew the dataset from 904 to 1,180 and added the 276 Scottish forests.
 - `0004`, derived the 177 car park names that `:109` predates.
+- `0018`, decides what the email asks for. This card corrects counts only and must not touch an ask,
+  so anything that reads like a change of ask belongs there instead.
 
 ## Not this card
 Not editing `docs/outreach/forestry-england-enquiry.md` unless a count in it is also wrong; check

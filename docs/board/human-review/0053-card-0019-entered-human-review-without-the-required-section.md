@@ -31,6 +31,8 @@ says the fix belongs at the move, in `C:\Dev\ProgressBoard`, and not in this rep
 - `0052` - the same defect on `0015`, still open in `todo/`. Kept separate because one card per
   card in the lane is how this series has been raised.
 - `0045`, `0046`, `0047`, `0048`, `0049`, `0050` - the same defect on earlier batches.
+- `0019` - the card this one is about. It is the card missing the section, and it is the only file
+  this card edits; nothing else about it is in scope.
 
 ## Not this card
 Not the cards `0045` to `0052` name. Not acting on either reviewer finding in `0019`, not unticking

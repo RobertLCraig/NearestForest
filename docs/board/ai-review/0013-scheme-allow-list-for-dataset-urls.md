@@ -1,3 +1,6 @@
+---
+no_outward_effect: "publishing" in criterion #4 describes the upstream agency host a dataset URL must point at, not a deploy
+---
 # Scheme allow-list for dataset URLs
 
 ## Why

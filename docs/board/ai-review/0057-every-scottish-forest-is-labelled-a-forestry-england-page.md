@@ -1,3 +1,6 @@
+---
+no_outward_effect: "published" in criteria #1 and #2 is which agency owns the page a link points at, not a deploy
+---
 # Every Scottish forest's detail sheet calls its link a Forestry England page
 
 ## Why

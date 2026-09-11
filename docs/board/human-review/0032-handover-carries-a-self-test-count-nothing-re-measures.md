@@ -56,6 +56,9 @@ next card that adds a test has no reason to know the number exists, and nothing 
   numbers as measured on the day.
 - `0023` - the first fold, which corrected a stale card count by counting rather than by carrying
   the old figure forward. That this has now happened three times is why it is a card and not a typo.
+- `0029` - one of the two cards that added self-tests after the 219 was typed into the brief, so it
+  is half of the evidence that the number drifts whenever anyone adds a test.
+- `0030` - the other one, same reason.
 
 ## Not this card
 Not the size budget, which is `0031`. Not the record counts: `1,180` and `3,681` were checked

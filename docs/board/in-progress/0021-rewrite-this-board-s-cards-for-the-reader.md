@@ -1,6 +1,3 @@
----
-needs: 0025
----
 # Rewrite this board's cards for the reader
 
 ## Why
@@ -26,11 +23,10 @@ it was written to.
 
 ## Links
 
-**Blocked by**
-- `0025` - criterion #1 cannot be met while the convention requires the ask directly under the
-  title, and that call is Rob's. Everything else on this card is finished.
-
 **Relates to**
+- `0025` - was this card's blocker and is answered. Option 1: criterion #1 means no solution inside
+  `## Why`, and the `human-review/` ask stays directly under the title. `needs:` and the `Blocked by`
+  line were removed together on 2026-09-11, because the block is gone.
 - `progressboard#0065` - the estate-wide rewrite this card was seeded from; its pilot over
   ProgressBoard's own 40 cards is the worked example of a pass.
 - `progressboard#0066` - the five checks the count below is measured with, and why each is
@@ -56,7 +52,7 @@ everything the card knows and changes only how it is ordered and said. `## Direc
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a card in a non-terminal lane is rewritten, THE CARD SHALL state the problem in
+- [x] #1 WHEN a card in a non-terminal lane is rewritten, THE CARD SHALL state the problem in
       `## Why` before any solution appears anywhere in it. proves: none - about prose, and no check
       here reads prose
 - [x] #2 WHEN a rewritten card is a decision, THE CARD SHALL say which of the four reasons makes it
@@ -248,3 +244,83 @@ this project has neither.
 **Assumed.** That raising `0025` in `todo/` is right even though it is a decision and the convention
 puts decisions in `human-review/`. The session rules put every new card in `todo/` and forbid me
 moving any card between lanes, so the lane is the scheduler's to correct.
+
+**2026-09-11** RESULT: done
+TESTS: +0 new, all green (306 passed, 0 failed)
+TOUCHED: docs/board/in-progress/0021-rewrite-this-board-s-cards-for-the-reader.md
+TOUCHED: docs/board/ai-review/0013-scheme-allow-list-for-dataset-urls.md
+TOUCHED: docs/board/ai-review/0057-every-scottish-forest-is-labelled-a-forestry-england-page.md
+TOUCHED: docs/board/human-review/0032-handover-carries-a-self-test-count-nothing-re-measures.md
+TOUCHED: docs/board/human-review/0038-the-forestry-england-briefing-counts-predate-scotland.md
+TOUCHED: docs/board/human-review/0053-card-0019-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/todo/0058-the-link-check-reports-zero-while-nine-cards-carry-a-bare-number.md (new)
+OUT-OF-SCOPE: 0058
+
+**A third run, and the blocker is gone.** `0025` was answered on 2026-09-10, Option 1, in Rob's words
+"match the current ruleset": criterion #1 means no solution inside `## Why`, and the `human-review/`
+ask stays directly under the title. That is a clarification and not a change, so nothing was
+re-ordered. I removed this card's `needs: 0025` and its matching `Blocked by` line together, since a
+card that is no longer blocked should not tell the scheduler it is.
+
+**The board had drifted since the last run and #6 was no longer true.** Read before any edit:
+
+    NearestForest	5	35	0058
+
+**Five open cards failing out of 35**, against the 0 out of 23 the previous entry left. Thirty-five
+rather than twenty-three because twelve cards were raised here since 2026-09-05, none of them by this
+card. By rule, and all five cleared:
+- **2 outward-effect flags, both the word rather than the effect.** `0013` takes
+  `no_outward_effect:` because "publishing" in criterion #4 is the upstream agency host a dataset URL
+  must point at. `0057` takes it because "published" in criteria #1 and #2 is which agency owns the
+  page a link goes to. Neither card deploys anything.
+- **3 unexplained links.** `0032` named `0029` and `0030` in a sentence about tests added after the
+  219 was typed, and both now have a `## Links` line. `0038` named `0018` in `## Not this card` as
+  the card that owns what the email asks for. `0053` named `0019` throughout and never in `## Links`,
+  and `0019` is its whole subject. In each case the reason line is taken from that card's own prose.
+
+**After the last edit, same command:** `NearestForest	0	36	0059`. Thirty-six open because this run
+raised one card, which passes the checks itself.
+
+**#1 is met, and I checked it two ways rather than declaring it.** Every one of the 36 open cards has
+a `## Why`. I read the `## Why` of all thirteen cards raised since the last pass and every one opens
+with an observed, dated problem: `0032` with a brief saying 219 while the suite prints 225, `0055`
+with a card the file reader refuses at 208 KB, `0057` with a Scottish forest whose link says
+Forestry England. None offers a candidate solution or its cost.
+
+**I also swept for solution language inside `## Why` and watched the sweep go red first.** A throwaway
+Python script cut each card at the first heading after `## Why` and searched for `Option N`, `my
+recommendation`, `I recommend`, `the fix is`, `we should`, `we could`, `I propose`, `proposal`, `Cost:`,
+`two ways out` and `three ways out`. It printed `total 0`. That is exactly the shape of a check that
+cannot fail, so I pasted `Option 1 is a scheme allow-list. My recommendation is that we should take
+it. Cost: one line.` into `0013`'s `## Why`, re-ran, and got four hits on one line naming `Option 1`,
+`My recommendation`, `we should` and `Cost:`. I then reverted the injection and confirmed zero again.
+The script is deleted; it is a keyword proxy for prose, which is why criterion #1 says `proves: none`,
+and keeping it in the repository would dress a proxy up as a test.
+
+**Raised, not fixed: the link check cannot see the fault it exists to catch.** `board:convention`
+reports zero unexplained links while nine open cards name 22 others in a sentence and never in
+`## Links`, 33 mentions in all. The previous entry noticed the same blind spot on 2026-09-05 and wrote
+it as prose rather than as a card, which is why it is still here. It is now card `0058`, with the
+per-card table, the method and the red-proof step written into its `## Plan`. It is out of this card's
+scope: every affected card was written after the rewrite pass, by other cards, and fixing nine cards
+in passing would be nine unreviewed edits.
+
+**My sweep is stricter than the checker and I made it honest before trusting it.** Its first run
+flagged eleven cards, and two of those were wrong: `0056` and `0053` list cards by filename, and a
+filename already names what it points at. I excluded the `NNNN-slug.md` form and re-ran, which
+dropped them to the real count. The table on `0058` is the second run, not the first.
+
+**Assumed.** That bringing the twelve newer cards up to the checks is inside this card rather than
+outside it. Criterion #6 is worded as a state of the board rather than as a list of files, so a board
+that has drifted back above zero has not met it, whoever caused the drift. The nine-card link finding
+is the opposite call, and the difference is that the checker does not report it, so it is a defect in
+the measurement rather than a card left half-rewritten.
+
+**Not settled from the repository.** Whether the checker's blind spot is worth closing at source.
+That code is in `C:\Dev\ProgressBoard`, outside this repository, and `0058` says so in
+`## Not this card` rather than guessing.
+
+**No PHP suite here, checked again.** `.\vendor\bin\pest.bat` and `.\vendor\bin\pint.bat` do not
+exist and there is no `composer.json`. The suite is `node scripts/selftest.js`, green at 306 passed
+and 0 failed, up from 218 at the last entry because other cards added tests. No code changed this
+run, so that number is context and not evidence.
