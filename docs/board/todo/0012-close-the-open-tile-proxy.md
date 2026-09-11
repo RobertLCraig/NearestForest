@@ -380,3 +380,52 @@ from a previous review at the same origin, because the PHP development server se
 `Cache-Control` and `app/.htaccess` is not read by it. The page reported `BUILD v24-2026-09-08` and
 every new assertion appeared to fail in the browser while the suite was green. Check `NF.BUILD` in
 the console before believing a browser result on `php -S`.
+
+### 2026-09-11 review (v20260911021227-988f)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each box against the real code.
+
+**#1 cross-origin refused, even with no Referer.** `app/api/tiles.php` top-level gate reads `HTTP_SEC_FETCH_SITE` and returns 403 for anything that is not `same-origin`. A page cannot set that header, so `referrerpolicy="no-referrer"` buys nothing. The `Referer` check below it still compares host without port.
+
+**#2 the app's own map still served.** `getTile()` in `app/map.js` sets a relative `api/tiles.php?...` URL, so the browser sends `same-origin` and the gate passes.
+
+**#3 429 without upstream.** `rateLimit()` is called before the upstream URL is built, before `readKey()` and before `curl_init`, and `fail(429, ...)` exits there.
+
+**#4 counter failure still serves.** Every path in `rateLimit()` and `counterDir()` returns or continues: no directory, unreadable file, suppressed write. None refuse.
+
+**#5 draws as before.** `draw()` in `app/map.js` paints the bundled outline, then `drawTiles()` over it. `tilesOn` still starts false.
+
+I tried the hotlink, a spoofed `Referer` and a capped counter. I could not get a tile out cross-origin, and I could not make the cap break the map.
+
+VERDICT: sound
+
+**scope: defect**
+
+Scope review of card 0012.
+
+**1. The new code has never run where it takes effect, and three tasks still read ticked from the old build.** `counterDir()` in `app/api/tiles.php` has two branches, and the preferred one only fires where `tiles.key` is readable, which is the server. Every probe in the 2026-09-10 build entry ran on `php -S` with no key, plus one dummy key file that was deleted after. The tasks "Verify against the live endpoint after deploy", "Toggle Tiles on in the deployed app" and "Confirm the same on the phone" were ticked on 2026-08-10, before `counterDir()`, `counterSalt()` and the `pruneTiles()` call in `setTiles()` existed. The card carries device-only behaviour that no one has seen on the device. That is work left half done, not a fence crossing.
+
+**2. The fence itself holds.** I checked every item under "## Not this card". `app/api/nearest.php` has no limiter. `STYLES` in `app/api/tiles.php` still holds all ten entries. `app/.htaccess` has no WAF, deny or tile rule. There is no server-side tile cache and the provider is unchanged. The `glob`/`unlink` sweep in `rateLimit()` is the one growth, and two earlier passes already judged it too small to bounce.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding, one defect.**
+
+`counterDir()` in `app/api/tiles.php` looks for the key in one place only: `__DIR__/../../../tiles.key`. `readKey()` in the same file accepts three: the `THUNDERFOREST_KEY` environment variable, the three-up path, and `__DIR__/../../tiles.key` "if the docroot is ever the repo root".
+
+So on any deploy that uses the env var or the two-up path, the key is found, tiles are served, and the counters silently fall back to `sys_get_temp_dir()`. That is the world-writable `/tmp` case the new comment above `counterDir()` says it closed. A co-tenant who makes `/tmp/nf-tiles` first owns the rate-limit state and can seed any address to the cap, which turns the layer off for that person with no sign. Nothing reports the fallback, and the comment reads as though the temp directory is only a developer-machine path.
+
+Same rule, two functions, two different answers. Make `counterDir()` share `readKey()`'s candidate list, or say in the comment that the counters follow only one layout.
+
+No test builds this: `scripts/selftest.js` never mentions `counterDir`, `counterSalt` or `nf-tiles`, and the card's proof used a dummy key at the three-up path only.
+
+VERDICT: defect
+
