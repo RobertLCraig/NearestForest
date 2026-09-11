@@ -429,3 +429,206 @@ Rob's.
 
 **Not checked in a browser.** This build touches `scripts/selftest.js` only, and nothing under
 `app/`.
+
+### 2026-09-11 second review
+
+**suite**
+
+`node scripts/selftest.js` on a clean tree: **310 passed, 1 failed**, the one red being `0020` at
+206.8 KB, which is `0055` and is Rob's. The second build entry says 309, and the difference is not
+drift on this card: `1a3ea74` (card `0069`) added one assertion after this build landed, and the
+block count bears it out - `git show 7658de6:scripts/selftest.js | grep -c 'ok('` is 279 against 280
+at `HEAD`. The entry's number was true when it was written.
+
+The same caution the first review left, still live. Another session is working this board at the
+same moment and leaving untracked scratch cards in the lanes; I saw `docs/board/todo/0067-a.md`,
+`0067-b.md`, `0067-hard.md` and `docs/board/attachments/0067-x.md` appear and vanish between my
+commands, each one adding a `no board card appears in two lanes` red. One whole run of mine died at
+`ENOENT: stat docs/board/dangling` because that session deleted a fixture directory between
+`readdir` and `stat`. None of it is this card's and none of it reproduces once the board is still.
+
+**acceptance: sound**
+
+I did not re-derive the first review's fixtures. I attacked the **new** behaviour, which is the
+least tested part of the rebuild. Method as before: block lines 2999-3083 lifted verbatim into a
+standalone harness taking `ROOT` from `argv`, confirmed against this repository (PASS, matching the
+real suite), then driven over 25 fixture repositories and 10 hostile interpreters. Fixtures lived in
+`%TEMP%`, not in the tree.
+
+**The importing-script naming rule, which is criterion #1's second half and the newest code.** It
+matches raw text for the literal `scripts/<file>`, so the substring question is the one that
+mattered and I tested it in both directions rather than reasoning about it. Two scripts both
+importing `requests`, requirements naming only `scripts/fetch_campsites.py`: **red**, naming
+`scripts/fetch.py`. Reversed, naming only `scripts/fetch.py`: **red**, naming
+`scripts/fetch_campsites.py`. The `scripts/` prefix and the `.py` suffix pin both ends, so neither
+name can be swallowed by the other. **The suspected defect is not there.**
+
+The rest of that rule, each measured:
+
+- named in a comment, which is the whole intent: pass
+- named in prose (`requests  # used by scripts/fetch.py for the scrape`): pass
+- two of three named: red, naming exactly the third
+- names present but nothing declared: red, naming all three imports
+- a stale name for a script that imports nothing: passes, uncaught (a limit, below)
+- `scripts\fetch.py` with a Windows backslash: red, so the rule is forward-slash only (a limit)
+- the only false pass I could construct: requirements naming `scripts/fetch.pyc` satisfies
+  `scripts/fetch.py`, because `includes` has no right-hand boundary. Contrived and harmless.
+
+**Criterion #1's second half is now genuinely proved by the test that names it**, which is what the
+first review said it was not. Truncating the real `requirements.txt` to the single word `requests`
+and running the real suite reproduces the build entry's claim exactly: red, naming
+`scripts/build_boundary.py`, `scripts/fetch.py` and `scripts/fetch_campsites.py`. Restored with
+`git checkout --`; `git hash-object requirements.txt` equals `git rev-parse HEAD:requirements.txt`.
+
+**The interpreter failure paths. Ten values for `PYTHON`, ten results, every failure named, no
+skip.**
+
+| what `PYTHON` was | what the red says |
+|---|---|
+| `C:/nope/python.exe` | `ENOENT` |
+| a directory | `ENOENT` |
+| a `.cmd` node refuses to spawn | `EINVAL` |
+| `rundll32.exe`, which exits 0 saying nothing | `no output on any channel` |
+| `python" & echo pwned & "` | `ENOENT`, nothing executed |
+| real python, `sitecustomize` printing the Store advert to stdout, exit 3 | the advert text |
+| real python with `sys.stdlib_module_names` deleted (pre-3.10, Python 2) | the `AttributeError` traceback |
+| real python whose stdout is valid JSON but not a stdlib list | red 26 ways, naming `json`, `math`, `re` and the rest |
+| `PYTHON=""` | falls back to `python`, passes, correct |
+| real python | passes |
+
+Both of the reason-less messages the first review found now name a reason, and the build entry's
+three-row table reproduces row for row.
+
+**The guarded read.** `mkdir scripts/scratchdir.py` in the real tree, real suite: it **completes**
+at `308 passed, 3 failed` with `scripts/scratchdir.py could not be read: EISDIR` among them, where
+before it died mid-run and took every later assertion with it. Directory removed, tree clean.
+`readdirSync(scriptsDir)` is still unguarded and that is fine rather than an oversight: `ROOT` is
+`path.dirname(__dirname)` and the suite itself lives in `scripts/`, so the directory it reads is the
+one it was loaded from and cannot be absent.
+
+**The case-insensitive match**, in the real suite: `scripts/UPPER.PY` containing `import yaml` is
+now read and named. It introduced one asymmetry on this case-insensitive filesystem, which fails in
+the safe direction: the file match ignores case but the naming check does not, so a file on disk
+called `Mixed.PY` declared in requirements as `scripts/mixed.py` goes red. Nothing in `scripts/` is
+mixed-case, and `deploy.ps1` is not matched by `/\.py$/i`.
+
+**#3** unchanged and re-checked by eye, and the build entry's correction to itself is right:
+`python -m pip install -r requirements.txt` is `docs/HANDOVER.md` line 463, line 473 is
+`python scripts/fetch.py && ...`, and `expect: all passed, 0 failed` is line 479. The install
+command is above the first `python scripts/` line.
+
+VERDICT: sound
+
+**scope: sound**
+
+`git diff --name-only 87d5cff 7658de6` is two files: this card and `scripts/selftest.js`. No
+`scripts/*.py`, no `app/`, no `requirements.txt`, no data. Every fence in `## Not this card` holds
+for the second build by construction, and the no-skip fence holds by inspection: the only `return`
+on a failure path pushes a named failure first.
+
+**The refusal to build the import-name marker is right, and I looked for the trap rather than
+taking the argument.** The board's scope fence exists for exactly this shape, a parser for a case
+the repository does not have, and the first review's finding was never "build the marker". It was
+"the file is telling its reader to do something that does not work", and that is what got fixed.
+
+The replacement comment would stop somebody. It sits directly above the code, it is reachable from
+the red because the assertion name greps to one place, and it says the three things a maintainer
+adding `beautifulsoup4` needs: it will be red however you write the file, the marker idea was tried
+and the parser cannot see it, and closing it needs a code change. It also carries the other end of
+the gap the old comment never mentioned, that declaring the import name satisfies the check while
+breaking `pip install`, which I confirmed is still true: `yaml` declared against `import yaml` is
+green here and uninstallable.
+
+One residual, offered as the cheap next line rather than as a finding. That warning lives only in
+the source. The red itself says `scripts/x.py imports bs4` and nothing more, and the path of least
+resistance from that red is to write `bs4` into `requirements.txt`, which goes green and breaks the
+install. A clause in the failure detail would close the loop for the reader who never opens the file.
+
+VERDICT: sound
+
+**breakage: sound**
+
+The rebuild held under everything above. Two things I did break, neither recorded anywhere yet, both
+latent, both fail-closed, each one line to close:
+
+**1. A trailing comment on a plain `import` line produces a false red.** The module name is taken as
+everything after `import` up to a comma and the comment is never stripped, so
+`import requests  # the HTTP client` reds with `scripts/fetch.py imports requests  # the HTTP
+client`, and `import os  # noqa` reds with `scripts/fetch.py imports os  # noqa`, a standard-library
+module reported as an undeclared third-party dependency. Both are ordinary valid Python. No script
+in `scripts/` carries a trailing comment on an import today, which is why nothing is red now. The
+`from X import Y  # comment` form is unaffected. This is not new in the rebuild: the regex is
+byte-identical to the first build and the first review's 37 fixtures did not include the form. The
+fix is `s.replace(/#.*$/, '')` inside the existing `.map`.
+
+**2. The second build changed the empty-file branch, and its message is now untrue.**
+`if (!fs.existsSync(REQ) ...)` became `if (!reqText ...)`. I ran the same five fixtures against both
+blocks: a **0-byte but present** `requirements.txt` with only stdlib imports passed under the first
+build and now reds with `requirements.txt does not exist`, which it does. A comments-only or
+whitespace-only file still passes, and a missing file still reds correctly. The state is contrived,
+but this is the same shape as the finding the rebuild was sent back to fix, a red whose stated
+reason is wrong, so it is worth the word `exists` in that branch.
+
+Neither breaks a criterion. Criterion #2 asks the suite to fail when an import is undeclared, and
+both of these fail in that direction. What they cost is a reader's minute, not a missed defect,
+which is why this is not a second bounce.
+
+Recorded so nobody finds them a third time, all confirmed still true and all named by the build
+entry as decisions rather than oversights: the flat directory read, so a `.py` under `scripts/sub/`
+is invisible and matches criterion #2's flat glob; dynamic and same-line imports; the install-name
+gap in both directions; a stale script name in `requirements.txt` going unchallenged; and
+forward-slash-only path matching. One new cousin of the same kind: a line reading `import yaml` at
+column 0 inside a triple-quoted string is counted as an import. Contrived, noted, not worth
+building for.
+
+VERDICT: sound
+
+**security: sound**
+
+The three questions, re-answered against the block as it now stands rather than carried forward,
+because the rebuild widened what the failure path prints.
+
+**Where is it weakest.** Unchanged, and still the interpreter: the check believes whatever
+`process.env.PYTHON` names when it says what the standard library is. I re-proved the bypass against
+this build. A `sitecustomize.py` on `PYTHONPATH` printing the real `sys.stdlib_module_names` plus
+`"requests"`, then `os._exit(0)`, turns the assertion green while the dependency is effectively
+undeclared. It is real and it is worth almost nothing to an attacker, because setting `PYTHON` or
+`PYTHONPATH` for this process already means running arbitrary code through `node scripts/selftest.js`.
+It matters as a CI note: the suite's verdict is only as trustworthy as the interpreter the
+environment hands it.
+
+**What is unchecked.** The interpreter path is still unvalidated and `spawnSync` is still called
+with an argument array and no `shell`. I put a shell-metacharacter value through it,
+`python" & echo pwned & "`, and got `ENOENT` with nothing executed, so there is no injection surface
+even with a hostile value. `PYENV` copies the whole environment into the child, which is the house
+pattern at lines 1204, 1409 and 1542 and predates this card. The new `reqText.includes()` reads
+repository content only. The one unguarded I/O call left, `readdirSync`, cannot fail for the reason
+given under acceptance.
+
+**What it leaks.** More than before, and still correctly. The failure detail now prints up to 300
+characters drawn from `error.code` or `error.message`, stderr **and** stdout, where it printed 200
+characters of stderr. On a real python that is a traceback carrying absolute local paths and a
+Windows username, and `${PY}` itself is still echoed. It goes to a developer's terminal on a machine
+that already holds the repository, and the slice is the right instinct for a public repository where
+pasting a red suite into a card is a normal thing to do. No secret, no third party's data, no
+network path. The `EISDIR` guard prints `e.code || e.message`, whose fallback can carry a path: same
+class, same size.
+
+VERDICT: sound
+
+**browser**
+
+**This card has no user-facing surface and none was checked.** Evidence rather than assertion:
+`git diff --name-only 87d5cff 7658de6` is `scripts/selftest.js` and this card, and across both
+builds the card's whole footprint is `docs/HANDOVER.md`, `requirements.txt`, `scripts/selftest.js`
+and this card. Nothing under `app/`, no HTML, CSS, JS or service worker, and `data/sites.json` is
+untouched, so there is no rendered state a browser could disagree about. No server was started.
+
+**Cleanup.** Three deliberate edits in the real tree, each reverted: `scripts/scratchdir.py` created
+as a directory and removed, `scripts/UPPER.PY` created and removed, and `requirements.txt`
+truncated and restored with `git checkout --`. Everything else ran in `%TEMP%` against copies.
+`git status --short` is empty, `git diff --stat` is empty, and the final suite run is
+`310 passed, 1 failed`. One note for the next reader: `git checkout --` rewrote `requirements.txt`
+with CRLF line endings under `core.autocrlf`, so the working file differs byte-for-byte from the
+copy I took beforehand while its blob hash is identical to `HEAD`. Nothing tracked changed, and the
+check parses both, which a CRLF fixture confirmed.

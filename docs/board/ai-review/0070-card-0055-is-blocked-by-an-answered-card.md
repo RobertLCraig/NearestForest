@@ -397,3 +397,205 @@ Rob's. `board:convention` is unchanged.
 
 **Not checked in a browser.** This build touches `scripts/selftest.js` and one new card, and nothing
 under `app/`.
+
+### 2026-09-11 second review
+
+Every mention of the answer marker below is written inline in backticks and never at the start of a
+line, deliberately, because starting a line with it is the defect this review reports.
+
+**the suite**
+
+`node scripts/selftest.js` runs 309 passed, 2 failed. The expected red is there and unchanged:
+`no board card is too large for the agent file reader`, naming `0020` at 206.8 KB, which is `0055`
+and Rob's. The second red is `no board card appears in two lanes`, which is card `0069`'s assertion,
+and it is not a fault in the tree: another session is reviewing `0069` in this working copy right
+now and its scratch files land in `docs/board/todo/` mid-run. Over the session it reported `0067 in
+done and todo`, then `could not read docs/board/todo/dangling: ENOENT`, changing between runs. Both
+of this card's assertions, `no open card is blocked by a settled card` and `every needs: on this
+board can be read`, passed on every run. The build entry's 310/1 and my 309/2 are the same 311
+assertions with one of `0069`'s flipped by that concurrent scratch.
+
+Because the tree would not hold still, every attack below was run against `git archive HEAD
+docs/board` unpacked under `%TEMP%`, with the check block lifted verbatim from lines 2913-2997 of
+`scripts/selftest.js` into a harness supplying `ROOT`, `fs`, `path` and `ok`. The harness reproduces
+HEAD's result exactly. **I made no edit of any kind inside the repository** other than this comment,
+so there is no scratch of mine to clean up; the untracked entries in `git status --short` are the
+other session's and I left them alone.
+
+**the central argument: right, and it is the strongest thing here**
+
+I read `0018` and `0027` rather than taking the build entry's word. `0018`'s only `## Decided` entry
+is dated 2026-08-18 and reads "sending from enhanceify.co.uk has now been unblocked. but I am still
+on the fence about what to ask them for". `0027` needs `0018` for "the choice of which asks the email
+makes, and there is nothing to send until it is answered". So the prerequisite genuinely has not
+arrived, `0027` is correctly blocked, and the previous review's offered remedy - widen to "a
+non-empty `## Decided` section in any lane" - would have named a live blocker stale on the first run.
+The rebuild refused a reviewer's suggestion, gave the measurement for refusing it, and was right to.
+That is the right way to take a review and it should be said plainly before the rest.
+
+**acceptance: defect**
+
+Criterion #3 has two halves. The lane half holds: a `needs:` naming a card in `ai-review/` is now
+named, and I reproduced the build entry's four-row probe table exactly, wording included - blocker in
+`ai-review/` gives "which is in ai-review", the same file in `todo/` is silent, the same file
+carrying the marker gives "which is answered on its own thread", and the same entry rewritten as
+steering under `## Decided` is silent again. Rows two and four are the discrimination the criterion
+asks for and both hold.
+
+The answer half does not hold. The criterion says the suite shall fail when the blocker "carries an
+entry marked" with the marker. What the code tests is `/^\s*(?:\*\*\d{4}-\d{2}-\d{2}\*\*\s*)?\*\*Decided:\*\*/m`
+against the whole file, with no notion of an entry, so **any line that begins with the marker counts,
+including one inside a fenced or indented code block.** That is not hypothetical. Card `0075`, the
+card this build raised, sits in `human-review/` with its ask unanswered, and line 8 of it is the
+fenced sample Rob is asked to paste, which begins with the marker followed by
+`2026-08-18, Yes - add Scotland's 278 forests from Forestry and Land Scotland.` The regex allows
+leading whitespace, so indenting the sample instead of fencing it does not help either - I nearly
+reproduced the defect in this very comment by writing the sample out, which is how ordinary the
+mistake is. On the board at HEAD, a scratch `needs: 0075` on `0074` prints
+`0074 in todo needs 0075, which is answered on its own thread`. `0075` is the only card in an open
+lane that matches; I grepped the whole board for the pattern and it returns `README.md`, `0025` in
+`done/`, and `0075`.
+
+This is the rebuild's own argument turned on it. It refused to read the `## Decided` heading because
+"inferring would name `0027`'s live blocker as stale and push somebody to clear it, which is a worse
+failure than the miss it would close", and then shipped a marker test that does exactly that to a
+card whose whole content is a question nobody has answered. It is also not an edge case, because the
+board's house style creates it: `docs/board/README.md` tells every decision card to "End
+`## Recommendation` with the exact line to post to `## Comments`, dated and marked" with that marker,
+"written as the reader would write it". Follow that rule and the card is readable as answered from
+the moment it is written. The cheap fix is to skip fenced and indented blocks, or to require the
+marker inside `## Comments`, `## Decided` or `## Direction`; either is a few lines and both keep row
+four of the probe table silent.
+
+VERDICT: defect
+
+**scope and disposal: defect**
+
+The build itself is tight. `8cbec9e` is one commit touching three files: `scripts/selftest.js`, this
+card, and the new `0075`. Nothing under `app/`, `data/`, `scripts/*.py`, or `docs/` outside the
+board. Every fence in `## Not this card` held: `0055`'s ask and acceptance are untouched, no other
+card's `## Comments` was written to, and the code still reads the string `needs:` and no other key.
+Two criteria were added rather than the old two reworded, exactly as claimed.
+
+The disposal is wrong, and it is the second finding. `0016` is answered Yes, dated 2026-08-18, and
+its own thread records "Built" on 2026-08-29 with the Forests tab at 550 sites. `0017` names it for
+"the scope call that gates both cards", which was answered Yes. `0020` names it for a measurement
+`0016` delivered three weeks ago, and `0020` has since been built past it. Both blockers are stale to
+anyone who reads the three cards, and clearing them turns on none of the four things the README
+reserves for a person: not a preference, not a cost Rob carries, not a risk he owns, not local
+knowledge nobody wrote down. It is the identical edit this card already made to `0055`. "Everything
+else is the agent's to settle by reading" covers it.
+
+`0075`'s stated reason for not clearing them is that "doing it first would leave the board asserting
+an answer nothing records", and that reason is not true. The answer is recorded, in Rob's words,
+dated, under `## Decided` on `0016`, and the README says an entry under that heading "is an answer by
+where it was written". The code comment this build wrote says so too: "card 0016 IS answered ('Yes',
+2026-08-18) and built". The build asserts the answer exists in its own source and then declines to
+act on it because nothing records it.
+
+So this card has repeated the shape its own `## Why` was raised to condemn - "Both cards named the
+same blocker for the same reason and only one was cleared" - and has put the remainder in front of
+Rob. `0075` fails all three gates for the lane: the decision was made in 2026, the act is a file edit
+`git revert` reaches, and the agent does not think Rob's answer would differ, it quotes his answer
+verbatim. What it asks for is a keystroke, and "there is no step where somebody reads good work and
+nods at it". The honest split was available and the README names it: clear `0017` and `0020` by
+reading, say on this card what was applied and why, and if the marker on `0016` is still wanted, ask
+for it as a line that blocks nothing. As built, two cards stay frozen behind a delivered answer -
+which `0075` itself says an unattended session will not start - waiting on a person who is not needed.
+
+I accept the narrow half of the argument: an agent must not append a marked answer entry to `0016`'s
+append-only thread in Rob's name, and `0075`'s own "not moving card `0016`" fence shows it knew the
+mark carries a side effect it did not want. That is a good reason not to write the mark. It is not a
+reason to leave two stale blockers standing.
+
+VERDICT: defect
+
+**breakage: defect**
+
+Forty-odd crafted cases against the block in isolation, each one restored before the next.
+
+**What held.** The six lanes behave exactly as criterion #3 requires: `done/`, `discarded/` and
+`ai-review/` are named with the right lane in the message, and `todo/`, `in-progress/` and
+`human-review/` are silent. The marker is read in all three open lanes. The false-positive routes I
+expected to work mostly do not: the marker quoted mid-prose, in a blockquote, in lower case, with a
+space after the asterisks, without its colon, and in the middle of a sentence that starts a line are
+all six silent. Every shape in the eight-row malformed table reproduces exactly as written - the
+trailing-space closer now names the blocker it used to hide, the unterminated block, `Needs:` and a
+two-digit number are reported, `[0025, 0071]` and a value carrying a reason both parse, a `needs:` at
+column zero with no frontmatter is reported with its line number, and a settled and an open number on
+one line names only the settled one. Beyond the table: `needs :`, an indented key, `"0025"` quoted, a
+trailing `# comment`, CRLF, a BOM, a blank first line, two `needs:` lines in one block, a card naming
+itself, a settled card carrying its own stale `needs:`, and a `.markdown` file in a lane all behave.
+Messages sort and join with ` | ` so nothing hides behind anything else.
+
+**What broke.**
+
+1. The fenced and indented code block routes above. Both name an unanswered card as answered.
+2. **A `needs:` written as a YAML block list is still silently zero blockers.** `needs:` on its own
+   line with `  - 0099` under it parses to nothing and is reported by neither assertion. The previous
+   review named this shape in the same sentence as `needs: [0025, 0007]`; the inline form was fixed
+   and this one was not, it is absent from the eight-row table, and it is absent from "Left as it was,
+   with the reason", which names only dangling references and mid-line forms. So the entry's "Every
+   shape that failed open now reports" is wrong by one, and the one it is wrong by is standard YAML
+   and hides blockers rather than inventing them.
+3. **An unreadable entry in a lane aborts the whole suite.** `fs.readFileSync` is unguarded, so a
+   directory named `0099-something.md` under a lane throws `EISDIR` uncaught, the block dies, and the
+   24 assertions after it and the summary never run. I hit this by accident before I went looking for
+   it, because the concurrent session had made one. The `0071` block ten lines further down guards
+   its read and says why in a comment - "readFileSync on a directory named `x.py` would throw and
+   take every later assertion with it" - so the file already knows the rule and this block does not
+   follow it. The previous review raised the `statSync` sibling and this build neither fixed nor
+   refused it.
+4. `.every` became `.find` in the settled test, unmentioned anywhere. A dependency with copies in
+   `done/` and `todo/` is now reported settled where it used to be silent, which the previous review
+   had called correct. `0069` now forbids duplicates, so the state is already red and I am not
+   calling the new behaviour wrong - but a reversal of something a reviewer praised belongs in the
+   entry, not only in the diff.
+5. The previous review's "fails closed on prose" case survives: an unterminated block plus a `---`
+   rule later in the body is parsed as frontmatter rather than reported as unreadable.
+
+VERDICT: defect
+
+**security: defect**
+
+1. **Where is it weakest.** Not the data - the green. Two live routes, in opposite directions. To
+   make the check shout, start a line with the answer marker anywhere in a card, which the board's
+   own writing rule tells decision cards to do, and every card that needs it is reported stale; that
+   pushes a reader to clear a blocker that has not landed. To make it go quiet, write the same
+   blockers as a YAML block list and the card reads as having none, with no complaint from the
+   assertion whose entire job is to complain about shapes it cannot read. Neither needs intent. Both
+   are reachable by writing a card the way the docs describe.
+2. **What is unchecked.** The file reads. `readFileSync` on a lane entry matching the card pattern is
+   taken on faith and throws uncaught on a directory, an unreadable file or a broken link, ending the
+   run before a third of the suite. `settledBecause` reads the dependency card whole with no size
+   bound, on a board where this same suite has an assertion complaining that one card is 206.8 KB, and
+   it re-reads on every reference rather than memoising. Beyond that the input surface is small and
+   correctly handled: no network, no shell, no environment; a dependency number reaches only
+   `Map.get`, never a path, a regex or a command, and `/^(\d{4})\b/` bounds what can get that far.
+3. **What does it leak.** Card numbers, lane names, a line number, and two pieces of card text echoed
+   raw - the key as written and the offending token. It is a local developer suite writing to stdout,
+   nothing crosses a trust boundary, no path, title, stack trace or card body appears, and the
+   message is the minimum a reader needs to find the card. This part is right and was right before.
+
+The defect here is one finding seen from the attack side rather than a fourth independent problem:
+an assertion that claims to report every unreadable shape, with a documented shape it cannot see.
+
+VERDICT: defect
+
+**browser check**
+
+**This card has no user-facing surface, and that is a claim with evidence rather than a skip.**
+`git show --stat` over the three commits of this card - `5528c7b`, `60819b1`, `8cbec9e` - lists four
+files in total: `scripts/selftest.js` and three markdown files under `docs/board/`. Nothing under
+`app/`, nothing under `data/`, and nothing that writes into either. `scripts/selftest.js` is run by
+`node`, not served, and no generator consumes it. There is no page a browser could be pointed at to
+see this card's effect, so no browser check exists to run and none was run.
+
+**the tables, reproduced**
+
+The four-row probe table reproduces exactly, message text included. The eight-row malformed table
+reproduces exactly, all eight. The correction to the first build entry is itself correct: I swept
+every card on the board at HEAD for a `needs:` key, in frontmatter and outside it, and there are
+exactly three - `0017` to `0016`, `0020` to `0016`, `0027` to `0018`. `0055` carries none.
+
+VERDICT: defect

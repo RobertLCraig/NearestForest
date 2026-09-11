@@ -484,3 +484,211 @@ I re-ran `node scripts/selftest.js` at HEAD: **310 passed, 1 failed**, the singl
 
 VERDICT: sound
 
+### 2026-09-11 second review
+
+Run against the card in `ai-review/`; another reviewer moved the file to `todo/` in `e21f560` while
+this pass was running, so this entry lands in `todo/`. I have not moved it back.
+
+**suite**
+
+`node scripts/selftest.js` runs **310 passed, 1 failed**, matching the second build entry exactly. The
+single red is `no board card is too large for the agent file reader` on
+`docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md is 206.8 KB`, which is card `0055`'s
+and only Rob can clear. Nothing else fails. `no board card appears in two lanes` runs and passes under
+`--- one card, one lane (card 0069) ---`.
+
+**acceptance: sound**
+
+**The widened check, attacked with sixteen shapes, one suite run each, the scratch file deleted between
+every one.** The four names the last review got past it are all caught, and I did not take the entry's
+word for it:
+
+- `todo/0067.md`, no slug - `0067 in done and todo`
+- `todo/0067-dupe.markdown` - named
+- `todo/0067-Upper.MD` - named
+- `todo/nested/deep/0067-two-deep.md`, **two** directories down rather than one - named
+- `todo/.hidden/0067-x.md`, a dot-directory - named
+- `todo/0067_x.md`, underscore instead of dash - named
+- `discarded/0067-x.md`, a lane that is empty at HEAD - named
+- `docs/board/blocked/0067-x.md`, a lane directory that does not exist - named
+- three lanes at once - `0067 in done and human-review and todo`, sorted, nothing truncated
+- twice in **one** lane - `0067 in done and todo and todo`, so it counts files and not lane pairs
+- a **hardlink** to the `done/` copy - named. A file symlink needs elevation on this machine and could
+  not be made; a directory junction could, and is covered under security below
+- a `.md` parked in `attachments/` - `0067 in attachments and done`, the same over-reach the last
+  review noted, still harmless because attachments are `.png`
+
+**Three it does not name, and all three are right to skip.** `0067.md.txt` is not a markdown file.
+`00671-x.md` is not card `0067`: `(?:\D.*)?` requires a non-digit after the fourth digit, so a
+five-digit name is refused rather than read as `0067`, which is the safe direction, because reading it
+as `0067` would be a false alarm. A **directory** named `todo/0067-dir.md` is walked into and not
+counted, which is correct, because a directory is not a card.
+
+**Two residues, neither a defect.**
+
+1. **A card file loose directly under `docs/board/` is still invisible.** Proved rather than reasoned:
+   `docs/board/0067-loose.md` beside `done/0067-...` leaves the assertion green, because the
+   `lane === null` branch returns. The build entry's claim is scoped "at any depth **under a lane**",
+   so the claim is accurate and this sits outside it, and the board root is not a lane, so a file there
+   has no state to be in two of. It is the only shape I found that still hides a second copy.
+2. **The widening trades a silent miss for a loud false alarm, which is the right direction.** Any
+   `.md` whose name opens with four digits now counts as a card, so two files called
+   `2026-09-11-notes.md` in two lanes would report `2026 in done and todo`. Nothing on this board is
+   shaped that way today.
+
+**The `lane === null` branch does what its comment claims**, proved by the loose-file case above, and
+**the nested walk inherits the top-level folder as the lane**, proved by the two-deep case reporting
+`todo` and not `deep`. That is right: `docs/board/README.md` makes the lane folder the state, so a
+subdirectory of `todo/` is still `todo`.
+
+**#3, re-verified from git history across all sixteen pairs rather than the four I was asked for.**
+Method: the deleted blob at `<deletion>~1` against the survivor at `9c06f6c`, CR-stripped, as unique
+line sets under `LC_ALL=C comm -23`, with `ÔÇö` normalised to `-` on **both** sides.
+
+- **Twelve lose nothing**: `0011`, `0013`, `0014`, `0015`, `0019`, `0032`, `0036`, `0038`, `0053`,
+  `0054`, `0056`, `0057`.
+- `0021` loses one line, `- [x] #6`, a tick the survivor deliberately carries unticked.
+- `0055` loses two lines, both `- [ ]` **unticked** boxes that the survivor has ticked. A stale untick,
+  not a tick.
+- `0008` loses 22 and `0012` loses 25 unique non-blank lines, both the `## What I need from you`
+  sections, both declared in the build table and both moot on the substance.
+
+Without the mojibake normalisation, `0011`, `0013` and `0019` show 7, 4 and 11 lost lines and every one
+of them is a `ÔÇö` sequence, which is exactly the repair the first build entry describes.
+
+**#4, re-run from `D:\Dev\NearestForest`.** `php C:\Dev\ProgressBoard\artisan board:convention
+--path=$PWD --cards` prints `NearestForest 0 48 0077`. Zero open cards failing.
+
+`git status --short` carries none of my scratch files, directories or junctions.
+
+VERDICT: sound
+
+**scope: sound**
+
+`git show --stat 1a3ea74` is three files: this card, `docs/board/todo/0076-...` and
+`scripts/selftest.js`. Across both builds, `git diff --name-only d20be16 HEAD` lists exactly one
+non-document path belonging to this card, `scripts/selftest.js`; `requirements.txt` in that range is
+card `0071`'s. Nothing under `app/`, `data/` or `scripts/*.py`. `docs/PRD.md` is **not** touched, which
+is the fence holding rather than a gap: fixing that bullet is `0076`'s work.
+
+**The claim about the sibling checks is wrong in its particulars, and it is the one thing here I would
+correct.** The entry says "The two sibling board checks still carry the old narrow match. The 200 KB
+size check is card `0055`'s and the raw-count check is card `0054`'s." Measured at HEAD and at
+`1a3ea74`:
+
+- `0055`'s size check, line 2849, filters `f.endsWith('.md')`. It never carried `/^\d{4}-.*\.md$/`.
+- `0054`'s raw-count check, line 2818, filters `f.startsWith('0020-')`. Nor did it.
+- The block that **does** carry `/^\d{4}-.*\.md$/` verbatim is line 2944, in
+  `--- blockers outlive their answers (card 0070) ---`. It is a third board walk, it was already in the
+  file when `1a3ea74` was written, and the entry does not name it.
+
+Read loosely, as "still narrower than the new one", the sentence is true of both named checks: both are
+one level deep and lower-case `.md` only. The scope call itself is right, because widening another
+card's assertion is the adjacent work this board's fences exist to stop. What the sentence costs is
+that a reader chasing what is left to widen is sent to the two blocks that do not carry the regex and
+away from the one that does. It also repeats the previous review's own unmeasured claim that "`0020`'s
+lane check and `0055`'s size check share the identical regex", which is the same class of mistake -
+passing on a measurement nobody made - that got this card returned in the first place. The correction
+is on the record here and the remaining work is one line on a sweep card, so it does not send the card
+back a second time.
+
+**On the concurrent review's `scope: defect`, and I reach the opposite verdict on a measurement it did
+not make.** That entry says `0021` "got none" of the dated note that `0008` got for the same class of
+deletion, and rests its finding on that. `git show de5cdd7 -- docs/board/in-progress/0021-...` shows
+otherwise: the same commit that merged the pair appended a nine-line dated entry to `0021`'s own
+thread, recording the merge, which copy survived, the three things carried across, that the untick of
+`#6` answers half the `## What I need from you` ask, that what is left of it is a lane move, and why
+the file sits in `in-progress/`. It is the last entry on that card today. So the comment the finding
+asks for already exists, written by the build it says withheld it, and what actually remains is the
+lane, which `## Not this card` fences out in terms ("not a lane move, and not a judgement about which
+lane a card belongs in"). The residue is real and worth a sweep; it is not this card's to close.
+
+VERDICT: sound
+
+**breakage: sound**
+
+**The finding is answered and the answer holds.** Card `0076` restates both halves of `0057`'s
+2026-09-11 `breakage: defect` verdict, and both are still true at HEAD:
+
+- The requirements bullet. `docs/PRD.md` lines 56 and 57 read "link to the Forestry England page"
+  across a newline. `grep -c` on one line prints `0`; `tr -s '[:space:]' ' ' | grep -o` on the same
+  file prints the phrase. The mechanism of the original miss reproduces exactly.
+- The sweep. `scripts/selftest.js` line 781 filters `sites`, which is `DATA.sites` at line 195, so it
+  reads `sites.json` alone. `app/data/campsites.json` holds 44 records on `forestryandland.gov.scot`,
+  and the only campsite-side proof is the single fixture at line 770.
+
+**`0076`'s plan names a method that works**, which was the thing to check, given that a single-line
+search is what failed. It points at `const flat = indexhtml.replace(/\s+/g, ' ')` at line 1133 and the
+two card `0019` footer assertions at 1134 and 1137, and those are exactly the two it describes. Every
+other reference on that card is real: `AGENCY_BY_HOST` at `app/app.js` line 19 with its one caller at
+248, `CAMP` loaded at line 391, `docs/outreach/` holding the Forestry England drafts, `docs/HANDOVER.md`
+line 36 naming the PRD as source of truth, and the 276-of-550 and 44 counts all measure out.
+
+**One sharp edge in `0076`, worth a clause before anybody builds it.** Its `## Plan` says "Widen the
+sweep to both and require a non-zero count from each." The existing sweep selects by
+`s.country === 'Scotland' && s.url` and requires **every** hit to read "Forestry and Land Scotland
+page". Applied to `campsites.json` by country, that is red on correct behaviour: 262 Scottish campsites
+carry a url and 218 of them are on their own hosts, which must read as themselves. Criterion #3 is
+worded right - "the Forestry and Land Scotland **URLs** in `app/data/campsites.json`" - so the filter
+the builder needs is on the card; the plan sentence simply does not repeat it, and a stranger following
+the plan literally writes a check that goes red and then deletes the case, which is the failure the
+comment at lines 771 to 776 of that same file is about. One clause on `0076` closes it, and it is not
+enough to return this card.
+
+**The other claims, re-measured.** The three carried-over findings still bite: `git ls-files` still
+lists `scripts/__pycache__/parse.cpython-313.pyc` with no `__pycache__` or `*.pyc` rule in
+`.gitignore` (`0072`); `docs/DATA-MODEL.md` line 90 still shows the retired attribution string
+(`0073`); `Rewrite` appears once in `scripts/selftest.js`, at line 1102, as a negative, while
+`app/.htaccess` line 69 carries the redirect nothing requires (`0074`). The mojibake counts are
+**identical** at `d20be16`, `9c06f6c` and HEAD - 7 on `0011`, 4 on `0013`, 9 on `0019` - so this card
+introduced none of it and repaired none of the pre-existing, exactly as the entry says.
+
+VERDICT: sound
+
+**security: sound**
+
+The card produces one filesystem-reading assertion. The last pass's finding about the error path being
+written rather than tested was the part worth attacking rather than re-reading.
+
+**Where it is weakest.** It is still a check you break by naming a file so that it stops looking like a
+card, and that surface is now small. The four shapes that worked before do not; nor do underscores,
+dot-directories, two levels deep, or a lane that does not exist yet. What is left is a copy committed
+to `docs/board/` itself rather than into a lane, which no `git mv` produces and which I had to make by
+hand. The check also only runs when the suite runs, so a duplicate committed without a suite run is
+unguarded until the next one. That is unchanged and inherent to a self-test.
+
+**What is unchecked on the way in.** Nothing is input: the only data is the directory listing of
+`docs/board/`. There is no route, no job and no machine-facing interface, so there is no permission
+check that could be missing, and the assertion reads names only - it opens no card, so no thread text
+passes through it. The guarded error path is **reachable, and I reached it twice.** A junction cycle at
+`docs/board/todo/scratchloop/link -> scratchloop` does not recurse for ever: Node stops at `ELOOP` and
+the guard turns it into `FAIL no board card appears in two lanes - could not read ...: ELOOP`, with the
+suite finishing at 309 passed, 2 failed instead of aborting. A dangling junction under a lane gives the
+same shape with `ENOENT`. `withFileTypes` reports a junction as a symlink and not a directory, so it is
+the `|| fs.statSync(full).isDirectory()` fallback that makes the walk follow it, and the guard is what
+then catches it.
+
+**The place the last pass's finding is only half closed, and it is outside this card's fence.** A
+dangling directory entry placed **directly under `docs/board/`** still aborts the whole run with a
+stack trace and an absolute path. Proved: the throw is at `scripts/selftest.js:2817`, card `0054`'s
+`0020` finder, which runs before this card's block is reached. The entry's sentence, "an unreadable
+directory now fails this assertion rather than the run", is true of this assertion and not of the run.
+Guarding the sibling walks is the same adjacent-assertion work the scope call correctly refused, so it
+belongs on a sweep card beside the narrow-match residue above.
+
+**What it leaks when it fails.** Card numbers and lane names, `0008 in done and todo`, both already
+filenames in the repository. No file contents, no thread text, no environment, no network call
+anywhere in the block. The one new shape is the `ELOOP` message, which prints a 64-segment repeated
+path; it is relative to the project root, carries no absolute path and no content, and is ugly rather
+than leaky.
+
+VERDICT: sound
+
+**browser: not applicable, and this is a claim with evidence rather than a skip.**
+
+`git show --stat 1a3ea74` lists three paths: this card, `docs/board/todo/0076-...` and
+`scripts/selftest.js`. `git diff --name-only d20be16 HEAD` with `docs/` filtered out lists
+`requirements.txt`, which is card `0071`'s, and `scripts/selftest.js`, and nothing else. No file under
+`app/` is touched by either build of this card - no route, no asset, no service worker, no `data/` - so
+there is no user-facing surface to check. No server was started.
+
