@@ -1,5 +1,38 @@
 # Card `0062` entered `human-review/` without the required section
 
+## What I need from you
+
+**Say which of the two adversarial reviews at the bottom of this card stands, then pick route 1 or
+route 2 below.** Pass is a dated line on this card's `## Comments` naming the route. Fail is leaving
+it alone: both acceptance boxes are ticked and no session can find work to do, so the loop keeps
+sending the card back into this lane and nothing moves.
+
+1. **The later review stands.** Both criteria are sound, nothing is unticked, and the card leaves
+   this lane as finished work.
+2. **The earlier review stands.** Criterion #2 is unticked and the card goes back to `todo/`, so a
+   builder can rewrite the ask this card wrote into card `0062` with the pass, the fail and the ask
+   in one unbroken block under that card's title.
+
+---
+
+**What's wrong.** Two reviewers read this same build on the same day. The earlier one graded
+criterion #2 a defect, because the pass sits a long way below the ask and a second, different fail
+sits below that. The later one graded the same criterion sound, on the ground that the criterion says
+`proves: manual` and that near-identical sections were passed elsewhere on this board that day. Both
+entries are on the thread below, and the later one dissents from the earlier one in writing.
+
+**Cause.** A reviewer on this board may not edit acceptance, so neither of them could untick the box
+they disagreed about. The card therefore came back with every box ticked, every later session found
+nothing open, and the loop promoted it on the boxes.
+
+**Why it needs you.** Nobody inside the loop can break the tie. A builder unticking a box would
+record a failure one reviewer says did not happen; a builder leaving it ticked would overrule the
+other. Lane moves belong to the scheduler. The call is yours.
+
+**Note on length.** This card is far past the board's 100-line budget and this pass could not bring
+it back. `## Comments` is append-only and holds nearly all of the file, so the budget and the thread
+rule pull against each other on every card in this lane.
+
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card

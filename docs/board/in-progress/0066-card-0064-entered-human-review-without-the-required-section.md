@@ -29,6 +29,9 @@ card in this series has done so.
   order to see the series repeat rather than converge.
 - `0055` - owns the one deliberate failure in `node scripts/selftest.js`. Read it before treating
   that failure as anything this card caused.
+- `0020` - the card that failure names. It is oversized and only Rob may prune it. Added here on
+  2026-09-11 because `## Plan` names `0020` and a reviewer returned the previous card in this series
+  for naming a card outside its own `## Links`.
 
 ## Not this card
 Not acting on any reviewer finding inside `0064`, not unticking any of its criteria, and not moving
@@ -38,23 +41,23 @@ this repository, and it is where this series actually ends.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0064-card-0062-entered-human-review-without-the-required-section.md`
+- [x] #1 WHEN `docs/board/human-review/0064-card-0062-entered-human-review-without-the-required-section.md`
       is searched for the heading `## What I need from you` anchored to the start of a line, THE CARD
       SHALL return exactly one hit, directly under its title. proves: none - the suite here is one
       node script and asserts nothing about card headings; the check is
       `grep -c '^## What I need from you' <path>`, run against that path rather than against a lane
-- [ ] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
+- [x] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
       is, within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the review verdicts above it, and use the ask already
+- [x] Read the card's last comment entry and the review verdicts above it, and use the ask already
       there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the card is still inside the 100-line budget afterwards, and say on it if it is not
-- [ ] Re-run the anchored grep over the whole lane and report which cards still miss the heading
+- [x] Check the card is still inside the 100-line budget afterwards, and say on it if it is not
+- [x] Re-run the anchored grep over the whole lane and report which cards still miss the heading
 
 ## Plan
 Work in this repository, on the branch the session was given. Only that one card file changes, and
@@ -100,3 +103,63 @@ and together they have produced nothing a user of the app can see. The mover tha
 card into `human-review/` is what would end it, and that mover is in `C:\Dev\ProgressBoard`, fenced
 out above. The previous card in the series said the same and it is still worth putting to Rob before
 an eighth is written.
+
+**2026-09-11**
+RESULT: done
+TESTS: +0 new, all green apart from the one declared red. `node scripts/selftest.js` reports
+306 passed, 1 failed; the failure is `no board card is too large for the agent file reader`, naming
+`docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md` at 209.8 KB. It was red before this
+work and card `0055` carries it.
+TOUCHED: docs/board/human-review/0064-card-0062-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/in-progress/0066-card-0064-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/todo/0067-card-0065-entered-human-review-without-the-required-section.md (new)
+OUT-OF-SCOPE: 0067
+
+**The check was watched going from nothing to one.** Criterion #1 is `proves: none`, so no test was
+written and none was asked for; the criterion names its own check and that check was run against the
+one named path. `grep -c '^## What I need from you'` printed `0` before the edit and `1` after it.
+The anchored sweep `grep -rLE '^## What I need from you' docs/board/human-review/*.md` named that
+path before the edit and does not name it after, so the check is not one that always passes.
+`head -4` puts the title on line 1 and the heading on line 3, with no second copy in the file.
+
+**The suite reads the board and was run rather than assumed.** `scripts/selftest.js` walks every lane
+and fails a card over 200 KB. The edited card is 29,788 bytes, which is 29.1 KB in the units the
+block itself prints, so it is inside the limit, and the suite result is unchanged.
+
+**The ask was taken from the card, not invented.** `0064` carries two adversarial review entries from
+the same day that disagree. The earlier graded criterion #2 a defect, because the pass sits far below
+the ask and a second, different fail sits below that. The later graded the same criterion sound under
+`proves: manual` and dissents from the earlier one in writing. The scheduler's stanza then asked for
+an untick or a reason the finding is wrong, and **a builder can supply neither**: unticking would
+record a failure one reviewer says did not happen, and leaving it ticked overrules the other. So the
+new section asks Rob to say which review stands and gives the two routes that follow.
+
+**Nothing inside `0064` was acted on, unticked or moved.** The only change to that file is the new
+section between the title and `## Why`. Its acceptance block, its thread, its verdicts and its lane
+are untouched, and nothing under `app/` or `scripts/` was touched by this work.
+
+**No count and no bare card number is written into the new section.** It names `0062` once, which is
+already in `0064`'s own `## Links` with its reason. "Two adversarial reviews" and "route 1 or route
+2" count entries and a list that an append-only thread cannot change. The 100-line budget is named as
+a constant from `docs/board/README.md`, which this card's own task list ordered.
+
+**This card's `## Links` gained `0020`, and that is the only edit to this card beyond ticking.** Its
+`## Plan` names `0020` while `## Links` did not, which is the exact defect a reviewer returned the
+previous card in the series for. The new line is marked with its date and reason. `## Plan` still
+hard-codes `306 passed, 1 failed`, which the same reviewer called a figure that rots; it was left as
+handed down and the card raised below does not repeat it.
+
+**The edited card is far past the 100-line budget and this pass could not bring it back.** It was 390
+lines before and is 423 after, a growth of 33 lines, which `git diff --stat` agrees with. The new
+section says so under "Note on length". `## Comments` is append-only and holds nearly all of the
+file.
+
+**Lane re-grep, anchored, after the change.** One file is still named,
+`docs/board/human-review/0065-card-0063-entered-human-review-without-the-required-section.md`. It was
+already in the lane when this card's scope was fixed to the single path `0064`, so it was raised as
+`0067` in `todo/` rather than fixed in passing.
+
+**Could not settle from the repository:** which of the two reviews on `0064` is right. That is the
+call the new section asks for, and no file here decides it. Nor whether the series should continue:
+the mover that creates the fault is in `C:\Dev\ProgressBoard`, outside this repository and outside
+every card in the series.
