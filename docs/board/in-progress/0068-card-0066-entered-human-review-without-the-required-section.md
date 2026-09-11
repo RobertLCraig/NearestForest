@@ -37,24 +37,24 @@ this repository, and is where this series actually ends.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/board/human-review/0066-card-0064-entered-human-review-without-the-required-section.md`
+- [x] #1 WHEN `docs/board/human-review/0066-card-0064-entered-human-review-without-the-required-section.md`
       is searched for the heading `## What I need from you` anchored to the start of a line, THE CARD
       SHALL return exactly one hit, directly under its title. proves: none - the suite here is one
       node script and asserts nothing about card headings; the check is
       `grep -c '^## What I need from you' <path>`, run against that path rather than against a lane
-- [ ] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
+- [x] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
       is, within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Read the card's last comment entry and the review verdicts above it, and use the ask already
+- [x] Read the card's last comment entry and the review verdicts above it, and use the ask already
       there rather than inventing one
-- [ ] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
+- [x] Write `## What I need from you` under the title, with the ask first and Pass / Fail / Why it
       needs you underneath
-- [ ] Check the edited card and any card this build writes against the 100-line budget, and say on
+- [x] Check the edited card and any card this build writes against the 100-line budget, and say on
       the thread where they are over it
-- [ ] Re-run the anchored grep over the whole lane and report which cards still miss the heading
+- [x] Re-run the anchored grep over the whole lane and report which cards still miss the heading
 
 ## Plan
 Work in this repository, on the branch the session was given. Only that one card file changes, and
@@ -98,3 +98,54 @@ already in the lane when that scope was set, so it was written up rather than fi
 is that the previous one arrived in the lane without its ask. Each is correct, each is cheap, and
 together they have produced nothing a user of the app can see. The mover that promotes a bounced card
 into `human-review/` is what would end it, and it is in `C:\Dev\ProgressBoard`, fenced out above.
+
+**2026-09-11**
+RESULT: done
+TESTS: +0 new, all green apart from the one declared red. `node scripts/selftest.js` reports
+306 passed, 1 failed; the failure names `docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md`
+at 209.8 KB. It was red before this work, `docs/HANDOVER.md` declares it and card `0055` carries it.
+TOUCHED: docs/board/human-review/0066-card-0064-entered-human-review-without-the-required-section.md
+TOUCHED: docs/board/in-progress/0068-card-0066-entered-human-review-without-the-required-section.md
+OUT-OF-SCOPE: none
+
+**The check was watched going from nothing to one.** Both criteria are `proves: none` / `proves:
+manual`, so no test was written and none was asked for. Before the edit,
+`grep -c '^## What I need from you'` against the named path printed `0`, and the anchored sweep
+`grep -rLE '^## What I need from you' docs/board/human-review/*.md` named that path. After the edit
+the count is `1` and the sweep names no file at all. `head -4` puts the title on line 1 and the
+heading on line 3, and there is no second copy in the file.
+
+**The suite reads the board and was run rather than assumed.** The edited card is 17,689 bytes,
+17.3 KB in the units the size block prints, well inside the 200 KB limit, and the suite result is
+unchanged.
+
+**The ask was taken from the card, not invented.** The last entry on `0066`'s thread is the
+scheduler asking the builder to untick what the reviewer disproved or say why the finding is wrong.
+Reading the three verdicts above it, acceptance and scope were both graded sound and the breakage
+verdict faulted something outside the acceptance block: the follow-up card that build raised was
+born three lines over the 100-line budget with nothing said about it. A builder can satisfy neither
+branch of the scheduler's demand, because unticking would record a failure the review says did not
+happen. So the new section puts that single question to Rob and gives the two routes that follow
+from either answer.
+
+**Nothing inside `0066` was acted on, unticked or moved.** The only change to that file is the new
+section between the title and `## Why`. Its acceptance block, its thread, its verdicts and its lane
+are untouched, and nothing under `app/` or `scripts/` was touched by this work.
+
+**No count and no bare card number is written into the new section.** It points at `done/` and at
+`todo/` rather than naming the successor cards, since they are not in `0066`'s own `## Links`, and
+the 100-line budget is named as the constant it is from `docs/board/README.md`.
+
+**Budget.** The edited card was 213 lines and is 246 after, a growth of 33 lines. It was already far
+past 100 and this pass could not bring it back, because nearly all of it is the append-only
+`## Comments` thread. The new section says so under "Note on length". This card, `0068`, is inside
+the budget when it is handed over and grows past it only by this entry, which is the thread.
+
+**Lane re-grep, anchored, after the change: it names no files.** Every card in `human-review/` now
+carries the heading, so this build raised no successor and the series has nothing left to hand on.
+Whether it stays that way depends on the mover in `C:\Dev\ProgressBoard`, which is fenced out of
+this card and out of this repository.
+
+**Could not settle from the repository:** which answer is right on the question the new section
+asks. No file here decides whether a build that breaks a written board rule fails a card whose own
+criteria were met. That is exactly why it goes to Rob.

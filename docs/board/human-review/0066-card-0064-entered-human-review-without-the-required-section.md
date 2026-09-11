@@ -1,5 +1,38 @@
 # Card `0064` entered `human-review/` without the required section
 
+## What I need from you
+
+**One answer: does the reviewer's finding at the bottom of this thread disprove either of this
+card's two ticked criteria?** Pass is a dated line on this thread choosing route 1 or route 2. Fail
+is leaving the card as it is, because the loop then promotes it here again on the same ticks.
+
+---
+
+**What is stuck, in plain words.** This card's job was to add the missing "what I need from you"
+section to one other card. It did that. The reviewer agreed the two criteria were met, and then
+faulted something else the same build did: it also created a follow-up card, and that new card was
+born three lines over the board's 100-line limit without saying so.
+
+The scheduler then asked the builder to untick whatever the reviewer disproved. **No builder can do
+that here.** The reviewer graded both criteria sound in writing. Unticking one would record a
+failure that the review says did not happen, and a reviewer is not allowed to untick. So the card
+sits with both boxes ticked, every session finds nothing open, and it comes back to this lane.
+
+**Route 1 - the finding is real but is not about the criteria.** The over-long card was fixed
+further down the series: the successor card now in `done/` was rewritten inside the budget, and the
+one it raised was born at exactly the limit. Say so here and this card is finished.
+
+**Route 2 - a build that breaks a written board rule fails the card, whatever its criteria say.**
+Then say which criterion to untick and this card goes back to `todo/` to be rebuilt.
+
+**Why it needs you.** Nothing in the repository settles it. It is a policy call about what the
+acceptance block is allowed to mean: only what the criteria say, or also the rules a build must not
+break on its way there. That decision outlives this card and shapes every review after it.
+
+**Note on length.** This card is far past the board's 100-line budget and this pass could not bring
+it back. Almost all of it is the append-only `## Comments` thread, which cannot be edited or pruned
+by anyone but you.
+
 ## Why
 `docs/board/README.md` says a card in `human-review/` must carry `## What I need from you`, directly
 under its title, and that a card arriving in the lane without a question is a defect in the card
