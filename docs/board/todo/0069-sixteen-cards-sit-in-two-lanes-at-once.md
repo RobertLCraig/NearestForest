@@ -692,3 +692,48 @@ VERDICT: sound
 `app/` is touched by either build of this card - no route, no asset, no service worker, no `data/` - so
 there is no user-facing surface to check. No server was started.
 
+**2026-09-11** RESULT: done, third build
+TESTS: +0 new, no assertion renamed
+TOUCHED: docs/board/ai-review/0021-rewrite-this-board-s-cards-for-the-reader.md
+OUT-OF-SCOPE: none
+
+**Two reviewers looked at this card at the same time and split.** One graded every dimension sound.
+The other graded `scope: defect` on card `0021`. Both entries are above, in the order they arrived.
+The split is worth resolving on the record rather than by picking the friendlier one.
+
+**The scope finding's stated reason is wrong on a fact.** It says "`0008` got a dated note for the
+same class of deletion and `0021` got none". `0021` got one: commit `de5cdd7` appended a nine-line
+dated entry to its thread recording the merge, naming what came across from the deleted copy, and
+saying in as many words that the card sat in `in-progress/` because that is where the later of the
+two writes left it. The second reviewer found that commit and said so.
+
+**Its substance was right anyway, and that is what has been acted on.** However well documented, a
+card asking Rob a question while sitting in a lane nobody sweeps for questions is a card whose ask
+cannot be reached. The answer was not a note and not a lane move; it was to finish the card. `0021`'s
+only open criterion was that `board:convention` report zero open cards failing, and the five cards
+making that count non-zero were the five stale duplicates this card deleted. It is now measured at
+zero, the criterion is ticked, the ask at the top is marked answered with the reason, and `0021` has
+moved to `ai-review/` with all six criteria met. There is no residue left to describe.
+
+**That is a lane move, which this card's `## Not this card` forbids.** It is made as card `0021`'s
+own work, on its own thread, on a fresh measurement of its own criterion, rather than as a judgement
+about where the merge should have put it. The distinction matters: the fence exists to stop a merge
+shuffling cards it did not build, not to freeze a card whose last criterion has just been met.
+
+**The secondary point in that review is wrong in its particulars and the second reviewer measured
+it.** My own earlier entry said "the two sibling board checks still carry the old narrow match", and
+that was inherited from the first review without being checked. The `0055` size check filters on
+`.md` alone and the `0054` finder filters on the `0020-` prefix. The block that carried
+`/^\d{4}-.*\.md$/` verbatim was card `0070`'s, which was not named by either of us, and it has since
+been widened by `0070`'s own third build.
+
+**One thing the second review found that is nobody's card yet.** A dangling directory entry directly
+under `docs/board/` still aborts the whole run, at the `0054` finder, before this card's guarded
+block is reached. It is a real hole and it belongs to that assertion rather than this one. Named here
+so the next reader does not have to find it twice.
+
+**The suite is 310 passed, 1 failed**, the one red being `0020` at 206.8 KB, which is `0055` and is
+Rob's. `board:convention --path=$PWD --cards` prints zero open cards failing.
+
+**Not checked in a browser.** This build touches one board card and nothing under `app/`.
+
