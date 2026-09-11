@@ -1,5 +1,4 @@
 ---
-needs: 0016
 not_for_the_loop: the only criterion left, #8, is an offline check on Rob's phone that no session can run
 no_outward_effect: "publishes" in criterion #2 is what OpenStreetMap holds about a campsite, not a deploy
 ---
@@ -14,12 +13,11 @@ dead-signal places this app was built for.
 
 ## Links
 
-**Blocked by**
-- `0016` - it measured that the Forestry and Land Scotland destinations index carries every
-  destination's coordinates in one HTML attribute, which is how the 44 Stay the Night car parks get
-  a position for two requests instead of forty-four.
-
 **Relates to**
+- `0016` - was this card's blocker and is answered. It measured that the Forestry and Land Scotland
+  destinations index carries every destination's coordinates in one HTML attribute, which is how the
+  44 Stay the Night car parks get a position for two requests instead of forty-four. Answered Yes on
+  2026-08-18 and built on 2026-08-29, and this card has shipped on top of it since.
 - `0004` - the unnamed campsites are the same defect it fixes for car parks, and its
   nearest-named-neighbour trick does not carry over: a campsite's neighbour is not its parent.
 - `0015` - the map credit this card adds sits in the same unreadable hint, so that card carries two

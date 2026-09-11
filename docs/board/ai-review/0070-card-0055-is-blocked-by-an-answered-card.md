@@ -599,3 +599,64 @@ every card on the board at HEAD for a `needs:` key, in frontmatter and outside i
 exactly three - `0017` to `0016`, `0020` to `0016`, `0027` to `0018`. `0055` carries none.
 
 VERDICT: defect
+
+**2026-09-11** RESULT: done, third build
+TESTS: +0 new, both assertions keep their names
+TOUCHED: scripts/selftest.js, docs/board/human-review/0017-how-much-of-wales-can-we-actually-ship.md, docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md, docs/board/discarded/0075-two-cards-wait-on-a-decision-you-already-made.md
+OUT-OF-SCOPE: none
+
+**All four findings are accepted and the first one is the same mistake I had just finished
+criticising.** The previous build refused to read a `## Decided` heading as an answer because that
+would name a live blocker stale, and then shipped a marker test with no notion of where an entry
+begins, so a marker inside a fenced code block counted. The card it named as the cost, `0075`,
+contains exactly such a fence, because the board README tells every decision card to end
+`## Recommendation` with the ready-to-paste marked line. That makes it the convention rather than an
+oddity, and the open card I had written an hour earlier read as answered.
+
+**Fenced and indented blocks are now cut before the marker is looked for**, and the marker must open
+a line. Three runs, each one change from the last, with card `0075` as the subject because it is the
+card that produced the fault:
+
+| probe | result |
+|---|---|
+| `0075`'s fenced sample line, unchanged | silent |
+| a real `**Decided:**` entry appended to `0075` at column zero | named, "answered on its own thread" |
+| the same marker indented four spaces | silent |
+
+**The block-list form is read.** `needs:` with its values on the lines below it was still silently
+no blockers, while the entry above claimed every failing shape now reports. It was an overclaim and
+the review was right to call it. The key's own line and any `- value` lines under it are now taken
+together, and a `needs:` key carrying nothing at all is reported rather than ignored. Proved with a
+two-item block list holding one settled number and one open one: the settled one is named, the open
+one is not.
+
+**Every read in this block is guarded.** A directory named like a card in a lane aborted the run
+before two dozen later assertions and the summary, which the review hit by accident. The lane walk,
+the `statSync`, and both file reads report on the `every needs: on this board can be read` assertion
+instead. Proved by creating `docs/board/todo/0098-a-directory.md` as a directory: the suite completes
+at 310 passed, 1 failed rather than dying. The file match also picks up the shapes card `0069` found,
+so a `.markdown` or upper-case card is no longer invisible to this block either.
+
+**The disposal is reversed, and the review was right that it was wrong.** Whether card `0016` was
+answered is settled by reading it: Rob wrote "Yes" on 2026-08-18 and "Built" on 2026-08-29. That is
+none of the four things the README reserves for a person, so asking him was an agent handing over its
+own reading. Cards `0017` and `0020` now record `0016` under `Relates to` with the answer as the
+reason, and neither carries `needs:` any more. `0017`'s own `waiting_on:` licence question is
+untouched and is what actually holds it up. Card `0075` is in `discarded/` with the reason at the top
+of it.
+
+**One thing `0075` asked for is deliberately not done.** Card `0016` still carries no `**Decided:**`
+marker, so no check can see it as answered. Nothing turns on that now that both blockers are cleared,
+and the note saying a future `needs: 0016` will not be caught sits in the code comment above the
+check rather than on a card in Rob's queue.
+
+**Card `0027`'s blocker on `0018` is still live and still reported by nothing**, which is correct.
+`0018`'s only `## Decided` entry is Rob writing that he is on the fence, and `0027` says there is
+nothing to send until it is answered.
+
+**The suite is 310 passed, 1 failed**, the one red being `0020` at 206.8 KB, which is `0055` and is
+Rob's. `board:convention --path=$PWD --cards` prints `NearestForest 0 47 0077`: zero open cards
+failing, one fewer open card than before because `0075` was discarded.
+
+**Not checked in a browser.** This build touches `scripts/selftest.js` and three board cards, and
+nothing under `app/`.

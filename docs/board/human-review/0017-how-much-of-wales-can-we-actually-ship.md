@@ -1,5 +1,4 @@
 ---
-needs: 0016
 waiting_on: NRW's answer on the recreation data licence - recheck 2026-09-11
 ---
 # How much of Wales can we actually ship?
@@ -78,11 +77,11 @@ Measured on 2026-08-14:
 
 ## Links
 
-**Blocked by**
-- `0016` - it carries the scope call that gates both cards, because the PRD's non-goals ruled out
-  Wales and Scotland in one line. A no there discards this card unread.
-
 **Relates to**
+- `0016` - was this card's blocker and is answered. Rob said Yes on 2026-08-18 and it was built on
+  2026-08-29, so the scope call that gated this card has been made and the one-line non-goal no
+  longer rules Wales out. What still holds this card up is its own licence question, which is the
+  `waiting_on:` note in the frontmatter.
 - `0004` - it exists because England's open dataset is full of unnamed assets, and option 2 here
   would import the same problem from Wales at four times the scale.
 - `0018` - an introduction from Forestry England would turn the email in step 1 from a cold

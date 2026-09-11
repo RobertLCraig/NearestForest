@@ -2932,32 +2932,58 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
   // the heading would name 0027's live blocker as stale and push somebody to clear it, which is a
   // worse failure than the miss it would close.
   // The cost of that call is recorded rather than hidden: card 0016 IS answered ("Yes", 2026-08-18)
-  // and built, carries no `**Decided:**` marker because it predates the merged thread, and cards
-  // 0017 and 0020 both still declare they need it. This check does not catch that pair. Card 0075
-  // carries the ask.
+  // and built and carries no `**Decided:**` marker, because it predates the merged thread. This
+  // check cannot see that, so the two cards naming it were cleared by hand instead, each with the
+  // answer as the reason on its `## Links` line. If a `needs: 0016` is ever written again, nothing
+  // here will catch it until somebody marks that card.
+  //
+  // A MARKER INSIDE A CODE FENCE IS NOT AN ANSWER. docs/board/README.md tells every decision card
+  // to end `## Recommendation` with the exact line to paste, dated and marked, so a fenced or
+  // indented sample of the marker is the CONVENTION rather than an oddity, and the first version of
+  // this check read one on an open card as that card being answered. Fenced and indented blocks are
+  // cut before the marker is looked for, and the marker must open a line.
   const boardDir = path.join(ROOT, 'docs', 'board');
   const lanesOf = new Map();
+  const unreadableLane = [];
   fs.readdirSync(boardDir)
     .map(lane => path.join(boardDir, lane))
-    .filter(d => fs.statSync(d).isDirectory())
-    .forEach(d => fs.readdirSync(d)
-      .filter(f => /^\d{4}-.*\.md$/.test(f))
-      .forEach(f => {
-        const lane = path.basename(d);
-        if (!lanesOf.has(f.slice(0, 4))) lanesOf.set(f.slice(0, 4), []);
-        lanesOf.get(f.slice(0, 4)).push({ lane, file: path.join(d, f) });
-      }));
+    .filter(d => { try { return fs.statSync(d).isDirectory(); } catch (e) { return false; } })
+    .forEach(d => {
+      let names;
+      try { names = fs.readdirSync(d); }
+      catch (e) { unreadableLane.push(`${path.basename(d)}: ${e.code || e.message}`); return; }
+      names.filter(f => /^\d{4}(?:\D.*)?\.(?:md|markdown)$/i.test(f))
+        .forEach(f => {
+          const full = path.join(d, f);
+          try { if (fs.statSync(full).isDirectory()) return; }
+          catch (e) { unreadableLane.push(`${path.basename(d)}/${f}: ${e.code || e.message}`); return; }
+          const lane = path.basename(d);
+          if (!lanesOf.has(f.slice(0, 4))) lanesOf.set(f.slice(0, 4), []);
+          lanesOf.get(f.slice(0, 4)).push({ lane, file: full });
+        });
+    });
   const SETTLED_LANES = ['done', 'discarded', 'ai-review'];
   const stale = [];
   const malformed = [];
+  const readCard = (file) => {
+    try { return fs.readFileSync(file, 'utf8'); }
+    catch (e) { unreadableLane.push(`${path.relative(boardDir, file).replace(/\\/g, '/')}: ${e.code || e.message}`); return null; }
+  };
+  // Everything inside ``` fences or indented four spaces is a sample, not an entry.
+  const prose = (text) => text
+    .replace(/^ {0,3}(`{3,}|~{3,})[\s\S]*?^ {0,3}\1[^\n]*$/gm, '')
+    .split('\n').filter(l => !/^(?: {4,}|\t)/.test(l)).join('\n');
   // Why a card is settled, said in the reader's words, or null.
   const settledBecause = (num) => {
     const where = lanesOf.get(num) || [];
     if (!where.length) return null;                       // names no card on this board: not ours
     const lane = where.find(w => SETTLED_LANES.includes(w.lane));
     if (lane) return `in ${lane.lane}`;
-    const answered = where.find(w => /^\s*(?:\*\*\d{4}-\d{2}-\d{2}\*\*\s*)?\*\*Decided:\*\*/m
-      .test(fs.readFileSync(w.file, 'utf8')));
+    const answered = where.find(w => {
+      const text = readCard(w.file);
+      return text !== null
+        && /^(?:\*\*\d{4}-\d{2}-\d{2}\*\*\s+)?\*\*Decided:\*\*/m.test(prose(text));
+    });
     return answered ? 'answered on its own thread' : null;
   };
   // The frontmatter parse is hand-rolled, so every shape it cannot read reliably is REPORTED.
@@ -2965,7 +2991,9 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
   // this project keeps being caught by: one trailing space on a closing `---` hid a real blocker.
   [...lanesOf.entries()].forEach(([num, where]) => {
     where.filter(w => !SETTLED_LANES.includes(w.lane)).forEach(w => {
-      const lines = fs.readFileSync(w.file, 'utf8').split(/\r?\n/);
+      const raw = readCard(w.file);
+      if (raw === null) return;
+      const lines = raw.split(/\r?\n/);
       if (lines[0].trim() !== '---') {
         // No frontmatter at all is the common, correct case. A `needs:` at column zero in the body
         // is not: it is a blocker no view can show, which the README forbids in as many words.
@@ -2976,14 +3004,24 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
       const end = lines.findIndex((l, i) => i > 0 && l.trim() === '---');
       if (end < 0) { malformed.push(`${num} in ${w.lane} opens frontmatter and never closes it`); return; }
       const fm = lines.slice(1, end);
-      fm.forEach((l) => {
+      fm.forEach((l, i) => {
         const m = /^(\s*)(needs)(\s*):(.*)$/i.exec(l);
         if (!m) return;
         if (m[1] !== '' || m[2] !== 'needs' || m[3] !== '') {
           malformed.push(`${num} in ${w.lane} writes its needs key as "${l.trim().split(':')[0]}", which no reader of this board looks for`);
           return;
         }
-        m[4].replace(/[[\]]/g, ' ').split(',').map(s => s.trim()).filter(Boolean).forEach(tok => {
+        // YAML's block-list form puts the values on the lines BELOW the key, so reading the key's
+        // own line alone saw an empty value and reported no blockers. Take both forms.
+        let value = m[4];
+        for (let j = i + 1; j < fm.length && /^\s*-\s*\S/.test(fm[j]); j += 1) {
+          value += `, ${fm[j].replace(/^\s*-\s*/, '')}`;
+        }
+        if (!value.trim()) {
+          malformed.push(`${num} in ${w.lane} carries a needs: key with no value`);
+          return;
+        }
+        value.replace(/[[\]]/g, ' ').split(',').map(s => s.trim()).filter(Boolean).forEach(tok => {
           const dep = /^(\d{4})\b/.exec(tok);
           if (!dep) { malformed.push(`${num} in ${w.lane} needs "${tok}", which is not a four-digit card number`); return; }
           const why = settledBecause(dep[1]);
@@ -2993,7 +3031,9 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
     });
   });
   ok('no open card is blocked by a settled card', stale.length === 0, stale.sort().join(' | '));
-  ok('every needs: on this board can be read', malformed.length === 0, malformed.sort().join(' | '));
+  ok('every needs: on this board can be read',
+     malformed.length === 0 && unreadableLane.length === 0,
+     malformed.concat(unreadableLane.map(u => `could not read ${u}`)).sort().join(' | '));
 }
 
 console.log('\n--- the python dependency is written down (card 0071) ---');
