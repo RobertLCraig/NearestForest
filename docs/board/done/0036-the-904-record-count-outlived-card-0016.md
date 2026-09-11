@@ -349,3 +349,61 @@ this build touched is `scripts/selftest.js`, which the app never loads.
 records, 550 with a `url`, 274 on `forestryengland.uk`, 276 on `forestryandland.gov.scot`, 630 with
 no `url`. The rebuild did not move any of them, which the check now proves on every run rather than
 leaving to a reader.
+
+### 2026-09-11 review (v20260911025445-07f3)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**AC1 ÔÇö the three files say today's count.** `app/api/nearest.php` header comment and `docs/build/IOS-SHORTCUT.md` both read 1,180. The `safeHref()` comment in `app/core.js` reads 550 records with a url. The shipped file holds 1,180 records, 550 with a url. Match.
+
+**AC2 ÔÇö both agencies named.** The same `safeHref()` comment names forestryengland.uk and forestryandland.gov.scot. A second check in `scripts/selftest.js`, in the block "dataset counts carried in prose (card 0036)", pushes a failure if either host string is missing from `app/core.js`.
+
+**AC3 ÔÇö the suite fails on drift.** The `carried` table in that block holds a row per claimed number, each expected value computed live from `sites.json`, reported through one check named `dataset counts in comments match sites.json`.
+
+**AC4 ÔÇö all four numbers above `safeHref` are guarded.** This was the open finding. Three rows now exist for 274, 276 and 630, beside the original 550 row. I re-ran every pattern against `app/core.js` and the live data: 274/274, 276/276, 630/630, 550/550. The wrap-tolerant `\s+` is present where the sentence breaks lines.
+
+The earlier defect is closed.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope check of the latest pass on card 0036.
+
+The only commit for this card since the last review is `bd137bd`. It changes two things: the `carried` table inside the `dataset counts carried in prose (card 0036)` block in `scripts/selftest.js`, and the card file itself. Nothing else moved.
+
+The fence holds. In `docs/DATA-MODEL.md` the `counts_by_country` block still reads `England: 904`, which the card says is correct and must stay. In `docs/DECISIONS.md` both 904s still sit inside their dated entries, untouched. `safeHref` in `app/core.js` is unchanged, still scheme-only.
+
+The earlier scope complaint about unrelated files (`app/map.js`, `app/api/tiles.php`, `app/data/campsites.json`, the outreach briefing) is not this card's work. Those arrived on other cards' commits and are attributed as such in the same `carried` table, with rows named for cards 0038, 0039, 0054.
+
+Nothing left half done in this lens. The three extra numbers in the `safeHref` comment, 274, 276 and 630, all now have a row in the same table, computed live from `app/data/sites.json`, and they match the comment text as it stands.
+
+VERDICT: sound
+
+**breakage: sound**
+
+**breakage**
+
+I attacked the new guard, not the whole branch.
+
+What I did:
+
+- Read the `carried` table in `scripts/selftest.js` and the `safeHref` docblock in `app/core.js`.
+- Ran each of the four patterns against `app/core.js` myself. They return 550, 274, 276, 630.
+- Counted the shipped file myself: 1,180 records, 550 with a `url`, 274 `www.forestryengland.uk`, 276 `forestryandland.gov.scot`, 630 with none. All four match.
+
+Tries that failed to break it:
+
+- **A host the row filters miss.** The 274 row allows `www.` and the 276 row does not. `URL_HOSTS` in `scripts/parse.py` is a closed set of exactly those three spellings, so no record can dodge both rows today.
+- **A re-wrap unhooking a check.** The two wrapping rows use `\s+`. A wrap in the one place without it makes the pattern miss, and a miss reports `no count matching`, which fails loudly, not silently.
+- **A comment made false by the change.** The block comment in `scripts/selftest.js` names the fault and the reason for `\s+`, and both are true of the code beside it. The `safeHref` docblock claim that the check reads the scheme and never the host matches `safeHref` in `app/core.js`.
+- **A stale sibling.** Both `app/api/nearest.php` and `docs/build/IOS-SHORTCUT.md` read 1,180 and both are in the table.
+
+I could not make it pass while wrong.
+
+VERDICT: sound
+
