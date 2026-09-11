@@ -2929,6 +2929,61 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
   ok('no open card is blocked by a settled card', stale.length === 0, stale.sort().join(' | '));
 }
 
+console.log('\n--- the python dependency is written down (card 0071) ---');
+{
+  // Card 0071: `requests` is the only third-party module this project imports and it was named in
+  // no file anywhere, so a fresh checkout met an import error as its first action and two
+  // assertions in this suite failed for a reason that was not a fault in the tree. A red that has
+  // to be diagnosed before it can be dismissed trains the next session to skim reds, on a project
+  // whose named recurring defect is checks that cannot fail.
+  // The standard library is asked for rather than listed here: python knows its own, and a
+  // hard-coded list would flag a new stdlib import as third-party the day it is used.
+  // The comparison is by import name. Where a distribution installs under a different name than
+  // it imports, requirements.txt has to carry the import name in a comment for this to see it;
+  // there is one dependency and the two names match, so that case does not arise yet.
+  const { spawnSync } = require('child_process');
+  const PY = process.env.PYTHON || 'python';
+  const PYENV = Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' });
+  const REQ = path.join(ROOT, 'requirements.txt');
+  const scriptsDir = path.join(ROOT, 'scripts');
+  const stdlibRun = spawnSync(PY, ['-c',
+    'import sys, json; print(json.dumps(sorted(sys.stdlib_module_names)))'],
+    { encoding: 'utf8', env: PYENV });
+  let stdlib = null;
+  try { stdlib = new Set(JSON.parse(stdlibRun.stdout)); } catch (e) { stdlib = null; }
+  if (!stdlib) {
+    // No silent skip: python is the whole pipeline, so a python that cannot answer is a failure.
+    ok('the python dependency list names every third-party import in scripts', false,
+       `could not read sys.stdlib_module_names from ${PY}: ${(stdlibRun.stderr || '').trim().slice(0, 200)}`);
+  } else {
+    const declared = fs.existsSync(REQ)
+      ? new Set(fs.readFileSync(REQ, 'utf8').split(/\r?\n/)
+          .map(l => l.replace(/#.*$/, '').trim())
+          .filter(Boolean)
+          .map(l => l.split(/[<>=!~\[;]/)[0].trim().toLowerCase())
+          .filter(Boolean))
+      : new Set();
+    const missing = [];
+    fs.readdirSync(scriptsDir).filter(f => f.endsWith('.py')).sort().forEach(f => {
+      fs.readFileSync(path.join(scriptsDir, f), 'utf8').split(/\r?\n/).forEach(line => {
+        const m = /^\s*(?:import\s+(.+)|from\s+([A-Za-z_][\w.]*)\s+import\b)/.exec(line);
+        if (!m) return;
+        const mods = m[2] ? [m[2]] : m[1].split(',');
+        mods.map(s => s.trim().split(/\s+as\s+/)[0].split('.')[0])
+          .filter(Boolean)
+          .forEach(mod => {
+            if (mod === '' || mod === '__future__' || stdlib.has(mod)) return;
+            if (declared.has(mod.toLowerCase())) return;
+            missing.push(`scripts/${f} imports ${mod}`);
+          });
+      });
+    });
+    if (!fs.existsSync(REQ) && missing.length === 0) missing.push('requirements.txt does not exist');
+    ok('the python dependency list names every third-party import in scripts',
+       missing.length === 0, [...new Set(missing)].join(' | '));
+  }
+}
+
 console.log('\n--- ranking from Brighton ---');
 const rankedF = NF.rank(sites, 'forest', BRIGHTON, '');
 const rankedC = NF.rank(sites, 'carpark', BRIGHTON, '');
