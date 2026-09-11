@@ -255,3 +255,52 @@ report an error, in a test whose whole subject is a check that cannot fail. Spel
 is nothing to deploy. **No browser check, and that is a claim rather than a skip**: this build
 touched only `scripts/selftest.js`, and the render half of the rule already has browser evidence on
 this card from 2026-08-10.
+
+### 2026-09-11 review (v20260911161908-7e16)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Traced each criterion to code.
+
+**#1** ÔÇö `openSheet` in `app/app.js` builds the More row only when `NF.safeHref(site.url)` returns a value; `safeHref` in `app/core.js` trims and tests `^https:\/\/[^\s/?#]`, so `javascript:`, `data:`, `http:`, `//host` and leading-whitespace forms yield null and no `<a>` is written. I grepped for other readers of `site.url` and found none that build an href.
+
+**#2** ÔÇö `validate` in `scripts/parse.py` appends "url is not https" for a non-`https://` string and "url is off-site" when `urlparse(u).hostname` is outside `URL_HOSTS`, and `main` exits non-zero on `problems` before writing.
+
+**#3** ÔÇö the card-0013 block in `scripts/selftest.js` sweeps `DATA.sites` through `NF.safeHref` and a second sweep pins both agency hosts; campsites get their own sweep.
+
+**#4** ÔÇö the "the build refuses a bad url" block in `scripts/selftest.js` imports `scripts/parse.py` by path, clears `problems`, calls `m.validate` on eight records, and asserts three accepted and five refused with the right reason. A dead python or unparseable report yields a failure rather than a pass, so it cannot go green by accident. Deleting the url branch turns it red.
+
+I tried the case, whitespace and no-url angles and could not break it.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope, card 0013 (commit 7310e77).**
+
+The commit touches exactly two files: `scripts/selftest.js` and the card itself. No app code, no `parse.py`, no data. That matches the declared TOUCHED line, and `git diff` of the commit shows no edit to `validate()` in `scripts/parse.py`, so the test was added without quietly adjusting the code under test.
+
+**Fences.** "Not sanitising other dataset fields": the new block in `selftest.js` builds synthetic records and asserts only on the `url` problems, and the accept cases carry ordinary values for every other field. "No general allow-list for other outbound links": nothing outside `safeHref` in `app/core.js` and `openSheet` in `app/app.js` was touched, and `NF.navUrl` is untouched.
+
+**Half done.** The new test drives `validate()` directly and checks the `problems` list, not the exit code or the write. That gap is closed next door rather than left open: the fixture block ending in "a failed parse leaves the previous dataset untouched" already proves a populated `problems` list gives a non-zero exit and an unchanged `sites.json`. Together they cover criterion #2 end to end.
+
+The added criterion #4 was written by the builder, not a reviewer, and it names the test that now exists rather than restating an existing claim.
+
+I tried the "grew a host check", "edited the code under test" and "touched another card's files" angles. None held.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding: the stub's import left a compiled artefact in the repository, and it is tracked.**
+
+`scripts/__pycache__/parse.cpython-313.pyc` is in `git ls-files`, and `.gitignore` has no `__pycache__` or `*.pyc` rule. Nothing else in this project imports `scripts/parse.py` as a module: `runParse` in `scripts/selftest.js` copies the file into a temp tree, and `main()` is reached through `if __name__ == "__main__"`. The new "the build refuses a bad url (card 0013)" block is the one thing that does, via `importlib.util.exec_module` in its stub, and CPython writes the cache beside the source on that path. The block's own `PYTHONDONTWRITEBYTECODE` acknowledges the effect, but it was added after the artefact was already committed, so it now prevents the very refresh that would keep the file honest. The result is frozen bytecode of an older `parse.py` sitting in a public repository that CLAUDE.md says holds no build output, and a file that reads as source-of-truth for the function this card exists to protect. Delete it and ignore the directory.
+
+The guard logic itself held: accept and refuse cases both bite, and a changed message wording fails loudly rather than quietly.
+
+VERDICT: defect
+
