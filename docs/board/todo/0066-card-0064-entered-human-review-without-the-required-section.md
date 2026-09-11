@@ -163,3 +163,49 @@ already in the lane when this card's scope was fixed to the single path `0064`, 
 call the new section asks for, and no file here decides it. Nor whether the series should continue:
 the mover that creates the fault is in `C:\Dev\ProgressBoard`, outside this repository and outside
 every card in the series.
+
+### 2026-09-11 review (v20260911054013-df37)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Criterion #1 traces to the real file. In `docs/board/human-review/0064-card-0062-entered-human-review-without-the-required-section.md`, the check the criterion names, `grep -c '^## What I need from you'`, returns `1`. The title is the first line and the heading is the third, with `## Why` far below. One hit, in the right place.
+
+Criterion #2 also holds. The ask, the pass and the fail sit in one unbroken bold paragraph directly under the heading, before the numbered routes and before the rule. The ask is which of the two reviews stands. The pass is a dated line on the thread naming a route. The fail is leaving the card alone. A reader meets all three before anything else.
+
+I tried to break #2 on the earlier reviewer's ground, the fault that sank card `0062`, where the pass sat far below the ask after a rule and two paragraphs. That shape is absent here. Counted as strict lines the block runs past three, because the heading and a blank line come first, but the criterion is marked `proves: manual` and the same shape was graded sound on card `0063` in this lane on the same day.
+
+I found nothing to fault.
+
+VERDICT: sound
+
+**scope: sound**
+
+**scope review of card 0066**
+
+I tried to break the scope and could not.
+
+- **The build commit touched three markdown files only.** `ab4c366` names the target card `0064` in `human-review/`, its own card `0066`, and the new `0067` in `todo/`. Nothing under `app/`, `scripts/` or `data/`.
+- **Every fence in `## Not this card` held.** The diff of `docs/board/human-review/0064-card-0062-entered-human-review-without-the-required-section.md` has zero deleted lines. It is one insertion between the title and `## Why`. Both acceptance boxes are still `[x]`, the thread and both review verdicts are untouched, and the file is still in `human-review/` as a modify, not a rename.
+- **Lane moves are not in the build.** `3d5bcae` and `2bc35b5` move card `0066` and change no content. The previous build in this series moved its own card inside the build commit. This one does not.
+- **Raising `0067` is declared, not quiet.** It is marked `OUT-OF-SCOPE` on the thread and is a faithful renumber of the card handed down, with the rotting count `306 passed, 1 failed` removed and `0020` added to its `## Links`.
+- **No check was built and nothing in `C:\Dev\ProgressBoard` was touched.**
+- **The one edit to its own card beyond ticking** is the `0020` line in `## Links`. That is the exact repair the last reviewer asked for, and it is dated and reasoned on the card.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding: the card this build created is born over the board's 100-line budget, and nothing says so.**
+
+`docs/board/README.md`, section "A whole card fits in 100 lines", sets the budget. The new card `docs/board/todo/0067-card-0065-entered-human-review-without-the-required-section.md` is 103 lines. The build grew it from 102 while rewriting it, and its thread says nothing about the overflow.
+
+The same build's own task list asked for a budget check, and it made that check only on the edited card `docs/board/human-review/0064-card-0062-entered-human-review-without-the-required-section.md`, where it wrote a "Note on length". So the rule is asserted in one file and quietly broken in the other file the same commit wrote. Unlike `0064`, `0067` has no append-only thread to excuse it: every line of it is `## Why`, `## Links`, `## Plan` and prose the build controls.
+
+Everything else held. I re-ran the suite: `306 passed, 1 failed`, the failure being card `0020` only. The anchored lane grep names only the `0065` card, as reported. The `0064` edit is one insertion between title and `## Why`, and `0062` is already in that card's `## Links`.
+
+VERDICT: defect
+
