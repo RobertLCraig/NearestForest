@@ -324,10 +324,6 @@ violation on somebody's phone is visible to nobody. That is a cost worth stating
 
 VERDICT: defect
 
-**2026-09-11** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 3 times between todo and ai-review, all 7 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 7 of 7 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
-
-## Comments
-
 **2026-09-10** RESULT: done
 TESTS: +1 new, 2 widened, all green (285 passed, 0 failed)
 TOUCHED: scripts/selftest.js
@@ -428,4 +424,6 @@ I attacked the widened checks and the comment strip.
 **Gap the tests do not build.** In the hardening block of `scripts/selftest.js`, `no style attribute in any shipped markup` is a text match. `setAttribute('style', ...)` violates `style-src 'self'` and passes both widened checks.
 
 VERDICT: defect
+
+**2026-09-11** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 3 times between todo and ai-review, all 7 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 7 of 7 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
 
