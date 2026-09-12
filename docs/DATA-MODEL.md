@@ -84,14 +84,18 @@ no stale copy of a position-dependent value on disk.
 
 ```json
 {
-  "generated_at": "2026-08-29",
+  "generated_at": "2026-09-10",
   "counts": { "forest": 550, "carpark": 630 },
   "counts_by_country": { "England": 904, "Scotland": 276 },
-  "attribution": "Contains public sector information licensed under the Open Government Licence v3.0.",
+  "attribution": "English forest details: Crown Copyright, courtesy Forestry England, licensed under the Open Government Licence. Scottish forest details from Forestry and Land Scotland contain public sector information licensed under the Open Government Licence v3.0. Car park details contain public sector information licensed under the Open Government Licence v3.0; © Forestry Commission copyright and/or database right 2025. All rights reserved.",
   "sites": [ /* Site records, forests first, each tab already sorted by name */ ]
 }
 ```
 
+- **The `attribution` and `generated_at` above are pinned to the shipped file by a self-test**
+  (`the data model example matches the shipped dataset header`, card 0073). They are a copy of a
+  licence statement, and the copy drifted once already. Re-running the pipeline moves
+  `generated_at`, so update this block in the same commit or the suite stays red.
 - **Coordinates are WGS84 decimal degrees everywhere.** The car park source is EPSG:27700 (British
   National Grid) and is reprojected at build time by requesting `outSR=4326` from the FeatureServer.
   No British National Grid value survives into `sites.json`. A record carrying an easting/northing

@@ -2805,6 +2805,40 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
      withUrl.some(s => /forestryengland\.uk/.test(s.url)) &&
      withUrl.some(s => /forestryandland\.gov\.scot/.test(s.url)));
 
+  // Card 0073: DATA-MODEL illustrates the sites.json shape with a worked example, and that
+  // example is the fourth copy of the attribution string. Card 0019 rewrote the other three
+  // -- the ATTRIBUTION constant, the shipped file and the footer -- and pinned them to each
+  // other; this one was left showing a retired one-line credit that names one agency where
+  // the licence statement names three. The credit is a licence term, not a label, and this
+  // is the document a person reads before changing the generator. generated_at is pinned for
+  // the same reason: a literal date nobody re-reads is a date that drifts. Re-running the
+  // pipeline therefore turns this red until the example is updated, which is the same bargain
+  // CACHE/BUILD already takes on this project. The alternative to the upkeep is to drop the
+  // date from the example, not to leave a stale one in it.
+  // \r?\n because the doc is checked out with CRLF on Windows, and a fence matcher pinned to
+  // one line ending finds nothing and fails for a reason that is not the one under test.
+  const example = (/```json\r?\n([\s\S]*?)```/
+    .exec(dataModel.slice(dataModel.indexOf('`data/sites.json`'))) || [])[1];
+  const quoted = (key) => {
+    if (example === undefined) return undefined;
+    const m = new RegExp(`"${key}":\\s*("(?:[^"\\\\]|\\\\.)*")`).exec(example);
+    return m ? JSON.parse(m[1]) : undefined;
+  };
+  const drift = example === undefined
+    ? ['no fenced json example found under the data/sites.json heading']
+    : [['attribution', DATA.attribution], ['generated_at', DATA.generated_at]]
+        .map(([key, want]) => {
+          const got = quoted(key);
+          if (got === undefined) return `${key}: the example carries no such key`;
+          return got === want
+            ? null
+            : `${key}: the example says ${JSON.stringify(got)}, `
+              + `app/data/sites.json holds ${JSON.stringify(want)}`;
+        }).filter(Boolean);
+  // Named exactly as card 0073 cites it, so the run log and the card agree.
+  ok('the data model example matches the shipped dataset header',
+     drift.length === 0, drift.join(' | '));
+
   // Card 0054: criterion #2 on card 0020 argues from the RAW Overpass feature count, not
   // from the shipped file, so nothing above can check it -- and it was five out. The card
   // moves between lane folders, so find it rather than naming a path.

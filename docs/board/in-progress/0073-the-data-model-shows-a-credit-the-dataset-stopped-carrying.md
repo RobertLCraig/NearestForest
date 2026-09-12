@@ -47,18 +47,18 @@ the same example block are correct against the shipped file and were checked whi
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 THE `sites.json` EXAMPLE in `docs/DATA-MODEL.md` SHALL carry the `attribution` string and
+- [x] #1 THE `sites.json` EXAMPLE in `docs/DATA-MODEL.md` SHALL carry the `attribution` string and
       the `generated_at` value that `app/data/sites.json` holds. proves: `the data model example
       matches the shipped dataset header`
-- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail if either value in that example
+- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail if either value in that example
       differs from the shipped file, naming which. proves: `the data model example matches the
       shipped dataset header`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Write the assertion first and watch it name both the credit and the date before editing the doc
-- [ ] Copy the shipped `attribution` and `generated_at` into the example block
-- [ ] Re-run the suite
+- [x] Write the assertion first and watch it name both the credit and the date before editing the doc
+- [x] Copy the shipped `attribution` and `generated_at` into the example block
+- [x] Re-run the suite
 
 ## Plan
 **Where to stand.** This repository, on a branch of `main`. There is no PHP suite here and no
@@ -99,3 +99,43 @@ in the document and confirm the run names it.
 finding turned into checks and nothing here is built yet, so every box is honestly unticked. The
 finding itself is the `scope: defect` verdict of the 2026-09-11 review on card `0019`, which is
 quoted in full on that card's thread.
+
+**2026-09-12**
+RESULT: done
+TESTS: +1 new, all green
+TOUCHED: scripts/selftest.js, docs/DATA-MODEL.md, docs/board/in-progress/0073-the-data-model-shows-a-credit-the-dataset-stopped-carrying.md
+OUT-OF-SCOPE: none
+
+The check went in first, in the card 0036 block as the Plan asks, named `the data model example
+matches the shipped dataset header`. It finds the fenced JSON example after the `data/sites.json`
+heading, pulls `attribution` and `generated_at` back out of it as JSON string literals, and compares
+both against the parsed `app/data/sites.json`.
+
+**Red-proofed three ways.** Its first run at HEAD failed naming both values: the example's one-line
+Open Government Licence credit against the shipped four-part sentence, and `2026-08-29` against
+`2026-09-10`. Then the document was corrected and it went green. Then one word of the credit in the
+document was changed to `Forestry Englando` and the run named it again, so it is not a check that
+passes on anything. The restored file is green.
+
+**One honest false start, recorded because it is the failure mode this board keeps finding.** The
+fence matcher was first written `/```json\n/`, which matches nothing in a CRLF checkout, so the
+first red run failed with `no fenced json example found` rather than on the defect. That is a red
+for the wrong reason and would have been a check that could never pass, not one that could never
+fail. It is now `\r?\n`, with a comment saying why.
+
+**The date is pinned and the upkeep is taken knowingly**, per the Plan. Re-running the pipeline
+moves `generated_at` and turns the suite red until one line of the document moves with it, the same
+bargain as `CACHE` in `app/sw.js` matching `BUILD` in `app/core.js`. Dropping the date from the
+example was the offered alternative and was not taken: a worked example showing counts and a credit
+but no date reads as though the field were optional. A bullet under the example now says both values
+are pinned and by which test, so a reader who re-runs the pipeline learns it from the document
+rather than from a red run.
+
+**Suite state.** `node scripts/selftest.js` reports 311 passed, 1 failed. The one failure is `no
+board card is too large for the agent file reader` on card `0020` at 209.9 KB, which HANDOVER names
+as deliberately red and card `0055` carries. The two `requests`-module assertions the Plan expected
+to be red are green here, because this worktree has the module installed; nothing on this card
+touches them. No PHP suite exists in this repository, so `pest` and `pint` were not run.
+
+**Not touched:** `app/data/sites.json`, `scripts/parse.py`, the footer. The credit itself was
+already right in all three.
