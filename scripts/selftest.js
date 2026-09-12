@@ -1097,6 +1097,22 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // strict value were in force while "no-cache" is what actually ships.
   ok('the sw.js cache block comes after the general js one',
      htaccess.indexOf('\\.(html|css|js|json|webmanifest)$') < htaccess.indexOf('sw\\.js$'));
+  // HTTPS is this app's one hard requirement: iOS grants navigator.geolocation only to a
+  // secure origin, so on plain HTTP the app loads, looks entirely normal and silently never
+  // locates anybody. The rule below is what turns a plain-HTTP visit into a secure one, and
+  // until card 0074 nothing required it to exist: the only assertion about it was the
+  // negative one underneath, and a negative assertion passes on an empty file. Deleting all
+  // four redirect lines left the suite green.
+  //
+  // Both halves are one fact, so they are one pattern: a RewriteRule whose target begins
+  // with the literal host. Matching the literal is what stops this assertion and the
+  // negative one below being satisfied by the same wrong file. It reads the
+  // comment-stripped text, so a commented-out rule reads as absent.
+  const httpsRedirect = /RewriteRule\s+\S+\s+https:\/\/forestlocator\.enhanceify\.co\.uk/;
+  ok('the HTTPS redirect is present and literal', httpsRedirect.test(htaccess));
+  // And prove the strip the same way the headers above are proved, because "commented out"
+  // is the way this directive would actually go missing.
+  ok('a commented-out HTTPS redirect fails the suite', !httpsRedirect.test(allCommented));
   // A redirect that echoes the request's own Host header is an open redirect.
   ok('the HTTPS redirect does not echo the request Host',
      !/RewriteRule.*%\{HTTP_HOST\}/.test(htaccess));

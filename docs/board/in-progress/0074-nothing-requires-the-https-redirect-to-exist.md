@@ -53,17 +53,17 @@ require a directive to be present, and card `0011`'s comment-strip covers them.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
+- [x] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
       `RewriteRule` redirecting to `https://forestlocator.enhanceify.co.uk`, including when the
       rule is present but commented out. proves: `the HTTPS redirect is present and literal`
-- [ ] #2 THE EXISTING ASSERTION that no `RewriteRule` echoes `%{HTTP_HOST}` SHALL still run and
+- [x] #2 THE EXISTING ASSERTION that no `RewriteRule` echoes `%{HTTP_HOST}` SHALL still run and
       still pass. proves: `the HTTPS redirect does not echo the request Host`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Write the positive assertion first and watch it red against a copy with the block removed
-- [ ] Put it beside the existing negative one, reading the same comment-stripped text
-- [ ] Re-run the suite and confirm both assertions pass against the real file
+- [x] Write the positive assertion first and watch it red against a copy with the block removed
+- [x] Put it beside the existing negative one, reading the same comment-stripped text
+- [x] Re-run the suite and confirm both assertions pass against the real file
 
 ## Plan
 **Where to stand.** This repository, on a branch of `main`. There is no PHP suite here and no
@@ -103,3 +103,39 @@ this board. Three runs, all on a scratch copy, none committed:
 finding turned into checks and nothing here is built yet, so every box is honestly unticked. The
 finding itself is the `breakage: defect` verdict of the 2026-09-11 review on card `0011`, which is
 quoted in full on that card's thread.
+
+**2026-09-12** RESULT: done
+TESTS: +2 new, all green (one pre-existing unrelated failure, card `0055`)
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+Two assertions went in directly above the existing negative one, reading the same
+comment-stripped `htaccess` variable. One pattern covers both halves of the fact the card names:
+`RewriteRule\s+\S+\s+https://forestlocator.enhanceify.co.uk`, so a rule that echoed `%{HTTP_HOST}`
+as its target would fail the new positive assertion as well as the old negative one. The second
+new assertion, `a commented-out HTTPS redirect fails the suite`, applies that same pattern to the
+`allCommented` copy the security-header proof already builds, because commenting the block out is
+how the directive would actually go missing. `app/.htaccess` is unchanged.
+
+Red-proof, four runs, nothing committed in a broken state:
+
+1. All four redirect lines commented out: `the HTTPS redirect is present and literal` red,
+   `the HTTPS redirect does not echo the request Host` still PASS. That is the finding
+   demonstrated from the inside.
+2. The four lines deleted outright: same assertion red.
+3. `app/.htaccess` restored, confirmed byte-for-byte by `git diff` showing only `scripts/selftest.js`
+   changed: 313 passed, 1 failed.
+4. `stripHtaccessComments` temporarily replaced with the identity function: the new
+   `a commented-out HTTPS redirect fails the suite` went red alongside the existing
+   `a commented-out security header fails the suite`, which is that assertion watched catching
+   the thing it is for rather than only ever seen green. Restored after.
+
+The one remaining failure is the known `0055` one, card `0020` at 209.9 KB against the 200 KB
+reader limit. **The card's Plan is stale in one detail and it cost nothing:** it says the suite is
+red at HEAD on three assertions, two of them the undeclared `requests` module (card `0071`). At
+HEAD in this worktree only the `0055` assertion is red, so `0071` appears already fixed or no
+longer reproducing here. Not investigated and no card raised, since it is a Plan note about
+baseline colour rather than a fault.
+
+Not checked in a browser: nothing about this change is renderable, and a worktree is not what Herd
+serves in any case. `CACHE` / `BUILD` are untouched because nothing under `app/` changed.
