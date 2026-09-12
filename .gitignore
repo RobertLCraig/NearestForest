@@ -14,6 +14,14 @@ Thumbs.db
 # itself, and they are deleted when the review ends.
 .claude/worktrees/
 
+# CPython bytecode. The `the build refuses a bad url (card 0013)` block in scripts/selftest.js
+# imports scripts/parse.py by path, and CPython writes a cache beside the source when it does.
+# That block sets PYTHONDONTWRITEBYTECODE=1, but anyone running python here without it makes
+# these again. They are regenerable, they are a second undiffable copy of validate(), and this
+# repository is public. A self-test fails if one is ever tracked.
+__pycache__/
+*.pyc
+
 # Tile provider API key. It lives above the web root on the server and must never
 # be committed: this repository is public.
 tiles.key
