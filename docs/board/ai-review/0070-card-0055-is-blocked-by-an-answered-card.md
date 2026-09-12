@@ -660,3 +660,196 @@ failing, one fewer open card than before because `0075` was discarded.
 
 **Not checked in a browser.** This build touches `scripts/selftest.js` and three board cards, and
 nothing under `app/`.
+
+### 2026-09-11 third review
+
+As in the second review, the answer marker is written inline in backticks below and never at the
+start of a line. The blocker key is written the same way and for a new reason: **starting a line
+with it is the defect this review reports.** Writing this comment is how I found it.
+
+**the suite**
+
+`node scripts/selftest.js` runs **310 passed, 1 failed**, which is the build entry's figure exactly.
+The one red is `no board card is too large for the agent file reader`, naming `0020` at 206.9 KB,
+which is card `0055`'s and Rob's. Both of this card's assertions pass.
+
+The working tree would not hold still. Another session's scratch appeared and vanished under me
+twice: a second blocker number on card `0027`'s frontmatter, a modified `0032`, an untracked
+`0075-zz.md` in `todo/`. None of it is this card's and I left it alone. So every attack below ran
+against `git archive HEAD docs/board` unpacked under `%TEMP%`, with lines 2913-3037 of
+`scripts/selftest.js` lifted verbatim into a harness supplying `ROOT`, `fs`, `path` and `ok`. The
+harness reproduces HEAD exactly, both assertions green. Sixty-odd crafted cards, each on a fresh copy
+of the snapshot. **I made one edit inside the repository** - `docs/board/todo/0098-a-directory.md`
+created as a directory to check the abort claim, removed in the same command - and this comment.
+
+**acceptance: defect**
+
+**#1 holds.** `0055` carries no frontmatter and no `Blocked by`, and `0025` sits under `Relates to`
+with the answer of 2026-09-10 as its reason. **#2 holds**, reproduced on both settled lanes.
+
+**#3's reported defect is genuinely closed**, and the three-row probe table reproduces - with one
+correction the entry should have made. `0075` now sits in `discarded/`, a settled lane, so at HEAD
+anything naming it is named for its lane whatever its text says; the table is only reproducible with
+that file staged back into an open lane, which I did. Then: its fenced ready-to-paste sample is
+silent, a real marked entry appended at column zero is named "answered on its own thread", and the
+same marker indented four spaces is silent. Tilde fences, fences opened with four and five
+backticks, nested fences, a fence indented three spaces with an info string, a fence closed with
+more backticks than it opened, tab indents, blockquotes, lower case, a space inside the asterisks and
+the marker mid-line are all silent too. A fenced sample followed by a real entry is named, so the
+strip cannot mask an answer that is there.
+
+**#4 is where it now fails, and it fails in the direction nothing else on this board does: a card
+that carries no blocker at all is reported as carrying a bad one.** `every needs: on this board can
+be read` looks for the blocker key at column zero on any card with no frontmatter, and unlike the
+marker test it does **not** cut fenced or indented blocks first. The `prose()` helper this build
+wrote for exactly that purpose sits eighteen lines above and is called once. So a card with no
+frontmatter that quotes the shape the board README documents -
+
+    ```yaml
+    ---
+    <the key>: 0057, 0082
+    ---
+    ```
+
+- is reported as `carries a needs: line outside frontmatter, at line 7`. That message is false: the
+card carries a sample of one, which is not the same thing, and the assertion's name says it found a
+blocker key it could not read. This is round two's finding surviving in the sibling path of the same
+block: the build accepted "a marker inside a code fence is not an answer" and did not ask the same
+question one key over, on the same file, in the same walk.
+
+It is not theoretical and it is not avoidable by care. Most cards on this board carry no frontmatter,
+including this one and `0055`. Worse, `## Comments` is append-only, so an entry that quotes a card's
+frontmatter turns the suite red in a way the README forbids anyone to edit out - the only remedies
+left are a prune, which needs Rob, or leaving a standing red. I write the key in backticks in this
+entry for that reason, exactly as the previous reviewer wrote the marker in backticks for theirs.
+
+Two honest remedies, both a line: run the loose scan through `prose()` as the marker test does, or
+require the key at column zero outside any fence. Either keeps the shape the check was built to catch
+- a real blocker written in prose.
+
+VERDICT: defect
+
+**scope and disposal: defect**
+
+The build is one commit, `7b1ed20`, four files: `scripts/selftest.js`, this card, `0017` and `0020`.
+The move of `0075` is its own commit. Nothing under `app/`, `data/`, `scripts/*.py` or `docs/`
+outside the board. Every fence in `## Not this card` held: `0055` untouched, no other card's
+`## Comments` written to, and the code still reads one key and no other.
+
+**Clearing `0017` and `0020` by reading was the right call and the reasons written on them are
+true.** I checked each against `0016`'s own thread rather than the entry: "Yes" on 2026-08-18 and
+"Built" on 2026-08-29 with the Forests tab at 550 sites, and the coordinates-in-one-HTML-attribute
+measurement `0020`'s line credits. `docs/PRD.md` line 68 carries the Wales and Scotland non-goal
+struck through and names `0016`'s answer as what overturned it, so `0017`'s new line is accurate too.
+Nothing a person needed to see was overwritten: both diffs are the frontmatter key and a `Blocked by`
+block moved into `Relates to`, and nothing else.
+
+**But only the machine-readable half of `0017` was cleared.** Line 13, inside `## What I need from
+you`, still reads **"Answer 0016 first. It carries the scope call that gates both cards, because the
+PRD's non-goals currently rule out Wales and Scotland outright. If that answer is no, discard this
+card unread and do not send the email."** That is the same stale blocker, in the first thing Rob
+reads on a card in `human-review/`, now contradicted by the `Relates to` line this build wrote
+sixty-eight lines below it and by the struck-through non-goal in the PRD. This card's own `## Why`
+says the cost of a stale blocker is the reader's page load, and the reader-facing copy is what was
+left standing. It is also the shape this card was raised to condemn, one level down: "Both cards
+named the same blocker for the same reason and only one was cleared" becomes "both halves of one card
+named it and only one was cleared". The fix is one paragraph on a card the build was already editing.
+
+**Discarding `0075` is right and its note tells the truth.** I verified every claim in it: `0016`
+still carries no marked entry (its only occurrence of the marker is mid-line inside the thread's
+template HTML comment), `0017` and `0020` are cleared, `0018` and `0027` are untouched. `discarded/`
+is the right lane - it was superseded rather than answered - and the reason sits at the top where a
+reader meets it first. **`0027`'s blocker on `0018` is still live and still uncaught, and that is
+correct**: `0018`'s only entry under `## Decided` is Rob writing that he is on the fence, and `0027`
+says there is nothing to send until it is answered.
+
+One figure is wrong. `board:convention --path=$PWD --cards` prints `NearestForest 0 46 0077` for me;
+the entry claims `0 47 0077` and explains the 47 as "one fewer open card than before because `0075`
+was discarded". The tree says 47 before the discard commit and 46 after it, at the build's own
+commit and at HEAD, so the number quoted is the pre-discard count with a post-discard sentence
+attached. **The load-bearing half reproduces: zero open cards failing.**
+
+VERDICT: defect
+
+**breakage: defect**
+
+**What held.** Every claim in the entry beyond the one above. The block-list form is read, and a list
+holding one settled and one open number names only the settled one. A key with no value is reported.
+An inline flow list, a value carrying a prose reason, a trailing YAML comment, a closer with a
+trailing space, CRLF, a key written `Needs:`, an indented key, a two-digit number and a quoted value
+all behave as the tables say. `0025-0073` and a space-separated pair read the first number only,
+which drops a blocker silently, but neither is a shape anybody writes. A directory named like a card
+no longer aborts: I created `docs/board/todo/0098-a-directory.md` in the real tree and the suite
+completed at 310/1, though it is skipped in silence rather than reported, which is what that 310
+proves and is not quite what the entry says. `.MARKDOWN`, upper case and slugless filenames are seen.
+A card naming itself, a dangling number, and a dependency with copies in a settled and an open lane
+are all silent, correctly.
+
+**What broke.**
+
+1. The fenced-sample false positive in acceptance above, which is the finding.
+2. **"Every read in this block is guarded" is wrong by one.** `fs.readdirSync(boardDir)` at the head
+   of the lane walk is bare. I hit it by accident before I went looking, exactly as the previous
+   reviewer hit the `EISDIR`: an uncaught `ENOENT` on `scandir`, the block dead, both assertions and
+   everything after them never run. A missing or unreadable `docs/board` is the only way in, so it is
+   narrow - but it is the one read the sweep missed while claiming to have swept.
+3. **A lane directory that cannot be stat'd is dropped in silence** (`catch { return false }`), so
+   every card in it leaves the check without a word, while the file-level catch ten lines below
+   reports. Same block, opposite habits, and this project's convention is that nothing fails silently.
+4. **The strip can swallow a real answer.** Fence pairing is a regex with a backreference, so a card
+   that opens ` ```yaml ` and closes it with `~~~` has everything up to the next fence opener cut,
+   including a genuine marked entry between them, and the blocker reads as open. Malformed markdown
+   is the price of entry, so this is a robustness note rather than the finding, but it is the seam
+   the approach has.
+5. **Three shapes still read as an answer with no entry under them**: a marker inside an unclosed
+   fence, inside a multi-line HTML comment, and inside the blocker card's own frontmatter. The third
+   is contrived; the second is not as far from this board as it looks, since every card carries a
+   thread template written as an HTML comment that names the marker.
+6. **A blocker written in prose on a card that HAS frontmatter is invisible to both assertions.** The
+   loose scan only runs when line 1 is not a delimiter. The code comment justifies that scan by
+   citing the README's ban on blockers in sentences, and that ban does not care whether the card has
+   frontmatter.
+7. Cost is not a problem, measured rather than assumed: the strip runs in about 1 ms over the 209 KB
+   card, so the unmemoised whole-file read the previous review raised is real and cheap.
+
+VERDICT: defect
+
+**security: defect**
+
+1. **Where is it weakest.** The green, in both directions, and both are reachable by writing a card
+   the way the docs describe. To make it shout, quote the board README's own frontmatter sample on
+   any card with no frontmatter and the suite reports a blocker key that is not there - and if the
+   quote lands in `## Comments`, the thread is append-only and the red cannot honestly be cleared. To
+   make it go quiet, write the blocker in a sentence on a card that has frontmatter, or mismatch a
+   pair of fences on the card being waited for. The board's named recurring defect is a check that
+   cannot fail; the sibling of it is a check that fails on the innocent, because a suite that cries
+   wolf on house style teaches the next session to skim reds.
+2. **What is unchecked.** One read of the five: `fs.readdirSync(boardDir)` throws uncaught and takes
+   the rest of the suite with it. A lane that cannot be stat'd vanishes without a message. Everything
+   else is bounded and correctly handled: no network, no shell, no environment, and a dependency
+   number reaches only `Map.get`, never a path, a regex or a command, with `/^(\d{4})\b/` deciding
+   what gets that far.
+3. **What does it leak.** Card numbers, lane names, a line number, and two short pieces of card text
+   echoed raw - the key as written and the offending token. Local developer suite, stdout only, no
+   path, title, card body or stack trace. This part is right and has been right for three rounds.
+
+The defect here is finding one seen from the attack side rather than a fourth problem.
+
+VERDICT: defect
+
+**browser check**
+
+**This card has no user-facing surface, and that is a claim with evidence rather than a skip.**
+`git show --stat` over its four commits - `5528c7b`, `60819b1`, `8cbec9e`, `7b1ed20` - lists six
+files: `scripts/selftest.js` and five markdown files under `docs/board/`. Nothing under `app/`,
+nothing under `data/`, and nothing that writes into either. `scripts/selftest.js` is run by `node`
+and is not served. There is no page a browser could be pointed at to see this card's effect, so no
+browser check exists to run and none was run.
+
+**cleanup**
+
+The one scratch edit in the repository, the directory at `docs/board/todo/0098-a-directory.md`, was
+removed in the command that created it. Everything else ran on a `git archive` snapshot under
+`%TEMP%`, outside the repository. No `git stash`, `add`, `mv`, `rm` or `commit` was run, and the card
+was not moved. `git status --short` is clean apart from the other session's scratch, which is not
+mine to touch.

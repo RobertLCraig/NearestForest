@@ -540,3 +540,141 @@ applies to that lane. The section is kept rather than deleted, with a note above
 the record of why the card stopped.
 
 **Not checked in a browser.** This card touches only `docs/board/`.
+
+### 2026-09-11 review
+
+**suite**
+
+`node scripts/selftest.js`: **310 passed, 1 failed.** The single red is
+`no board card is too large for the agent file reader`, on
+`docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md` at 206.9 KB. That is the one
+expected failure, owned by card `0055` and only Rob can clear it. No other assertion failed, so
+the entry above reports the suite correctly, which is the first of the two defects the previous
+review raised and it is closed.
+
+**acceptance: sound**
+
+I re-measured all six rather than reading the ticks, and I made each check fail before I trusted it.
+
+- **#6, and I proved the command can still fail.**
+  `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` prints
+  `NearestForest 0 46 0077` and no card lines. To establish that zero is a measurement and not an
+  ignored flag, I broke two cards in scratch edits: I added `0099` to `0027`'s `needs:` with no
+  matching `Blocked by`, and I wrote `See card 0099` into `0074`'s `## Not this card`. The count
+  rose to **2** and `--cards` named both with the rule each broke:
+  `0074 todo unexplained link: 0099` and
+  `0027 human-review Blocked by and needs: disagree: 0099 in needs:, not under Blocked by`.
+  I restored both files and it returned to `0 46`. The flag works and the criterion is honestly met.
+- **What the command does NOT measure, which a reader of #6 should know.** I also deleted the whole
+  `## What I need from you` section from `human-review/0032` and re-ran. **The count stayed at
+  zero.** The checker has six structural checks and that rule is not one of them. So "zero open
+  cards failing the checks" is a narrower claim than "this board meets the convention", and the ten
+  open cards from `0053` and `0056` through `0068` exist precisely because `human-review/` cards
+  keep arriving without that section. `## Plan` does define the checks as that command's, so #6 is
+  worded honestly; it is the reading of it that could go wrong.
+- **#1.** Every one of the 46 open cards has a `## Why`, and none of those blocks contains `Option
+  N`, `my recommendation`, `I recommend`, `the fix is`, `we should`, `we could`, `I propose`,
+  `proposal`, `Cost:`, `two ways out` or `three ways out`. I watched the sweep go red first, by
+  pasting that sentence into a copy of `0070` held outside the repository, where it printed four
+  hits on the one line. Nothing was injected into a tracked file and the script is not committed.
+- **#2.** Three open cards carry `## Options`: `0003`, `0017`, `0018`. Each names its reason and
+  each claim is true rather than merely present. `0003` is local knowledge, which roads Rob drives.
+  `0017` is a risk he owns, correspondence in his name, and a cost he carries, about 2 MB of payload.
+  `0018` is a trade mark only Forestry England can grant, plus a goodwill judgement.
+- **#3.** The checker cannot see most of this, and I confirmed why at source:
+  `Reference::NOTATION` in ProgressBoard reads `project#0099` or the word `card` in front of the
+  digits, and nothing else, so a backticked `` `0099` `` has never been a reference. My own stricter
+  sweep finds 33 unlinked mentions over 12 open cards. Eleven of the twelve were written after the
+  rewrite pass by other cards, which is card `0058`'s scope and correctly fenced out here. The
+  twelfth is this card: its `## What I need from you` names `` `0058` `` in a sentence and `0058`
+  appears nowhere in its `## Links`. The sentence does carry its reason, so it is not the puzzle the
+  README is aimed at, and I am recording it rather than failing the criterion on it.
+- **#4, swept in both directions over every lane including `done/` and `discarded/`.** The whole
+  board carries **one** `needs:` and **one** `Blocked by`, both on `0027`, both naming `0018`, and
+  they agree. `0018` is genuinely a live blocker: its own thread says "still on the fence about what
+  to ask them for", which is steering and not an answer. `0017`, `0020` and `0055` each carry no
+  `needs:` and each records its former blocker under `Relates to` with the answer as the reason
+  line. Internally consistent, all three.
+- **#5, checked mechanically rather than by eye.** I reconstructed every `## Direction` and
+  `## Decided` section on the board at `7d70270^` and at HEAD. Sixteen sections across eight cards:
+  all sixteen are preserved as an exact prefix, every change is appended text, none was edited and
+  none disappeared. I also checked the merge under `0069` lost nothing, by testing every line of the
+  deleted 416-line `human-review/` copy against the survivor: **not one line is missing.**
+
+VERDICT: sound
+
+**scope: sound**
+
+This card's six content commits are `7d70270`, `ff749c2`, `1db4dc0`, `9cf62b4`, `d99239d` and
+`9009555`. Every file in all six is under `docs/board/`. No `app/`, no `scripts/`, no `data/`, no
+edit to `docs/board/README.md`, and nothing in `done/` or `discarded/`. Every fence in
+`## Not this card` held.
+
+Out-of-scope work was pushed out as cards rather than done in passing: `0023`, `0024`, `0025`,
+`0058`, `0069`, `0070`, `0071`. That is the right call each time, and the second defect the previous
+review raised, `0055` carrying a stale `needs: 0025`, is closed by `0070` and I confirmed it on disk.
+
+**On the answered ask, which this review was asked to judge.** Neither half was Rob's. Unticking #6
+turns on running one command and reading a number, which is the agent's by the README's own words,
+"everything else is the agent's to settle by reading"; and moving a card between lanes is mechanics,
+not a preference, a cost, a risk or local knowledge. So the note at the top is correct that reading
+settled both. The reason it reached his queue at all is a process gap rather than a question: a
+reviewer is forbidden from editing acceptance, and no builder step was queued behind it. Worth
+saying plainly, because a card sitting in `human-review/` with nothing in it for a person is the
+exact cost this card's own `## Why` was written to remove.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**What I checked.** The suite, the convention command with both breakages injected and restored, the
+append-only reconstruction, and the board-wide `needs:`/`Blocked by` sweep. All of that holds, and
+both defects from the previous review are genuinely closed.
+
+**The defect is a false statement the card makes about itself.** Line 47 says:
+
+> **Note on length.** This card is past the 100-line budget and this section cannot bring it back:
+> `## Comments` is append-only and holds most of the file.
+
+That was true while the card sat in `human-review/` with a live ask. It is not true now. The card is
+542 lines, five times the budget. `## What I need from you` is **not** append-only: the README marks
+only `## Comments`, `## Direction` and `## Decided` that way, and the section is not even required
+outside `human-review/`, which is not the lane this card is in. It is 47 lines of superseded ask
+under a 9-line note explaining that it is superseded, so **56 lines, more than half the entire line
+budget, sit above `## Why`** on the one card whose job is to make every card lead with its problem.
+
+**Nothing is lost by deleting it, and I verified that rather than assuming it.** Everything the
+section says is already in `## Comments`, three times over: the full 2026-09-11 review is on the
+thread, the loop's own entry repeats the finding and the instruction verbatim, and the final entry
+records that the ask is answered. The note at the top even sends the reader there, "See the last
+entry on `## Comments`", which is the argument against keeping the section made by the section's own
+defence of itself.
+
+**It has already drifted, which is the concrete harm.** The note says #6 closes when `0069` and
+`0070` land; forty lines below it the card still instructs Rob to "Untick criterion #6 and send this
+card to `todo/`", and to treat doing neither as the fail. A reader who skims past the blockquote
+acts on an instruction that was carried out hours ago. This is the same class of fault the previous
+review bounced this card for, a card asserting something about itself that is not so, moved from the
+suite line to the length line.
+
+**The fix is one deletion** and it takes the card from 542 lines to 486 without touching anything
+append-only. Keeping the section with a note above it is worse than deleting it: it is a second copy
+of a record that already exists, and the README's standing rule is that a second copy drifts, which
+this one has.
+
+VERDICT: defect
+
+**security: no code to attack**
+
+This card produced no code, and I am claiming that with evidence rather than asserting it. All six
+of its content commits touch only files under `docs/board/`; the `--stat` of each contains no
+`app/`, no `scripts/`, no `data/` and no configuration. There is no input path, no entry point, no
+background job and no machine-facing interface introduced or changed here, so there is nothing to
+ask the three questions of. The README says a card that produced no code skips this, and this is
+that case, written down so the next reader can tell a skip from an omission.
+
+**Browser check: no user-facing surface, and the same evidence settles it.** Nothing this card
+touched reaches `app/`, so there is no page a browser could show differently before and after it. No
+server was started.
+
+VERDICT: sound

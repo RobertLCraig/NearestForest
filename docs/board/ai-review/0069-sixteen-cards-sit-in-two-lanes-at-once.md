@@ -737,3 +737,180 @@ Rob's. `board:convention --path=$PWD --cards` prints zero open cards failing.
 
 **Not checked in a browser.** This build touches one board card and nothing under `app/`.
 
+
+### 2026-09-11 third review
+
+**suite**
+
+`node scripts/selftest.js` runs **310 passed, 1 failed**, matching the third build entry. The single
+red is `no board card is too large for the agent file reader` on
+`docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md is 206.9 KB`, which is card `0055`'s
+and only Rob can clear. It reads 206.9 rather than the entry's 206.8 because something has written to
+that thread since; nothing else differs. `no board card appears in two lanes` runs and passes under
+`--- one card, one lane (card 0069) ---`.
+
+**acceptance: sound**
+
+**#1 and #2, attacked with seven shapes, one suite run each, the scratch file deleted between every
+one.** Six are named:
+
+- `discarded/0069-zz.md` beside this card in `ai-review/` - `0069 in ai-review and discarded`
+- `todo/0075-zz.md` against the one card `discarded/` now holds - `0075 in discarded and todo`
+- `todo/0075-ZZ.MARKDOWN`, upper case and the long extension together - named
+- `todo/a/b/c/0075-zz.md`, **three** directories down - named, and reported as `todo`, so the nested
+  walk still inherits the lane folder rather than the leaf
+- `.trash/0075-zz.md`, a dot-directory created directly under `docs/board/` that has never existed
+  before - named, because the walk reads the listing rather than a lane list
+- `attachments/0075-zz.md` - `0075 in attachments and discarded`, the over-reach both earlier reviews
+  recorded, still harmless because attachments are `.png`
+
+The seventh, `docs/board/0075-loose.md` at the board root, leaves the assertion green. That is the
+one residue the second review proved and scoped out, the board root is not a lane, and I reproduce it
+rather than re-raise it.
+
+**#2, verified independently of the check it is proved by.** I swept the board with `find` over every
+file and again over `git ls-files`, case-insensitively, on `.md` and `.markdown`, including the board
+root, keyed on the leading four digits: **no number appears twice**, across 77 markdown files, which
+is 76 cards and this board's `README.md`. The earlier prefix collisions are the dated `.png`
+attachments and not cards.
+
+**#3, re-derived from git history across all sixteen pairs rather than read off the table.** Method:
+the deleted blob at `<deletion>~1` against the survivor at `9c06f6c`, CR-stripped, blank lines
+dropped, `ÔÇö` normalised to `-` on **both** sides, compared as unique line sets under
+`LC_ALL=C comm -23`. The deletions are `f8df4c1` (nine), `8143b63` (five), `8628544` (`0008`) and
+`de5cdd7` (`0021`).
+
+- **Twelve lose nothing**: `0011`, `0013`, `0014`, `0015`, `0019`, `0032`, `0036`, `0038`, `0053`,
+  `0054`, `0056`, `0057`.
+- `0021` loses one line, `- [x] #6`, a tick its own builder deliberately unticked.
+- `0055` loses two lines, both **unticked** boxes the survivor has ticked.
+- `0008` loses 22 and `0012` loses 25, both the `## What I need from you` section.
+
+**One nuance inside `0008`'s 22, and it is the only thing I found that touches #3's actual words.**
+Criterion #3 names ticks, **comment entries** and frontmatter keys, and one of the 22 lost lines is a
+dated `**2026-09-11**` entry - the loop's generated "the reviewer returned this card, all 6 criteria
+ticked, the builder could not act on that finding" line. It was not appended verbatim, which is what
+#3 asks for. It was instead described: `done/0008` carries a dated entry naming that line, quoting
+what it said, and stating that it was generated from the stale thread and untrue of the survivor. I
+read both and agree. Declared, reasoned, and correct on the substance, so not a defect - recorded
+here so the next reader does not have to find it a third time.
+
+**#4, re-run from `D:\Dev\NearestForest`.** `php C:\Dev\ProgressBoard\artisan board:convention
+--path=$PWD --cards` prints `NearestForest 0 46 0077`. Zero open cards failing, and `--cards` printed
+no card line. The 46 is not a lane the tool is failing to walk: `todo` 5, `in-progress` 1, `ai-review`
+3, `human-review` 37 is 46 exactly.
+
+`git status --short` is clean of my scratch files, directories and junctions.
+
+VERDICT: sound
+
+**scope: sound**
+
+**The resolution of the split is legitimate, and the fence is not breached.** I read `0069`'s
+`## Not this card` at its most hostile: "Deciding a card belongs somewhere neither copy sits is a
+different card", and `0021` now sits in `ai-review/`, which is neither `in-progress/` nor
+`human-review/`. Three things answer it.
+
+1. **The commits keep the work where it belongs.** `9009555` ("0021: tick the last criterion on a
+   fresh measurement") changes only `0021`. `8571d95` is that card's own lane move. `77f5828` ("0069:
+   resolve the split verdict") is 45 lines added to **this card and nothing else**. So the change to
+   `0021` is on `0021`'s record as `0021`'s work, not folded into a merge commit.
+2. **It is not a judgement.** The fence's sentence governs which copy of a merged pair survives and
+   where it lands. `ai-review/` here is not a view about where the card belongs; it is what
+   `docs/board/README.md` says happens to a card whose criteria are all met and which is not a
+   decision card. `0021` has `## Tasks` and no `## Options`, so it does not skip the lane.
+3. **It is one of the two remedies the reviewer who raised the defect named**, in its own words: "Say
+   it on `0021` or move it; it is one line either way."
+
+**Criterion #6 on `0021` is honestly ticked, re-measured rather than believed.** Its wording is that
+the board reports zero open cards failing, its `proves:` is `none` with the reason that the counting
+command lives in another repository, and that command prints `NearestForest 0 46 0077` for me today -
+byte for byte the output the tick was made on. The five cards that made it five were the five stale
+duplicate **files** this card deleted, and the live copy of each already passed, so the count fell
+because the board stopped double-counting and not because anything was hidden.
+
+**The ask was not Rob's, on the README's four-reason test, and closing it cost him nothing.** It
+turns on no preference, no cost he carries, no risk or liability he owns and no local knowledge
+nobody wrote down. It was "untick a box and move a file", which the README's own test - can this be
+undone by deleting a file - puts squarely on the agent's side, and its stated reason ("only a person
+may untick a criterion") is a loop constraint on **reviewers**, not a rule in
+`docs/board/README.md`. Its second branch, "write that the reviewer is wrong", was never live: the
+reviewer's finding was a count, the count was five, and it is now zero. The section is kept with a
+dated banner rather than deleted, which is the honest treatment of a record of why a card stopped.
+
+**Nothing outside the fence was built.** `git diff --name-only d20be16 HEAD` outside `docs/` is
+`requirements.txt`, which is card `0071`'s, and `scripts/selftest.js`. The third build touches two
+files, both cards.
+
+VERDICT: sound
+
+**breakage: sound**
+
+**All three factual claims in the third build entry are true, and I checked each rather than reading
+them.**
+
+- **`de5cdd7` did append a dated note to `0021`.** `git show de5cdd7 -- docs/board/in-progress/0021-...`
+  adds a nine-line `**2026-09-11**` entry recording the merge, which copy survived, the three things
+  carried across, and why the file sat in `in-progress/`. The concurrent reviewer's "`0021` got none"
+  is wrong on that fact, exactly as stated.
+- **The sibling checks do not all carry the old narrow match.** At HEAD, `scripts/selftest.js:2818`
+  is `0054`'s finder filtering `f.startsWith('0020-')`, and `:2849` is `0055`'s size check filtering
+  `f.endsWith('.md')`. Neither ever held `/^\d{4}-.*\.md$/`. The block that did is `0070`'s, and
+  `:2955` now reads the widened `/^\d{4}(?:\D.*)?\.(?:md|markdown)$/i`; `git log -L` attributes that
+  change to `7b1ed20`, which is `0070`'s own commit. So the entry's correction of its own earlier
+  sentence is right in every particular.
+- **A dangling directory entry directly under `docs/board/` still aborts the run at the `0054`
+  finder.** Made one (a junction whose target I then deleted), ran the suite: it throws
+  `ENOENT ... stat` at `scripts/selftest.js:2817`, before this card's guarded block is reached, and
+  takes every later assertion with it. Removed it; the suite returns to 310 passed, 1 failed.
+
+**The previous round's defect stays closed.** `0076` is in `todo/` carrying both halves of `0057`'s
+verdict, and `0072`, `0073` and `0074` are all still in `todo/`. The `0071` claim `0021` leans on is
+real: `requirements.txt` exists, declares `requests` with the three importing scripts named, and
+`docs/HANDOVER.md` line 463 gives the install line.
+
+Nothing the third build did can break a caller: it added comment text to two cards and moved one
+file. No code path, no data file and no `app/` asset is in the range.
+
+VERDICT: sound
+
+**security: sound**
+
+**Where it is weakest.** Unchanged and correctly small: you break this check by naming a file so it
+stops looking like a card, and the only shape I could still hide a second copy in is a file committed
+to `docs/board/` itself rather than into a lane, which no `git mv` produces. Everything a person does
+while tidying - no slug, `.markdown`, upper case, underscores, a dot-directory, three levels deep, a
+lane that does not exist yet - is now named. The standing limit is that it runs only when the suite
+runs, so a duplicate committed without a suite run is unguarded until the next one.
+
+**What is unchecked on the way in.** Nothing is input: the only data is the directory listing of
+`docs/board/`. No route, no job, no machine-facing interface, so there is no permission check that
+could be missing, and the assertion reads names and never opens a card, so no thread text passes
+through it. The guarded error path in this card's own block works. **The hole in the siblings is
+wider than the second review measured, and I widened the measurement rather than repeating it.** That
+review proved a dangling entry at the **board root** aborts the run at `:2817`. A dangling entry
+**inside a lane**, named like a card, does the same at `:2851` - `0055`'s size check calling
+`fs.statSync(p).size` on every `.md` it finds. I made `docs/board/todo/0099-zz.md` a junction and
+deleted its target: the run dies with a stack trace and an absolute path before `0069`'s block is
+reached. So the build entry's sentence, "an unreadable directory now fails this assertion rather than
+the run", is true of this assertion and false of the run by two routes rather than one. Both routes
+are in other cards' assertions, which is the adjacent work this board's fences exist to stop, so this
+is a sweep card and not a return - but it now has two proved entry points on the record instead of
+one.
+
+**What it leaks when it fails.** Card numbers and lane names, `0069 in ai-review and discarded`, both
+already filenames in the repository. No file contents, no thread text, no environment, no network
+call anywhere in the block. The ugly case is the sibling abort above, which prints a full absolute
+path and a Node stack; that is a developer's own machine and their own repository, so there is no
+boundary for it to cross.
+
+VERDICT: sound
+
+**browser: not applicable, and this is a claim with evidence rather than a skip.**
+
+The third build is `9009555`, `8571d95`, `77f5828` and `37dfe71`. `git diff --name-only 37dfe71~4 HEAD`
+lists exactly two paths, `docs/board/ai-review/0021-...` and `docs/board/ai-review/0069-...`, both
+cards. Across the whole card, `git diff --name-only d20be16 HEAD` outside `docs/` is `requirements.txt`
+(card `0071`'s) and `scripts/selftest.js`. No file under `app/` is touched by any build of this card -
+no route, no asset, no service worker, no `data/` - so there is no user-facing surface to check. No
+server was started.
