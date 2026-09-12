@@ -104,21 +104,21 @@ everything the card knows and changes only how it is ordered and said. `## Direc
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN a card in a non-terminal lane is rewritten, THE CARD SHALL state the problem in
+- [ ] #1 WHEN a card in a non-terminal lane is rewritten, THE CARD SHALL state the problem in
       `## Why` before any solution appears anywhere in it. proves: none - about prose, and no check
       here reads prose
 - [x] #2 WHEN a rewritten card is a decision, THE CARD SHALL say which of the four reasons makes it
       a person's to answer, or SHALL be converted to a feature card whose `## Plan` records the
       practice applied and its source. proves: none - the command that counts it is in another
       repository, named in `## Plan`
-- [x] #3 WHEN a rewritten card names another card, THE CARD SHALL name it in a `## Links` section
+- [ ] #3 WHEN a rewritten card names another card, THE CARD SHALL name it in a `## Links` section
       with the relationship type and one line of why, and SHALL NOT leave a bare card number in a
       sentence as the only mention of it. proves: none - as #2
 - [x] #4 THE `Blocked by` LINES on every rewritten card SHALL match that card's `needs:` frontmatter
       exactly, in both directions. proves: none - as #2
 - [x] #5 THE REWRITE SHALL preserve every measurement, date and decision the card already carried,
       and SHALL NOT edit `## Direction` or `## Decided`. proves: none - as #2
-- [x] #6 WHEN this board's rewrite is finished, THE BOARD SHALL report zero open cards failing the
+- [ ] #6 WHEN this board's rewrite is finished, THE BOARD SHALL report zero open cards failing the
       checks. proves: none - as #2
 <!-- AC:END -->
 
@@ -678,3 +678,58 @@ touched reaches `app/`, so there is no page a browser could show differently bef
 server was started.
 
 VERDICT: sound
+
+### 2026-09-12 review (v20260912064909-3c57)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**What I checked.** Board measured today: `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD` prints `NearestForest 0 46 0077`, so the named command agrees with the card. Criterion #4 holds: `^needs:` matches only card 0027, and its `Blocked by` names 0018 with a reason. Criterion #2 holds: the three open cards with `## Options` (0003, 0017, 0018) each state their reason under "Why it needs you". Criterion #1 holds: every open card has a `## Why`, and a sweep of those blocks for `Option N`, `my recommendation`, `we should`, `Cost:` and the rest returns only the word "proposals" describing the problem on 0021 itself.
+
+**What breaks.** Criterion #3 fails on the graded card and on a card it spawned.
+
+- `docs/board/ai-review/0021-rewrite-this-board-s-cards-for-the-reader.md`, section `## What I need from you`: "Card `0058`, written the same day, records the red." That is the only mention of 0058 anywhere on the card; its `## Links` lists 0025, 0069, 0070, 0071, 0023, 0024 and two ProgressBoard cards, never 0058.
+- `docs/board/ai-review/0070-card-0055-is-blocked-by-an-answered-card.md`, section `## Not this card`: "whether card `0020`'s comment"; its `## Links` names 0055, 0025, 0021, 0069, never 0020.
+
+Both are open cards, and the checker behind #6 misses this form, which is what open card 0058 already records.
+
+UNMET: #3 card 0021 names 0058 in a sentence and card 0070 names 0020 in a sentence, and neither carries that number in its `## Links`
+UNMET: #6 the board reads zero only because the link check is blind to this form, and two open cards fail the rule criterion #3 states
+
+VERDICT: defect
+
+**scope: sound**
+
+I checked what card 0021's own builds touched and whether anything crossed its fences.
+
+**Scope of the last build is clean.** The two commits that closed it, `0021: tick the last criterion on a fresh measurement` and `0069: resolve the split verdict by finishing card 0021`, touch one card file each and nothing else. No code, no `docs/`, no `data/`. The card's log reports `OUT-OF-SCOPE: none`, which matches the diffs. The large code diff in the branch summary belongs to other cards, not this one.
+
+**No fence crossed.** Nothing in `done/` or `discarded/` was rewritten by these commits, no `## Direction` or `## Decided` was edited, `docs/board/README.md` was changed only by the two canonical sync commits, and nothing outside this repository was touched.
+
+**Nothing left half done that I could measure.** `board:convention --path=$PWD` prints `NearestForest 0 46 0077` today, so criterion #6 holds on my own run, not the builder's word. I spot-checked the stale-link table on card 0058 against `0015`, `0032`, `0033` and `0037`: each names those cards under `## Links` with a reason, so criterion #3 is met on the live files. Card `0020` in `in-progress/` carries a `## Links` section and its one in-sentence mention of `0001` is also linked there.
+
+The only judgement call is that a builder closed an ask the card reserved for Rob. It did so by satisfying the criterion rather than by overruling it, which is the card's own work.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding 1 ÔÇö the superseded ask still stands above `## Why`, and it still gives an order that was already carried out.** In `docs/board/ai-review/0021-rewrite-this-board-s-cards-for-the-reader.md`, the `## What I need from you` section runs 47 lines before `## Why`. Its own blockquote says the ask is answered, then forty lines later it still tells the reader to untick criterion #6 and move the card to `todo/`, and calls doing neither the fail. #6 is ticked and `board:convention` prints `NearestForest 0 46 0077`. A reader who skims the blockquote acts on a dead instruction. This is the defect the 2026-09-11 breakage pass raised, unchanged.
+
+**Finding 2 ÔÇö the exemption that licensed that section no longer applies.** `docs/board/README.md`, under "The one section a card in `human-review/` must have", scopes the ask-under-the-title rule to that lane only. This card is in `ai-review/`. Card `0025`'s answer (Option 1, "match the current ruleset") therefore no longer shields it, so the card that defines "problem first" is the one card on the board leading with an answer.
+
+Its `Note on length` also asserts the section is append-only; the README marks only `## Comments`, `## Direction` and `## Decided` that way.
+
+UNMET: #1 this card itself puts 47 lines of prescribed action above its `## Why`, and the README exemption for that shape covers `human-review/` only, which is not the lane it is in
+
+VERDICT: defect
+
+**acceptance**
+
+- **#3 reopened**, by the acceptance lens: card 0021 names 0058 in a sentence and card 0070 names 0020 in a sentence, and neither carries that number in its `## Links`
+- **#6 reopened**, by the acceptance lens: the board reads zero only because the link check is blind to this form, and two open cards fail the rule criterion #3 states
+- **#1 reopened**, by the breakage lens: this card itself puts 47 lines of prescribed action above its `## Why`, and the README exemption for that shape covers `human-review/` only, which is not the lane it is in
+
