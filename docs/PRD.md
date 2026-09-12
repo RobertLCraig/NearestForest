@@ -53,8 +53,9 @@ In priority order.
   publishes England only, and FLS's own ArcGIS org has boundaries and parking machines but no
   recreation points). Wales is card 0017.
 - Distance and compass bearing from current GPS position, sorted nearest first.
-- Per-site detail: name, sat-nav postcode, opening times, parking charges, facilities, link to the
-  Forestry England page.
+- Per-site detail: name, sat-nav postcode, opening times, parking charges, facilities, and a link to
+  the page of whichever agency published the site, labelled with that agency's name, which is read
+  off the link's own host rather than assumed.
 - Map app chooser on tap: Apple Maps / Google Maps / Waze, asked each time.
 - Two front ends: an installable PWA and an iOS Shortcut, both reading the same generated dataset.
 - A re-runnable data pipeline, since both sources change under us.
