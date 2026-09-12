@@ -46,7 +46,7 @@ it, and a rule written from one example beyond that is a rule nobody measured.
 - [x] #1 THE CARD `0055` SHALL carry no `needs:` naming a settled card, and its `## Links` SHALL
       record `0025` as answered rather than as a blocker. proves: `no open card is blocked by a
       settled card`
-- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every open card whose `needs:`
+- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every open card whose `needs:`
       lists a card number found only in `done/` or `discarded/`. proves: `no open card is blocked
       by a settled card`
 - [x] #3 THE SUITE SHALL also fail when that card number is in `ai-review/`, or carries an entry
@@ -853,3 +853,54 @@ removed in the command that created it. Everything else ran on a `git archive` s
 `%TEMP%`, outside the repository. No `git stash`, `add`, `mv`, `rm` or `commit` was run, and the card
 was not moved. `git status --short` is clean apart from the other session's scratch, which is not
 mine to touch.
+
+### 2026-09-12 review (v20260912121501-9dd8)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**#1 ÔÇö met.** `docs/board/human-review/0055-card-0020-has-outgrown-the-agent-file-reader.md` opens on its `#` title with no frontmatter block at all, so it carries no `needs:`. Under `## Links` there is no `Blocked by` heading, and `0025` sits under `Relates to` with the answer ("Option 1, on 2026-09-10") as its reason. Only one copy of the card exists, in `human-review/`.
+
+**#2 ÔÇö met.** In `scripts/selftest.js`, the `blockers outlive their answers (card 0070)` block builds `lanesOf` from the lane folders, skips copies in settled lanes, parses each open card's `needs:` and pushes to `stale` via `settledBecause`, asserted by `ok('no open card is blocked by a settled card', ...)`.
+
+**#3 ÔÇö met.** `SETTLED_LANES` includes `ai-review`, and `settledBecause` falls through to a `**Decided:**` line-start match in any lane, with `prose()` cutting fenced and indented samples first. I tried to make it fire wrongly: the appended thread comment on `0016` mentions `**Decided:**` mid-line and is correctly not matched, and `0027`'s live `needs: 0018` survives because `0018` has a `## Decided` heading but no marked entry. That is the only `needs:` left on the board.
+
+**#4 ÔÇö met.** The same block reports, rather than swallows, a missing closing `---` (`trim()` comparison, so a trailing space cannot hide it), an unterminated block, a mis-cased or indented key, an empty value, a non-four-digit token, a `needs:` outside frontmatter, and unreadable lanes or files, all asserted by `ok('every needs: on this board can be read', ...)`.
+
+One limitation, not a criterion breach: the loose-`needs:`-in-body scan runs only when the card has no frontmatter, so a column-zero `needs:` below well-formed frontmatter is still silently ignored.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope, card 0070.**
+
+**What it touched.** Four commits. `scripts/selftest.js` (the `blockers outlive their answers` block), the `0055` card, cards `0017` and `0020`, and card `0075`, raised then discarded. Nothing under `app/`, `data/` or `scripts/*.py`.
+
+**Every fence in `## Not this card` held.** `0055`'s ask and acceptance are unchanged; its diff is the frontmatter block and a six-line swap in `## Links`. No `## Comments` on any card was rewritten, only appended to. The check reads the `needs:` key and no other, so "not a sweep of every frontmatter key" holds in the code.
+
+**The growth I looked hardest at.** The third build cleared the same stale blocker from `0017` and `0020`, which the card's `## Links` never authorised, and discarded `0075` from `human-review/` before Rob read it. Both are declared in the commit message, on this thread, and on `0075` itself, and both follow `docs/board/README.md`, which tells an agent to settle by reading and reserves that lane for what reading cannot settle. Growth, but not quiet growth.
+
+**One thing now has no owner.** Card `0016` carries no `**Decided:**` marker, so `settledBecause` cannot see it. That limit lives only in a comment and a discarded card.
+
+Nothing is half done and no criterion is disproved.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding one ÔÇö the check fires on cards criterion #2 excludes, and its two halves disagree about what "open" means.** In the card-0070 block in `scripts/selftest.js`, `settledBecause` decides a dependency is settled with `where.find(w => SETTLED_LANES.includes(w.lane))`: any one settled copy wins. The scan directly above it filters the *same* map the other way, per copy, so a duplicated card is simultaneously open work (its `todo/` copy is read for blockers) and a settled blocker (to anyone naming it). Eight numbers are duplicated across lanes on this board right now, including `0013`, `0014`, `0019`. A card writing `needs: 0013` today is told its blocker is settled while an open copy sits in `human-review/`, which pushes a reader to clear a live blocker ÔÇö the failure the block's own comment argues is worse than a miss. Criterion #2 says "found **only** in `done/` or `discarded/`"; the code implements "found in any settled lane". Nothing tests the duplicate case, and card `0069` exists because duplication is normal here.
+
+**Finding two, smaller.** The loose scan reads `raw` lines, not `prose(...)`, so a `needs:` quoted at column zero inside a code fence is reported as malformed, while the `**Decided:**` scan three lines away strips fences for exactly that reason.
+
+UNMET: #2 a dependency with copies in both `done/` and an open lane is named stale, so the check fires on cards the criterion's "found only in done/ or discarded/" excludes, and nothing tests it
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 reopened**, by the breakage lens: a dependency with copies in both `done/` and an open lane is named stale, so the check fires on cards the criterion's "found only in done/ or discarded/" excludes, and nothing tests it
+
