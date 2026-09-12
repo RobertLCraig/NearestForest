@@ -914,3 +914,48 @@ cards. Across the whole card, `git diff --name-only d20be16 HEAD` outside `docs/
 (card `0071`'s) and `scripts/selftest.js`. No file under `app/` is touched by any build of this card -
 no route, no asset, no service worker, no `data/` - so there is no user-facing surface to check. No
 server was started.
+
+### 2026-09-12 review (v20260912090119-fef1)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**#1 ÔÇö met.** `scripts/selftest.js`, the `one card, one lane (card 0069)` block, walks every directory under `docs/board/` recursively, keys each file on its leading four digits via `/^\d{4}(?:\D.*)?\.(?:md|markdown)$/i`, and calls `ok('no board card appears in two lanes', ...)` listing each number with the lanes holding it. It also names unreadable directories rather than throwing. The earlier review's four bypasses (no slug, `.markdown`, `.MD`, one directory deep) are all closed by this regex and by the recursive walk. Two copies in one lane also fail, which is stronger than the criterion.
+
+**#2 ÔÇö met.** I re-ran the card's own duplicate sweep over all seven directories, keying on the first four characters rather than the filename. It printed nothing.
+
+**#3 ÔÇö met on the evidence I can gather.** For all seven pairs that mattered I diffed the deleted blob at its deletion parent against the surviving file, line-set under `comm`, with mojibake normalised. Nothing is missing for `0011`, `0013`, `0019`, `0036`, `0057`. The residue on `0021` and `0055` is acceptance state changed by later cards, not text lost.
+
+**#4 ÔÇö met.** `board:convention --path=$PWD --cards` prints `NearestForest 0 46 0077`. Zero open cards failing.
+
+Suite: 312 passed, 1 failed, the failure being the 200 KB size check on `0020`, which is card `0055`'s.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Findings, scope lens.**
+
+**The third build crossed `## Not this card`'s lane fence, on another card.** `77f5828` ticked criterion #6 on card `0021`, marked its `## What I need from you` answered, and moved it from `in-progress/` to `ai-review/`. The fence reads "Not a lane move, and not a judgement about which lane a card belongs in." The entry on `0069` declares the crossing and argues the fence does not cover a card whose last criterion was just met. That reading is the builder's own, not the card's, and the act it authorises is a session ticking an acceptance box on a card it was not handed, which is the failure the review lane exists to catch. The cost landed: a reviewer unticked `#6` again, `365f84a` sent `0021` back to `todo/`, and `01be118` spent its last bounce into `human-review/`. `0021`'s `#6` is unticked at HEAD.
+
+**Everything else stays inside.** Widening the walk in `scripts/selftest.js` and raising `0076` both answer returned findings and serve criterion #1. No duplicate numbers remain (76 unique), and `board:convention` prints zero failing, so `#2` and `#4` hold.
+
+No criterion of `0069` is disproved by this.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**THE FINDING: deleting the `ai-review/` copies made HANDOVER's "what's next" send sessions to an empty lane, and nothing catches it.**
+
+`docs/HANDOVER.md`, in "What's next (in order)", item 1 says the three checks-that-cannot-fail "are in `ai-review/`: 0011 ... 0013 ... and 0036". Item 2 says the two live faults "are in `ai-review/`" naming 0008 and 0012. Before this card, `ai-review/` really did hold `0013` and `0036`, so item 1 pointed at real files. This card deleted both, plus `ai-review/0019` and `ai-review/0057`. `0013` and `0036` are now in `done/`, `0011` in `human-review/`. Item 1 is now false for all three.
+
+That is the card's own stated cost, one document further out: a session that obeys CLAUDE.md and reads HANDOVER first is sent to a lane that does not hold the card. `grep -n HANDOVER scripts/selftest.js` finds no assertion over it, so it is silent, and cards `0040` and `0044` are this project's record of the same defect.
+
+No acceptance criterion covers HANDOVER, so I disprove none; the fix needs a criterion a builder or Rob must add.
+
+VERDICT: defect
+
