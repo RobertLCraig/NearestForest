@@ -2910,6 +2910,47 @@ console.log('\n--- one card, one lane (card 0069) ---');
      twice.concat(unreadable.map(u => `could not read ${u}`)).join(' | '));
 }
 
+console.log('\n--- no compiled python is committed (card 0072) ---');
+{
+  // Card 0072: `scripts/__pycache__/parse.cpython-313.pyc` was tracked in this public repository.
+  // Card 0013's self-test imports `scripts/parse.py` by path, and CPython writes a bytecode cache
+  // beside the source when it does. `.gitignore` named a scrape cache, worktrees, keys, drafts and
+  // screenshots and nothing for `__pycache__` or `*.pyc`, so the file sat untracked and invisible
+  // until a card-move commit swept it in. The `PYTHONDONTWRITEBYTECODE=1` guard on those stub
+  // blocks was added afterwards, which stops a NEW artefact appearing and also stops the committed
+  // one ever being rewritten: it was frozen bytecode of a second copy of `validate()`, the function
+  // this project refuses an off-site dataset URL with, that nobody could diff.
+  //
+  // TRACKED, NOT PRESENT ON DISK, is the fault. The cache reappears under `scripts/` whenever
+  // anyone runs python here without the guard, and that is fine; git carrying it is not. So this
+  // reads `git ls-files` rather than walking the tree.
+  //
+  // The `.gitignore` half is in the same assertion on purpose. Untracking the file without the
+  // rules leaves the repository one `git add -A` away from exactly where it started, which is how
+  // this artefact arrived in the first place.
+  const { execFileSync } = require('child_process');
+  const problems = [];
+
+  const tracked = execFileSync('git', ['ls-files'], { cwd: ROOT }).toString().split('\n')
+    .map(f => f.trim()).filter(Boolean);
+  tracked
+    .filter(f => /(^|\/)__pycache__(\/|$)/.test(f) || /\.pyc$/i.test(f))
+    .forEach(f => problems.push(`${f} is tracked`));
+
+  // Read every non-comment rule, so a rule that only appears inside a comment does not count.
+  const rules = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8').split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith('#'));
+  if (!rules.some(r => r === '__pycache__/' || r === '__pycache__')) {
+    problems.push('.gitignore carries no __pycache__ rule');
+  }
+  if (!rules.some(r => r === '*.pyc')) {
+    problems.push('.gitignore carries no *.pyc rule');
+  }
+
+  ok('no compiled python artefact is tracked', problems.length === 0, problems.join(' | '));
+}
+
 console.log('\n--- blockers outlive their answers (card 0070) ---');
 {
   // Card 0070: `needs:` is the board's work order and is read in both directions, so a blocker

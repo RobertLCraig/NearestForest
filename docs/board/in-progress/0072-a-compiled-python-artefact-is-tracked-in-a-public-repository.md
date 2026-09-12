@@ -44,19 +44,19 @@ one example beyond that is a rule nobody measured.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 THE REPOSITORY SHALL track no file under a `__pycache__` directory and no `*.pyc` file.
+- [x] #1 THE REPOSITORY SHALL track no file under a `__pycache__` directory and no `*.pyc` file.
       proves: `no compiled python artefact is tracked`
-- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
+- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
       `__pycache__` or `*.pyc`. proves: `no compiled python artefact is tracked`
-- [ ] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
+- [x] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
       either rule is absent. proves: `no compiled python artefact is tracked`
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Write the assertion first and watch it name the one tracked artefact and the missing rules
-- [ ] Add `__pycache__/` and `*.pyc` to `.gitignore`, with a comment saying which test created them
-- [ ] `git rm --cached` the artefact and delete it from the working tree
-- [ ] Re-run the suite and confirm a fresh `node scripts/selftest.js` leaves no new cache behind
+- [x] Write the assertion first and watch it name the one tracked artefact and the missing rules
+- [x] Add `__pycache__/` and `*.pyc` to `.gitignore`, with a comment saying which test created them
+- [x] `git rm --cached` the artefact and delete it from the working tree
+- [x] Re-run the suite and confirm a fresh `node scripts/selftest.js` leaves no new cache behind
 
 ## Plan
 **Where to stand.** This repository, on a branch of `main`. There is no PHP suite here and no
@@ -95,3 +95,47 @@ in the three stub blocks covers every path that imports the parser.
 finding turned into checks and nothing here is built yet, so every box is honestly unticked. The
 finding itself is the `breakage: defect` verdict of the 2026-09-11 review on card `0013`, which is
 quoted in full on that card's thread in `done/`.
+
+**2026-09-12** RESULT: done
+TESTS: +1 new, all green
+TOUCHED: scripts/selftest.js
+TOUCHED: .gitignore
+TOUCHED: scripts/__pycache__/parse.cpython-313.pyc (removed)
+TOUCHED: docs/board/in-progress/0072-a-compiled-python-artefact-is-tracked-in-a-public-repository.md
+OUT-OF-SCOPE: none
+
+One assertion, `no compiled python artefact is tracked`, in `scripts/selftest.js` beside the other
+repository-shape checks. It reads `git ls-files` through `execFileSync` rather than walking the
+tree, because the cache reappearing on disk is fine and git carrying it is the fault, and it reads
+`.gitignore` in the same block. Both halves are in one assertion on purpose, and the comment says
+why: untracking the file without the rules leaves the repository one `git add -A` from where it
+started, which is how the artefact arrived.
+
+**Red-proofed four ways, on the real defect rather than a fixture.**
+
+1. First run, at HEAD before anything was deleted: red naming all three reasons at once -
+   `scripts/__pycache__/parse.cpython-313.pyc is tracked | .gitignore carries no __pycache__ rule |
+   .gitignore carries no *.pyc rule`. That is criterion #1's defect and #3's, seen failing.
+2. `git rm --cached` plus the two rules: green. So it is not a check stuck red.
+3. Each `.gitignore` rule deleted on its own: red naming that one rule and not the other. Then both
+   deleted and re-added as a comment line mentioning both patterns: still red on both, so a rule
+   that exists only inside a comment does not count.
+4. Criterion #2 says *every* tracked path, so a second artefact was forced in beside the first -
+   `scripts/stray.pyc`, a `.pyc` outside any `__pycache__` directory - with `git add -f`. The run
+   named both, not just the first. The `-f` was needed, which is the new rules refusing them.
+
+The artefact is untracked and the directory is deleted. A fresh `node scripts/selftest.js` leaves
+no `scripts/__pycache__` behind, so the `PYTHONDONTWRITEBYTECODE` guard does cover every path that
+imports the parser, as the Plan asked to confirm.
+
+**The suite is green except for one failure that is not this card's**: `no board card is too large
+for the agent file reader`, card `0020` at 209.9 KB against a 200 KB limit. HANDOVER names that as
+deliberate and card `0055` carries it. The Plan also expected two `requests` module failures for
+card `0071`; both pass in this worktree, because the module is installed here. That is an
+environment difference rather than anything fixed, and `0071` still holds the ask.
+
+**`pest` and `pint` were not run, because this repository has neither.** There is no `vendor/` and
+no PHP suite; the Plan says so and `ls vendor` confirms it. The suite is `node scripts/selftest.js`.
+
+**Still needs a browser check**: nothing here touches `app/`, so there is nothing to look at, but
+this was built in a worktree and Herd serves only the main checkout either way.
