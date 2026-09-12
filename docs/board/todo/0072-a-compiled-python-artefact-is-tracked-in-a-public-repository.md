@@ -46,9 +46,9 @@ one example beyond that is a rule nobody measured.
 <!-- AC:BEGIN -->
 - [x] #1 THE REPOSITORY SHALL track no file under a `__pycache__` directory and no `*.pyc` file.
       proves: `no compiled python artefact is tracked`
-- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
+- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
       `__pycache__` or `*.pyc`. proves: `no compiled python artefact is tracked`
-- [x] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
+- [ ] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
       either rule is absent. proves: `no compiled python artefact is tracked`
 <!-- AC:END -->
 
@@ -139,3 +139,62 @@ no PHP suite; the Plan says so and `ls vendor` confirms it. The suite is `node s
 
 **Still needs a browser check**: nothing here touches `app/`, so there is nothing to look at, but
 this was built in a worktree and Herd serves only the main checkout either way.
+
+### 2026-09-12 review (v20260912140015-8d67)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I traced each criterion to the assertion block `no compiled python is committed (card 0072)` in `scripts/selftest.js`, and re-measured rather than trusting the build entry.
+
+**#1** `git ls-files | grep -iE "pycache|\.pyc$"` returns nothing, so no compiled artefact is tracked. The file is gone from the index.
+
+**#2** The block runs `git ls-files` through `execFileSync` and filters with `/(^|\/)__pycache__(\/|$)/` plus a case-insensitive `/\.pyc$/`, pushing one problem string per match and joining them all. It names every matching path, not the first, so a second artefact outside a cache directory would be reported too. It reads the index rather than the disk, which is what the criterion is about.
+
+**#3** The same block reads `.gitignore`, trims, drops comment lines, and fails separately when no bare `__pycache__/` and when no `*.pyc` rule survives. A pattern that appears only inside a comment cannot satisfy it. Both rules are present at lines 22 and 23. Matching is exact-string, so a looser spelling such as a glob prefix would not count. That is stricter than the criterion, not weaker.
+
+The suite runs green on this assertion: 315 passed, 1 failed, the one failure being the card 0020 size check that card 0055 carries and this card excludes.
+
+I tried to break all three and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope only.
+
+**The card's own commits are tight.** `4e5123b` (and its merge `ba843bb`) touch four paths: `.gitignore`, `scripts/selftest.js`, the removed artefact, and the card file. Nothing else.
+
+**No fence crossed.** `scripts/parse.py` is untouched in the working tree and in that commit. The three stub blocks that import the parser are unchanged; the new block adds its own `execFileSync` and does not alter how anything is imported. The `.gitignore` addition is exactly the two rules the card names, `__pycache__/` and `*.pyc`, with the comment the second task asked for, and no wider sweep of other misses.
+
+**Nothing left half done.** All four tasks are evidenced in the tree: the artefact is absent from `git ls-files`, both rules are present as bare non-comment lines, and the new assertion reads the tracked list plus `.gitignore` in one block as the plan directed.
+
+**The large diff handed to me is not this card's.** It is the cumulative branch, carrying `requirements.txt`, `docs/PRD.md`, `docs/DATA-MODEL.md`, `docs/HANDOVER.md` and cards 0071, 0073, 0074, 0075, 0076, each landed by its own commit. Attributing that growth to 0072 would be wrong, and I checked commit by commit rather than by the summary.
+
+One cosmetic staleness, not a scope fault: the build comment lists the card under `in-progress/` when it now sits in `ai-review/`.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding: the only unguarded child process and unguarded file read in the suite, and both abort it.**
+
+The card-0072 block in `scripts/selftest.js` calls `execFileSync('git', ['ls-files'])` with no try/catch. It is the sole `git` invocation in the file, and the only `execFileSync`; the thirteen other subprocess calls use `spawnSync`, which returns a status instead of throwing. Outside a git work tree, or with git off `PATH`, this throws mid-suite. Nothing catches it, so the fourteen later assertions, the `N passed, M failed` summary and the exit-code line never run. The suite dies with a stack trace instead of a named failure, which is the opposite of what card 0071's own comment in this same file promises for its interpreter probe: fail and name why, never skip.
+
+The `.gitignore` read in the same block, `fs.readFileSync(path.join(ROOT, '.gitignore'))`, is unguarded the same way. Delete `.gitignore` and both required rules are absent, which is exactly the case criterion #3 names, and the assertion never reports: the read throws first.
+
+Both are one try/catch each, pushing the reason onto `problems`.
+
+UNMET: #3 deleting `.gitignore` makes both rules absent, but the unguarded read throws and the assertion never fails or names them
+UNMET: #2 the unguarded `git ls-files` throws outside a work tree, so the suite aborts with a stack trace instead of failing and naming any tracked path
+
+VERDICT: defect
+
+**acceptance**
+
+- **#3 reopened**, by the breakage lens: deleting `.gitignore` makes both rules absent, but the unguarded read throws and the assertion never fails or names them
+- **#2 reopened**, by the breakage lens: the unguarded `git ls-files` throws outside a work tree, so the suite aborts with a stack trace instead of failing and naming any tracked path
+
