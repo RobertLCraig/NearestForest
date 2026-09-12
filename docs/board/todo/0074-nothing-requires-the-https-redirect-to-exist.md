@@ -53,7 +53,7 @@ require a directive to be present, and card `0011`'s comment-strip covers them.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
+- [ ] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
       `RewriteRule` redirecting to `https://forestlocator.enhanceify.co.uk`, including when the
       rule is present but commented out. proves: `the HTTPS redirect is present and literal`
 - [x] #2 THE EXISTING ASSERTION that no `RewriteRule` echoes `%{HTTP_HOST}` SHALL still run and
@@ -139,3 +139,58 @@ baseline colour rather than a fault.
 
 Not checked in a browser: nothing about this change is renderable, and a worktree is not what Herd
 serves in any case. `CACHE` / `BUILD` are untouched because nothing under `app/` changed.
+
+### 2026-09-12 review (v20260912152822-c707)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**#1** ÔÇö `scripts/selftest.js`, in the `.htaccess` block that begins `const htaccess = htaccessDirectives()`. The new assertion `the HTTPS redirect is present and literal` tests `/RewriteRule\s+\S+\s+https:\/\/forestlocator\.enhanceify\.co\.uk/` against `htaccess`, which is the return of `htaccessDirectives()` and therefore already passed through `stripHtaccessComments`. Deleting the rule leaves nothing for the pattern to match; commenting the four lines out drops them before the assertion reads them, since the strip filters any line matching `^\s*#`, which covers the indented `RewriteEngine`/`RewriteCond`/`RewriteRule` lines once prefixed. The companion assertion `a commented-out HTTPS redirect fails the suite` applies the same pattern to `allCommented`, the whole-file comment-out the security-header proof already builds, so the comment case is asserted directly rather than only inferred.
+
+I tried to satisfy the pattern with a wrong file and could not: a target echoing `%{HTTP_HOST}` does not begin with the literal host, and a prose mention of the rule is stripped before the read.
+
+**#2** ÔÇö the assertion `the HTTPS redirect does not echo the request Host` is unchanged, sits immediately below, and still reads `htaccess`.
+
+Suite run here: 315 passed, 1 failed. All three redirect assertions PASS. The single failure is the card-size one, which is card 0055 and not this card's.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope checked against the card's own commit `c7f6703`, not the branch-cumulative diff in the brief. Everything else in that file list belongs to cards 0071, 0072, 0073, 0076 and the board moves, each with its own commit.
+
+What this card actually changed: 16 lines in `scripts/selftest.js` inside the hardening block, plus its own card file. Nothing else.
+
+- **The `## Not this card` fences all hold.** `app/.htaccess` is untouched, last written by `1359bf1`, three weeks before this card. Nothing in the commit reaches the tile proxy, the security headers or the cache blocks. No other negative assertion in the suite was swept or rewritten.
+- **Nothing grew quietly.** The second assertion, `a commented-out HTTPS redirect fails the suite`, is not scope creep: criterion #1 requires the suite to fail when the rule is present but commented out, and it reuses the existing `allCommented` copy the security-header proof already builds rather than adding machinery.
+- **Nothing is left half done.** Both new assertions run, and the existing negative one still runs and passes. I ran the suite: 315 passed, 1 failed, the failure being the card-size assertion that is card `0055`.
+- **One deviation from the Plan, immaterial.** The Plan said to put the check on the line directly below the negative assertion; it went directly above, reading the same comment-stripped `htaccess` variable, which is what the Plan's reasoning actually required. The builder also recorded the stale Plan note about the baseline colour instead of investigating card `0071`, which is the right call since `0071` was fixed in `7658de6` on this branch.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding ÔÇö the host pattern matches any host that merely *begins* with the literal.**
+
+In `scripts/selftest.js`, the `.htaccess` hardening block, `httpsRedirect` is
+`/RewriteRule\s+\S+\s+https:\/\/forestlocator\.enhanceify\.co\.uk/` with nothing anchoring the end of the host. I ran the pattern against fixtures in memory (no files touched). A rule whose target is `https://forestlocator.enhanceify.co.uk.evil.com%{REQUEST_URI}` passes `the HTTPS redirect is present and literal`, and it also passes `the HTTPS redirect does not echo the request Host`, because it contains no `%{HTTP_HOST}`. So the file can carry no redirect to the site's own host at all, send every plain-HTTP visitor to somebody else's domain, and the suite stays green. That is the same silent shape the card was raised to close, moved one character along.
+
+The comment directly above the assertion is made false by this: it states that matching the literal "is what stops this assertion and the negative one below being satisfied by the same wrong file". The suffixed-host file satisfies both.
+
+The fix is one character: require the host to be followed by `/`, `%` or whitespace.
+
+Confirmed green otherwise: 315 passed, 1 failed, the one red being the known card 0055 size check. Deletion and comment-out both go red as claimed.
+
+UNMET: #1 the pattern is unanchored at the end of the host, so a `RewriteRule` redirecting to `forestlocator.enhanceify.co.uk.evil.com` satisfies it while the file carries no redirect to the site itself.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#1 reopened**, by the breakage lens: the pattern is unanchored at the end of the host, so a `RewriteRule` redirecting to `forestlocator.enhanceify.co.uk.evil.com` satisfies it while the file carries no redirect to the site itself.
+
