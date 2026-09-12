@@ -733,3 +733,5 @@ VERDICT: defect
 - **#6 reopened**, by the acceptance lens: the board reads zero only because the link check is blind to this form, and two open cards fail the rule criterion #3 states
 - **#1 reopened**, by the breakage lens: this card itself puts 47 lines of prescribed action above its `## Why`, and the README exemption for that shape covers `human-review/` only, which is not the lane it is in
 
+
+**2026-09-12** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 3 of 6 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
