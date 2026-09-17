@@ -288,3 +288,5 @@ VERDICT: defect
 - **#2 reopened**, by the breakage lens: `git ls-files` without `-z` quotes non-ASCII or special-character paths, so a tracked `.pyc` like that fails both path tests and is never named
 - **#3 reopened**, by the breakage lens: a later `!*.pyc` or `!__pycache__/` line cancels the rule, but the assertion only checks the rule is there, so it stays green while `.gitignore` refuses nothing
 
+
+**2026-09-17** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 1 of 3 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
