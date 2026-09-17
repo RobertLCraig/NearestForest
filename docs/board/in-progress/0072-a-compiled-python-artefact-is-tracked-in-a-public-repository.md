@@ -46,9 +46,9 @@ one example beyond that is a rule nobody measured.
 <!-- AC:BEGIN -->
 - [x] #1 THE REPOSITORY SHALL track no file under a `__pycache__` directory and no `*.pyc` file.
       proves: `no compiled python artefact is tracked`
-- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
+- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
       `__pycache__` or `*.pyc`. proves: `no compiled python artefact is tracked`
-- [ ] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
+- [x] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
       either rule is absent. proves: `no compiled python artefact is tracked`
 <!-- AC:END -->
 
@@ -197,4 +197,44 @@ VERDICT: defect
 
 - **#3 reopened**, by the breakage lens: deleting `.gitignore` makes both rules absent, but the unguarded read throws and the assertion never fails or names them
 - **#2 reopened**, by the breakage lens: the unguarded `git ls-files` throws outside a work tree, so the suite aborts with a stack trace instead of failing and naming any tracked path
+
+**2026-09-17** RESULT: done
+TESTS: +1 new, all green
+TOUCHED: scripts/selftest.js
+TOUCHED: docs/board/in-progress/0072-a-compiled-python-artefact-is-tracked-in-a-public-repository.md
+OUT-OF-SCOPE: none
+
+This fixes the 2026-09-12 review's breakage finding. Nothing else moved: `.gitignore`, `parse.py` and
+the stub blocks are untouched.
+
+The check is now a function of the root folder, `compiledPythonProblems(root, env)`, still inside
+the card-0072 block and still reporting one assertion for the real tree. Each read has its own
+try/catch. If `git ls-files` fails, the problem list gets
+`git ls-files could not list the tracked files, so none were checked: <git's first stderr line>`.
+If `.gitignore` cannot be read, it gets `.gitignore could not be read: <code>`, and both missing
+rules are then named as well.
+
+**The new test**, `no compiled python artefact is tracked: a failing git or a missing .gitignore is
+named, not thrown`, runs the function against an empty temp folder that is neither a git work tree
+nor holds a `.gitignore`. `GIT_CEILING_DIRECTORIES` stops git from finding a repository above it.
+The test passes only if the function returns the git reason and both rule reasons. If the function
+throws, the test catches that and fails with the message, so a throw is a named failure here too.
+
+**Seen failing twice, one reason each, before either guard went in:**
+1. With no guards: red, `threw instead of failing: Command failed: git ls-files`. That is #2's defect.
+2. With only the git guard: red, `threw instead of failing: ENOENT ... .gitignore`. That is #3's defect.
+3. With both guards: green.
+
+**Checked on the real tree too:** with `.gitignore` moved aside, the main assertion fails with
+`.gitignore could not be read: ENOENT | .gitignore carries no __pycache__ rule | .gitignore carries
+no *.pyc rule`. The suite still prints its `N passed, M failed` summary. The file was then put back.
+
+**The "git off PATH" case was not run on its own.** It is the same `execFileSync` throw as "not a
+work tree", and the same catch handles both. I did not remove git from PATH to prove that.
+
+Suite: 315 passed, 1 failed. The one failure is `no board card is too large for the agent file
+reader` (card 0020), which card 0055 carries. A fresh run leaves no `scripts/__pycache__`, and
+`git ls-files` shows no compiled artefact. **`pest` and `pint` were not run** because this
+repository has no `vendor/` and no PHP suite. **Still needs a browser check:** none applies, since
+nothing under `app/` changed.
 
