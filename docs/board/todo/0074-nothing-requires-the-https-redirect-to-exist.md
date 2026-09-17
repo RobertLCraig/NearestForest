@@ -53,7 +53,7 @@ require a directive to be present, and card `0011`'s comment-strip covers them.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
+- [ ] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
       `RewriteRule` redirecting to `https://forestlocator.enhanceify.co.uk`, including when the
       rule is present but commented out. proves: `the HTTPS redirect is present and literal`
 - [x] #2 THE EXISTING ASSERTION that no `RewriteRule` echoes `%{HTTP_HOST}` SHALL still run and
@@ -226,4 +226,68 @@ showed only `scripts/selftest.js` modified:
 `.\vendor\bin\pest.bat` and `pint.bat` do not exist in this repository, as the Plan says, so neither
 ran. The suite is `node scripts/selftest.js`. Nothing under `app/` changed, so there was no browser
 check to do and `CACHE`/`BUILD` are untouched.
+
+### 2026-09-17 review (v20260917100652-7aff)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+The fix does most of what it claims, but the new host anchor still lets a redirect to another site pass, so criterion #1 is not met.
+
+**#1: not met.** The check is in `scripts/selftest.js`, in the `.htaccess` block that starts `const htaccess = htaccessDirectives()`. `httpsRedirect` reads text that has already been through `stripHtaccessComments`, and `a commented-out HTTPS redirect fails the suite` runs the same pattern against `allCommented`. So deleting the rule or commenting it out does turn the suite red, as claimed.
+
+The new anchor `(?=[\/%\s]|$)` lets `%` follow the host. In an Apache rewrite rule, `%` is more than the start of `%{REQUEST_URI}`. `%1` to `%9` insert text captured by a `RewriteCond`, and `%{ENV:X}` or any other `%{...}` inserts a server variable. Both can carry the address on past the site's own host:
+
+- `https://forestlocator.enhanceify.co.uk%{ENV:X}.evil.com%{REQUEST_URI}`
+- `https://forestlocator.enhanceify.co.uk%1.evil.com`
+
+I checked both against the pattern by reading it; I did not run them. Both pass `the HTTPS redirect is present and literal`. Neither contains `%{HTTP_HOST}`, so the negative check passes too. The lookalike test only builds `.evil.com` and `@evil.com`, so it never tries this case. It is the review's own finding moved one step along. To close it, only `/`, whitespace, end of line or the literal `%{REQUEST_URI}` should be allowed after the host.
+
+**#2: met.** `the HTTPS redirect does not echo the request Host` is unchanged and still reads `htaccess`.
+
+UNMET: #1 the anchor lets `%` follow the host, so a target like `https://forestlocator.enhanceify.co.uk%{ENV:X}.evil.com` or `%1.evil.com` passes while it sends visitors to another site.
+
+VERDICT: defect
+
+**scope: sound**
+
+**Scope: sound.** The fix did not grow past what was asked, and it left nothing half done.
+
+The two commits made for the 2026-09-17 rebuild are `13975b8` and `893c9f7`. Together they touch only `scripts/selftest.js` and the card itself. `app/.htaccess` is not in either commit. The branch-wide file list in the brief belongs to other cards (`0071`, `0073`, `0075` and the board moves), each in its own commit.
+
+- **The fences hold.** Nothing touches the tile proxy, the security headers or the cache blocks. No other negative assertion was swept or rewritten.
+- **The change is the finding and nothing more.** In the `.htaccess` hardening block of `scripts/selftest.js`, `httpsRedirect` gains an end-of-host anchor. The comment above it now describes where the host ends, and one assertion was added: `a redirect to a host that only begins with the site host fails the suite`. That assertion is the red-proof of the review's own `.evil.com` case. Its `@evil.com` twin is the same fault in another form, not new work. Both existing redirect assertions now use the anchored pattern, so nothing is left patched in one place and stale in another.
+- **Nothing is half done.** The negative assertion `the HTTPS redirect does not echo the request Host` is unchanged and still reads the comment-stripped `htaccess`. The comment claim the breakage review called false now holds, because a suffixed host no longer satisfies both assertions.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding: a mod_rewrite variable can still carry the host on past the literal.**
+
+In `scripts/selftest.js`, in the `.htaccess` hardening block, `httpsRedirect` is now `...enhanceify\.co\.uk(?=[\/%\s]|$)`. It lets `%` follow the host so that `%{REQUEST_URI}` still matches. But `%` can start any variable, and a variable placed straight after the host becomes part of the host. Take a rule whose target is `https://forestlocator.enhanceify.co.uk%{HTTP:X-Forwarded-Host}%{REQUEST_URI}`:
+
+- It passes `the HTTPS redirect is present and literal`, because `%` follows the literal.
+- It passes `the HTTPS redirect does not echo the request Host`, because that check only searches for `%{HTTP_HOST}`.
+- It passes `a redirect to a host that only begins with the site host fails the suite`, because that check only tries `.evil.com` and `@evil.com`, never `%`.
+
+A request carrying `X-Forwarded-Host: .evil.com` is then sent to `forestlocator.enhanceify.co.uk.evil.com` while the suite stays green. It is the same kind of gap as last review's finding, moved to the one character the fix still allows. It also makes the comment above the pattern false: it says "the host ends where the literal does", and here it does not.
+
+The fix: allow only `/` or `%{REQUEST_URI}` after the host, and add the `%{HTTP:...}` case to the lookalike check.
+
+I read the code for this and ran nothing.
+
+UNMET: #1 the anchor allows any `%` variable straight after the host, so a rule that adds a request header onto the host passes the check while redirecting off-site.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#1 reopened**, by the acceptance lens: the anchor lets `%` follow the host, so a target like `https://forestlocator.enhanceify.co.uk%{ENV:X}.evil.com` or `%1.evil.com` passes while it sends visitors to another site.
+- **#1 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the anchor allows any `%` variable straight after the host, so a rule that adds a request header onto the host passes the check while redirecting off-site.
 
