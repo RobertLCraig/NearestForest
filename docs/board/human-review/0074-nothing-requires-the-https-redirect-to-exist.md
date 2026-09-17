@@ -291,3 +291,5 @@ VERDICT: defect
 - **#1 reopened**, by the acceptance lens: the anchor lets `%` follow the host, so a target like `https://forestlocator.enhanceify.co.uk%{ENV:X}.evil.com` or `%1.evil.com` passes while it sends visitors to another site.
 - **#1 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the anchor allows any `%` variable straight after the host, so a rule that adds a request header onto the host passes the check while redirecting off-site.
 
+
+**2026-09-17** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 1 of 2 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
