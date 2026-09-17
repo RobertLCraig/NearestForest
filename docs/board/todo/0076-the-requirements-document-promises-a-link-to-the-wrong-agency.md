@@ -58,10 +58,10 @@ check to write.
 - [x] #1 THE PER-SITE DETAIL BULLET in `docs/PRD.md` SHALL describe a link to the page of whichever
       agency owns the site, rather than naming Forestry England for all of them. proves: `the
       requirements document does not promise one agency for every forest link`
-- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail if `docs/PRD.md` claims a link to one
+- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail if `docs/PRD.md` claims a link to one
       named agency in a sentence about the Forests tab, and SHALL match across a wrapped line.
       proves: `the requirements document does not promise one agency for every forest link`
-- [x] #3 THE SCOTTISH-AGENCY LABEL SWEEP in `scripts/selftest.js` SHALL cover the Forestry and Land
+- [ ] #3 THE SCOTTISH-AGENCY LABEL SWEEP in `scripts/selftest.js` SHALL cover the Forestry and Land
       Scotland URLs in `app/data/campsites.json` as well as those in `app/data/sites.json`.
       proves: `every forestry and land scotland url is labelled by host, in both data files`
 <!-- AC:END -->
@@ -174,3 +174,60 @@ repository, so the PHP steps in the standard instructions do not apply here; the
 **Not done, and deliberately.** No dataset change, so `CACHE` and `BUILD` are untouched and nothing
 needs re-running. No browser check: this is a worktree, Herd serves `C:\Dev\NearestForest`, and
 nothing about a documentation fix renders anyway.
+
+### 2026-09-17 review (v20260917072610-68ff)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**Acceptance review of card 0076**
+
+**#1 is met.** The bullet in `docs/PRD.md` now describes a link to the page of whichever agency published the site, with the label read off the link's own host.
+
+**#2 is met in its main case, but the check has a gap.** The assertion `the requirements document does not promise one agency for every forest link` sits in the prose block of `scripts/selftest.js`. It collapses whitespace before matching, so it can see the wrapped sentence. But the pattern `/\blink to\b/` is case-sensitive and matches only the exact words "link to". A sentence saying the detail sheet "links to the Forestry England page", or "Link to the Forestry England page", names one agency and still passes. The single-line bug this card fixes has become a wording bug.
+
+**#3 is not traced to the test it names.** The criterion says it is proved by `every forestry and land scotland url is labelled by host, in both data files`. No assertion by that name exists; grepping `selftest.js` for "labelled by host" finds nothing. The widening (`flsCamp` from `CAMP.sites`, with a non-zero count required from each file) was added to the existing assertion `a link is labelled by the agency that published it, never by another agency`. The code widens the sweep, but the proof the criterion cites cannot be run or found. The card's own comment ("+1 new") agrees that only one assertion was added.
+
+UNMET: #3 the proof it names does not exist in scripts/selftest.js; the widening sits inside a differently named assertion, so a run log cannot show this criterion passing
+UNMET: #2 the check matches only the exact, case-sensitive words "link to", so "links to the Forestry England page" or "Link to the Forestry England page" names one agency and passes
+
+VERDICT: defect
+
+**scope: defect**
+
+The build stayed inside its fence, but it left criterion #3 half done.
+
+**What the build touched.** The build commit `98dc95d` changes three files: `docs/PRD.md`, `scripts/selftest.js` and this card. Its `TOUCHED` line says the same. The larger diff I was given covers other cards' commits: `.gitignore`, `docs/DATA-MODEL.md`, the `__pycache__` deletion, and cards `0069`, `0070`, `0071`, `0075`, `0017`, `0021`, `0020`. None of that is this card's work.
+
+**The fence holds.** Nothing under `app/` or the data files changed, so no behaviour moved and nothing needed a cache bump. The check in `scripts/selftest.js` looks at one kind of sentence only, sentences saying where a link goes. It doesn't turn into a general sweep of `docs/PRD.md`. The `docs/DATA-MODEL.md` change belongs to card `0073`, not this build.
+
+**Half done.** Criterion #3 says it is proved by an assertion named `every forestry and land scotland url is labelled by host, in both data files`. No assertion in `scripts/selftest.js` has that name. The builder widened the existing check, `a link is labelled by the agency that published it, never by another agency`, and did not rename it or add a new one. So the name criterion #3 points to finds nothing, and its tick cannot be traced to any passing check. The card's own `TESTS: +1 new` confirms it: the only new check is the one for #1 and #2.
+
+UNMET: #3 the criterion is proved by `every forestry and land scotland url is labelled by host, in both data files`, and no assertion with that name exists in `scripts/selftest.js`; the widening went into an assertion with a different name
+
+VERDICT: defect
+
+**breakage: defect**
+
+I found one defect, under criterion #3.
+
+**The test that criterion #3 names doesn't exist.** Criterion #3 says it is proved by `every forestry and land scotland url is labelled by host, in both data files`. No `ok()` in `scripts/selftest.js` has that name. The builder widened the sweep inside the assertion that was already there, `a link is labelled by the agency that published it, never by another agency`, in the card 0057 label block. So the run log never prints the name the card cites, and if the widening were removed, nothing named by #3 would go red. The PRD check was named exactly as its card cites it, so this one was missed, not decided. The card's own "TESTS: +1 new" matches: only the PRD assertion was added.
+
+**A smaller gap in the same sweep.** `flsCamp` only picks up a campsites URL that starts with `https://` and has a `/` after the host. An `http://` record, or a bare-host one, is skipped. The skipped record isn't counted, and the non-zero guard still passes as long as one record matches. That means #3 only covers the records that happen to have that exact URL shape.
+
+**Criteria #1 and #2 hold.** The PRD check flattens whitespace before it matches, so the wrapped bullet is caught. It also fails if the bullet is deleted. One limit: it splits sentences on every `.`, so a sentence that names the agency by its host (`forestryengland.uk`) gets cut before the name and passes. I tried to find a way to break these two criteria and couldn't.
+
+UNMET: #3 the sweep was folded into the existing 0057 assertion, so no test named `every forestry and land scotland url is labelled by host, in both data files` exists to prove it, and its campsites filter silently drops non-`https://ÔÇª/` FLS URLs
+
+VERDICT: defect
+
+**acceptance**
+
+- **#3 reopened**, by the acceptance lens: the proof it names does not exist in scripts/selftest.js; the widening sits inside a differently named assertion, so a run log cannot show this criterion passing
+- **#2 reopened**, by the acceptance lens: the check matches only the exact, case-sensitive words "link to", so "links to the Forestry England page" or "Link to the Forestry England page" names one agency and passes
+- **#3 was named by the scope lens and is not a ticked criterion here**, so nothing was changed: the criterion is proved by `every forestry and land scotland url is labelled by host, in both data files`, and no assertion with that name exists in `scripts/selftest.js`; the widening went into an assertion with a different name
+- **#3 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the sweep was folded into the existing 0057 assertion, so no test named `every forestry and land scotland url is labelled by host, in both data files` exists to prove it, and its campsites filter silently drops non-`https://ÔÇª/` FLS URLs
+
