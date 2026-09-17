@@ -46,9 +46,9 @@ one example beyond that is a rule nobody measured.
 <!-- AC:BEGIN -->
 - [x] #1 THE REPOSITORY SHALL track no file under a `__pycache__` directory and no `*.pyc` file.
       proves: `no compiled python artefact is tracked`
-- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
+- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
       `__pycache__` or `*.pyc`. proves: `no compiled python artefact is tracked`
-- [x] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
+- [ ] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
       either rule is absent. proves: `no compiled python artefact is tracked`
 <!-- AC:END -->
 
@@ -237,4 +237,54 @@ reader` (card 0020), which card 0055 carries. A fresh run leaves no `scripts/__p
 `git ls-files` shows no compiled artefact. **`pest` and `pint` were not run** because this
 repository has no `vendor/` and no PHP suite. **Still needs a browser check:** none applies, since
 nothing under `app/` changed.
+
+### 2026-09-17 review (v20260917090022-bc91)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each criterion against the code and could not disprove any of them.
+
+**#1 (no compiled Python is tracked).** I re-ran it myself: `git ls-files` lists nothing matching `pycache` or `.pyc`.
+
+**#2 (the suite fails naming every tracked artefact).** This is `compiledPythonProblems` in `scripts/selftest.js`. It reads `git ls-files` through `execFileSync` and adds one problem for every path inside a `__pycache__` folder or ending in `.pyc`. The `ok('no compiled python artefact is tracked', ÔÇª)` call joins them all into one message. If git fails, a try/catch records git's own reason instead of letting the throw abort the suite, which fixes the last review's finding.
+
+**#3 (`.gitignore` refuses both, and the check fails if either rule is missing).** The same function reads `.gitignore`, skips comment lines and fails on each missing rule separately. Both rules are there, on lines 22 and 23. A missing file is now reported as a problem, and both rules are then named as absent. The second assertion, `ÔÇªa failing git or a missing .gitignore is named, not thrown`, runs the function against an empty temp folder and proves both guards work.
+
+One gap that disproves no criterion: git quotes file names with non-ASCII characters, so a `.pyc` with such a name would end in a quote mark and the `.pyc` match would miss it. The `.gitignore` rules still refuse it.
+
+VERDICT: sound
+
+**scope: sound**
+
+I couldn't find anything in card 0072's work that goes beyond what the card asked for, or anything left unfinished.
+
+**The second build stayed inside the review's finding.** Commit `6479a27` changes two files: `scripts/selftest.js` and the card itself. In `selftest.js`, the card-0072 block now has its check in a function, `compiledPythonProblems(root, env)`. The `git ls-files` call and the `.gitignore` read each have their own try/catch, and a failure adds a named problem instead of crashing the suite. The one new assertion runs that function against an empty temp folder. That is the review's "one try/catch each", plus a test showing it works. `.gitignore`, `scripts/parse.py` and the three blocks that import the parser are untouched.
+
+**No fence crossed.** Nothing about how `selftest.js` imports the parser changed. `.gitignore` gained only the two rules the card names, so there is no wider sweep. The first build's commit `4e5123b` touches `.gitignore`, `selftest.js` and the removed artefact, and nothing else. Everything else in the large diff (`requirements.txt`, the PRD, DATA-MODEL and HANDOVER docs, and cards 0069 to 0076) came in through other cards' own commits.
+
+**Nothing left half done.** No compiled file is tracked, both rules are real lines rather than comments, and the error guards are covered by the new assertion. The only loose end is cosmetic: both build notes on the card still give its path as `in-progress/`, but the card now sits in `ai-review/`.
+
+This finding disproves no criterion.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding 1: a tracked artefact whose name git quotes is never named.** In `scripts/selftest.js`, `compiledPythonProblems` runs `git ls-files` without `-z`. By default git's `core.quotePath` setting wraps some paths in double quotes and escapes them: any path with a non-ASCII byte, a `"`, a backslash or a control character. So `scripts/caf├®.pyc` comes out as `"scripts/caf\303\251.pyc"`. That line ends in `"`, so the `/\.pyc$/i` test misses it. A top-level `"__pycache__/x.pyc"` has a `"` before `__pycache__` rather than the start of the line or a `/`, so the cache-directory test misses it too. The suite goes green while a compiled file is tracked. Running `git ls-files -z` and splitting on `\0` fixes it.
+
+**Finding 2: a negated rule still counts as refusing.** The rule check in `compiledPythonProblems` only asks whether a bare `*.pyc` or `__pycache__/` line exists. If a later line reads `!*.pyc` or `!__pycache__/`, git no longer ignores those files, so `git add -A` would pick them up again. The assertion still passes, because nothing looks at `!` lines after the rule. Criterion #3 says `.gitignore` shall refuse the files, so the rule has to take effect, not just be present. `git check-ignore` against a sample path would test what git actually does.
+
+UNMET: #2 `git ls-files` without `-z` quotes non-ASCII or special-character paths, so a tracked `.pyc` like that fails both path tests and is never named
+UNMET: #3 a later `!*.pyc` or `!__pycache__/` line cancels the rule, but the assertion only checks the rule is there, so it stays green while `.gitignore` refuses nothing
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 reopened**, by the breakage lens: `git ls-files` without `-z` quotes non-ASCII or special-character paths, so a tracked `.pyc` like that fails both path tests and is never named
+- **#3 reopened**, by the breakage lens: a later `!*.pyc` or `!__pycache__/` line cancels the rule, but the assertion only checks the rule is there, so it stays green while `.gitignore` refuses nothing
 
