@@ -194,3 +194,36 @@ VERDICT: defect
 
 - **#1 reopened**, by the breakage lens: the pattern is unanchored at the end of the host, so a `RewriteRule` redirecting to `forestlocator.enhanceify.co.uk.evil.com` satisfies it while the file carries no redirect to the site itself.
 
+**2026-09-17** RESULT: done
+TESTS: +1 new, all green (one pre-existing unrelated failure, card `0055`)
+TOUCHED: scripts/selftest.js
+TOUCHED: docs/board/in-progress/0074-nothing-requires-the-https-redirect-to-exist.md
+OUT-OF-SCOPE: none
+
+Answers the 2026-09-12 breakage finding. The host in `httpsRedirect` is now anchored:
+`...enhanceify\.co\.uk(?=[\/%\s]|$)`, so after the literal host the target may only continue with a
+path, a mod_rewrite variable such as `%{REQUEST_URI}`, or end there. The fix is in the pattern
+itself, so the two existing assertions that use it get it as well. `:` is deliberately not allowed
+after the host, because `host:x@evil.com` is another userinfo trick.
+
+Test first. `a redirect to a host that only begins with the site host fails the suite` takes the
+real comment-stripped `htaccess`, puts `.evil.com` and then `@evil.com` straight after the host, and
+requires the pattern to reject both. Run against the old pattern it was red for the reason the
+review gave: `the pattern still accepts a redirect to host + .evil.com, @evil.com`. With the anchor
+it is green.
+
+Red-proofs, run on the real `app/.htaccess` and restored from a copy each time. `git status` then
+showed only `scripts/selftest.js` modified:
+
+1. Redirect block commented out: `the HTTPS redirect is present and literal` red, the negative
+   assertion still PASS. 315 passed, 2 failed.
+2. Block deleted: same assertion red. 315 passed, 2 failed.
+3. The review's own case, written to disk: rule target
+   `https://forestlocator.enhanceify.co.uk.evil.com%{REQUEST_URI}`. `present and literal` is now
+   red, and the negative assertion still passes, which is the gap the review found, now closed.
+4. Restored: 316 passed, 1 failed. The one failure is the known `0055` card-size check.
+
+`.\vendor\bin\pest.bat` and `pint.bat` do not exist in this repository, as the Plan says, so neither
+ran. The suite is `node scripts/selftest.js`. Nothing under `app/` changed, so there was no browser
+check to do and `CACHE`/`BUILD` are untouched.
+
