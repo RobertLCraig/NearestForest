@@ -58,10 +58,10 @@ check to write.
 - [x] #1 THE PER-SITE DETAIL BULLET in `docs/PRD.md` SHALL describe a link to the page of whichever
       agency owns the site, rather than naming Forestry England for all of them. proves: `the
       requirements document does not promise one agency for every forest link`
-- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail if `docs/PRD.md` claims a link to one
+- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail if `docs/PRD.md` claims a link to one
       named agency in a sentence about the Forests tab, and SHALL match across a wrapped line.
       proves: `the requirements document does not promise one agency for every forest link`
-- [ ] #3 THE SCOTTISH-AGENCY LABEL SWEEP in `scripts/selftest.js` SHALL cover the Forestry and Land
+- [x] #3 THE SCOTTISH-AGENCY LABEL SWEEP in `scripts/selftest.js` SHALL cover the Forestry and Land
       Scotland URLs in `app/data/campsites.json` as well as those in `app/data/sites.json`.
       proves: `every forestry and land scotland url is labelled by host, in both data files`
 <!-- AC:END -->
@@ -230,4 +230,46 @@ VERDICT: defect
 - **#2 reopened**, by the acceptance lens: the check matches only the exact, case-sensitive words "link to", so "links to the Forestry England page" or "Link to the Forestry England page" names one agency and passes
 - **#3 was named by the scope lens and is not a ticked criterion here**, so nothing was changed: the criterion is proved by `every forestry and land scotland url is labelled by host, in both data files`, and no assertion with that name exists in `scripts/selftest.js`; the widening went into an assertion with a different name
 - **#3 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the sweep was folded into the existing 0057 assertion, so no test named `every forestry and land scotland url is labelled by host, in both data files` exists to prove it, and its campsites filter silently drops non-`https://ÔÇª/` FLS URLs
+
+**2026-09-17**
+RESULT: done
+TESTS: +1 new, all green (bar the pre-existing card 0055 failure, unchanged)
+TOUCHED: scripts/selftest.js
+TOUCHED: docs/board/in-progress/0076-the-requirements-document-promises-a-link-to-the-wrong-agency.md
+OUT-OF-SCOPE: none
+
+This entry answers the 2026-09-17 review. `docs/PRD.md` was not touched again.
+
+**#3, the missing name.** The widening now sits in an assertion of its own, named exactly as the
+criterion cites it: `every forestry and land scotland url is labelled by host, in both data files`.
+The 0057 assertion `a link is labelled by the agency that published it, never by another agency`
+goes back to its four fixture cases. **The selector gap is closed as well.** Records are now picked
+by any mention of `forestryandland.gov.scot`, in any case and under any scheme or none, not by an
+exact `https://host/` prefix. Picking up too many only makes the check stricter. An `http://` record
+fails the check by name, because the app would not show it as a Forestry and Land Scotland link.
+Today both prefixes select the same records: 276 in sites.json and 44 in campsites.json.
+
+Red-proofs, run on temporary copies of the suite (the probe files were deleted and nothing else
+changed):
+- An in-memory `http://forestryandland.gov.scot/visit/x` campsite record, with the new selector:
+  **FAIL**, `probe-http` named. The same record with the previous strict selector: **PASS**. That
+  PASS is the gap the review described.
+- The FLS key in the lifted `AGENCY_BY_HOST` broken, with only the campsites half left in the
+  mislabelled set: **FAIL**, 44 records, starting `fls-stn-achnabreac`. With both halves dropped
+  under the same break: **PASS**. So the red run came from campsites.json.
+
+**#2, the wording gap.** The matcher is now `/\blink(?:s|ed|ing)? to\b/i`. Each agency is matched by
+its name or its host, ignoring case. Sentences now end only at a full stop followed by whitespace or
+the end of the text, so `forestryengland.uk` is no longer cut before the agency can be read. **Test
+first:** three rewordings went into the assertion before the matcher changed: `links to the Forestry
+England page`, `Link to the Forestry England page`, and `links to the\n  forestryengland.uk page`.
+They run through the same function as the real document. The first run was **red, naming all
+three**. With the fix it is green. Swapping the original wrapped bullet back into a copy of the PRD
+still goes red, with the sentence rebuilt across the line break. A wrapped `Links to the
+forestryengland.uk page` also goes red, and so does deleting the bullet.
+
+**Suite:** `node scripts/selftest.js` gives 317 passed, 1 failed. The one failure is `no board card
+is too large for the agent file reader`, which is card 0055's and is Rob's to clear. There is still
+no `vendor/`, so `pest.bat` and `pint.bat` do not exist in this repository. No browser check was
+needed, because nothing under `app/` changed.
 
