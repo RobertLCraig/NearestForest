@@ -273,3 +273,57 @@ is too large for the agent file reader`, which is card 0055's and is Rob's to cl
 no `vendor/`, so `pest.bat` and `pint.bat` do not exist in this repository. No browser check was
 needed, because nothing under `app/` changed.
 
+### 2026-09-17 review (v20260917110045-1ee2)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each criterion against the code in `C:\Dev\NearestForest` and couldn't break any of them.
+
+**#1 is met.** The per-site detail bullet in `docs/PRD.md` now promises a link to the page of whichever agency published the site. The label is read off the link's own host.
+
+**#2 is met.** The check is `ok('the requirements document does not promise one agencyÔÇª')`, in the card 0036 prose block of `scripts/selftest.js`:
+- **Wrapped lines:** it collapses all whitespace in the document before it matches, so a sentence split across a line break is still one sentence.
+- **Wording:** the link matcher (`PRD_LINK`) ignores case and accepts "link", "links", "linked" and "linking".
+- **Agencies:** each one is matched by its name or its host.
+- **Sentence breaks:** a sentence only ends at a full stop followed by whitespace, so `forestryengland.uk` is no longer cut in half.
+- **Rewording:** the three rewordings the last review showed passing now run through the same function as the real document, so loosening the matcher turns the suite red.
+- **Deletion:** removing the bullet also turns it red.
+
+**#3 is met.** The check the criterion names now exists in `scripts/selftest.js`, beside the card 0057 label check. It reads both data files. Scottish records come from `sites.json`. Campsite records are picked from `campsites.json` by any mention of `forestryandland.gov.scot`, in any case and under any scheme. It fails unless both files contribute at least one record, so neither half can pass by reading nothing.
+
+I read the code only; I didn't run the suite.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope review of card 0076: nothing went over the fence, and nothing is left half done.**
+
+**Fences.** This card's build commits touch only `docs/PRD.md`, `scripts/selftest.js` and the card itself. Nothing under `app/` or the data files changed, so `openSheet` and `AGENCY_BY_HOST` are untouched and nothing needed a cache bump. The other files in the diff (`.gitignore`, `docs/DATA-MODEL.md`, the `__pycache__` deletion, and the other cards) belong to cards 0073, 0071, 0069, 0070, 0075, 0017, 0021 and 0020, as the previous scope review found. The PRD check reads only sentences that say where a link goes, so it is not a general audit of the document.
+
+**The earlier half-done finding is closed.** In `scripts/selftest.js`, in the card 0057 label block, there is now an assertion of its own named exactly `every forestry and land scotland url is labelled by host, in both data files`. It requires a non-zero count from both `sites.json` and `campsites.json`. The 0057 assertion `a link is labelled by the agency that published it, never by another agency` is back to its four fixture cases.
+
+**The looser selector is not scope creep.** `mentionsFls` now picks up any record that mentions `forestryandland.gov.scot`, whatever the scheme. That only answers the breakage lens's finding about `http://` records and makes the #3 sweep stricter. It adds no new behaviour.
+
+This finding disproves no criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+**Breakage review of card 0076**
+
+I tried to break it and couldn't.
+
+**#3.** The assertion `every forestry and land scotland url is labelled by host, in both data files` now exists under that exact name in `scripts/selftest.js`. It checks every record whose URL mentions the Scottish agency's host, in any case and under any scheme. In `app/data/sites.json` it also takes every Scottish record that has a URL. It requires a non-zero count from each file. It uses the same `link` helper as the 0057 fixtures, so the rule is checked the same way in both places. Picking up too many records only makes the check stricter.
+
+**#2.** `PRD_LINK` is now case-insensitive and covers "links", "linked" and "linking". Each agency in `PRD_AGENCIES` matches by its name or its host. `prdSentences` no longer splits on the full stop inside a host name. The three rewordings the last review found are pinned as test cases and run through the same function as the real file, so loosening the matcher turns the assertion red. Deleting the bullet also turns it red.
+
+**One small drift, which breaks no criterion.** The comment above the 0057 assertion `a link is labelled by the agency that published it, never by another agency` still says "Every Scottish forest in the shipped file is checked too". That sweep now lives in the next assertion, so the sentence describes the block, not that assertion. It's still true of the block, so a reader isn't misled.
+
+VERDICT: sound
+
