@@ -53,7 +53,7 @@ require a directive to be present, and card `0011`'s comment-strip covers them.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
+- [x] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
       `RewriteRule` redirecting to `https://forestlocator.enhanceify.co.uk`, including when the
       rule is present but commented out. proves: `the HTTPS redirect is present and literal`
 - [x] #2 THE EXISTING ASSERTION that no `RewriteRule` echoes `%{HTTP_HOST}` SHALL still run and

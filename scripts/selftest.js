@@ -1119,14 +1119,24 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // four redirect lines left the suite green.
   //
   // Both halves are one fact, so they are one pattern: a RewriteRule whose target begins
-  // with the literal host. Matching the literal is what stops this assertion and the
-  // negative one below being satisfied by the same wrong file. It reads the
-  // comment-stripped text, so a commented-out rule reads as absent.
-  const httpsRedirect = /RewriteRule\s+\S+\s+https:\/\/forestlocator\.enhanceify\.co\.uk/;
+  // with the literal host, and the host ends where the literal does: only a path, a
+  // mod_rewrite variable or the end of the target may follow it. Matching the literal is
+  // what stops this assertion and the negative one below being satisfied by the same wrong
+  // file. It reads the comment-stripped text, so a commented-out rule reads as absent.
+  const httpsRedirect = /RewriteRule\s+\S+\s+https:\/\/forestlocator\.enhanceify\.co\.uk(?=[\/%\s]|$)/m;
   ok('the HTTPS redirect is present and literal', httpsRedirect.test(htaccess));
   // And prove the strip the same way the headers above are proved, because "commented out"
   // is the way this directive would actually go missing.
   ok('a commented-out HTTPS redirect fails the suite', !httpsRedirect.test(allCommented));
+  // "Begins with the literal host" has to mean the host ends there. The 2026-09-12 review
+  // measured a rule redirecting to forestlocator.enhanceify.co.uk.evil.com passing both this
+  // pattern and the negative one below, which is every plain-HTTP visitor sent off-site with
+  // the suite green. Build that file from the real one and require the pattern to refuse it,
+  // along with the userinfo shape, where everything before the @ is not the host at all.
+  const lookalikes = ['.evil.com', '@evil.com'].filter(suffix => httpsRedirect.test(
+    htaccess.replace(/forestlocator\.enhanceify\.co\.uk/g, 'forestlocator.enhanceify.co.uk' + suffix)));
+  ok('a redirect to a host that only begins with the site host fails the suite',
+     lookalikes.length === 0, `the pattern still accepts a redirect to host + ${lookalikes.join(', ')}`);
   // A redirect that echoes the request's own Host header is an open redirect.
   ok('the HTTPS redirect does not echo the request Host',
      !/RewriteRule.*%\{HTTP_HOST\}/.test(htaccess));
