@@ -342,3 +342,67 @@ broken the map's clustering or its label collisions.
 **`not_for_the_loop:` is removed.** Its stated reason was #8, an offline check on Rob's phone that
 no session could run. #8 is closed, so the reason is spent, and leaving the key on would strand a
 finished card. Nothing else about this card reaches outside the repository.
+
+### 2026-09-21 review (v20260921004540-068f)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each criterion against the code in `C:\Dev\NearestForest` and couldn't disprove any of them. The project's test suite didn't run, so this rests on reading code, not test results.
+
+- **#1 (third tab, ranked the same way):** the Campsites tab button is in `app/index.html`, and ranking goes through the shared `NF.rank` in `app/core.js`.
+- **#2 (say only what the source says, no open/closed badge):** `build_osm` and `build_stn` in `scripts/parse_campsites.py` set `opening_summary: None`, and `validate` rejects any record that has one. `openSheet` in `app/app.js` shows "Not published" for a missing opening time on forests and car parks, and leaves the row out for campsites.
+- **#3 (OSM credit, ODbL, copyright link):** `#osm-credit` in `app/index.html` names the Open Database License and links to `openstreetmap.org/copyright`. On the map, `NF.mapHint` in `app/core.js` keeps the OSM credit showing even when the tiles are off or fail to load.
+- **#4 (separate file with its own licence):** `main` in `scripts/parse_campsites.py` writes `app/data/campsites.json` with its own `licence` and `attribution` block, apart from `sites.json`.
+- **#5 (build fails outside Great Britain):** `validate` checks `LAT_RANGE` (49.5 to 61.2) and `LNG_RANGE`, and a failure writes nothing.
+- **#6 (no members-only, private, scout or static sites):** `build_osm` now drops `access` values of `private`, `no` and `members`, plus scout sites (`SCOUT_RE`), members-only sites by name (`MEMBERS_RE`) and static parks (`looks_static`, `RESIDENTIAL_RE`). The shipped file has no "Members only" labels left, which was the defect in the earlier review.
+- **#7 (Stay the Night rules):** `build_stn` carries the 6pm-to-10am and self-contained-vehicle rules, and `openSheet` shows them under "Overnight rules".
+- **#8 (works offline):** the card records a manual check by Rob on 2026-09-20. No reviewer can check this from the code.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope review of card 0020 (Campsites tab)**
+
+The diff looks much wider than the card: a salted tile rate-limit counter, `AGENCY_BY_HOST` labels by host, derived car-park names, and `.gitignore` entries. None of that is this card's work. `git log` puts it on other cards' commits that are already on `main`:
+- `counterDir` and `counterSalt` in `app/api/tiles.php` are card 0012's (`3aa5439`, `de37fb2`).
+- `AGENCY_BY_HOST` and the moved Country row in `openSheet` in `app/app.js` are card 0057's (`3ba3f31`, `e6b9aca`).
+- The derived car-park names (`name_is_derived`) are card 0004's.
+
+The diff is taken against an old base, so it shows those changes; the branch didn't add them. Nothing crosses the "Not this card" fence:
+- Campsites stay out of `sites.json`, in their own file.
+- There is no reconciliation against the car park data.
+- There is no Northern Ireland data, no booking link and no country filter.
+
+The earlier half-done item, the map credit with tiles off, is now finished. `mapHint` in `app/core.js` gives the OSM credit whenever campsite markers are drawn, whether tiles are on or off.
+
+Criterion #6 was the earlier scope failure, and it now holds. `grep` finds 0 "Members only" records in `app/data/campsites.json`, and the "97 of 3,574" count in the comment in `openSheet` matches the 3,574 records in the shipped file.
+
+Criterion #8 is still open, but only because it needs Rob to check the installed app offline on the phone, as the card says.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to find something the change broke and couldn't. Every count and claim I checked matches the data that ships.
+
+- **Campsite counts (`openSheet` in `app/app.js`):** the comment says hours are published for 97 of 3,574 records. `app/data/campsites.json` holds 3,574 records, and 97 of them carry `opening_times`. The country split is England 2,524, Scotland 496 and Wales 554, which matches the card's "Answered, and built" section.
+- **Criterion #6:** no record in the shipped file carries `access_note: "Members only"`. The six members-only sites an earlier review found are gone.
+- **Car park and forest counts:** the "1,180 sites" comment in `app/api/nearest.php` and the "550 records carry a url" comment on `safeHref` in `app/core.js` both match `sites.json`, which has 1,180 records and 550 URLs.
+- **Build stamp:** `BUILD` in `app/core.js` (`v28-2026-09-10`) matches `CACHE` in `app/sw.js`, so the two haven't drifted.
+- **Code changes:**
+  - `NF.mapHint` returns the ODbL credit whenever campsite markers are on the map, including when the tiles have failed to load.
+  - The "Country" row in `openSheet` moved into the shared part of the sheet. No campsite-only caller still depends on it being in the campsite branch.
+  - `NF.dataChecked` still shows a normal campsite the OSM snapshot date, and no longer shows that date for a Stay the Night car park.
+- **One remaining risk:** several comments in `scripts/selftest.js` hard-code "3,574". They are true today, but the self-test that checks written counts doesn't read comments, so they would go stale silently if the data changes. They aren't false now, so I'm not calling this a defect. Separately, criterion #2 on the card says "96 of 8,501", which is card wording rather than code.
+
+No criterion disproved.
+
+VERDICT: sound
+
