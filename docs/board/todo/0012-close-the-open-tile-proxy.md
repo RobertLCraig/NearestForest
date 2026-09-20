@@ -82,7 +82,7 @@ costs the same quota, so removing nine would be tidying dressed as hardening.
 - [x] #1 WHEN a tile is requested by a page on another origin, THE APP SHALL refuse it, including
       when that page suppresses its own `Referer`.
 - [x] #2 WHEN a tile is requested from the app's own map, THE APP SHALL serve it as before.
-- [x] #3 WHEN one address has requested more than the daily cap, THE APP SHALL return 429 and
+- [ ] #3 WHEN one address has requested more than the daily cap, THE APP SHALL return 429 and
       SHALL NOT call the upstream provider.
 - [x] #4 IF the counter cannot be read or written, THEN THE APP SHALL serve the tile anyway.
 - [x] #5 WHEN the tile layer is switched on from the app itself, THE APP SHALL draw tiles as
@@ -491,3 +491,59 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-20 review (v20260920235606-a87b)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Acceptance, traced to code.**
+
+**#1** ÔÇö `app/api/tiles.php`, top-level guard: `$fetchSite = $_SERVER['HTTP_SEC_FETCH_SITE']`, any value that is not `same-origin` ÔåÆ `fail(403, ÔÇª)`, before `rateLimit()`/`readKey()`/`curl_init`. `Sec-Fetch-Site` is a forbidden header name, so `referrerpolicy="no-referrer"` does not suppress it; the `Referer` gate below still catches older clients, comparing `parse_url($ref, PHP_URL_HOST)` against `HTTP_HOST` with the port stripped. Met.
+
+**#2** ÔÇö `app/map.js` `getTile()` sets `t.img.src = 'api/tiles.php?z=ÔÇª'`, a relative same-origin URL, so the browser sends `Sec-Fetch-Site: same-origin` and passes both gates. Met.
+
+**#3** ÔÇö `rateLimit()` is called after validation and before `readKey()` and `curl_init`; on `$n >= CAP_PER_DAY` it sets `Retry-After` and `fail(429, ÔÇª)`, which `exit`s. No upstream call is reachable. Met.
+
+**#4** ÔÇö every failure path in `rateLimit()` returns instead of refusing: empty `REMOTE_ADDR`, `counterDir()` returning null, an unreadable counter (`is_readable` ÔåÆ 0), a suppressed `@file_put_contents`. `counterSalt()` suppresses both read and write and falls back to a fresh salt. Met.
+
+**#5** ÔÇö `draw()` in `app/map.js` fills the bundled boundary, then `if (tilesOn) drawTiles()` over it; `drawTiles()` skips `!t.ok` tiles so a failure reveals the outline. Default-off persists via `LS_TILES` in `setTiles()`. Met.
+
+I attacked the card's own 2026-09-11 finding (`counterDir()` checking one location where `readKey()` checks three). It is real, but on every deployment the counters merely fall back to `sys_get_temp_dir()`, where the cap still returns 429 and still fails open. That is a hardening gap, not an unmet criterion ÔÇö it disproves none of the five, and my lens cannot carry it.
+
+No criterion disproved.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Findings (scope lens)**
+
+**1. The 2026-09-10 build left its own security fix half done, and the finding stands.** `readKey()` in `app/api/tiles.php` accepts the key from three places ÔÇö `THUNDERFOREST_KEY`, `../../../tiles.key`, `../../tiles.key`. `counterDir()` probes only `__DIR__ . '/../../../tiles.key'`. On a deploy using either of the other two, the key is found and tiles are served while `counterDir()` silently falls back to `sys_get_temp_dir() . '/nf-tiles'` ÔÇö exactly the world-writable `/tmp` the function's own comment says it was written to escape ("the domain directory is this account's"; the temp path is described as the developer case only). A co-tenant who owns that directory can seed an address to the cap, or delete counters so the cap never fires and upstream is called past 2000. One rule, written twice, in two functions.
+
+**2. Untested.** No assertion in `scripts/selftest.js` names `counterDir`, `counterSalt` or `nf-tiles`, so the layout rule the fix depends on is unpinned.
+
+Nothing crossed the "## Not this card" fence: `nearest.php` has no limiter, `STYLES` holds ten, no WAF or tile rule, no server-side cache, provider unchanged.
+
+UNMET: #3 on any deploy where the key comes from the env var or the repo-root path, `counterDir()` drops the counters into the shared temp directory, where a co-tenant can remove or forge them, so an address over the cap is not reliably refused and upstream is still called.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding 1 ÔÇö `counterSalt()` in `app/api/tiles.php` turns the cap off when its file cannot be written.** It returns a fresh `random_bytes(16)` whenever `.salt` is unreadable or shorter than 32 chars, and `@file_put_contents` is suppressed. If the directory is readable but not writable (a `/tmp/nf-tiles` a co-tenant made first, an open_basedir or noexec-style restriction, a full disk), every request gets a *different* salt, so `rateLimit()` computes a different filename each time, reads `0`, and never reaches `CAP_PER_DAY`. Upstream is called without limit and nothing reports it. No self-test exercises this: the suite never mentions `counterSalt`, `counterDir` or `nf-tiles`.
+
+**Finding 2 ÔÇö the card's 2026-09-11 finding is real.** `readKey()` accepts `THUNDERFOREST_KEY`, `../../../tiles.key` and `../../tiles.key`; `counterDir()` probes only the third. On the other two layouts the key is found, tiles serve, and counters fall to the shared temp directory ÔÇö the exact co-tenant case the docblock above `counterDir()` says is closed ("where tiles.key is readable, that directory is ours by construction"). Combined with finding 1, a co-tenant owning that directory removes the cap entirely.
+
+UNMET: #3 a salt file that cannot be written makes every request hash to a new counter filename, so the count never reaches the cap and upstream is called past it.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#3 reopened**, by the scope lens: on any deploy where the key comes from the env var or the repo-root path, `counterDir()` drops the counters into the shared temp directory, where a co-tenant can remove or forge them, so an address over the cap is not reliably refused and upstream is still called.
+- **#3 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: a salt file that cannot be written makes every request hash to a new counter filename, so the count never reaches the cap and upstream is called past it.
+
