@@ -56,7 +56,7 @@ underneath. Do not commit a key.
       site markers and above the bundled outline.
 - [x] #3 IF a tile request fails or times out, THEN THE APP SHALL keep the bundled outline visible
       and SHALL NOT leave blank or grey areas.
-- [x] #4 WHEN the repository is inspected, THE APP SHALL contain no provider key.
+- [ ] #4 WHEN the repository is inspected, THE APP SHALL contain no provider key.
 <!-- AC:END -->
 
 ## Tasks
@@ -185,3 +185,58 @@ Thunderforest and put the key on the server. That was done: HANDOVER's Deploymen
 code: failed tiles cached for ever in `getTile` (`app/map.js`), a "cancellation on pan" task ticked
 with no code behind it, and `readKey` (`app/api/tiles.php`) accepting a repository-root key path the
 card forbade. All three are a builder's.
+
+### 2026-09-20 review (v20260920220250-317d)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+All four criteria trace to code I could run down; I tried to break each and could not.
+
+**#1 ÔÇö toggle off, zero requests.** `NFMap.draw()` (`app/map.js`) calls `drawTiles()` only under `if (tilesOn)`, and `getTile()` is the only place any `src` is set (`api/tiles.php?...`). Init reads `localStorage 'nf.tiles'` and `tilesOn` initialises to `false`, so an unset value is off. `app/index.html` contains no `preconnect`/`prefetch` and no external subresource ÔÇö the only absolute URL is an OSM copyright link a person must tap. `app/sw.js` refuses to cache `api/tiles.php`, so nothing re-fetches it in the background.
+
+**#2 ÔÇö under markers, over outline.** `draw()` order is sea fill ÔåÆ boundary `fill()`/`stroke()` ÔåÆ `drawTiles()` ÔåÆ marker/cluster loop. Correct sandwich.
+
+**#3 ÔÇö a failure leaves no hole.** `getTile()` sets `ok` only in `onload`; `drawTiles()` does `if (!t.ok) continue`, so a failed, hung or offline tile draws nothing and the already-painted coastline shows through. `drawTiles()` also returns early when the visible grid exceeds `MAX_TILES`, again leaving the outline. `updateHint()`/`NF.mapHint` withdraws the Thunderforest credit when `tileLayerDead()`.
+
+**#4 ÔÇö no key in the repo.** `readKey()` (`app/api/tiles.php`) reads a file or env var; no tracked file matches `*key`, and no `apikey` literal exists in `app/*.js`/`*.html`. `.gitignore` lists `tiles.key`.
+
+The earlier "failed tiles cached forever" breakage is now recoverable: `setTiles()` calls `pruneTiles()` on every offÔåÆon transition. Cancellation-on-pan is still absent, but that is a task box, not a criterion, and is outside this lens.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Findings (scope lens)**
+
+**1. "Tile fetch with ÔÇª cancellation on pan" is ticked and does not exist.** `getTile` (`app/map.js`) sets `t.img.src` once; nothing clears `src`, and `pruneTiles` (`app/map.js`) only drops the map object, so every image started during a fast pan runs to completion against a metered quota and lands in no cache. The earlier review said this; it is unchanged. A ticked task with no code is work the next session will skip.
+
+**2. `readKey` (`app/api/tiles.php`) accepts key sources the card excluded.** The card specifies one file above the web root. `readKey` also takes `getenv('THUNDERFOREST_KEY')` and `__DIR__ . '/../../tiles.key'`, which resolves to the repository root ÔÇö making a key inside a public repo a supported, working configuration, directly against "Do not commit a key". Only `.gitignore` stands between that and a commit.
+
+**3. Ten-style whitelist and the `s=` parameter (`app/api/tiles.php`, `STYLES`, `$style`).** The card chose Outdoors. No caller sends `s` (`app/map.js`, `getTile`). Nine unused styles are public input surface added speculatively.
+
+UNMET: #4 `readKey` in `app/api/tiles.php` treats a `tiles.key` at the repository root as a valid key location, so a key inside the repo is a supported configuration rather than one the code refuses.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding ÔÇö `tileLayerDead` / `getTile` (`app/map.js`), against the rule stated in `mapHint` (`app/core.js`).**
+
+`tilesOk` and `tilesFailed` are cumulative for the whole session and are reset only by `pruneTiles`, which runs on toggle-off-then-on or at 300 tiles. `tileLayerDead()` is `tilesFailed > 0 && tilesOk === 0`, so once any one tile has ever loaded, the dead-layer state can never be reported again.
+
+That is the case the cap produces. `CAP_PER_DAY` in `app/api/tiles.php` can only 429 *after* successful tiles, never before; the same holds for a 502 from `fail()` once the user pans onto fresh tiles. So: tiles on, pan, every new tile refused, the map shows bare outline, and the hint still reads "Maps ┬® Thunderforest, Data ┬® OpenStreetMap contributors" with the button reading "Tiles on" and no "Tap Tiles twice to retry".
+
+`mapHint`'s own comment asserts the credit "is withdrawn with the tiles" and calls crediting an absent basemap a false attribution. The code honours that only when zero tiles ever arrived, which the cap guarantees is not the failure anyone will hit. The comment is now false, and the self-test (`scripts/selftest.js`, tile-layer block) only builds the all-fail-from-the-start case.
+
+This disproves none of the four criteria: the outline stays visible and nothing goes grey, so #3 holds, and #1, #2, #4 I could not break.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#4 reopened**, by the scope lens: `readKey` in `app/api/tiles.php` treats a `tiles.key` at the repository root as a valid key location, so a key inside the repo is a supported configuration rather than one the code refuses.
+
