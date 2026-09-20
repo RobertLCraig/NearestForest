@@ -42,10 +42,12 @@ to: open, read the top of a list, tap once, drive. Success means the nearest sit
 no interaction, one tap reaches turn-by-turn navigation, and the whole thing works with no signal,
 because forest car parks are exactly where mobile data dies.
 
-**One success criterion is still unevidenced, and it is the load-bearing one.** Rob has the app on
-the Home Screen and confirmed it locates, lists and maps correctly, so the "open, read, tap, drive"
-criteria hold on a real device. **Working with no signal has still only ever been checked by serving
-locally.** That is card 0001 check 5, not a formality.
+**Every success criterion is now evidenced on a real device, including the load-bearing one.** Rob
+confirmed on 2026-09-20 that the app has worked without fail throughout a road trip to and around
+Scotland, which is the no-signal criterion met in the conditions it was written for rather than by
+serving locally. Card 0001 carries the answer. **That does not make the offline path safe to change
+by inspection**: the worst bug this project has had was the service worker evicting the app along
+with the map tiles, and it was found by running it. See DECISIONS 2026-08-08.
 
 ## Canonical data shape
 
@@ -303,17 +305,12 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   gate is open on a guess.
 - **Reviewed:** an adversarial review and penetration test on 2026-08-10, prompted by the app being
   shared with other people. **The finding was that the risk is to Rob's quota, not to anyone using
-  the app**: no accounts, no server-side state, no writes, no third-party requests, and input
-  validation on both endpoints held against array parameters, `1e400`, traversal in every string
-  parameter and a clamp test on `n`. `.git`, `.htaccess`, `docs/`, `scripts/` and all three
-  `tiles.key` paths are unreachable, TLS is 1.2/1.3 with a valid certificate, and no key appears in
-  any commit. Cards 0011-0014 carry what was fixed. Two things are worth keeping in mind rather than
-  re-deriving. **`api/nearest.php` re-parses the whole dataset on every request, and that is not a
-  DoS lever and does not need caching**; card 0034 in `done/` re-took the timings on 2026-09-06
-  against the file that ships today and carries every figure, the harness and the reason its own
-  script over-reports a first run. And the `%{HTTP_HOST}` open-redirect shape in `.htaccess` was
-  tested and is not reachable, since an unknown `Host` 404s before the rewrite runs. It was replaced
-  with a literal anyway.
+  the app**: no accounts, no server-side state, no writes, no third-party requests. Cards 0011-0014
+  carry what it tested and what was fixed; DECISIONS 2026-08-10 carries the reasoning. Two results
+  worth not re-deriving, each on its own card rather than restated here: `api/nearest.php`
+  re-parsing the whole dataset per request is **not** a DoS lever and needs no caching (card 0034,
+  re-timed 2026-09-06 against the shipped file), and the `%{HTTP_HOST}` open-redirect shape in
+  `.htaccess` is not reachable, because an unknown `Host` 404s before the rewrite runs.
 - **Built 2026-08-15:** the **Campsites** tab, card 0020, from OpenStreetMap plus Forestry and Land
   Scotland's Stay the Night scheme, a second data file under a second licence.
 - **Built and not yet deployed:** run `ls docs/board/ai-review docs/board/done` and read the cards.
@@ -418,53 +415,30 @@ by hand and every one was wrong within a day. The bullets below say what a card 
 for the cards where that is not obvious from the title. A card in that folder and not below still
 needs Rob, and its own `## What I need from you` section is the ask.
 
-**Everything below fits in one conversation except 0043**, which is a build the size of the
-Campsites tab rather than a question. **0016 is struck through**: it is answered, and kept only for
-the one licence question it left behind.
+**Rob answered most of this queue on 2026-09-20 and the bullets those answers settled are gone.**
+What each answer was is on its own card's thread, which is where an answer lives. The entries below
+are only the ones still open. Do not re-add a bullet for a card whose ask has been answered.
 
-- **0001 check 5**, aeroplane mode, relaunched from the Home Screen icon, **run twice: tiles off
-  and tiles on**. **Now also the acceptance check for the Campsites tab (card 0020 #8)**, since the
-  offline cache went from ~550 KB to ~1.7 MB and the campsite data is precached with everything
-  else. Tap into the Campsites tab while offline as part of it. **Card 0016 added a third reason**:
-  the Forests tab is now 550 sites rather than 274, so scroll it while offline too. Checks 1 to 4 now pass on the device. This is the last unevidenced PRD criterion
-  and the reason the app exists rather than using Forestry England's own finder.
-  **Partly run on 2026-08-08 and it failed**, which is how the tile-eviction bug above was found.
-  It must be re-run from a cold launch on v8 or later, and it is worth deleting the app from the
-  Home Screen and re-adding it first, so the check starts from a clean cache rather than one this
-  bug already filled.
-- **0010**, rotate the Thunderforest key, which reached a chat transcript. Hygiene, not an
-  incident: nothing leaked into the repo and the server copy is 600 above the web root.
-
-**Rob cannot send from `enhanceify.co.uk`, and it blocks 0010 alone**, because Thunderforest checks
-the sending address against the account. **0017 and 0018 are not blocked**: neither cares which
-address the email leaves from, so do not let them queue behind it. The DNS measurement behind this,
-and the reason the fix belongs on the enhanceify-V2 board, is on card 0010.
-- **0002**, build the Shortcut, then use both it and the PWA for a fortnight and say which wins.
-- **0018**, whether to write to Forestry England and with which asks. **Its third ask contradicts
-  the PRD non-goal "No App Store release"**, the same way 0016 and 0017 contradict the England-only
-  one, so answering it may move the PRD.
-- **0027**, the send itself. **Read `docs/outreach/forestry-england-enquiry-review.md` first**:
-  three cold reviewers all predicted the draft as written earns no reply, and nobody has acted on
-  any of it.
-- ~~**0016**~~, answered and built. **One thing it leaves for a person: the FLS licence**, which
-  rests on a default rather than a first-party offer. See DECISIONS 2026-08-29. Worth an email in
-  the same batch as 0018.
-- **0017**, how much of Wales to ship, blocked on one email about a licence contradiction the card
-  sets out. Recheck 2026-09-11.
-- **0003**, waiting on real trips rather than on analysis. Recheck 2026-09-19.
-- **0030**, **five seconds, but only possible in one hour.** The card is built and repaired the
-  fetch-date self-test; its remaining check asks for the suite to be seen passing between 00:00 and
-  01:00 local while BST is in force. Its build run reproduced the same divergence at 05:03 with a
-  `TZ` override and would accept that as evidence, but that is not the check as written.
-- **0024**, **built to 3 of 4 and asking to be closed there.** Its last criterion wants the board
-  convention check at zero and it is not at zero. Two things about the card are stale and it says
-  so: it counts a file that has since moved lanes, and it measures cards against a line budget the
-  required `human-review/` ask section pushed them past. That tension is Rob's to settle.
-- **0043 (accounts and personal location tracking)**, **unbuilt, and the loop will not start it.**
-  All seven of its criteria say `proves: manual`, so an unattended session can close none of them.
-  It also needs an authentication and data service that the current static Hostinger deployment
-  cannot host, and the card forbids creating a paid service without a person driving it. **It was
-  `0022` until 2026-09-07**, when card `0042` renumbered it off the footer-credits `0022`.
+- **0010**, install the rotated Thunderforest key. The key itself has been rotated, so the old
+  `waiting_on:` about sending mail from `enhanceify.co.uk` is dead. What is left is putting the new
+  key in `tiles.key` above the web root at mode 600 and confirming the old one is revoked. It never
+  belongs in this repo or in a chat.
+- **0017**, how much of Wales to ship, blocked on one email to Natural Resources Wales about a
+  licence contradiction the card sets out: their own metadata says OGL with no restrictions, while
+  data.gov.uk says the same dataset needs prior approval before use in an internet application. Rob
+  sends it from `r@enhanceify.co.uk`; the text is on the card, ready to paste.
+- **0018**, whether to write to Forestry England and with which asks. Rob is working this through
+  with Cheryl and it is not idle. Current direction is a notification with **no ask at all**, which
+  if taken drops the App Store contradiction its third ask carried.
+- **0027**, the send itself, and it is decided by 0018 rather than separately.
+- **0043 (accounts and personal location tracking)**, **unbuilt.** All seven criteria say
+  `proves: manual`, so no unattended session can close one. Rob's preference is no accounts, but
+  features on other cards may force the question. **The card's claim that Hostinger cannot host this
+  is wrong and is being corrected**: the account serves PHP and MySQL, so the real question is
+  whether to take on OAuth with Google and Apple. It was `0022` until 2026-09-07, when card `0042`
+  renumbered it off the footer-credits `0022`.
+- **0024** and **0030** are open only because their asks were not clear enough to answer. Both are
+  being rewritten rather than escalated again.
 
 ## How to pick up
 
