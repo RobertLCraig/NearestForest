@@ -844,3 +844,61 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-21 review (v20260921003213-68cc)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Acceptance lens: all eight criteria are met. I tried to break each one and couldn't.**
+
+- **#1:** The footer paragraph in `app/index.html` uses Forestry England's own wording: "Crown Copyright, courtesy Forestry England, licensed under the Open Government Licence". The car park data gets its own sentence: "Car park details contain public sector information licensed under the Open Government Licence v3.0".
+- **#2:** "personal use" appears zero times in `app/index.html`. The comment above the footer writes "personal-use" with a hyphen, so the test's `/personal use/i` check can't pass because of the comment.
+- **#3:** The same paragraph says "This app is not affiliated with Forestry England or with Forestry and Land Scotland." It's tested in `scripts/selftest.js` under `the footer disclaims affiliation with both`.
+- **#4:** In the footer block of `scripts/selftest.js`, two `ok()` checks look for exact strings in a copy of the HTML with whitespace flattened, so rewrapping the paragraph can't break them.
+- **#5:** The Scottish sentence now uses the generic wording. The test checks that wording is there and that "Crown Copyright, Forestry and Land Scotland" is not.
+- **#6:** The `ATTRIBUTION` constant in `scripts/parse.py` names all three agencies. The test `the OGL file the parser writes names every agency in it` checks the file a real parse produces.
+- **#7:** `the footer and the dataset credit name the same agencies` reads the `ATTRIBUTION` constant from `parse.py` and compares it with the footer.
+- **#8:** The shipped `app/data/sites.json` carries the four-sentence credit, and `the shipped dataset credit names every agency in it` checks for all three names. The old four-word `attribution present` check is gone.
+
+The `docs/DATA-MODEL.md` wording isn't covered by any criterion, so it disproves none.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope review of card 0019 (Forestry England attribution)**
+
+I tried to find scope creep and unfinished work and could not. The two earlier scope findings are fixed in today's tree:
+
+- **Scottish credit.** In `app/index.html`, the About footer sentence now reads "Scottish forest details from Forestry and Land Scotland contain public sector information licensed under the Open Government Licence v3.0." That is the generic wording its own comment asks for, so the line and the comment now agree.
+- **Stale document.** `docs/DATA-MODEL.md` no longer shows the retired "Contains public sector informationÔÇª" string as the `attribution` value. It now carries the Crown Copyright and Forestry Commission wording, as `ATTRIBUTION` in `scripts/parse.py` and the shipped `app/data/sites.json` do.
+
+**Over the fence.** The footer also names "Forestry Commission copyright and/or database right 2025". That is card 0022's job, not this card's, but 0022 is in `done/` and covers it, so no work was done without a card. The rest of the diff (campsites, the tile-counter salt, the board files) belongs to other cards on the same branch, not to this one. Nothing crosses into "## Not this card": the map attribution, the app store text and a footer date are all untouched.
+
+**Half done.** Deploy is still open, which the card says openly. The ninth criterion the card asks for has not been written, so no self-test checks the data-model document. That is a missing criterion, not a broken one, and a reviewer cannot write one. No existing criterion is disproved.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the breakage lens and couldn't. The card's own `## What I need from you` section is out of date.
+
+**The stale line is already fixed.** The card says `docs/DATA-MODEL.md` still shows the old "Contains public sector informationÔÇª" string as the value of `attribution`. It doesn't any more. The `sites.json` example in `docs/DATA-MODEL.md` now has the same four-part credit as `ATTRIBUTION` in `scripts/parse.py`, word for word:
+- Forestry England in their own wording.
+- Forestry and Land Scotland in the generic wording.
+- The car parks in the generic wording plus the Forestry Commission copyright line.
+
+**Callers and guards:**
+- The old four-word `attribution present` check in `scripts/selftest.js` has been replaced. The replacement is keyed on the agency names and runs against the shipped file (`the shipped dataset credit names every agency in it`). That covers #8.
+- The selftest block for card 0073 reads `docs/DATA-MODEL.md` and checks its worked `sites.json` example against the real data. So the document now has a guard too, which was the gap the card wanted a ninth criterion for.
+- No runtime code in `app/app.js` or `app/api/nearest.php` reads the `attribution` field, so nothing breaks there.
+- The comment above `ATTRIBUTION` in `scripts/parse.py` matches the string under it. The Scottish sentence now uses the generic wording, so the code and comment no longer contradict each other the way the earlier reviews found.
+
+None of the eight criteria is disproved. The ninth criterion the card asks for describes work that has already been done in the tree. What's left is for the owner to move the card, plus the open Deploy task.
+
+VERDICT: sound
+
