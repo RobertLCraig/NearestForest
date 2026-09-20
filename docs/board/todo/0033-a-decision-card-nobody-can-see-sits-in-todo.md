@@ -73,7 +73,7 @@ board check that catches this class of fault, which is a different and larger pi
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN a card asks a person to decide something and carries no `**Decided:**` entry, THE BOARD
+- [ ] #1 WHEN a card asks a person to decide something and carries no `**Decided:**` entry, THE BOARD
       SHALL hold that card in `docs/board/human-review/`. proves: none - a card's lane is a folder,
       and this project's suite is one node script over the app; the check is
       `ls docs/board/human-review` showing `0025` there and `ls docs/board/todo` not showing it
@@ -232,3 +232,51 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-20 review (v20260920223110-c1a2)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Criterion #1** ÔÇö "a card that asks a person to decide and carries no `**Decided:**` entry sits in `docs/board/human-review/`". A lane is a folder, so the artefact is the tree, not a function.
+
+- `0025` is now `docs/board/done/0025-which-wins-when-the-ask-comes-before-the-problem.md`, and correctly so: its `## Comments` carries `**2026-09-10** **Decided:** Option 1, in Rob's words "match the current ruleset"`. The condition in the criterion ("carries no `**Decided:**` entry") no longer holds for it, so `done/` does not contradict the rule ÔÇö the rule only binds unanswered decisions.
+- Applying the card's own derivation rule (`## Options` means a decision) across the board today: `docs/board/todo/` holds `0009` and `0016`, neither carrying `## Options`. The only `## Options` cards without a `**Decided:**` entry are `0003`, `0017` and `0018`, and all three are in `docs/board/human-review/`.
+
+So the state the criterion asserts is true of the board as it stands. The known wrong sweep conclusion in this card's write-up (`0003`/`0017`/`0018` called "answered") is a defect in its prose, but it disproves no criterion: criterion #1 makes a claim about lanes, and the lanes are right. I tried to break it on the tree and could not.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Half done, and it is the second of the two tasks.** The card's Task #2 ÔÇö "Check the rest of `todo/` the same way" ÔÇö was reported complete in the result entry of `docs/board/ai-review/0033-ÔÇªmd` (`## Comments`, final entry): "The sweep found nothing else to move ÔÇª all three are answered decisions". At this session's own tree (`git show 1522164:docs/board/todo/0018-write-to-forestry-england.md`) `0003`, `0017` and `0018` each carry only a bare `## Decided` heading and no `**Decided:**` entry; `0018`'s thread says "I am still on the fence". `docs/board/README.md` ("Two kinds of card, and the kind is derived") makes the entry, not the heading, the exit condition. So the sweep signed the lane off while three unanswered decision cards were still in it, and card `0037` had to do the work again.
+
+Criterion #1 is written board-wide ("WHEN a card asks a person to decide something and carries no `**Decided:**` entry"), not scoped to `0025`, so the three left behind disprove it as this session left the board.
+
+**Over the fence:** `docs/HANDOVER.md` was edited against the `## Plan`'s "nothing outside `docs/board/` changes". Declared, one sentence, caused by the move ÔÇö not the defect. `0035` is a raised card only.
+
+UNMET: #1 three decision cards with no `**Decided:**` entry (`0003`, `0017`, `0018`) were left in `docs/board/todo/` because the sweep read a bare `## Decided` heading as an answer
+
+VERDICT: defect
+
+**breakage: sound**
+
+**Checked the board as it stands, not the write-up's claims.**
+
+**Criterion #1 holds today, and holds for every card it names.** `docs/board/done/0025-ÔÇª` carries `**2026-09-10** **Decided:** Option 1` in its thread, so it is an answered decision and `done/` is its lane. `0003`, `0017` and `0018` are all in `docs/board/human-review/`, and none carries a `**Decided:**` entry ÔÇö the exact shape the criterion requires. `docs/board/todo/` holds only `0009` and `0016`, neither a decision.
+
+**The old defect is spent, not hidden.** The earlier breakage finding was that the sweep declared `0018` answered while its only `## Decided` entry reads "still on the fence". That is still a wrong sentence in this card's `## Comments`, but `0037` moved all three, so nothing a builder could do to `0025`, `0003`, `0017` or `0018` today would change the board.
+
+**What I could not break.** The trap that caused it ÔÇö `docs/board/README.md` says both that `**Decided:**` "is the whole of the distinction" and that an entry under a `## Decided` heading "is an answer by where it was written" ÔÇö is live README text this card never wrote, and this card's `## Not this card` excludes building the check that would catch it. That is a new card, not an unmet criterion here.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**acceptance**
+
+- **#1 reopened**, by the scope lens: three decision cards with no `**Decided:**` entry (`0003`, `0017`, `0018`) were left in `docs/board/todo/` because the sweep read a bare `## Decided` heading as an answer
+
