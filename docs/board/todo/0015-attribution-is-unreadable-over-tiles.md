@@ -374,3 +374,55 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-21 review (v20260921001912-a483)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**acceptance: sound**
+
+**#1 legible over tiles.** When tiles are on, `mapHint` in `app/core.js` returns the Thunderforest/OSM credit with `credit: true`. `updateHint` in `app/map.js` then sets that text and runs `hint.classList.toggle('map__hint--attrib', h.credit)` on the next line. In `app/app.css`, `.map__hint--attrib` gives white text on `rgba(0,0,0,.72)` with no text-shadow. Over a pure white tile that works out to about 9.3:1 contrast, and no tile can be brighter than white, so it holds at every zoom level.
+
+**#2 off state unchanged.** With tiles off and no campsite markers, `mapHint` returns the plain hint with `credit: false`, so the modifier class is removed. The base `.map__hint` rule keeps its `var(--dim)` colour and text-shadow. When the Campsites tab is showing, the hint gets the pill even with tiles off. That comes from card 0020 on purpose, for the ODbL credit, and is not a regression from this card.
+
+**#3 safe area.** `bottom:calc(var(--safe-b) + 10px)` is only in the base `.map__hint` rule, and the modifier sets no `bottom`. Both states take the inset from that one rule.
+
+The reviewer's finding is real but sits in the guard, not in the feature. The check "the attribution style exists and is opaque enough to read on white" in `scripts/selftest.js` uses a regex that fails on `.8`, `0.72` and `1`. None of the criteria is about the test, so it disproves none of them and no box should come off. Repairing that regex is still open work under this card's Task 3.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Scope check on card 0015. Criterion #1 does not come off.**
+
+**Nothing crosses the fence.** The work for this card is `.map__hint--attrib` in `app/app.css`, the class toggle in `updateHint` in `app/map.js`, and the `CACHE`/`BUILD` version bump. Marker labels are untouched and `.map__btn` is unchanged. The attribution is still on the map, and no new element was added. The rest of the diff (campsites, Scotland, `tiles.php` salting, `.tab` sizing) belongs to other cards.
+
+**One thing is still half done: the self-test this card shipped as Task 3.** In `scripts/selftest.js`, the check "the attribution style exists and is opaque enough to read on white" still uses the pattern `\.(7[2-9]|[89]\d)`. It rejects `.8`, `0.72` and `1`. All three are legal CSS and at least as opaque as `.72`, so the test checks spelling rather than enforcing the stated 72% floor.
+
+That task is ticked, but its output does not do what it says. The card is also the only place that owns the fix, since the finding has already come back three times.
+
+This is a problem with the test, not with #1. Two earlier reviews looked at the pill on screen over a pure white basemap and found it legible, at 9.29:1 contrast. So #1 stays ticked. The card goes back to `todo/` with Task 3 as the open work. The fix is to read the alpha value as a number and require it to be at least 0.72. Task 2, the phone check, is still for a person to do.
+
+No criterion disproved.
+
+VERDICT: defect
+
+**breakage: defect**
+
+The shipped behaviour holds up, but the guard this card shipped is still broken, so this is a defect.
+
+**Finding: the opacity check in `scripts/selftest.js` still checks how the value is written, not how opaque it is.** The check is "the attribution style exists and is opaque enough to read on white", in the tile-layer block. It still uses `/background:rgba\(0,0,0,\.(7[2-9]|[89]\d)\)/`. It fails `.8`, `0.72` and `1`, which are more opaque, the same value written with a leading zero, and fully opaque. All three are legal CSS and meet the floor the check claims to enforce ("at least 72% opaque"). So the stated rule is not the rule being enforced. The next session that darkens the pill, which is the one change this check should allow, will get a failing suite for a correct edit. The fix: pull the alpha value out of the `.map__hint--attrib` rule, read it as a number, and check that it is at least 0.72.
+
+**Which criterion this disproves: none.** The fault is in the check, not in what the app renders. I could not break #1:
+- `.map__hint--attrib` in `app/app.css` still sets `rgba(0,0,0,.72)` with `#fff` text.
+- Over a pure white tile that is about 9.3:1 contrast.
+- In `app/map.js`, `updateHint` still sets the text and the class together.
+
+#2 and #3 are also unaffected. So the answer to the card's question is: leave #1 ticked and send the card back to `todo/` to fix the check. This defect names no criterion, so expect the card to come back to review after that fix.
+
+VERDICT: defect
+
