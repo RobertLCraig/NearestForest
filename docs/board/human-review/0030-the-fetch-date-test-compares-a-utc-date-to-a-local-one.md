@@ -2,25 +2,44 @@
 
 ## What I need from you
 
-**One five-second job, but only between midnight and 01:00.** Next time you are at the keyboard in
-that hour, run the test suite from `C:\Dev\NearestForest` and say what it printed:
+**One word: should this card be closed on the code rather than on the clock? Yes or no.** I would
+say yes, and here is the context you asked for.
 
-    node scripts/selftest.js
+**What the bug was, in plain terms.** The scraper writes down what day it downloaded each page. It
+uses the computer's local date. The test that checked this was written in JavaScript, and it worked
+out "today" using UTC, which is Greenwich time with no summer time. For most of the day those two
+agree. Between midnight and 1am in British Summer Time they do not: the clock on your wall says the
+21st while Greenwich still says the 20th. So the test saw two different dates, called it a failure,
+and went red for an hour a night with nothing actually broken.
 
-**Pass** is `0 failed` (227 tests passed on 2026-09-07; the total grows as cards add tests). That is
-the hour the suite used to go red on its own, so a clean
-run in it is the whole check. Tick the last box and the card is done.
+**What the fix did, and why it matters here.** It stopped asking JavaScript what day it is. The test
+now has the scraper itself print its own date, in the same process that just wrote the file, and
+compares that. Look at `scripts/selftest.js` around line 1497: the expected date comes from
+`m.date.today().isoformat()` in the Python stub, and `dayOf()` just reads what that process printed.
 
-**Fail** is any failing test, or a line naming two dates one day apart. Copy the failure into this
-thread and send the card back to `todo/`.
+**So there is no longer a UTC value anywhere in that comparison.** The only mention of
+`toISOString` in the whole block is in a comment explaining why it is not used any more. Checked
+today by reading it.
 
-**Why it needs you.** The fix is built and the fault was reproduced by another route, but the check
-as written asks for that one real hour. The only other way is to move the machine's system clock, and
-a session will not do that unattended: other worktree sessions run against the same clock, and a jump
-reaches certificates, scheduled tasks and commit timestamps.
+**Which is why staying up is worth nothing.** The failing hour was the hour when UTC and local
+disagreed. With nothing reading UTC, no hour disagrees with any other. Running the suite at 00:30
+would pass, and it would pass for the same reason it passes at noon, so it tells you nothing you
+cannot get from the six lines above. The card asks for an experiment whose result is already
+determined.
 
-**If you would rather not wait up**, say in this thread that the clock-override reproduction already
-recorded here is evidence enough, and the box can be ticked on that.
+- **Yes, close it on the code.** I tick #2, quoting what was read and where. Cost: the proof is a
+  person reading a file rather than a run going green.
+- **No, it has to be the real hour.** The card sits here until a night you happen to be up at
+  midnight between now and the end of October, when BST ends and the window disappears until March.
+
+**One thing I will not do either way**, so it is not on the table: moving the machine's system
+clock. Other sessions run against it, and a jump reaches certificates, scheduled tasks and commit
+timestamps. A `TZ` environment variable will not stand in for it either: I tried four zone values
+on this machine today and Node fell back to the system zone or to UTC for every one of them, so it
+cannot produce a local date ahead of UTC here at all.
+
+**Why it needs you.** Whether "I read the code and there is no UTC in it" counts as proof on this
+board is a standard you set, not a fact anybody can look up. The rest of this card is settled.
 
 ## Why
 `node scripts/selftest.js` fails between local midnight and 01:00 while British Summer Time is in
@@ -167,3 +186,33 @@ suite is `node scripts/selftest.js`. Suite counts 225 rather than the card's 222
 added three tests after this card was written.
 
 **2026-09-06** The loop moved this card from in-progress/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
+
+**2026-09-20** Rob: "need more context." The ask is rewritten, and rewriting it turned up something
+the card had not noticed about its own remaining criterion.
+
+**Criterion #2 asks for an experiment whose result is already determined.** It wants the suite seen
+passing inside the window where the bug used to bite, between 00:00 and 01:00 local under BST. That
+window existed because the test derived "today" from node's `toISOString()`, which is UTC, while the
+fetcher stamps the local date. The fix removed that comparison outright: the expected date now comes
+from `m.date.today().isoformat()` printed by the Python stub itself, read back by `dayOf()`, in the
+process that wrote the index. Read today, the only occurrence of `toISOString` anywhere in that
+block is inside a comment saying why it is no longer used.
+
+**With no UTC value in the comparison, no hour differs from any other.** A run at 00:30 would pass
+for exactly the reason a run at noon passes. So the check as written cannot distinguish a working
+fix from a broken one, which is this project's recurring defect wearing the opposite face: usually
+the check cannot fail; here the proof cannot fail.
+
+**The `TZ` route is closed on this machine, and that is measured rather than assumed.** The card
+says an earlier build run reproduced the divergence at 05:03 with a `TZ` override. I could not
+repeat that today. Node was given `Asia/Dubai`, `Pacific/Kiritimati`, `XXX-4`, `XXX-13` and
+`UTC-14`; every one either fell back to the system zone or behaved as UTC, and none produced a local
+date ahead of UTC. Only `TZ=UTC` had any effect at all, and that moves the clock the safe way. So
+whatever that earlier run did, it is not reproducible here and should not be relied on as evidence.
+
+**Moving the system clock is refused**, and not because it is hard. Other worktree sessions run
+against the same clock, and a jump reaches certificates, scheduled tasks and commit timestamps.
+
+**So the ask is now one word**, with a recommendation attached: close it on the code, or insist on
+the real hour and wait for a night before BST ends in late October. Criterion #1 is built and proved
+by a named assertion and is not in question.

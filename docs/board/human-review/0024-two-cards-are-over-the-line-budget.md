@@ -2,24 +2,37 @@
 
 ## What I need from you
 
-**One answer. Close this card at three of its four checks, or send it back to `todo/`?**
+**One question, and it is not about this card. Should a card in `human-review/` be held to the
+100-line budget at all?** Yes or no.
 
-Six unattended runs have all reached the same finding, so nothing new will come from a seventh.
+**Why you are being asked.** This card's job was to cut two long cards down to 100 lines. It did:
+`0018` and `0020` were both at 100 when it finished. **Today `0018` is 160 lines and `0020` is 344.**
+Nobody let them slide. They grew because the board's own rules made them grow, and those rules are
+not optional:
 
-**Pass** is either of:
-- you close it. The shortening work is done and checked: `0018` and `0020` are 100 lines each, and
-  every number, date and URL cut out of them was re-found somewhere else in the repository.
-- you send it back to `todo/`, because the last check now passes on its own. That check wants the
-  estate-wide card-format checker to report zero failing cards. The one failure it reports is a
-  missing "why" line in card `0026`, which is card `0028`'s job, and `0028` is now built and sitting
-  in `ai-review/`. One run of the checker would say which.
+- a card in `human-review/` **must** carry a `## What I need from you` section, and this project has
+  raised eleven separate cards enforcing that
+- `## Comments` is **append-only**, so every review verdict and every answer makes the card longer
+  and none of it may be removed
 
-**Fail** is closing it while the checker still reports that failure and nobody has said so out loud.
-Then the board records a green card over an open fault. Say so in this thread instead.
+So a card that reaches this lane cannot stay at 100 lines, and the budget asks for something the
+other two rules forbid. That is a rule-level conflict on `docs/board/README.md`, which is estate-wide
+rather than this project's, which is why it is yours.
 
-**Why it needs you.** A session may not tick a check it did not meet, and it may not decide that
-three of four is enough. That is a call about what this board counts as finished, and only you make
-it.
+- **Yes, hold them to it.** Then the two rules above need a cut-off, most likely "the budget measures
+  the card above `## Comments`". That is a change to the README on every board.
+- **No, exempt this lane.** Then the budget means what it was written to mean, which is that a card
+  should be readable when somebody first opens it, and the thread it accumulates afterwards is not
+  the reader's problem.
+
+I would take **no**. The budget exists so a reader can meet a card without wading; a thread of dated
+review verdicts is a log, and nobody reads a log to understand the ask.
+
+**This card itself is finished either way and needs nothing from you.** All four criteria are met.
+#4 was the only one open and it is now genuinely true rather than waived: the one failure it was
+waiting on was a missing "why" line on card `0026`, that was card `0028`'s job, `0028` is in `done/`,
+and `board:convention` returned zero failing cards on 2026-09-20 with the command and output
+recorded against the criterion. Answer the question above and this goes to `done/` on its own.
 
 ## Why
 `docs/board/README.md` sets a whole card at 100 lines, measured off the estate's own habit: a median
@@ -70,8 +83,10 @@ the option costs on `0018`, which the README names as the last things that may g
 - [x] #2 WHEN `0020` is read, THE CARD SHALL be at or under 100 lines. proves: none - as #1
 - [x] #3 WHEN either card is shortened, THE CARD SHALL keep every measurement, date, source and
       recorded decision, moving anything cut into the doc or the card that owns it. proves: none - as #1
-- [ ] #4 WHEN the convention checks are re-run, THE BOARD SHALL still report zero open cards
-      failing. proves: none - the command is in another repository, named in `## Plan`
+- [x] #4 WHEN the convention checks are re-run, THE BOARD SHALL still report zero open cards
+      failing. proves: none - the command is in another repository, named in `## Plan`. Run
+      2026-09-20: `php C:\Dev\ProgressBoard\artisan board:convention NearestForest --root=D:/Dev`
+      returned `NearestForest 0 42 0077`, where the first number is failing cards. Zero.
 <!-- AC:END -->
 
 ## Tasks
@@ -323,3 +338,31 @@ nothing about `#4` could have moved. `#4` is a dependency, not open work here.
 Six runs, one finding. Close this card at 3/4 rather than schedule a seventh.
 
 **2026-09-06** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 1 of 4 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
+
+**2026-09-20** Rob: "Need more context." Fair, and the card was asking the wrong question, which is
+why more context was needed to answer it.
+
+**What it was asking.** "Close this card at three of its four checks, or send it back to `todo/`?"
+That is a question about bookkeeping, and it hid the fact that nothing was actually unresolved.
+
+**Criterion #4 is now met, measured rather than waived.** It wanted the estate-wide card-format
+checker at zero. The single failure it had been waiting on was a missing "why" line on card `0026`,
+which was card `0028`'s job; `0028` is in `done/`. Run today:
+
+    php C:\Dev\ProgressBoard\artisan board:convention NearestForest --root=D:/Dev
+    NearestForest   0   42   0077   D:/Dev\NearestForest
+
+The first number is failing cards. Zero. The command and the output are written against the
+criterion, so the next reader does not have to take a tick's word for it. So this is four of four,
+not three, and "is three enough" was never the question.
+
+**The real question was the one the card mentioned in passing and never asked.** `0018` is 160 lines
+and `0020` is 344, both having been cut to 100 by this card's own work. They grew back because two
+other board rules made them grow: a card in `human-review/` must carry a `## What I need from you`
+section, and `## Comments` is append-only. A card in that lane therefore **cannot** stay inside the
+budget, and the three rules cannot all hold at once. That is a conflict on `docs/board/README.md`,
+which is every board's file rather than this project's, and it is a genuine call rather than a
+lookup. The ask at the top is now that, with a recommendation attached so it is one word to answer.
+
+**Nothing here was ticked that was not met**, and the two line-budget criteria were true on the day
+they were ticked. They are not true today, and saying so is the point of this entry.
