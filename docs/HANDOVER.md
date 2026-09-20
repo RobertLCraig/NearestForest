@@ -15,8 +15,10 @@ project's recurring defect**, not a closed chapter: four were fixed on 2026-09-1
 found two more the same day, both in builds whose notes claimed a red-proof that had not been done.
 A green run means more than it did. Assume there are others and keep looking.
 **`node scripts/selftest.js` is deliberately red on exactly one assertion**, `no board card is too
-large for the agent file reader`: card `0020` is 209.8 KB against a 200 KB reader limit, and only
-Rob may prune a comment thread. Card `0055` carries the ask. Do not exempt the card to get green.
+large for the agent file reader`: card `0020` is over the 200 KB reader limit, and only Rob may
+prune a comment thread. **Read the size off the run, not off this line** - a hand-typed figure here
+was wrong when it was written and a reviewer caught it on card `0068`. Card `0055` carries the ask.
+Do not exempt the card to get green.
 **This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and
 every one was stale within a day, so the rule now is: **list the folder, do not read a number.**
 `ls docs/board/todo` and `ls docs/board/in-progress` are what an agent can pick up;
@@ -323,17 +325,19 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
   **What each card measured, found and deliberately left alone is on that card's own comment
   thread**; the facts that outlived a build are in DATA-MODEL and DECISIONS, and the FLS licence gap
   0016 left for a person is in Blockers below.
-- **In progress:** 0020 (Campsites, one criterion left that only a person can close) and 0021 (the
-  card-rewrite pass, now unblocked because 0025 was answered on 2026-09-10).
+- **In progress:** `ls docs/board/in-progress`. 0020 (Campsites) has one criterion left that only a
+  person can close, which is the one fact about it the folder cannot tell you.
 - **Known bugs / broken, and this list stopped being empty on 2026-09-10.** An adversarial pass over
   every card then in `ai-review/` returned 15 of 17 with a defect, and the pattern is the same one
   that has caught this project before: **the tests could not fail.** Comment out any security header
   in `.htaccess` and the suite stays green. Falsify three of the four counts in `core.js` and it
   stays green. Delete the whole scheme check in `parse.py` and it stays green.
-  **The two live faults that pass named in shipped code were fixed on 2026-09-10** and are in
-  `ai-review/` awaiting the adversarial pass: the map latching dead after one failed coastline fetch
-  (card 0008) and the tile layer blanking permanently after one refused tile while still claiming a
-  basemap (card 0012). Both cards carry the measurements and the red-proof. **Neither is deployed**,
+  **The two live faults that pass named in shipped code were fixed on 2026-09-10**: the map latching
+  dead after one failed coastline fetch (card 0008, now in `done/`) and the tile layer blanking
+  permanently after one refused tile while still claiming a basemap (card 0012). Find each with
+  `ls docs/board/*/00{08,12}-*` rather than trusting a lane named here; five cards in a row wrote a
+  lane into this file and every one was stale within a day. Both cards carry the measurements and
+  the red-proof. **Neither is deployed**,
   so a phone is still running the faults. Nothing else is a known live fault, which is not the same
   as nothing being wrong.
   **Five older bugs were found and fixed here since 2026-08-08 and every one was found by running
@@ -345,20 +349,31 @@ taken from the Mo~oM pack and inlined as SVG rather than linked or left to a Uni
 
 ## What's next (in order)
 
-The queue is [docs/board/](board/), one card per file; run `ls docs/board/todo` for it. **The
-adversarial pass on 2026-09-10 filled that lane, so the order below overrides card numbers.**
+The queue is [docs/board/](board/), one card per file; run `ls docs/board/todo` for it.
 
-1. **Keep hunting checks that cannot fail.** The three the 2026-09-10 pass named are built and are
-   in `ai-review/`: 0011 stripped comments from `.htaccess` before any assertion reads it, 0013
-   drives `validate()` in `parse.py` directly because a fixture cannot carry an attacker's scheme,
-   and 0036 guards all four numbers in the `safeHref` comment rather than the first. **The shape to
+**`ai-review/` is where the work is on 2026-09-20, and `todo/` may well be empty when you read
+this. That is deliberate and it is not a stalled board.** Between 2026-09-07 and 2026-09-11 a
+reviewer was forbidden from editing acceptance, so a review that found a real defect handed the card
+back with every box still ticked; the next build session found nothing open to do, the promote gate
+read acceptance as met and promoted it, and after two laps the loop parked the card in
+`human-review/` with an ask only a person could action. Seventeen cards collected there that way.
+ProgressBoard card `0162`, committed 2026-09-12, gave the reviewer the `UNMET: #N <reason>` line and
+let the script do the unticking, which is the one thing that had to change. Those cards were put
+back into `ai-review/` on 2026-09-20 so the current reviewer can settle them; each carries a dated
+comment saying so. **Expect `todo/` to refill from that lane, not from a person.**
+
+1. **Keep hunting checks that cannot fail.** The three the 2026-09-10 pass named are built: 0011
+   stripped comments from `.htaccess` before any assertion reads it, 0013 drives `validate()` in
+   `parse.py` directly because a fixture cannot carry an attacker's scheme, and 0036 guards all four
+   numbers in the `safeHref` comment rather than the first. Find each with `ls docs/board/*/NNNN-*`;
+   this file no longer says which lane holds a card, for the reason at the top. **The shape to
    look for is a check that reads one file when the claim spans several**, or a substring loose
    enough to match what it is supposed to reject, or a structural check that forbids one branch and
    says nothing about the other. Break the guarded thing and watch the run; that is the only way any
    of these was found. **Two builds this project shipped on 2026-09-10 each claimed a red-proof that
    had not been done**, and a reviewer caught both, so do not take a build note's word for it.
-2. **The two live faults in shipped code are fixed and are in `ai-review/`** (0008 and 0012, both
-   built 2026-09-10). Both are still on the phone until this batch deploys. **Attack them the way
+2. **The two live faults in shipped code are fixed but not shipped** (0008 and 0012, both built
+   2026-09-10). Both are still on the phone until this batch deploys. **Attack them the way
    they were found**: in a browser, with the network broken, not by reading `app/map.js`. Both cards
    carry a red-proof table and the browser numbers to check against.
    **When you drive `php -S` in Chrome, read `NF.BUILD` in the console first.** The development

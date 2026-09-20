@@ -252,3 +252,30 @@ VERDICT: defect
 
 
 **2026-09-11** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 1 time between todo and ai-review, all 2 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 2 of 2 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-20** Moved to `ai-review/` rather than answered.
+
+**Why this card stopped, and why it is not a question anybody needs to answer.** The ask on it
+reduces to "untick what the reviewer disproved". Until 2026-09-12 no reviewer could do that:
+ProgressBoard's card `0083` criterion #6 forbade a reviewer from touching acceptance at all, on the
+reasoning that a reviewer which can untick a box can tick one. So a review that found a real defect
+returned the card with every box still ticked, the next build session found nothing open to do, the
+promote gate read acceptance as fully met and promoted it, and after the second lap the loop parked
+the card in `human-review/` with an ask only a person could action.
+
+**That is fixed upstream, and the fix post-dates this card's last review.** ProgressBoard card
+`0162`, committed 2026-09-12, added the `UNMET: #N <reason>` line to `bin/prompts/review-work.md`
+and the unticking to `bin/review-card.ps1`, superseding `0083` criterion #6. The reviewing agent
+still only reports a number and a sentence; the script does the writing, and the only edit it knows
+how to make is `[x]` to `[ ]`, so a reviewer still cannot mark its own paper. Every NearestForest
+card sitting in this lane on the "all N criteria ticked" pattern was last reviewed on or before
+2026-09-11. Every card reviewed since (`0021`, `0070`, `0072`, `0074`) came back with criteria
+genuinely reopened and a reason written beside each.
+
+**So a fresh pass settles this card rather than a person doing so.** It will either reopen a
+criterion and send this to `todo/` with something a builder can act on, or pass it to `done/`.
+
+**This is the same call Rob made on 2026-09-10** for thirteen cards in this position, commit
+`9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
+ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
+"all N criteria ticked" a second time. That one day is the whole of what has changed.

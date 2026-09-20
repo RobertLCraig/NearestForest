@@ -60,16 +60,20 @@ Cloudflare. Do not touch the apex record or the regenesis subdomain, both of whi
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN the subdomain is resolved, THE APP SHALL return 141.136.33.219 from an unproxied A record.
+- [x] #1 WHEN the subdomain is resolved, THE APP SHALL return 141.136.33.219 from an unproxied A
+      record. proves: manual
 - [x] #2 WHEN the subdomain is loaded over HTTPS, THE APP SHALL serve index.html with a valid
-      certificate and no warning.
+      certificate and no warning. proves: manual
 - [x] #3 WHEN manifest.webmanifest is requested, THE APP SHALL return it with content-type
-      `application/manifest+json`, proving the .htaccess AddType applied.
+      `application/manifest+json`, proving the .htaccess AddType applied. proves: manual
 - [x] #4 WHEN `/api/nearest.php?lat=50.8168&lng=-0.0894&n=3` is requested, THE APP SHALL return JSON
       beginning `{"ok":true,` listing Friston Forest first, proving PHP executes rather than being
-      served as source.
+      served as source. proves: manual
 - [x] #5 WHEN any deploy step cannot be automated by the available MCP tools, THE APP SHALL report
-      which step and why, rather than reporting the deploy as complete.
+      which step and why, rather than reporting the deploy as complete. proves: none - nothing in
+      this repository can test whether a report was honest about its own gaps; the evidence is
+      `## Direction` below and line 28 of `HUMAN_ACTIONS.md`, which marks the upload step superseded
+      by the git deploy rather than ticked as though an MCP had done it.
 <!-- AC:END -->
 
 ## Tasks
@@ -220,3 +224,32 @@ VERDICT: sound
 **Where it should go.** `todo/`, for the acceptance markers only. The deploy itself is done,
 evidenced in three places and not in question; what is missing is five `proves:` clauses, and
 because that means editing `## Acceptance` it needs a person or a builder rather than a reviewer.
+
+**2026-09-20** The 2026-09-10 review's one defect is closed, and nothing else on this card was
+touched.
+
+That review graded scope and breakage sound and returned the card on acceptance, for a single
+reason: not one of the five criteria carried `proves:`, so every later pass could only re-read five
+ticks with nothing on the card saying who settled them. It could not fix that itself, because a
+reviewer may not edit an `## Acceptance` block, and it said where the card should go: `todo/`, for
+the markers only.
+
+`proves:` is now on all five. **#1 to #4 are `proves: manual`**, which is what that marker exists
+for: each is an assertion about a live vhost that no test in this repository can ever settle, and
+each was settled by a person with `curl` on 2026-08-08. The evidence already existed and was in the
+wrong place, so it is named against the criteria it proves rather than left in prose: Cloudflare
+record id `b110a9f9d9a730df168893e92d7f67cc` for #1, `ssl_verify_result=0` for #2, and
+`{"ok":true,` with Friston Forest first for #4, all recorded in `## Outcome` and in
+`HUMAN_ACTIONS.md`.
+
+**#5 is `proves: none` with the reason on the line**, because it is a criterion about the honesty of
+a report. Nothing here can test that, and pretending otherwise would be the exact failure this
+project keeps finding: a check that reads as tested and is not.
+
+**No tick was changed and no tick was added.** The deploy itself is not in question; it is evidenced
+in three places and the site is live. What this entry adds is the record of how each tick was
+settled, which is what made the card unre-verifiable.
+
+**Still `not_for_the_loop:`**, and the frontmatter is untouched. The reason on it has not changed:
+the card creates a live DNS record and deploys to a shared host, and neither is undone by deleting a
+file. Adding the markers is an edit to a board card and reaches nothing outside this repository.
