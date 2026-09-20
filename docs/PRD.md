@@ -64,6 +64,13 @@ In priority order.
 
 - **Not routing.** No road distances, no traffic, no ETA. Straight-line distance only. The map app
   does routing; duplicating it would need a paid API and a live connection.
+  **Confirmed by real use on 2026-09-20**, card `0003`: across a road trip to and around Scotland,
+  straight-line ranking never picked a site that turned out to be the wrong choice by road. **What
+  real use did find is a different want, and it is also out of scope**: the top result is the
+  nearest site, not the nearest site that is *on the way* to wherever the day is already heading.
+  Ranking by "roughly on route" needs a destination, a route between two points and a corridor
+  around it, which is a routing engine by another name. Rob, same day: "May just have to live with
+  that." Recorded here so nobody re-derives it as a new idea.
 - **Not all woodland.** National forestry agency sites only, in the Forests and Car parks tabs.
   No National Trust, Woodland Trust, RSPB, or council parks.
   ~~No Wales, Scotland or Northern Ireland (different agencies entirely).~~

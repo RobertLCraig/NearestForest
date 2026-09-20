@@ -179,3 +179,30 @@ VERDICT: defect
 
 
 **2026-09-07** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 1 time between todo and ai-review, all 3 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 3 of 3 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-20** Rob answered the second of this card's two asks: "so far so good". That settles the
+part only a person could settle. The dim italic reads well enough in the dark theme on a real
+phone, and a map label truncated at 22 characters has not been a problem in use.
+
+**The first ask is withdrawn as a question for him, and here is why.** It asked whether Siri counts
+as a surface criterion #2 covers. On reflection that is not a preference, a cost, a risk or local
+knowledge, which is the whole of what `docs/board/README.md` says may be put to a person. It is a
+question with a correct answer, and the answer is yes. Criterion #2 is "WHEN a name is derived
+rather than published, THE APP SHALL mark it visually so it is not taken for an official name."
+`app/api/nearest.php` sends `name` and builds `label` as `name - miles`, and sends no
+`name_is_derived`, so the Shortcut speaks "Car park near Friston Forest" with nothing saying the
+name is ours. Before this card the same field read "Unnamed car park", which marked itself. The
+criterion is not met on that surface, and asking Rob to rule on it was an agent asking a person to
+do its reading.
+
+**Moving to `ai-review/` rather than back to him.** The 2026-09-07 review found three more things
+this card owes, none of which needs a person either: `docs/build/IOS-SHORTCUT.md` still says "170
+car parks are unnamed, so the list reads poorly aloud" when it is 19; the derived-name assertion in
+`scripts/selftest.js` reduces over every forest in `sites.json` including Scotland while
+`parse.py` passes only English forests to `name_after_nearest_forest()`, which today matches by
+luck; and the map half of #1 is unfinished, with 154 of 158 derived labels cut and four losing the
+forest name outright. A reviewer can now reopen the criteria those disprove, which is what was
+impossible when this card was parked.
+
+**Not changed:** no tick was altered here. That is a reviewer's job under the current tooling and
+was the whole reason this card could not move.

@@ -320,3 +320,29 @@ screenshot to take, and I am recording that as a claim rather than passing over 
 VERDICT: defect
 
 **2026-09-11** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, all 2 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 2 of 2 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-20** Released to `ai-review/` on Rob's instruction. Nothing about this card's content
+changed and no tick was altered.
+
+**This card is fully ticked and its last review predates 2026-09-12**, which is the pair of facts
+that stranded it. Until ProgressBoard card `0162` landed on that date, a reviewer was forbidden from
+editing acceptance at all, on the reasoning that a reviewer which can untick a box can tick one. So
+a review that found a real defect handed the card back with every box still ticked, the next build
+session found nothing open to do, the promote gate read acceptance as met and promoted it, and the
+reviewer found the same defect again. After two laps the loop stopped dispatching at the card and
+parked it for a person.
+
+**`0162` fixed the half that was broken.** The reviewing agent now writes `UNMET: #N <reason>` and
+the script does the unticking, and the only edit it knows how to make is `[x]` to `[ ]`, so a
+reviewer still cannot mark its own paper. That this works is not a hope: on 2026-09-20 the loop
+re-reviewed cards `0009`, `0016` and `0033` under the new reviewer and every one came back with a
+real criterion reopened and a reason written beside it, where the 2026-09-11 pass over the same
+cards had returned all three fully ticked.
+
+**So what this card needs is the review it never got**, not a person's answer. A fresh pass will
+either reopen a criterion and send it to `todo/` with something a builder can act on, or pass it to
+`done/`.
+
+**The bounce limit was raised to five on the same day**, so a card released here is not parked again
+the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
+already rigged.

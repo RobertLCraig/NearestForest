@@ -128,3 +128,31 @@ VERDICT: defect
 <!-- The card's thread, appended by ProgressBoard. Append-only: entries are added, never edited or removed. An entry beginning **Decided:** is an answer, and that is what a decision card exits on. -->
 
 **2026-09-07** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 1 time between todo and ai-review, all 4 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 4 of 4 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-20** Rob answered the second of this card's two asks: "Looks fine on an iPhone 15 Pro
+Max". The compass letters widened the distance column from 74px to 84px and the worry was that the
+longest name in the data, Kings Wood and Challock Forest, would be cut or wrap. It does not, on that
+device. Criterion #4 and the layout question are settled.
+
+**One caveat worth keeping, and it is not a reason to reopen anything.** An iPhone 15 Pro Max is
+430pt wide and is the roomiest phone this app is likely to meet. The narrowest current iPhone is
+375pt, which is 55pt less for the name. Nobody has looked at one and nobody needs to today; it is
+noted here so the next person who reads "looks fine on a phone" knows which phone.
+
+**The first ask is withdrawn as a question for him.** It asked whether to untick criterion #3, which
+is the screen-reader one. That was only ever a question because a reviewer could not untick a box
+itself, and it now can. The finding behind it is solid and needs no judgement: in `render()` in
+`app/app.js` the spoken point name is set as `aria-label` on `<div class="row__arrow">`, a div with
+no role, so it is `role="generic"`. ARIA 1.2 and *ARIA in HTML* both forbid a name there and
+browsers drop it, which leaves VoiceOver reading the visible `NE` as "nee". That is the exact thing
+criterion #3 was written to stop. The element also sits outside `<button class="row__main">`, so a
+user moving button to button never reaches it at all.
+
+**Nothing in the suite catches it.** The compass assertions in `scripts/selftest.js` only prove that
+`POINTS` and `POINT_NAMES` line up as arrays. No test renders a row or reads the markup, so the
+label can be dropped or misplaced and the run stays green. That is the shape this project keeps
+finding and it is worth an assertion in whatever fixes this.
+
+Moving to `ai-review/` so the reviewer can reopen #3 and a builder can take it. The fix is small:
+give the element a role that takes a name, or hide the letters from the reader and put the words in
+a visually hidden span.

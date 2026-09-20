@@ -282,3 +282,24 @@ VERDICT: sound
 
 
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 0 of 1 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-20** Released to `todo/` on Rob's instruction. Nothing about this card's content changed.
+
+**There is work here a builder can act on.** A reviewer reopened at least one criterion above and
+wrote its reason beside it, so a session opening this card finds something open rather than a full
+set of ticks and nothing to do.
+
+**Why it was parked.** Not because anybody judged it. Its bounce count, the number of times it has
+come back out of `ai-review/` into `todo/`, reached the loop's limit of two, and `Test-Startable` in
+`bin/work-card.ps1` then refuses to dispatch at it whatever is open on it. That backstop is right:
+ProgressBoard card `0136` measured one card going round that loop 22 times for £52.70 with nothing
+delivered.
+
+**What it could not see is that those laps were rigged.** Until ProgressBoard card `0162` landed on
+2026-09-12, a reviewer was forbidden from touching acceptance, so every lap returned the card fully
+ticked and the next lap was guaranteed to be wasted. The count measured a fault in the tooling, not
+a card that resists being finished, and the fault is fixed. The count is derived from git history
+and never decreases, so it cannot learn that.
+
+**Rob raised the limit rather than laundering the count into a fresh card number**, which would have
+hidden the history and defeated the backstop for real. The backstop still stands, at five.
