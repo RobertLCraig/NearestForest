@@ -96,7 +96,7 @@ targets honours the CSP form.
 - [x] #6 WHEN the self-tests read `app/.htaccess`, THE SUITE SHALL judge only the directives Apache
       would act on, so commenting a security header out turns the run red.
       proves: `a commented-out security header fails the suite`
-- [x] #7 WHEN the self-tests check that the app stays inside the CSP, THE SUITE SHALL read every
+- [ ] #7 WHEN the self-tests check that the app stays inside the CSP, THE SUITE SHALL read every
       shipped file that builds markup rather than `index.html` alone, so an inline handler or a
       style attribute in a template string fails the run.
       proves: `no inline event handler in any shipped markup`
@@ -503,3 +503,59 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-20 review (v20260920234120-637b)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Traced all seven against the tree.
+
+**#1** ÔÇö `app/.htaccess`, "Security headers" block: `Header always set Content-Security-Policy` with `script-src 'self'`, no `unsafe-inline`/`unsafe-eval`. The app stays inside it: `loadJson` and `openSheet` in `app/app.js` use relative paths and `NF.safeHref`, the only `url()` in `app/app.css` is the `data:` grain covered by `img-src data:`.
+
+**#2** ÔÇö same block, all four present with `always`.
+
+**#3** ÔÇö `frame-ancestors 'none'` in that CSP.
+
+**#4** ÔÇö the `sw\.js$` `FilesMatch` sits below the general `.(html|css|js|json|webmanifest)$` block; the hardening block in `scripts/selftest.js` asserts the index order.
+
+**#5** ÔÇö tiles are built same-origin (`api/tiles.php` in `app/map.js`), so `img-src 'self'` covers them.
+
+**#6** ÔÇö `stripHtaccessComments`/`htaccessDirectives` in `scripts/selftest.js` feed every `.htaccess` assertion comment-free, and `a commented-out security header fails the suite` re-runs the whole `wantHeaders` list over an all-commented copy of the real file.
+
+**#7** ÔÇö the hardening block builds `markup = indexhtml + shipped` (`app.js`, `core.js`, `map.js`, `sw.js`) and runs both the `on*=` and `style=` patterns over it.
+
+I tried to break #7 on the `setAttribute('style', ÔÇª)` gap the card's human-review section raises: the only `setAttribute` calls are `aria-selected` in `bindTabs` (`app/app.js`) and `aria-pressed` in `app/map.js`. The criterion's own wording is "an inline handler or a style attribute in a template string", proving "no style attribute in any shipped markup" ÔÇö a CSSOM call is not markup, so that gap is adjacent to #7 rather than a disproof of it.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Finding 1 ÔÇö the widening stopped at a literal `style=`, which is what the card said was the gap.** `scripts/selftest.js`, hardening block: `ok('no style attribute in any shipped markup', !/\sstyle\s*=\s*["']/i.test(markup))`. The card's own "What's wrong" item 2 names `setAttribute('style', ...)` as slipping past "because each is a text match for a literal `style=`", and its Pass condition is "a builder widens the style check past a literal `style=`". The widening that landed changed only *which files* are read, not the pattern. `setAttribute('style','color:red')` in `renderList`, and an unquoted `style=color:red` or `onclick=go()` inside those same template strings (valid HTML, no quote after `=`), all still pass. Criterion #7's `proves` line claims "no style attribute in any shipped markup"; it proves only "no quoted literal `style=`".
+
+**Finding 2 ÔÇö the other named half was not done.** `docs/HANDOVER.md`, the `app/.htaccess` bullet, still reads "no inline script, inline handler or `style=` attribute may enter `index.html`". The brief still teaches the narrower rule the tests outgrew.
+
+Nothing crossed `## Not this card`: no `X-Frame-Options`, no Cloudflare/proxy work, no 0012ÔÇô0015 code attributable here.
+
+UNMET: #7 the style and handler checks are still literal `style=`/`on*=` text matches, so `setAttribute('style', ...)` and unquoted attributes in the same shipped template strings pass the run
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding 1 ÔÇö the brief the change made false.** `docs/HANDOVER.md`, the `app/.htaccess` bullet under the file list, still reads "no inline script, inline handler or `style=` attribute may enter **`index.html`**". The hardening block in `scripts/selftest.js` (the `markup` const, `no inline event handler in any shipped markup`) now covers `index.html` plus `app.js`, `core.js`, `map.js`, `sw.js`. Somebody following the brief believes a handler inside a template string in `app.js` is allowed, which is precisely the case criterion #7 exists to forbid. The rule is asserted in the suite and taught narrower in the doc.
+
+**Finding 2 ÔÇö the style check is a literal-`style=`-plus-quote text match.** In the same block, `no style attribute in any shipped markup` tests `/\sstyle\s*=\s*["']/i`. Two shapes in a template string pass it silently: an unquoted attribute, `'<span style=' + cls + '>'`, and `el.setAttribute('style', ...)` ÔÇö the same form already used for real attributes in `app/app.js` (`setTabs`) and `app/map.js` (the tiles button). Both put a style attribute into parsed markup, both are refused by `style-src 'self'`, both leave the run green. The criterion claims a style attribute in shipped markup fails the run; two of its three forms do not.
+
+UNMET: #7 the style-attribute check is a text match for a quoted literal `style=`, so an unquoted attribute or `setAttribute('style', ÔÇª)` in a template string passes the suite while breaking the CSP, and `docs/HANDOVER.md` still teaches the old `index.html`-only rule.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#7 reopened**, by the scope lens: the style and handler checks are still literal `style=`/`on*=` text matches, so `setAttribute('style', ...)` and unquoted attributes in the same shipped template strings pass the run
+- **#7 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the style-attribute check is a text match for a quoted literal `style=`, so an unquoted attribute or `setAttribute('style', ÔÇª)` in a template string passes the suite while breaking the CSP, and `docs/HANDOVER.md` still teaches the old `index.html`-only rule.
+
