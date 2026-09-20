@@ -71,7 +71,7 @@ Scottish forest is a forest. Not a re-scrape of the English pages.
 <!-- AC:BEGIN -->
 - [x] #1 WHEN the pipeline runs, THE APP SHALL carry every currently published FLS destination as a
       `forest` record with a name, WGS84 coordinates and its source URL.
-- [x] #2 WHEN a Scottish site is shown, THE APP SHALL take its sat-nav postcode, facilities and
+- [ ] #2 WHEN a Scottish site is shown, THE APP SHALL take its sat-nav postcode, facilities and
       opening text from that site's own page, and say "not known" wherever the page is silent.
 - [x] #3 WHEN a site publishes only café or visitor-centre hours, THE APP SHALL NOT present those as
       the site's access hours.
@@ -287,3 +287,61 @@ dead and the ask is answered.
 Scotland licence rests on a default rather than a first-party offer (DECISIONS 2026-08-29). That
 sits in HANDOVER's Blockers and belongs in the same email batch as card `0018`. Moving this card
 does not move that question.
+
+### 2026-09-20 review (v20260920221547-dac0)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**#1** `build_fls()` in `scripts/parse.py` emits one `forest` record per index entry with name, lat/lng, url; shipped file carries 276 Scottish forests, none null-named, all with a URL. Met.
+
+**#3** `fls_opening()` forces `access: unknown`, `confidence: unparsed` when `RE_INDOOR_SUBJECT` matches without an always-open/dusk statement, and `NF.status`/`openState` in `app/core.js` badge only `parsed`. Met.
+
+**#4** `RE_CLOSED_TITLE` is applied to the index title and again to the page `<h1>` in `build_fls()`; no shipped name contains "(closed)". Met.
+
+**#5** `validate()` in `scripts/parse.py` checks `GB_LAT_RANGE`/`GB_LNG_RANGE` plus a per-country box for every record, and `main()` prints problems and `sys.exit(1)` **before** writing `sites.json`. Met.
+
+**#6** Accents survive to `app/data/sites.json` ("Allt na Cr├¼che") and `scripts/selftest.js` asserts that name. Met.
+
+**#2 fails on facilities.** `openSheet()` in `app/app.js` renders the facilities tag block only inside `if (site.facilities && site.facilities.length)`. When FLS publishes no facilities list the parser stores `null` ÔÇö three shipped Scottish records ÔÇö and the sheet then shows no Facilities row at all, so a page that is silent reads as "this forest has none" rather than "not known". Sat-nav and opening both use `field(..., {missing})`; facilities has no such fallback.
+
+UNMET: #2 a Scottish site whose page lists no facilities gets no Facilities row in the detail sheet at all, so silence upstream renders as "no facilities" instead of "not known"
+
+VERDICT: defect
+
+**scope: sound**
+
+**Scope check, card 0016.**
+
+The card's own fence holds. `build_fls()` in `scripts/parse.py` emits only `forest` records with `country: "Scotland"`, never a car park or campsite (`scripts/selftest.js`, "no Scottish record is a car park or a campsite"). `validate()` widened to `GB_LAT_RANGE`/`GB_LNG_RANGE` and kept the per-country box rather than dropping it, as the task asked. No country filter, no third tab from this card, no re-scrape of England. The Campsites tab, the tile layer and `docs/outreach/` are cards `0020`, `0009` and `0018`.
+
+I tried to revive both 2026-09-08 findings and neither survives.
+
+- The "Forestry England page" label is gone: `openSheet()` in `app/app.js` now reads the label from `AGENCY_BY_HOST` keyed on the link's own host, and `field('Country', ÔÇª)` is emitted for every record, not only campsites.
+- The `904` in `docs/DATA-MODEL.md` is not a wrong forest count. `main()` in `scripts/parse.py` builds `by_country` over **all** records, and the shipped `app/data/sites.json` reads `{"England": 904, "Scotland": 276}` ÔÇö 274 English forests plus 630 English car parks. The sample matches the generator's real output; the earlier reviewer compared it against the forest count alone.
+
+Nothing over the fence, nothing half done that I can cite.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I ran the project's own self-test (`node scripts/selftest.js`): 318 passed, 1 failed, and the one failure is unrelated to this card (`docs/board/in-progress/0020-ÔÇªmd` is 206.9 KB, a board-hygiene check from card 0020).
+
+What I tried to break, and could not:
+
+- **Callers not updated.** `app/api/nearest.php` filters only on `source`, so the 276 new `forest` records rank correctly and its per-record shaping reads `postcode_satnav`/`opening_summary`/`url` generically ÔÇö no England assumption. `openSheet()` in `app/app.js` now derives the "More" label from the link's own host via `AGENCY_BY_HOST`, and `field('Country', ÔÇª)` sits outside the campsite branch, so both 2026-09-08 breakage findings are gone.
+- **Offline outline.** `scripts/build_boundary.py` `WANT` already includes Scotland, so Scottish markers are not plotted off the bundled coastline.
+- **Rules asserted in one place only.** `validate()` in `scripts/parse.py` keeps `GB_LAT_RANGE`/`GB_LNG_RANGE` plus a per-country box and exits non-zero; `scripts/selftest.js` re-asserts count, ids, coords, diacritics and the link label.
+- **The stale doc count.** `docs/DATA-MODEL.md` `counts_by_country: England 904` matches the shipped file exactly: 274 English forests + 630 English car parks. The earlier scope reviewer compared it to forests only; the number is right.
+- **Comment made false.** The `safeHref` docblock in `app/core.js` says the 630 car parks "carry no url at all" and 550 records carry one ÔÇö true of `sites.json`; campsite URLs come from card 0020's separate file.
+
+VERDICT: sound
+
+**acceptance**
+
+- **#2 reopened**, by the acceptance lens: a Scottish site whose page lists no facilities gets no Facilities row in the detail sheet at all, so silence upstream renders as "no facilities" instead of "not known"
+
