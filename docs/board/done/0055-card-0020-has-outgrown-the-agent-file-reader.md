@@ -68,7 +68,7 @@ to #7 are met and watched by 279 self-tests.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a session opens `docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md`,
+- [x] #1 WHEN a session opens `docs/board/in-progress/0020-campsites-tab-from-openstreetmap.md`,
       THE FILE SHALL be under the 200 KB whole-file read limit, with every measurement, decision and
       finding it carried still findable somewhere in the repository. proves: manual - only Rob may
       decide to prune a thread, per `docs/board/README.md`.
@@ -144,3 +144,42 @@ upstream is the defect and does not say what the remains should look like. Left 
 **Not checked in a browser.** Nothing here reaches `app/`, so there is nothing to look at.
 
 **2026-09-11** The loop moved this card from in-progress/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
+
+**2026-09-20** **Decided:** yes, prune. Rob: "go ahead and prune / summarise (Also check other
+cards for similar faults)".
+
+**Done, and the suite is green.** Card `0020` is **24.9 KB across 315 lines**, down from 211.9 KB
+across 3,083. `node scripts/selftest.js` reports **319 passed, 0 failed**, which is the first fully
+green run this project has had since the assertion went in. Criterion #1 is ticked on that
+measurement and #2 was already built.
+
+**What was cut and what was kept.** Fifty-one entries dated 2026-09-08 and 2026-09-09 became one.
+Each had added a single self-test to a different stage of the campsite pipeline and about sixty
+lines of prose about it, and each closed on the same sentence, `#8 needs a person`. **Every one of
+those assertions is still in `scripts/selftest.js`** and none was touched: the test is the record,
+and it is a better one than the paragraph. The prune entry keeps a one-line index of all fifty-one
+so nothing is unfindable, keeps the four that changed shipped data rather than only guarding it
+(two scout sites, 26 static-caravan sites and 72 members-only sites dropped against criterion #6,
+plus one real parser defect found in criterion #2), and keeps the full text of the 2026-09-08 review
+above it and the 2026-09-09 diagnosis below it. The diagnosis is the entry that raised this card and
+it is the point of the whole exercise, so it stays verbatim.
+
+**One error found while measuring.** Card `0020`'s `## Answered, and built` said 3,575 campsites and
+2,525 for England. The shipped `app/data/campsites.json` holds **3,574: England 2,524, Scotland 496,
+Wales 554**. That section is not part of the comment thread, so it was corrected rather than
+annotated, and the prune entry says so.
+
+**The rest of the board was swept for the same fault**, which is the second half of the ask. Against
+the 200 KB reader limit the next largest cards are far below it, and the assertion now fails the
+suite before a reader is ever refused, so the guard is the sweep from here on. What the sweep did
+find is a different shape of the same disease, and it is recorded on its own card rather than here:
+threads growing without having anything new to say, which `docs/board/README.md` already rules is a
+defect report about the writer upstream rather than about the log.
+
+**The cause, not the symptom.** This card exists because the loop kept restarting a card whose only
+open criterion no session could close. That is now handled by the board's own machinery: a card
+whose open criteria are all `proves: manual` is held for a person rather than dispatched at. Card
+`0020`'s #8 is closed as of today, so the specific instance is gone too.
+
+Moving to `done/`. No adversarial pass is owed: this card produced a decision and a thread edit,
+not code, and `docs/board/README.md` exempts a card with nothing to attack.
