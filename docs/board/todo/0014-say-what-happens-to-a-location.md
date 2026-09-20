@@ -61,7 +61,7 @@ paragraph in the footer is read and a linked page is not.
 <!-- AC:BEGIN -->
 - [x] #1 WHEN the list is scrolled to the bottom, THE APP SHALL state that the location stays on
       the device, that nothing is sent anywhere, and what the tile layer changes.
-- [x] #2 WHEN the statement is checked against the code, THE APP SHALL be doing what it says.
+- [ ] #2 WHEN the statement is checked against the code, THE APP SHALL be doing what it says.
 <!-- AC:END -->
 
 ## Tasks
@@ -257,3 +257,45 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-21 review (v20260921000852-9eef)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**#1 ÔÇö met.** `app/index.html`, the `<footer class="foot">` paragraph after `<ol id="list">`: it states the location stays on the phone, that nothing is sent anywhere, and what the **Tiles** layer changes. Traceable to real markup, no branch hides it.
+
+**#2 ÔÇö not met.** The criterion is the statement checked against the code, and one clause fails that check. `navUrl` in `app/core.js` builds `maps.apple.com`, `google.com/maps/dir` and `waze.com/ul` URLs, and the `[data-app]` click handler in `app/app.js` assigns them to `window.location.href`. Tapping **Navigate** therefore hands a third party the forest chosen and, by the request itself, the visitor's address and (under the site's `strict-origin-when-cross-origin` policy) the referring origin. The footer says "nothing you do is sent anywhere. The one exception is the optional *Tiles* layer" ÔÇö there are two exceptions. The narrower bolded sentence ("Your location stays on this phone") survives: `navUrl` uses `site.lat/site.lng`, never `POS`. The wider clause beside it does not. That the app already added `rel="noreferrer"` to the sheet links shows the project treats this hand-off as real.
+
+UNMET: #2 the footer names the Tiles layer as the only thing that leaves the phone, but `navUrl` in `app/core.js` plus the `[data-app]` handler in `app/app.js` also hand the chosen site and the visitor's address to Apple, Google or Waze.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Over the fence: nothing.** The card forbade a "forget my location" control, an expiry on the stored position, and a separate privacy page. None exist: grepping `app/` for `removeItem`, `expir`, `forget` or a privacy page returns nothing outside the dataset, and `loadStale`/`locate` in `app/app.js` still only read and write `LS_KEY`. The footer change itself is one paragraph in the `<footer class="foot">` block of `app/index.html`, above the OGL attribution, which is where the Plan put it. The fence held.
+
+**Half done: the guard.** The task `Self-test asserting the statement is present, so a future edit cannot quietly drop it` is ticked, but in `scripts/selftest.js` the check `ok('the app states its privacy position in the footer', ...)` tests a single regex, `/location stays on this phone/i`. Criterion #1 names three things. The "no accounts, no trackingÔÇª nothing you do is sent anywhere" sentence and the whole *Tiles* caveat ÔÇö both present in the same `<p>` in `app/index.html` ÔÇö have no assertion at all, so either can be deleted and the suite stays green. That is the exact failure the task was written to prevent. The neighbouring checks in the same block (`the footer credits both forest agencies`, `the footer disclaims affiliation with both`, and the flattened-copy ODbL checks) pin each obligation separately and are the model: two more `includes` lines finish it.
+
+This lens disproves no acceptance criterion ÔÇö the statement is stated, and whether the code matches it is the breakage lens's question. The actionable item is the ticked task above, which is one third done.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding 1 ÔÇö the footer's "one exception" is not the only one.** `navUrl` in `app/core.js` builds `maps.apple.com`, `google.com/maps/dir` and `waze.com/ul` URLs, and the `[data-app]` branch of the document click handler in `app/app.js` assigns them to `window.location.href`. That is a top-level navigation, so it carries a `Referer` of this origin (no `rel="noreferrer"` is possible on a `location.href` hand-off, and none is attempted), handing Google/Apple/Waze the chosen forest plus the visitor's address. The footer paragraph in `app/index.html` says "nothing you do is sent anywhere. The one exception is the optional *Tiles* layer". The app's own `openSheet` in `app/app.js` sets `rel="noopener noreferrer"` on the **More** link precisely to stop a destination learning where you came from, so the project already treats this as a disclosure worth code ÔÇö and the one action the app exists to perform does not get it and is not named in the statement. Criterion #2 is that check.
+
+**Finding 2 ÔÇö the guard asserts one clause of three.** In `scripts/selftest.js`, `ok('the app states its privacy position in the footer', ...)` tests only `/location stays on this phone/i`. The "nothing is sent anywhere" sentence and the whole *Tiles* caveat can be deleted with the suite green, while the neighbouring `flat.includes(...)` licence checks pin each obligation separately. That is the failure the task named.
+
+UNMET: #2 the footer promises one exception, but tapping Apple/Google/Waze navigates the top-level document to that company with the site as `Referer`, so the app sends more than the statement admits.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 reopened**, by the acceptance lens: the footer names the Tiles layer as the only thing that leaves the phone, but `navUrl` in `app/core.js` plus the `[data-app]` handler in `app/app.js` also hand the chosen site and the visitor's address to Apple, Google or Waze.
+- **#2 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the footer promises one exception, but tapping Apple/Google/Waze navigates the top-level document to that company with the site as `Referer`, so the app sends more than the statement admits.
+
