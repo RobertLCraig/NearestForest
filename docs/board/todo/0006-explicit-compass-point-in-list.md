@@ -55,7 +55,7 @@ directions. Not the map, which is card `0007`. Not changing how the bearing itse
       point as text (N, NE, E, SE, S, SW, W, NW) next to the arrow, not only as a tooltip.
 - [x] #2 WHEN the detail sheet is opened for a site, THE APP SHALL phrase the bearing as a bearing
       from the user, for example "10.8 miles NE of you".
-- [x] #3 WHEN a screen reader reads a row, THE APP SHALL announce the spoken point name
+- [ ] #3 WHEN a screen reader reads a row, THE APP SHALL announce the spoken point name
       ("north-east") rather than the abbreviation, which VoiceOver pronounces as "nee".
 - [x] #4 WHEN the app or its data changes, THE APP SHALL ship a bumped service-worker CACHE key so
       installed copies do not keep the old markup.
@@ -156,3 +156,63 @@ finding and it is worth an assertion in whatever fixes this.
 Moving to `ai-review/` so the reviewer can reopen #3 and a builder can take it. The fix is small:
 give the element a role that takes a name, or hide the letters from the reader and put the words in
 a visually hidden span.
+
+### 2026-09-20 review (v20260920232716-a810)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**AC#1 ÔÇö met.** `app/app.js` `render()` emits `<span class="row__point">NF.POINTS[idx]</span>` beside `row__glyph`; styled `.row__point` in `app/app.css`.
+
+**AC#2 ÔÇö met.** `app/app.js` `openSheet()` builds `site._mi.toFixed(1) + ' miles ' + NF.POINTS[NF.compassIdx(site._bear)] + ' of you'` into `#sheet-sub`.
+
+**AC#4 ÔÇö met.** `app/sw.js` `CACHE = 'nearest-forest-v28-2026-09-10'` and `BUILD = 'v28-2026-09-10'` in `app/core.js`; `scripts/selftest.js` asserts they agree.
+
+**AC#3 ÔÇö not met.** In `app/app.js` `render()` the spoken name is still `aria-label="ÔÇªof you"` on `<div class="row__arrow">`. That div carries no `role`, so its computed role is `generic`, which WAI-ARIA 1.2 and *ARIA in HTML* list among roles that cannot be named; browsers discard the label. The arrow `<span class="row__glyph">` is `aria-hidden="true"`, so the only text left in the accessible subtree is the visible `NE` in `.row__point` ÔÇö exactly the "nee" the criterion exists to prevent. `POINT_NAMES` is exported from `app/core.js` and self-tested only for array alignment; nothing in `scripts/selftest.js` renders a row, so the misplacement is invisible to the suite. The element also sits outside `<button class="row__main">`, so button-by-button navigation never lands on it either way.
+
+Nothing has changed on this path since the previous review; the finding stands on the current code.
+
+UNMET: #3 the spoken point name is set as `aria-label` on a role-less `<div class="row__arrow">`, which browsers drop as an unnamable `generic` element, so a screen reader still announces the visible `NE`.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Scope: nothing crossed the fence; one thing is half done.**
+
+Over the fence: nothing. In `app/app.js` `render()` the change is confined to the `row__dist` block and `row__arrow`/`row__point`; `app/core.js` adds `POINTS`/`POINT_NAMES` constants only; `app/app.css` adds `.row__point`/`.row__glyph`. No `deviceorientation`, no heading-relative rephrasing, no change to `bearingDeg`/`compassIdx`, no map work under this card (`app/map.js` and the tile proxy belong to `0007`/`0009`/`0012`). `openSheet()` phrases the bearing as "ÔÇª of you" and nothing more.
+
+Half done: the spoken name. `render()` emits `aria-label` on `<div class="row__arrow">`, an element with no role, i.e. `role="generic"`. WAI-ARIA 1.2's "roles which cannot be named" list and *ARIA in HTML* both prohibit naming `generic`, and browsers drop it from the accessible name, so `POINT_NAMES` never reaches the user. The glyph span is `aria-hidden`, leaving the visible `NE` as the only text a reader can announce ÔÇö the "nee" the criterion exists to stop. The element also sits outside `<button class="row__main">`, so button-to-button navigation never lands on it. `scripts/selftest.js` asserts only that `POINTS` and `POINT_NAMES` align as arrays; nothing renders a row, so the misplaced label cannot fail the run.
+
+The task list ticks "Add `POINT_NAMES` to `core.js` for the aria-label" ÔÇö the constant landed, the label did not.
+
+UNMET: #3 the spoken point name is an `aria-label` on a role-less `<div class="row__arrow">`, which ARIA forbids naming and browsers discard, so a screen reader still announces the visible `NE`.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding (confirmed, unchanged by any later commit).**
+
+In `render()` in `app/app.js`, the spoken point name is emitted as `aria-label` on `<div class="row__arrow">`. That div carries no `role`, so its computed role is `generic`, and ARIA 1.2 / *ARIA in HTML* both prohibit an accessible name on `generic`; browsers drop it (this is what axe reports as "aria-label on a div"). The glyph span is `aria-hidden="true"`, so what remains exposed inside is the visible text node `NE` from `<span class="row__point">` ÔÇö exactly the "nee" pronunciation criterion #3 exists to prevent. `POINT_NAMES` is exported from `app/core.js` but never reaches the accessibility tree on this path.
+
+Two knock-on breakages:
+
+- The element sits outside `<button class="row__main">` and outside `<button class="row__go">` in the same `render()`, so a screen-reader user moving control to control never lands on it at all. Even a valid label there would be reachable only in browse mode.
+- The comment above `POINT_NAMES` in `app/core.js` ("Spoken forms, for aria-label only: VoiceOver reads 'NE' as 'nee'") now documents an intent the markup does not deliver.
+
+Nothing in `scripts/selftest.js` guards it: the compass block only asserts `POINTS` and `POINT_NAMES` align as arrays and that initials match. No assertion mentions `row__arrow` or any rendered markup, so the label can be dropped entirely and the run stays green.
+
+UNMET: #3 the spoken name is an `aria-label` on a role-less `<div class="row__arrow">`, which browsers discard, leaving a screen reader to announce the visible `NE` as "nee".
+
+VERDICT: defect
+
+**acceptance**
+
+- **#3 reopened**, by the acceptance lens: the spoken point name is set as `aria-label` on a role-less `<div class="row__arrow">`, which browsers drop as an unnamable `generic` element, so a screen reader still announces the visible `NE`.
+- **#3 was named by the scope lens and is not a ticked criterion here**, so nothing was changed: the spoken point name is an `aria-label` on a role-less `<div class="row__arrow">`, which ARIA forbids naming and browsers discard, so a screen reader still announces the visible `NE`.
+- **#3 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the spoken name is an `aria-label` on a role-less `<div class="row__arrow">`, which browsers discard, leaving a screen reader to announce the visible `NE` as "nee".
+
