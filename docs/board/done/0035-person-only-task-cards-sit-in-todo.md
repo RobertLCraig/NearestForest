@@ -205,3 +205,58 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-20 review (v20260920224557-f9a3)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Criterion #1** ÔÇö "a card whose only remaining work is a person's step sits in `docs/board/human-review/`", proven by the two named listings.
+
+The criterion names its own check and I ran it. `ls docs/board/human-review` contains `0010-rotate-the-thunderforest-key.md` and `0027-send-the-forestry-england-enquiry.md`; `ls docs/board/todo` holds only `0009`, `0016` and `0033`, so neither card is there. Both files are real cards (111 and 117 lines), not stubs left behind by a half-done move. There is no function to cite because there is no code to cite: a lane is a folder, `proves: none` is honest, and `scripts/selftest.js` reads only `app/`, so no test could carry this criterion even if one were written.
+
+The two previous `defect` verdicts did not rest on criterion #1 ÔÇö they rested on the count and card list in `docs/HANDOVER.md`, and on `0003`/`0017` moving in the same commit. Both are gone from the tree I have: `grep human-review docs/HANDOVER.md` now returns the instruction to run `ls docs/board/human-review` rather than any count or named list, and commit `a0d9ff7` ("brief: no card lists, no card counts") is where that happened. So neither finding can reopen criterion #1, and nothing else under this lens is open.
+
+I tried to break the one criterion and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope findings**
+
+I looked for work over the fence and could not find any in this card's own commit.
+
+`2515eff` ("put the two person-only cards in the lane a person sweeps") touches exactly five paths: the two `git mv`s, `docs/HANDOVER.md`, this card, and new card `0037`. No `app/`, no `scripts/`, no data files. `## Not this card` forbids editing `0010`/`0027`'s text, building a board check, and doing either card's task; none of the three happened.
+
+The earlier scope review's two findings do not survive the commit history. `docs/board/human-review/0003-straight-line-distance-in-practice.md` and `0017-how-much-of-wales-can-we-actually-ship.md` were moved by `7e7193a` ("put all eight person-waiting cards in the one folder"), which is `0037`'s work, not this card's. The `app/core.js`, `app/app.js`, `app/api/tiles.php` and `scripts/selftest.js` changes in the summary diff belong to other cards on the same branch; none appear in `2515eff`.
+
+Raising `0037` is the one thing outside the two moves, and the write-up declares it: `OUT-OF-SCOPE: 0037`. Raising a follow-up card rather than widening the change is the fence working, not breaching.
+
+Task 3 landed in that commit, and the `## Blockers / open questions` section in `docs/HANDOVER.md` today names no counts at all, by a later card's decision.
+
+This finding disproves no acceptance criterion; criterion #1 holds ÔÇö `ls docs/board/human-review` shows both cards, `ls docs/board/todo` shows neither.
+
+VERDICT: sound
+
+**breakage: sound**
+
+**Breakage, checked against the tree today.**
+
+Callers and cross-references to the two moved files: `grep -rn "todo/0010\|todo/0027"` finds only `TOUCHED:` lines inside append-only `## Comments` threads on `0021`, `0024` and this card ÔÇö historical records of a move, not live path claims. Nothing in `scripts/` or `app/` reads a board lane (`scripts/fetch_campsites.py`'s header cites `docs/board/todo/0020`, which predates and is untouched by this card).
+
+Criterion #1 holds: `ls docs/board/human-review` shows `0010-rotate-the-thunderforest-key.md` and `0027-send-the-forestry-england-enquiry.md`; `todo/` holds only `0009`, `0016`, `0033`. Both keep their frontmatter (`waiting_on:` on `0010`, `not_for_the_loop:` on `0027`), so the loop still cannot draw either.
+
+The three rules asserted elsewhere that could have gone stale have all been re-measured and now agree:
+- `docs/HANDOVER.md` "Blockers / open questions" states no count and no card list at all, so the count finding the two earlier reviews raised has no text left to be false about; it names `0010` and `0027` individually as person-only asks.
+- `docs/board/ai-review/0037-...md` `## What I need from you` now describes `0003`, `0017`, `0018` as all in the lane and none in `todo/`, matching the tree, so the stale-follow-up finding is dead.
+
+The one surviving inaccuracy is the 2026-09-06 result note's "still in `todo/`" sentence, which sits in an append-only thread and is already corrected by this card's own live section. It falsifies no comment a session can repair and disproves no criterion.
+
+I tried to break it and could not.
+
+VERDICT: sound
+
