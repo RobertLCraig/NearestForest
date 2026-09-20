@@ -64,3 +64,46 @@ current iOS Shortcuts app, note it here and move to `todo/` so the doc gets fixe
 **2026-08-08** The endpoint this recipe depends on is deployed and verified. Substitute
 `forestlocator.enhanceify.co.uk` wherever `docs/build/IOS-SHORTCUT.md` leaves the host as a
 placeholder.
+
+## Comments
+
+**2026-09-20** Rob: "not had any luck with this so far, run into issues with the shortcut using
+location variables."
+
+**That is a finding about the recipe, not a reason to leave the card sitting here**, so it is
+written down while it is fresh rather than lost in a chat. Step 2 of
+`docs/build/IOS-SHORTCUT.md` is the suspect: it asks for the **Latitude** and **Longitude** magic
+variables from **Get Current Location** to be inserted into a Text action. Three things are known
+to go wrong at exactly that point in Shortcuts and the recipe warns about none of them.
+
+1. **The magic variable inserts as `Current Location` rather than as a number.** Tapping the
+   variable chip and choosing **Get Details of Location > Latitude** is what pins it to the number.
+   Inserted straight from the suggestion bar it often carries the whole location object, and the
+   URL then contains a place name.
+2. **Shortcuts helpfully formats the number.** A latitude can arrive as `50.8168` or as `50.8168°`
+   or with a thousands separator depending on locale, and any of those make
+   `api/nearest.php` reject the parameter rather than fail silently, which is the endpoint behaving
+   correctly and looking like a broken Shortcut.
+3. **Location permission for the Shortcuts app itself** is separate from Safari's. If it has never
+   been granted, **Get Current Location** returns nothing and every step downstream fails with a
+   message about the URL rather than about location.
+
+**None of this is confirmed.** It is the list of things to check first, from the shape of the
+symptom, and whichever one it turns out to be belongs in the recipe as a warning so the next person
+does not lose the same evening.
+
+**What would settle it fastest.** Put a **Show Result** action straight after step 2 and read the
+URL it built. Either it looks like
+`https://forestlocator.enhanceify.co.uk/api/nearest.php?lat=50.8168&lng=-0.0894&n=5`, in which case
+the fault is downstream, or it does not, in which case the URL itself says which of the three it is.
+Pasting that same URL into Safari is the control: it is live and returns Friston Forest first from
+Brighton.
+
+**The card stays here and keeps all three criteria open.** Nothing an unattended session can do
+reaches an iOS Shortcut, and the comparison this card exists for, which of the two you actually
+reach for, needs the Shortcut to exist first.
+
+**Worth remembering what the comparison is for.** The Shortcut is the only thing that uses
+`api/nearest.php`, and that endpoint covers the forest tabs only. Campsites are not in it. So if the
+Shortcut wins on convenience it wins over a smaller dataset, and that is part of the answer rather
+than a footnote to it.

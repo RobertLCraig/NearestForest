@@ -115,3 +115,20 @@ Wales letter is still inline on card `0017`.
 shots, untracked. **IMG_5792 (the list), IMG_5796 (the detail sheet) and IMG_5797 (the map chooser)**
 are the three worth attaching to this enquiry. IMG_5794 and IMG_5795 are not: they are card `0015`'s
 evidence of the tile credit being unreadable.
+
+**2026-09-20** Rob: "I think gets answered by 0018". Correct, and nothing on this card changes.
+
+`needs: 0018` already says so in the frontmatter and `## Links` already carries the reason, so this
+entry is only here to stop the next reader wondering whether this card was overlooked in the sweep.
+It was not. It is waiting, and on the right thing.
+
+**What that dependency now means in practice has changed, though.** `0018`'s direction as of today
+is a notification with no ask at all. If that holds, most of what this card is written to do stops
+applying: the two `[confirm]` claims about membership and site visits exist to establish standing
+for an ask, and the three cold reviews in `docs/outreach/forestry-england-enquiry-review.md` are all
+about why the ask fails. An email with no ask needs neither.
+
+**So do not start this card by verifying the `[confirm]` claims.** Read `0018`'s answer first. If it
+lands as a notification, this card is a rewrite rather than a fix, and a much shorter one.
+
+`not_for_the_loop:` stands unchanged: it sends an email to a public body in Rob's name.

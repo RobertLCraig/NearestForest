@@ -1,5 +1,5 @@
 ---
-waiting_on: NRW's answer on the recreation data licence - recheck 2026-09-11
+waiting_on: the enquiry in docs/outreach/nrw-licence-enquiry.md to be sent to NRW - recheck 2026-09-27
 ---
 # How much of Wales can we actually ship?
 
@@ -7,12 +7,16 @@ waiting_on: NRW's answer on the recreation data licence - recheck 2026-09-11
 
 **One email and one choice.**
 
-1. Send Natural Resources Wales the licence question below, and paste their answer into this card.
-2. Once they answer, pick option 1, 2 or 3.
+1. Send the email in **[`docs/outreach/nrw-licence-enquiry.md`](../../outreach/nrw-licence-enquiry.md)**
+   from `r@enhanceify.co.uk`, and paste their answer into this card. It is written and ready. The
+   one thing it needs from you is the recipient: NRW publish a contact form rather than a plain
+   address, so take it off
+   [their contact page](https://naturalresources.wales/about-us/contact-us/?lang=en).
+2. Once they answer, pick option 1, 2 or 3 below.
 
-**Answer 0016 first.** It carries the scope call that gates both cards, because the PRD's non-goals
-currently rule out Wales and Scotland outright. If that answer is no, discard this card unread and
-do not send the email.
+~~**Answer 0016 first.**~~ **Spent.** `0016` was answered Yes on 2026-08-18 and built on 2026-08-29,
+and the PRD non-goal that ruled out Wales and Scotland is retired. Nothing gates this card now
+except sending the email.
 
 ---
 
@@ -120,3 +124,36 @@ because it was available.
 <!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
 
 **2026-08-18** Draft the email request from r@enhanceify.co.uk However, the draft as currently put, is too technical. Use the ELI5 approach. Do not state what the attribution would be, say that I am happy to include any attributions needed. Give a link to the current project for them to see.
+
+## Comments
+
+**2026-09-20** Rob: "put the draft email in my fastmail drafts to send from r@enhanceify.co.uk".
+
+**I could not do that, and I am saying so rather than reporting it done.** There is no Fastmail
+connector available to this session at all, and the mail connectors that do exist are unauthorised
+and cannot be authorised from here because the session is non-interactive. Nothing was sent and no
+draft was created anywhere.
+
+**What exists instead**, and it is one copy-paste rather than a composition:
+**[`docs/outreach/nrw-licence-enquiry.md`](../../outreach/nrw-licence-enquiry.md)**. It carries the
+from address, the subject line, the body ready to send, and one thing that still needs a person:
+the recipient. Natural Resources Wales publish a contact form rather than a plain enquiries address,
+so the address has to be taken off
+[their contact page](https://naturalresources.wales/about-us/contact-us/?lang=en) at the time of
+sending.
+
+**Three things changed in the text against the version on this card.** The dataset names and the
+metadata record number are bolded, because they are what an officer has to look up and burying them
+in prose costs a round trip. The offer to treat the email as the approval request itself is now its
+own bolded sentence, so a "you need approval" reply can also be the approval. And the app is named
+with its URL at the top, because the first thing anyone assessing a data request wants to know is
+what it is for.
+
+**The card's own gate is spent.** Its ask says "Answer `0016` first", because the PRD's non-goals
+ruled out Wales and Scotland outright and a no there would have discarded this card unread. `0016`
+was answered Yes on 2026-08-18 and built on 2026-08-29, and the non-goal is retired in
+`docs/PRD.md`. So this card is blocked on nothing but the send.
+
+**`waiting_on:` updated.** It had been `recheck 2026-09-11`, which is nine days past. It is now the
+send itself rather than their answer, because nothing has been sent and waiting on a reply to an
+email nobody posted is how a card sits still for a month while looking busy.

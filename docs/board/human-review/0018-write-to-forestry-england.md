@@ -1,3 +1,6 @@
+---
+waiting_on: Rob and Cheryl to settle whether the email carries any ask at all - recheck 2026-10-04
+---
 # Do we write to Forestry England, and with which asks?
 
 ## What I need from you
@@ -121,3 +124,37 @@ name, which is the one thing the licence genuinely does not give him.
 <!-- The answer, dated. Appended: a reversal is a later line, not an edit. -->
 
 **2026-08-18** sending from enhanceify.co.uk has now been unblocked. but I am still on the fence about what to ask them for. I fully intend at some point to convert this project into an app both for apple and android and load it into the respective app stores. potentially with donation links at the very least.
+
+## Comments
+
+**2026-09-20** Rob, and this is direction rather than an answer, so the card stays open: "Leave for
+now, have this open with Cheryl to examine. Current thinking is just a notification of 'Hey, I had
+this problem I built this solution, I thought you might like to know' no ask at all."
+
+**That is close to none of the three options on this card**, which is worth saying plainly rather
+than filing it under option 1. All three were written as an approach with an ask attached: option 1
+sends the full drafted enquiry, option 2 sends a bare trade mark question, option 3 sends nothing.
+A notification with no ask at all is a fourth thing, and it is the one the reviewers were pointing
+at without naming it.
+
+**It also answers the strongest criticism the draft has had.** Three cold reviewers, given the text
+and no other context, all predicted no reply, and the sharpest line in
+`docs/outreach/forestry-england-enquiry-review.md` is "nothing in this email makes yes cheaper than
+no". An email with no ask cannot fail that test: there is no yes to be made expensive. It trades the
+chance of a partnership for a near-certainty of not being ignored, which is a reasonable trade when
+the app is already built, already live and needs nothing from them.
+
+**One thing it would settle for free.** This card's third ask, an App Store release, contradicts the
+PRD non-goal "No App Store release". A notification with no ask drops that contradiction rather than
+resolving it, so the PRD would not move. Worth knowing, because "answering this may move the PRD"
+has been on the card and in HANDOVER for weeks and would simply stop being true.
+
+**Not recorded as `**Decided:**`**, deliberately. Rob said leave it for now and that he is working it
+through with Cheryl, and marking it decided would move the card out of this lane and hand it to an
+agent to act on. It is not ready for that.
+
+**`waiting_on:` added** naming Cheryl and a recheck date, so this surfaces as drift if it goes quiet
+rather than sitting here looking like an unanswered question.
+
+**Card `0027` is the send and it is downstream of this**, which Rob confirmed in the same breath: "I
+think gets answered by 0018". Its `needs: 0018` already says so and nothing there changes.

@@ -2,23 +2,52 @@
 
 ## What I need from you
 
-**Two answers.**
+**One answer: Google only, or Google and Apple?**
 
-1. Do you want log-ins at all? The app has never had them and stores nothing about anyone today.
-2. If yes, which sign-in service, and will you pay for it and create the account yourself?
+Your position on 2026-09-20 was "ideally no, but some of the new features I want in other cards may
+require them", and you are right that Hostinger can host it. So the old question, whether this is
+possible at all, is gone. What is left is one supplier choice, and it is the only part that costs
+money.
 
-**On 1.** Today the app is a bundled list on your phone that works with no signal. Accounts mean it
-talks to a server to remember who you are, so "visited" and "favourite" follow you to another device.
+- **Google only.** Free, no annual fee, works on every device. The cost is that anyone without a
+  Google account cannot sign in, and on an iPhone "Sign in with Google" is the less natural button.
+- **Google and Apple.** Adds the button iPhone users expect and lets people hide their real email
+  behind Apple's relay. **Sign in with Apple needs an Apple Developer Program membership, which is
+  £79 a year**, and that is the whole of the extra cost.
 
-**On 2.** A sign-in service is somebody else's server holding the email addresses and passwords and
-deciding who may read which rows. Hostinger serves plain files here, so it cannot do that job. Most
-services charge past a free tier, and this card forbids a session opening a paid account in your name.
+**Pass** is either named here, or "no accounts, close it". **Fail** is nobody deciding, because all
+seven criteria say `proves: manual` and no session can move one.
 
-**Pass** is you naming a service and creating its account, or saying no and closing this card.
+**Why it needs you.** It is a cost you carry every year and a privacy call about your own users.
+Neither is a lookup.
 
-**Fail** is nobody deciding. All seven checks need a person at a screen, so the card just sits here.
+---
 
-**Why it needs you.** A cost, a privacy choice and a supplier choice. No reading settles any of them.
+**Correcting this card, because it said something false and that is what made the decision look
+bigger than it is.** The old version said "Hostinger serves plain files here, so it cannot do that
+job". That is wrong. The vhost already runs **PHP 8.4**, pinned deliberately, and already serves two
+PHP endpoints, `api/nearest.php` and `api/tiles.php`. Your Hostinger plan includes MySQL. So the
+server half of accounts needs no new supplier and no new hosting bill: sessions, a users table and a
+visited/favourite table all sit on what you are already paying for. **Worth confirming the MySQL
+database exists in hPanel before anyone builds**, since nothing in this repository can see it.
+
+**What "OAuth with Google and Apple" actually means here**, since it changes the shape of this card.
+The app never sees or stores a password. It sends the person to Google or Apple, gets back a signed
+token saying who they are, and keeps its own row keyed to that identity. The second acceptance
+criterion below, about registering with an email address and password, verifying the address and
+providing a password-reset route, **describes a different design and should be rewritten or dropped
+before this is built.** Password reset is most of the security surface of an accounts system, and
+OAuth is worth choosing partly because it deletes that surface rather than hardening it.
+
+**One thing that does not apply, so nobody raises it.** App Store rules require Sign in with Apple
+alongside other social logins. This is a PWA and `docs/PRD.md` lists "No App Store release" as a
+non-goal, so that rule reaches nothing here. Apple is a choice about what iPhone users expect, not
+a requirement.
+
+**And the thing this card must not break.** Finding and navigating must keep working with no account
+and no signal. That is the whole app. Accounts are an addition for the people who want them, and a
+lost connection must never hide the bundled data. `## Not this card` below already fences this and
+it is the part to read twice.
 
 ## Why
 **The app cannot remember a place once somebody has been there.** A regular visitor has to keep a
@@ -79,12 +108,25 @@ to read and change one account's tracking records using the other account and wi
 chosen service must reject every unauthorised request at the data layer; hiding controls in the PWA
 is not a permission check.
 
-**Use a managed authentication service or a separately deployed HTTPS API that supports email
-verification, password resets, secure sessions and row-level per-user access.** The current Hostinger
-static deployment cannot securely hold credentials or enforce ownership itself. Keep service secrets
-off the client and document required configuration, migration, data-retention and account-deletion
-steps. Do not create paid services, change the live host or deploy from this card without a person
-driving those external actions.
+**Build it on the hosting that is already paid for, with OAuth rather than passwords.** The vhost
+runs PHP 8.4 and already serves `api/nearest.php` and `api/tiles.php`, and the Hostinger plan
+includes MySQL, so no new supplier is needed for sessions, a users table or a per-user tracking
+table. **Confirm the database exists in hPanel first**, because nothing in this repository can see
+it. Identity comes from Google, and from Apple if that is the answer to the ask at the top; the app
+never holds a password, which removes email verification and password reset from the build and with
+them most of its security surface.
+
+**The client OAuth secret and the database credentials are secrets and follow the rule already
+established here**: a file above the web root, mode 600, read per request, never in the repository,
+never in a card, never in a chat. `app/api/tiles.php` and `tiles.key` are the working pattern to
+copy, and `.gitignore` already refuses `*.key`.
+
+**Ownership is enforced in the query, not in the interface.** Every read and write is keyed to the
+session's identity in SQL. Hiding a control in the PWA is not a permission check, and the first
+thing to prove is the boundary above.
+
+Document configuration, migration, data retention and account deletion. Do not create paid services,
+change the live host or deploy from this card without a person driving those external actions.
 
 **Verify on a phone-sized screen.** A signed-out person can still locate and navigate to a bundled
 site offline. With a connection, a new account can verify its email, mark a forest visited and a
@@ -95,3 +137,33 @@ out. Confirm password reset and an attempted cross-account request fail safely.
 <!-- The card's thread, appended by ProgressBoard. Append-only: entries are added, never edited or removed. An entry beginning **Decided:** is an answer, and that is what a decision card exits on. -->
 
 **2026-09-06** The loop moved this card from todo/ to human-review/ WITHOUT trying it. All 7 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
+
+**2026-09-20** Rob: "I'd ideally like to go with no, but some of the new features I want in other
+cards may require them. Why cant hostinger host that? (remember as of right now, its not a real app,
+and hostinger can easily host a mysql database) backed with oauth for google and apple".
+
+**He is right and the card was wrong.** It said "Hostinger serves plain files here, so it cannot do
+that job", and that claim is what made this look like a card needing a new supplier and a new bill.
+The vhost runs PHP 8.4, pinned on purpose and recorded in HANDOVER's Deployment section, and already
+serves `api/nearest.php` and `api/tiles.php`. The plan includes MySQL. The server half of accounts
+needs nothing new. `## What I need from you` is corrected and the false sentence is gone.
+
+**Where the claim came from.** Not from anybody testing it. `docs/HANDOVER.md` says "Static files
+only. No build step, no bundler, no npm, no framework, no database", which is a description of a
+deliberate choice, and a session writing this card read it as a description of a limit. That is the
+same failure this board keeps finding in its tests: a statement that cannot be distinguished from
+the thing it is mistaken for.
+
+**What the decision shrank to.** One supplier choice with one price on it. Google OAuth is free.
+Sign in with Apple needs an Apple Developer Program membership at £79 a year, and that is the entire
+incremental cost of the pair. Both are recorded in the ask above with what each buys.
+
+**The acceptance criteria now describe the wrong design.** Criterion #2 asks for registration with
+an email address and password, address verification and a password-reset route. Under OAuth the app
+never sees a password and that criterion should be rewritten or dropped rather than built. It is
+flagged in the ask rather than edited here, because rewriting acceptance on a card whose direction
+is still open would be inventing the answer.
+
+**Still not started, and rightly.** Rob's own preference is no accounts, and the trigger is
+whichever future feature turns out to need them. A card that begins on a maybe is how a static
+offline app grows a login screen nobody asked for.
