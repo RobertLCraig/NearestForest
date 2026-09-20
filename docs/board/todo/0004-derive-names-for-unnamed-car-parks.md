@@ -53,7 +53,7 @@ records are single points, not polygons, so nearest-neighbour is the available a
 <!-- AC:BEGIN -->
 - [x] #1 WHEN a car park has no usable upstream name, THE APP SHALL display a derived name naming
       the nearest forest, for example "Car park near Friston Forest".
-- [x] #2 WHEN a name is derived rather than published, THE APP SHALL mark it visually so it is not
+- [ ] #2 WHEN a name is derived rather than published, THE APP SHALL mark it visually so it is not
       mistaken for an official name.
 - [x] #3 IF the nearest forest is further away than a sane threshold, THEN THE APP SHALL keep the
       generic label rather than claiming a misleading association.
@@ -206,3 +206,56 @@ impossible when this card was parked.
 
 **Not changed:** no tick was altered here. That is a reviewer's job under the current tooling and
 was the whole reason this card could not move.
+
+### 2026-09-20 review (v20260920231216-eb48)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**AC #1 ÔÇö met.** `name_after_nearest_forest()` in `scripts/parse.py` writes `"Car park near <Forest>"`; `render()` in `app/app.js` and `openSheet()` show it. The map label truncation at 22 chars in the label loop in `app/map.js` is a generic rule that applies to every name, published or derived, so it does not disprove #1.
+
+**AC #3 ÔÇö met.** `name_after_nearest_forest()` compares the nearest distance against `NEAR_FOREST_MI = 5.0` and leaves the generic label when it is exceeded; the threshold and counts are printed by `main()` in `scripts/parse.py`.
+
+**AC #2 ÔÇö not met.** The response-shaping `array_map` in `app/api/nearest.php` builds `name` and `label` (`$s['name'] . ' - ' . $s['miles'] . ' miles'`) and emits no `name_is_derived` and no wording equivalent. `docs/build/IOS-SHORTCUT.md` shows `label` straight to the user, so a name this card invented is presented on that surface indistinguishable from a published one ÔÇö the exact mistake #2 forbids. Before this card the same field read "Unnamed car park", which marked itself, so the change removed the only marking that surface had. The other three surfaces (`row__derived` in `render()`, `sheet__name--derived` plus the "our name for it" subtitle in `openSheet()`, italic in the `app/map.js` label loop) are real; this one is absent.
+
+UNMET: #2 `app/api/nearest.php` emits the derived name in `name` and `label` with no `name_is_derived` flag or wording, so the Shortcut presents an invented name as a published one.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Scope findings, card 0004**
+
+**1. One surface the card's own criterion covers was left out.** `app/api/nearest.php`, in the `array_map` that shapes the response, emits `name` and builds `label` as `name . ' - ' . miles . ' miles'`, and emits no `name_is_derived`. The Shortcut speaks a name this project invented as though Forestry England published it. Before the change that field read "Unnamed car park", which marked itself; the change made the output worse on that surface while fixing three others. That is work started and left half done, not work over the fence ÔÇö the card's Acceptance #2 says "the app", and `docs/build/IOS-SHORTCUT.md` step 5 reads `label` straight out to the driver.
+
+**2. A doc the change falsified and did not update.** `docs/build/IOS-SHORTCUT.md`, the "Car parks instead of named forests" bullet, still says "170 car parks are unnamed, so the list reads poorly aloud". After this card it is 19. The card's task list required updating `docs/DATA-MODEL.md`, which was done; this second doc was made wrong by the same change and left.
+
+**3. Over the fence, already corrected.** The rebuild moved `scraped_at` on forest records, which "Not this card" fences off. Commit b3f5297 fixed it. No action.
+
+The map-label truncation in `app/map.js` (the label draw, cutting at 22 chars) is real but Rob answered it on 2026-09-20 as acceptable in use, so I do not count it against #1.
+
+UNMET: #2 the Shortcut response from `app/api/nearest.php` sends the derived name with no marking, so Siri reads an invented name as an official one.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**1. The Shortcut speaks a name we invented as if it were published.** In `app/api/nearest.php`, the `array_map` that shapes the response emits `name`, `postcode`, `access`ÔÇª and builds `label` as `name - miles (postcode)`. `name_is_derived` is not in that array and nothing else in the file mentions it (grep: zero hits). `docs/build/IOS-SHORTCUT.md` step 5 says the list shows `label` directly, so Siri reads "Car park near Friston Forest" with no mark at all. Before this card the same field said "Unnamed car park", which marked itself; the change silently removed the only signal this surface had. This is a caller of the dataset that the card did not update.
+
+**2. A doc the change made false.** `docs/build/IOS-SHORTCUT.md`, the source-filter bullet, still says "Bear in mind 170 car parks are unnamed, so the list reads poorly aloud." After this card 158 are named and 19 are bare.
+
+**3. One rule, two forest sets.** `main()` in `scripts/parse.py` calls `name_after_nearest_forest(pending, forests)` *before* `build_fls()` runs, so the join sees English forests only. The `nearestForest` closure in the derived-names block of `scripts/selftest.js` reduces over every forest in `sites.json`, Scotland included. They agree today by luck; one Scottish point nearer a border car park turns the test red while the parser is the thing that is wrong.
+
+UNMET: #2 the Shortcut response in `app/api/nearest.php` sends the derived name with no derived flag, so that surface presents an invented name as an official one.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 reopened**, by the acceptance lens: `app/api/nearest.php` emits the derived name in `name` and `label` with no `name_is_derived` flag or wording, so the Shortcut presents an invented name as a published one.
+- **#2 was named by the scope lens and is not a ticked criterion here**, so nothing was changed: the Shortcut response from `app/api/nearest.php` sends the derived name with no marking, so Siri reads an invented name as an official one.
+- **#2 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the Shortcut response in `app/api/nearest.php` sends the derived name with no derived flag, so that surface presents an invented name as an official one.
+
