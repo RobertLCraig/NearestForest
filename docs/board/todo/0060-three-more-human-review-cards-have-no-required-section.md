@@ -264,3 +264,52 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921023619-8668)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Criterion #1 ÔÇö exactly one anchored hit, directly under the title.** The three named files have moved lanes since the build (`0019` ÔåÆ `done/`, `0058` ÔåÆ `todo/`, `0021` still in `human-review/`), so I traced them by name rather than by lane. `grep -c '^## What I need from you'` returns 1 on each. Heading order confirms placement: in `0019` and `0058` the title sits under YAML frontmatter and `## What I need from you` is the next heading, above `## Why`; in `0021` it follows the title directly. No second copy anywhere.
+
+**Criterion #2 ÔÇö ask, pass and fail in the first lines under the title.** `0019` and `0058` both open "One call, and I would take the first", name the two routes, and close "Doing neither is the fail" ÔÇö ask, pass and fail inside one paragraph.
+
+**Tried to break it.** `0021` now carries an "Answered on 2026-09-11" blockquote above that paragraph, added later by cards `0069`/`0070`, pushing the ask to roughly the twelfth line. That is a subsequent edit, not this build's text, and the blockquote itself states the card's status in its first line. Criterion #2 is `proves: manual`; a reader is not left hunting.
+
+I could not fault either criterion.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Fence held.** The build touched only the three named card files plus its own card and the new `0062`; nothing under `app/`, `scripts/` or `docs/board/README.md`. No acceptance box in the three was edited, no thread entry altered, no card moved out of the lane. Raising `0062` rather than fixing `0059` is declared in the log and is this board's practice. The `## Not this card` fence is intact.
+
+**Left half done, and still uncorrected today.** `## Plan` carries one prohibition in bold: "Do not write a count into the section. Point at the folder instead." All three sections written by this build carry hand-typed counts, and they are still there:
+
+- `docs/board/done/0019-use-forestry-englands-own-attribution-wording.md`, in `## What I need from you`: "All eight criteria are met" and "came back with 8 of 8 ticked", in a section whose own ask is that a **ninth** criterion be added.
+- `docs/board/human-review/0021-rewrite-this-board-s-cards-for-the-reader.md`, same section: "came back with 6 of 6 ticked" and "leaving all six boxes ticked".
+- `docs/board/todo/0058-the-link-check-reports-zero-while-nine-cards-carry-a-bare-number.md`, same section: "over one of the 39 lines it added", "3 of 3 ticked", "all three boxes".
+
+The build's own log states "No count is written into any of the three sections." That sentence is false as written, and it is the second time on this card that a log claim has not survived reading. The budget task, by contrast, was done: all three carry a "Note on length".
+
+**No acceptance criterion is disproved.** #1 and #2 describe only the heading's presence and the legibility of the ask; both hold on all three files, and the anchored lane sweep still names none of them. The fault is a Plan instruction and a false log line, neither of which either criterion covers. I name none rather than untick a box for a failure that did not happen.
+
+VERDICT: defect
+
+**breakage: sound**
+
+**Breakage lens on card `0060`.**
+
+**What I tried to break.** The three sections this card wrote are still the only edit it made to `0019`, `0021` and `0058`. Nothing under `app/` or `scripts/` is reachable from a board card, so there is no caller to miss and no docblock outside the board to falsify.
+
+**The one live breakage is already open as work.** In `docs/board/human-review/0021-rewrite-this-board-s-cards-for-the-reader.md`, the `## What I need from you` this card added still names `0058` ("Card `0058`, written the same day, records the red") and `0055`, and neither has an entry in that card's `## Links`, which now lists `0025`, `0069`, `0070`, `0071`, two `progressboard#` numbers, `0023` and `0024`. That violates `0021`'s own criterion #3. **That criterion is already unticked on `0021`**, so the finding has reached a builder as work and does not need re-raising here.
+
+**The other two hold.** `0019`'s section names no card. `0058`'s section names `0024`, `0026` and `0028`, all three under its own `## Links`. Each file still returns exactly one anchored heading, directly under its title.
+
+Nothing here disproves either of this card's two criteria, and I will not untick a box to carry a finding that another card already owns.
+
+VERDICT: sound
+
