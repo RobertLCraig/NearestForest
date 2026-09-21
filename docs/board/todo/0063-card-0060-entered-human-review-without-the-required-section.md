@@ -60,7 +60,7 @@ outside this repository.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN `docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md`
+- [ ] #1 WHEN `docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md`
       is searched for the heading `## What I need from you` anchored to the start of a line, THE CARD
       SHALL return exactly one hit, directly under its title. proves: none - this project's suite is
       one node script over the app and cannot read the board; the check is
@@ -242,3 +242,72 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921030419-b1ff)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break both criteria on card `0063` and couldn't. Both hold against the file as it is now.
+
+**Criterion #1.** I ran `grep -c '^## What I need from you'` on `docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md` and it returns `1`. The heading sits on line 3, straight after the title and its blank line. It comes before `## Why`, and there is no second copy anywhere in the file.
+
+**Criterion #2.** The first block under the heading, in that same file, gives the ask: send the card back to `todo/`, or say on the thread that the reviewer was wrong. The next sentence says either one, written down, is a pass. The one after says leaving the card where it is, is the fail. All three sit in one unbroken block right under the heading. The criterion is `proves: manual`, and a reader meets all three before anything else.
+
+**What I found outside the criteria.** The `## Plan` sentence "It worked when the anchored grep ÔÇª names no files" doesn't hold today. The lane sweep names three files: `0070`, `0072` and `0074`. All three came into the lane after this card's scope was fixed on one path, and neither criterion covers the lane. So this disproves neither box. The breakage finding about the build note being false is also not an acceptance matter.
+
+VERDICT: sound
+
+**scope: sound**
+
+**scope: sound**
+
+**The build stayed inside the card's scope.** The build commit for this card is `37a3622`. It changes three files and nothing else:
+- the `0060` card in `human-review/`, gaining 34 lines;
+- this card;
+- a new `0064` card in `todo/`.
+
+Nothing under `app/` or `scripts/` was touched. Most of the 63-file diff (HANDOVER, PRD, `selftest.js` and other cards) comes from other cards' commits and the scheduler's commits, not from this build.
+
+**The fence in `## Not this card` held.** In `docs/board/human-review/0060-three-more-human-review-cards-have-no-required-section.md`:
+- the only change is the new `## What I need from you` block, directly under the title;
+- `grep -c '^## What I need from you'` on it returns 1 today;
+- no acceptance box, thread entry or verdict was edited;
+- the card was not moved out of its lane, and neither reviewer finding was acted on.
+
+**The follow-up was declared, not smuggled in.** Raising `0064` is recorded as `OUT-OF-SCOPE: 0064` on the thread, which is how this board raises follow-ups.
+
+**The later moves came from the scheduler.** The lane moves after the build (`e286fac`, `149868f`, `1dea232`, and the 2026-09-20 unjam in `df8935f`) are all `board:` commits. `f8a150a` gave this card its own section, which its own `human-review/` entry required.
+
+**Nothing was left half done inside the fence.** The 100-line budget task was answered on this card's thread rather than on `0060`, and the thread gives the reason. The false "suite cannot read the board" sentence belongs to the breakage lens, not to scope.
+
+My finding disproves no criterion, so there is no `UNMET:` line.
+
+VERDICT: sound
+
+**breakage: defect**
+
+The fix itself still holds. Card `0060` has exactly one anchored `## What I need from you` heading, and it sits directly under the title. The anchored sweep over `human-review/` does not name `0060`. That card is 24 KB, well under the size check's 200 KB limit.
+
+**Finding: the defect the last review returned was never fixed on this card.** The breakage lens found that this card wrongly says the suite cannot see the board. That false sentence is still in two places:
+
+- **The card's own `## Acceptance`, criterion #1:** "this project's suite is one node script over the app and cannot read the board".
+- **The card's own `## Plan`:** "`node scripts/selftest.js` cannot see this either way".
+
+In `scripts/selftest.js`, the block `board cards fit the agent file reader (card 0055)` reads every lane under `docs/board/` and fails any card over 200 KB. The block `card 0020 quotes the raw OSM feature count correctly` also reads a board card. So both sentences are false.
+
+Card `0064` fixed the same sentence in its own `## Plan` and marked the fix, but no one went back to this card. Criterion #1 uses that false reason to justify `proves: none`, so its tick rests on a false statement. A later card copying this criterion's wording will copy the false claim again, which has already happened once in this series.
+
+The 2026-09-20 comment only moved the card between lanes. It fixed nothing.
+
+UNMET: #1 its `proves: none` rests on the claim that the suite cannot read the board, and `scripts/selftest.js` walks every board lane in its card-0055 size check.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#1 reopened**, by the breakage lens: its `proves: none` rests on the claim that the suite cannot read the board, and `scripts/selftest.js` walks every board lane in its card-0055 size check.
+
