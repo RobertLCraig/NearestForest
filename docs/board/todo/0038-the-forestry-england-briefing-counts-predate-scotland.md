@@ -344,3 +344,56 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-21 review (v20260921012219-5c76)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**AC #1 ÔÇö met.** `docs/outreach/forestry-england-handover.md`, the "what is verified" pipe row, reads `1,180 locations, 550 forests, 630 car parks`. Measured from `app/data/sites.json`: 1180 / 550 / 630. The `carried` table in the card-0036 block of `scripts/selftest.js` now matches that row with three separate patterns, so the next dataset move fails a run. Traced to real code, real data.
+
+**AC #2 ÔÇö disproved.** The criterion requires the file to account for the **177** derived names card 0004 added. The "car park views" bullet in the screenshots section of the same file says **196** of the 630 car parks publish no usable name and that card 0004 *"now names 177 of those 196"*. Counted directly in `app/data/sites.json`: 177 car parks carry `name_is_derived`, of which 19 still read `Unnamed car park` and 158 carry a forest-derived name (158 + 19 = 177). `scripts/parse.py`, in the comment fixing the 5-mile threshold above `GENERIC_NAME`, says the same: 177 with no usable name, 158 named, 19 keeping `GENERIC_NAME`. `docs/DATA-MODEL.md`'s `name_is_derived` row: 177 = 170 `Unknown` + 7 bare `Car Park`.
+
+So 196 double-counts the 19 ÔÇö they are the tail of the 177, not a fourth group ÔÇö and "names 177" should be 158. Nothing guards it: the `carried` patterns match only the pipe row, never this bullet.
+
+UNMET: #2 the screenshots bullet says 196 car parks lack a usable name and that 0004 names 177 of them, but the dataset, `scripts/parse.py` and `docs/DATA-MODEL.md` all give 177 and 158.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Fence: respected.** The card's commit `45fb941` touches only `docs/outreach/forestry-england-handover.md`, `scripts/selftest.js` and the card. `docs/outreach/forestry-england-enquiry.md` is untouched, which the "Not this card" fence allowed because it carries no dataset count (grep of `docs/outreach/` for 904/1,180/550/630/177/196/170 hits only the handover; `cheryl-update.md`'s "about 550 words" is a word count). Nothing the email asks for changed, so `0018` and `0027` are clear.
+
+**Growth I weighed and allow.** The counts row gains a "only 274 of the 550 forests are Forestry England's" warning, and the car-park bullet gains a screenshot-age note. Both sit inside the two lines the card named and serve its stated purpose.
+
+**Half done, and it is this card's own work.** Task 3 asks for the `carried` table to cover this file *"so the next dataset change fails a run"*. In `scripts/selftest.js`, the `carried` list adds three rows, all matching the pipe-table counts row only. The dataset numbers this same card newly wrote into the car-park bullet ÔÇö 196 and 177 ÔÇö are outside every pattern, unguarded, and wrong: `app/data/sites.json` has 177 records with `name_is_derived`, of which 158 are forest-named and 19 keep the plain label, which `scripts/parse.py` states in the comment above `GENERIC_NAME`. The card wrote a fresh wrong number into the one file whose reader cannot check it.
+
+UNMET: #2 the car park bullet accounts for 196 derived names, but only 177 exist ÔÇö 158 named after a forest and 19 kept plain ÔÇö so the file still does not describe what card 0004 did.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Finding.** In `docs/outreach/forestry-england-handover.md`, the "car park views" bullet of the screenshots section says *196 of the 630 car parks publish no usable name* and that card 0004 *"now names 177 of those 196"*. Both numbers are wrong, and the repository contradicts them in three places:
+
+- `app/data/sites.json`: of 630 car parks, **177** carry `name_is_derived`; **19** of those still read `Unnamed car park`, so **158** carry a forest-derived name. 158 + 19 = 177. Nothing counts 196.
+- `scripts/parse.py`, the comment above `GENERIC_NAME` fixing the 5-mile threshold: 177 car parks had no usable name, the rule *"names 158 of the 177; the 19 beyond it keep GENERIC_NAME"*.
+- `docs/DATA-MODEL.md`, the `name_is_derived` row: 177 = 170 `Unknown` + 7 bare `Car Park`.
+
+The 196 double-counts the 19 ÔÇö they are the tail of the 177 that the distance fence refused to name, not a fourth group ÔÇö and "names 177" should be 158. Nothing catches it: the `carried` table in the card-0036 block of `scripts/selftest.js` matches only the pipe-table counts row, so this bullet is unguarded prose in the one file whose reader cannot check it against the code.
+
+Fix is two numbers in one bullet: 196 ÔåÆ 177, "names 177 of those 196" ÔåÆ "names 158 of those 177". The 19 is already right.
+
+UNMET: #2 the briefing accounts for 196 derived names, but card 0004 derived 177 and named only 158 of them, so both figures in that bullet contradict `sites.json`, `parse.py` and `DATA-MODEL.md`.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 was named by the acceptance lens and is not a ticked criterion here**, so nothing was changed: the screenshots bullet says 196 car parks lack a usable name and that 0004 names 177 of them, but the dataset, `scripts/parse.py` and `docs/DATA-MODEL.md` all give 177 and 158.
+- **#2 was named by the scope lens and is not a ticked criterion here**, so nothing was changed: the car park bullet accounts for 196 derived names, but only 177 exist ÔÇö 158 named after a forest and 19 kept plain ÔÇö so the file still does not describe what card 0004 did.
+- **#2 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the briefing accounts for 196 derived names, but card 0004 derived 177 and named only 158 of them, so both figures in that bullet contradict `sites.json`, `parse.py` and `DATA-MODEL.md`.
+
