@@ -325,3 +325,5 @@ VERDICT: defect
 
 - **#1 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the assertion that proves it picks card 0020 by `startsWith('0020-')` across every `docs/board` subdirectory including `attachments/`, with no `.md` filter, so a screenshot attached to card 0020 is read as the card and the check fails on correct text.
 
+
+**2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, all 1 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 1 of 1 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
