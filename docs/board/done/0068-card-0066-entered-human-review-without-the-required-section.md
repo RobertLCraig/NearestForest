@@ -231,3 +231,54 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921035000-fcbf)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Acceptance review of card `0068`**
+
+**#1 is met, though the card has moved lanes since it was written.** The criterion names `docs/board/human-review/0066-ÔÇªmd`, and that path no longer exists: the scheduler has since moved the card to `docs/board/done/0066-card-0064-entered-human-review-without-the-required-section.md`. That move is not this build's work, and the file's content is what the criterion tests. In that file, `grep -n '^## '` shows `## What I need from you` exactly once, on line 3, directly under the title on line 1 and above `## Why`.
+
+**#2 is met.** The first block under the heading is one bold paragraph. It gives the ask first ("does the reviewer's findingÔÇª disprove either of this card's two ticked criteria?"), then the pass (a dated line choosing route 1 or 2), then the fail (leaving the card as it is). All three sit in the first three lines of text under the heading.
+
+**I tried to break it through the lane sweep.** The anchored `grep -rLE '^## What I need from you' docs/board/human-review/*.md` now names three cards: `0070`, `0072` and `0074`. Card `0069` raised `0072` and `0074` on 2026-09-11, and the `0070` card is the one numbered after `0069`, so all three were written after this build, and none of them was the card this work was about. The sweep also sits in `## Plan`'s "it worked when" line, not in the acceptance block, so it disproves no criterion. It does mean the lane is out of rule again. That belongs on a new card, not on this one.
+
+**This build changed no code.** The work is a Markdown section, and both criteria are `proves: none` or `proves: manual`, so the trace is to the file, not to a function.
+
+VERDICT: sound
+
+**scope: sound**
+
+The scope fence held. Build commit `4ba4e6c` changed exactly two files: the card that was missing the section, now `docs/board/done/0066-card-0064-entered-human-review-without-the-required-section.md`, and this build's own card, `0068`. Nothing under `app/`, `scripts/` or `data/` changed, and nothing in `C:\Dev\ProgressBoard`.
+
+**`## Not this card` held for `0066`.** The build added one section between the title and `## Why` and deleted 6 lines on its own card `0068`, not on `0066`. It did not act on `0066`'s reviewer finding and did not untick or move it. `0066` now sits in `done/`, but three scheduler commits moved it: `df8935f` (human-review to ai-review), `e7b62cf` and `7527018` (ai-review to done). None of those is the build.
+
+**Criterion #1 still holds where the file now sits.** `grep -c '^## What I need from you'` on the `done/` copy returns `1`, on line 3, directly under the title.
+
+**Nothing was left half done.** The build ran the lane sweep again and reported it. It also stated both card sizes against the 100-line budget. It raised no successor card, and none was needed because the sweep came back clean.
+
+**The 62-file diff is not this build.** It covers other cards' work plus the scheduler's 2026-09-20 move of 17 cards back into `ai-review/`. The "209.8 KB" figure is a breakage finding, not a scope one, and `docs/HANDOVER.md` has since dropped the typed-in figure.
+
+No criterion is disproved under this lens.
+
+VERDICT: sound
+
+**breakage: sound**
+
+Nothing this card built is broken, and the criteria still hold.
+
+**Criteria #1 and #2 still hold on the card itself.** The `0066` card has moved to `docs/board/done/` since the build, which a scheduler move did, not this build. `grep -n '^## What I need from you'` on that file finds exactly one match, on line 3, directly under the title. The three lines under the heading give the ask, then the pass, then the fail. Nothing after the build removed or duplicated the section.
+
+**The lane sweep is no longer clean, but this build did not cause it.** `grep -rLE '^## What I need from you' docs/board/human-review/*.md` now names `0070`, `0072` and `0074`. The `0069` build raised all three as new cards after this build finished, and they entered the lane later. They are the same scheduler-mover defect this card fences out to `C:\Dev\ProgressBoard`. They do not show that `0066` is missing its section.
+
+**The last review's defect is fixed where it could spread.** The wrong figure "209.8 KB" has been taken out of `docs/HANDOVER.md`, and that file now says to read the size off the run. The false figure is still in `0068`'s own `RESULT: done` entry, and no dated correction entry follows it. That is prose on an append-only thread. It is not an acceptance criterion, and no code, test or document relies on it.
+
+No criterion is disproved.
+
+VERDICT: sound
+
