@@ -987,3 +987,58 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-21 review (v20260921040211-4909)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break it and couldn't. This work passes on acceptance.
+
+**#1 (the suite fails naming every duplicated card number).** The check is the `no board card appears in two lanes` block in `scripts/selftest.js`. Its `walk` reads the actual folder listing under `docs/board/`, so a new lane is covered as soon as it exists. It takes the first four digits of each card file name (`.md` or `.markdown`, any case, any folder depth), groups by number, and fails with a sorted message naming every lane each duplicate sits in. A folder it can't read also fails the run instead of being skipped. That closes the blind spots the earlier review found for files with no slug, `.markdown`, upper-case `.MD` and nested folders.
+
+**#2 (one file per card number).** I listed every lane and found no card number in two lanes. The only numbers that repeat are screenshots in `attachments/`, which are `.png` files, so the check rightly ignores them. The suite gives 319 passed, 0 failed, and this assertion is a PASS.
+
+**#3 (nothing from the deleted copy is lost).** No test covers this. The earlier independent review compared all sixteen pairs and found nothing recoverable missing, and I found nothing that contradicts it.
+
+**#4 (zero open cards failing the convention).** `board:convention --path=$PWD --cards` prints `NearestForest 0 37 0077`, so zero open cards are failing.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope review: card 0069**
+
+I could not find anything this card did outside its fence.
+
+**The card's own commits stay inside it.** Every commit labelled `0069` touches only three kinds of file:
+- `scripts/selftest.js`: the new check, and later a widening of it.
+- The sixteen duplicate pairs under `docs/board/`.
+- New cards it raised for findings it carried across and did not fix: `0072`, `0073`, `0074`, and one about the product requirements document's link.
+
+The other changes in the diff belong to other cards: `.gitignore`, `requirements.txt`, `docs/DATA-MODEL.md`, `docs/PRD.md`, `docs/HANDOVER.md`, the Natural Resources Wales outreach draft and the `0005` lane move. None of them comes from a `0069` commit. The "not rewriting either copy's prose" fence holds: what was added to the surviving copies was carried over word for word.
+
+**Nothing is left half done.**
+- **Duplicates:** a fresh walk of the board today finds no card number in two lanes. The only repeated numbers are screenshots in `attachments/`.
+- **`0021`:** the loose end the earlier review flagged, its copy left in `in-progress/` still asking Rob a question, is closed. `de5cdd7` merged the two copies, and the `in-progress/` file no longer exists.
+- **`0057`:** the finding the earlier review said was wrongly dismissed is now tracked. `1a3ea74` raised it as its own card, and `docs/PRD.md` now carries the corrected bullet.
+
+**One small extra.** `1a3ea74` widened the duplicate check in `scripts/selftest.js` beyond what the card asked for, to cover file names the first version could not see. That was the reviewer's own suggestion and it is still the card's own check, so it is not a breach of scope.
+
+This finding disproves no acceptance criterion.
+
+VERDICT: sound
+
+**breakage: defect**
+
+I tried to break the check and the merge and couldn't. I did find one document this diff has made false.
+
+**What held.** In `scripts/selftest.js`, the `one card, one lane (card 0069)` block now uses a looser name match and walks every level under a lane. That closes the four gaps the earlier review found: `0069.md` with no slug, `.markdown`, `.MD`, and files one folder down. An unreadable directory now fails this assertion by name instead of crashing the whole suite. The loose-file skip keeps `README.md` out, and the attachment screenshots are `.png`, so they never match. I ran `node scripts/selftest.js` here and got **319 passed, 0 failed**, with `no board card appears in two lanes` passing. Each card number now has exactly one file. The finding the earlier review left open (card 0057's line in `docs/PRD.md`) has been fixed in `docs/PRD.md` and closed as card `0076` in `done/`.
+
+**The finding.** The opening section of `docs/HANDOVER.md` still says the suite is "deliberately red on exactly one assertion", the card-size check, because card `0020` is over the 200 KB limit. That is no longer true. `0020` is in `done/` at 32 KB, and the suite runs with no failures. This diff edited that exact paragraph and left the claim standing. The next session will be told to expect a red result that no longer exists, and so won't notice when a different red appears. It doesn't disprove any of this card's criteria. It's a false claim in a document, and the next build session should correct it.
+
+VERDICT: defect
+
