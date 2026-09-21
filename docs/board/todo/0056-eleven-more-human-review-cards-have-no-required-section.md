@@ -85,12 +85,12 @@ section: that lives in `C:\Dev\ProgressBoard`.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN each of the eleven cards listed above is searched for the heading
+- [ ] #1 WHEN each of the eleven cards listed above is searched for the heading
       `## What I need from you`, THE CARD SHALL return a hit directly under its title.
       proves: none - this project's suite is one node script over the app and cannot read the board;
       the check is `grep -rL "## What I need from you" docs/board/human-review/*.md` naming none of
       the eleven
-- [x] #2 WHEN a reader opens any of the eleven, THE CARD SHALL state the ask, what a pass is and
+- [ ] #2 WHEN a reader opens any of the eleven, THE CARD SHALL state the ask, what a pass is and
       what a fail is, within the first three lines under the title. proves: manual - whether an ask
       is legible in three lines is a reader's judgement, not a string match
 <!-- AC:END -->
@@ -350,3 +350,63 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921020146-e9e1)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**#1 ÔÇö not met.** The criterion says each of the eleven returns a hit for `## What I need from you` directly under its title. Run anchored, per path, against wherever each card now lives: ten pass at line 3; **`docs/board/done/0036-the-904-record-count-outlived-card-0016.md` has zero occurrences of the heading**. Its line 1 is `# Three live files still say the dataset holds 904 records` and line 3 is `## Why`. The only surviving mention of the phrase is prose inside a review verdict ("The alternative the card's `## What I need from you` offersÔÇª") ÔÇö exactly the false positive the last review warned the named substring check would produce. `git log` on that path shows `8143b63` ("0069: carry five later reviews onto the surviving card, delete the stale copies") as the last touch, so the section this card wrote is gone from the file that survives. The work is now ten of eleven.
+
+**#2 ÔÇö not met for the same card.** A reader opening `0036` gets the problem statement, not an ask: no pass, no fail, nothing in the first three lines under the title.
+
+The previously recorded defect stands too: the `proves:` check names `docs/board/human-review/*.md`, and nine of the eleven have left that lane, so `grep -rL` there cannot see this miss at all. That is how a real regression passed.
+
+UNMET: #1 card `0036`, now in `done/`, carries no `## What I need from you` heading at all ÔÇö only the phrase inside a review comment ÔÇö so ten of the eleven, not eleven, satisfy the criterion, and the check named in `proves:` points at a lane nine of them have left and so cannot detect it.
+UNMET: #2 a reader opening `0036` finds `## Why` directly under the title, with no ask, no pass and no fail anywhere in the first three lines.
+
+VERDICT: defect
+
+**scope: sound**
+
+**Scope, checked against the fence.**
+
+The card's commit is `c394e96`, twelve markdown files: the eleven named in `## Why` plus the card itself. `git show --name-only --format= c394e96` shows nothing under `app/`, `scripts/`, `docs/HANDOVER.md` or any other lane.
+
+I attacked the fence three ways and could not get over it:
+
+- **"Not unticking any criterion."** Every one of the eleven hunks is `@@ -1,5 +1,3x @@` ÔÇö a pure insertion at the top of the file, zero deleted lines across all eleven. The `## Acceptance` blocks are byte-identical before and after, so no box was touched and no reviewer finding inside them was acted on.
+- **"Not moving anything out of the lane."** No renames in the commit; all eleven paths are `docs/board/human-review/ÔÇª` on both sides.
+- **"Not a check that refuses a card entering the lane."** Nothing was added under `scripts/`, and the card says in `## Why` that the fix belongs in `C:\Dev\ProgressBoard`.
+
+**Nothing left half done against the task list.** All four tasks are discharged: the heading sits at line 3 of all eleven, directly under the title at line 1; each of the eleven carries exactly one "Note on length" stanza, as the third task required; and the re-grep is reported in `## Comments`.
+
+The stale `42,299 bytes` figure in `0034`'s new section and the unanchored `grep -L` in `proves:` are real, but they are accuracy and proof, not growth ÔÇö other lenses own them, and I disprove no criterion here.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding: the eleven sections were written as hand-typed counts, and they have since gone false in the lane a person reads.**
+
+`docs/board/human-review/0032-handover-carries-a-self-test-count-nothing-re-measures.md`, its `## What I need from you` block (the section this card wrote), offers Rob two routes and grounds them in three measured figures. All three are wrong today:
+
+- "Listing that folder gives **3**" ÔÇö `docs/board/ai-review/` holds **13**.
+- "The folder holds **42**" ÔÇö `docs/board/human-review/` holds **27**.
+- "`0045` is not in `todo/`; `todo/` holds `0055`" ÔÇö `todo/` is **empty**, and `0055` is in `done/`.
+
+That section is not append-only, is the first thing a reader sees, and the card is in `human-review/` now, so this is a live wrong instruction, the same failure `0034` already needed a correcting entry for. `0056`'s own log asserts "Every count in the new sections was measured today"; that measurement has no re-measurer, which is precisely the fault `0032`, `0040`, `0041` and `0044` exist to record. Criterion #2 asks that a reader opening any of the eleven finds a stated ask with a pass and a fail; on `0032` the ask and its pass are premised on counts that no longer hold, so the reader cannot act on it.
+
+UNMET: #2 card 0032's ask section states three lane counts that are all false today, so a reader opening it cannot act on the pass it describes
+
+VERDICT: defect
+
+**acceptance**
+
+- **#1 reopened**, by the acceptance lens: card `0036`, now in `done/`, carries no `## What I need from you` heading at all ÔÇö only the phrase inside a review comment ÔÇö so ten of the eleven, not eleven, satisfy the criterion, and the check named in `proves:` points at a lane nine of them have left and so cannot detect it.
+- **#2 reopened**, by the acceptance lens: a reader opening `0036` finds `## Why` directly under the title, with no ask, no pass and no fail anywhere in the first three lines.
+- **#2 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: card 0032's ask section states three lane counts that are all false today, so a reader opening it cannot act on the pass it describes
+
