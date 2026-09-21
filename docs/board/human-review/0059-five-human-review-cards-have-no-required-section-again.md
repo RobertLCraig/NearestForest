@@ -330,3 +330,5 @@ VERDICT: defect
 
 - **#2 reopened**, by the breakage lens: the ask in `0056` and `0053` rests on two statements that are false in the files as they stand ÔÇö each says it "carries the heading nowhere" while carrying it, and `0056` says all eleven cards left the lane while `0032` and `0038` are still in it
 
+
+**2026-09-21** The loop moved this card from todo/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
