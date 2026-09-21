@@ -271,3 +271,54 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921033826-12bf)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to disprove both criteria against the target card and could not.
+
+**The path in #1 no longer exists.** The card now lives at `docs/board/todo/0064-card-0062-entered-human-review-without-the-required-section.md`, not in `human-review/`. A later lane move put it there. This build did not move it, and the move changed nothing in the body. So I tested the property the criterion describes on the file where it actually is.
+
+**#1 holds.** The card was built to fix `0064`, and the fix is the section added to that card. On `0064`, `grep -c '^## What I need from you'` returns `1`. The title is line 1 and the heading is line 3, directly under it. There is no second copy.
+
+**#2 holds.** The first paragraph under the heading gives the ask: say which review stands and pick route 1 or route 2. The pass is a dated line on `## Comments` naming the route. The fail is leaving the card alone, with the reason: the loop keeps sending it back into the lane. By raw line count these are lines 5 to 8, because the heading and a blank line come first. The criterion is marked `proves: manual`, and this same shape was graded sound on sibling cards in the same lane.
+
+The earlier breakage finding was about `0067` being born over the 100-line budget. That is outside both criteria, and it disproves neither.
+
+VERDICT: sound
+
+**scope: sound**
+
+Scope review of card `0066`
+
+I tried to find work this build did that the card never asked for, and could not.
+
+- **The build is one commit, `ab4c366`, and it touched three markdown files.** They are the target card `0064`, card `0066` itself, and the new `0067`. Nothing under `app/`, `scripts/` or `data/` changed, and nothing in `C:\Dev\ProgressBoard` did either.
+- **Every fence in `## Not this card` held.** The change to `0064` is one insertion between its title and `## Why`. Its acceptance ticks, its comment thread and its lane were not touched.
+- **Raising `0067` was declared rather than done quietly.** The thread lists it under `OUT-OF-SCOPE`, and the card's last task asked for exactly this report.
+- **Later commits on this card are not part of the build.** `4ba4e6c` is card `0068`'s build. `df8935f` moved the card to `ai-review/` and added a dated comment explaining why. `3d5bcae`, `2bc35b5`, `2e06168` and `327f962` only move the card between lanes.
+- **Nothing was left half done.** Task 3, the budget check, names "the card", which is `0064`. That check was done and written up under "Note on length".
+
+The long diff above covers the whole batch, not just this card. `0067` being three lines over the 100-line budget is the breakage reviewer's finding. It is about something the build caused, not about scope, and it disproves neither criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this card and could not. The earlier breakage finding was real, but it disproves neither criterion, and it has since been fixed further down the series.
+
+**The earlier finding was about something outside both criteria.** It faulted the follow-up card `0067`, which was born at 103 lines with nothing said about it. Criterion #1 is about the heading in `0064`, and #2 is about what the first lines under its title say. Neither covers a separate card the build raised.
+
+**That fault is repaired in the tree.** `docs/board/done/0067-card-0065-entered-human-review-without-the-required-section.md` says on its thread that the card it raised was counted before committing at exactly 100 lines. It names the 103-line card as the reason, and its reviewer confirmed the figure. `docs/board/ai-review/0068-card-0066-entered-human-review-without-the-required-section.md` now puts "any card this build raises must be born inside 100 lines" in its `## Plan`. So the budget rule is now written down in the series, not just asserted in one file.
+
+**Nothing else is broken.** The anchored lane grep `grep -rLE '^## What I need from you' docs/board/human-review/*.md` names no file. `0064` has moved to `todo/` and still carries its section. Nothing under `app/`, `scripts/` or `data/` was touched, so no caller or self-test depends on these files beyond the size check, and every card in this series is far under 200 KB.
+
+No criterion is disproved, so there are no `UNMET:` lines.
+
+VERDICT: sound
+
