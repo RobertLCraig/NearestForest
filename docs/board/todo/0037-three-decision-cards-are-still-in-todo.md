@@ -74,7 +74,7 @@ piece of work.
       `docs/board/human-review/`. proves: none - a card's lane is a folder and this project's suite
       is one node script over the app; the check is `ls docs/board/human-review` showing `0003`,
       `0017` and `0018` there and `ls docs/board/todo` showing none of them
-- [x] #2 WHEN a reader counts the cards waiting on a person, THE BOARD SHALL give the same number
+- [ ] #2 WHEN a reader counts the cards waiting on a person, THE BOARD SHALL give the same number
       from `ls docs/board/human-review` as `docs/HANDOVER.md` states. proves: none - same reason;
       the check is the file count against the sentence in "Blockers / open questions"
 <!-- AC:END -->
@@ -221,3 +221,57 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921010929-fd7e)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**#1 ÔÇö holds.** `ls docs/board/todo` is empty and no `## Options` card sits in `ai-review/` or `in-progress/`. `0017` and `0018` are in `docs/board/human-review/`, both carrying `## What I need from you`. `0003` is in `docs/board/done/` with a `## Decided` entry dated 2026-08-18, so it is answered and outside the criterion's "not yet answered" scope.
+
+**#2 ÔÇö not met, and cannot be.** The criterion requires `docs/HANDOVER.md` to *state* a number equal to `ls docs/board/human-review` (currently 23 files). `docs/HANDOVER.md`'s orientation block now says the opposite in terms: "**This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and every one was stale within a day, so the rule now is: **list the folder, do not read a number.**" There is no count anywhere in the file to compare ÔÇö the only number-word left is "Twenty-two decisions" in the DECISIONS row of the doc table. So there is no artefact satisfying this criterion, and the tick is unsupported. This is exactly the dead criterion the card's own `## What I need from you` asks to be untocked.
+
+The card's other live ask ÔÇö repairing `0024`'s stale line budget and its `wc -l docs/board/todo/0018-...` path, which now errors since `0018` is in `human-review/` ÔÇö is not covered by either criterion, so it cannot be reopened here; it remains outstanding in `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`.
+
+UNMET: #2 `docs/HANDOVER.md` deliberately states no card count at all ("This file names no card lists and no card counts"), so there is no number for `ls docs/board/human-review` (23) to match and the criterion can never be satisfied as written.
+
+VERDICT: defect
+
+**scope: defect**
+
+**Scope finding: the commit is clean; what it left half done is in front of a person.**
+
+Commit `7e7193a` is the whole of this card's work and stays inside the fence: two zero-byte moves, one `## What I need from you` added to `docs/board/human-review/0018-write-to-forestry-england.md`, and two `docs/HANDOVER.md` edits. No decision answered, no card text rewritten, no board check built. The extra card `0040` is a note, not a change.
+
+What it left undone is the damage it did to `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, and the card's own `## What I need from you` names that repair as Pass:
+
+- `0024`'s `## Plan` still says to count with `wc -l docs/board/todo/0018-write-to-forestry-england.md`. This card moved that file; the command errors, in a card whose only job is counting it.
+- `0024`'s `## What I need from you` still states Pass as "`0018` and `0020` are 100 lines each". `0018` is 160 lines, 23 of them added here. Nothing on `0024` says why.
+
+Criterion #2 is also unverifiable in the tree as it stands: `docs/HANDOVER.md` no longer states any count of `human-review/` (the lane holds 23 files and the file names no number), so there is nothing for the folder count to match.
+
+UNMET: #2 `docs/HANDOVER.md` no longer states a count of the cards waiting on a person, so there is no number for `ls docs/board/human-review` to agree with, and the criterion can neither pass nor fail.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Findings (breakage lens).**
+
+1. **A rule asserted in one place, and the opposite asserted in the other.** Criterion #2 requires `docs/HANDOVER.md` to state a number that matches `ls docs/board/human-review`. The file's own status block now says "**This file names no card lists and no card counts.**", and "Blockers / open questions" opens with "**Run `ls docs/board/human-review` ÔÇª This section names no counts and lists no card numbers**". There is no number left to compare, so the criterion can neither be met nor fail ÔÇö the tick asserts an agreement between two things, one of which no longer exists. The lane holds 23 files; nothing in HANDOVER says 23, 11 or 8.
+
+2. **A command this card broke is still broken.** `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, `## Plan`, still instructs counting with `wc -l docs/board/todo/0018-write-to-forestry-england.md`. This card moved that file to `human-review/`; the path does not exist and the command errors, inside the one card whose job is counting it. `0024`'s `## What I need from you` has since been rewritten to acknowledge the 160-line reality, so the stale *condition* is repaired, but the stale *path* is not.
+
+UNMET: #2 HANDOVER deliberately carries no card count any more, so there is no number for the folder listing to match and the criterion cannot be checked at all
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 reopened**, by the acceptance lens: `docs/HANDOVER.md` deliberately states no card count at all ("This file names no card lists and no card counts"), so there is no number for `ls docs/board/human-review` (23) to match and the criterion can never be satisfied as written.
+- **#2 was named by the scope lens and is not a ticked criterion here**, so nothing was changed: `docs/HANDOVER.md` no longer states a count of the cards waiting on a person, so there is no number for `ls docs/board/human-review` to agree with, and the criterion can neither pass nor fail.
+- **#2 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: HANDOVER deliberately carries no card count any more, so there is no number for the folder listing to match and the criterion cannot be checked at all
+
