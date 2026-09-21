@@ -274,3 +274,54 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921014802-0d2b)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Criterion #1** ÔÇö "WHEN card `0020`'s criterion #2 is read, THE APP SHALL state the raw feature count that `data/raw/osm/` actually holds."
+
+Traced and re-measured rather than read. `data/raw/osm/` today: `campsites-gb-eng.json` 6133, `campsites-gb-sct.json` 905, `campsites-gb-wls.json` 1463 ÔÇö **8,501**. Card `0020` now lives in `docs/board/done/`, and its criterion #2, extracted by the `AC:BEGIN`/`AC:END` sentinels rather than by searching the file, reads *"only 96 of 8,501 records carry any opening hours"*. The number agrees with the data, and it is inside the acceptance block, not in a comment. The criterion is met.
+
+The guard cited in `## Tasks` exists in `scripts/selftest.js`, in the `card 0054` block after `--- dataset counts carried in prose (card 0036) ---`: it locates `0020-*.md` across every lane, sums the `elements` arrays under `data/raw/osm`, compares, and skips with a printed reason when the cache is absent.
+
+The unanchored regex the 2026-09-11 reviewer described is still there ÔÇö the match runs over the whole card file. Today card `0020` holds that sentence only once, and it is the criterion, so the check grades the right text. That is a durability weakness in a test, not a failure of the one acceptance criterion this card carries, and my lens is acceptance. **This finding disproves no criterion**, so I write no `UNMET:` line.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Scope finding: an undisclosed second edit, to an append-only log.**
+
+Commit `ffed0bc` changed two lines in card `0020`, not one. The first is criterion #2. The second is inside `## Comments`, in the dated **2026-09-09** entry that *reported* the discrepancy: it rewrote that entry's quotation from "only 96 of 8,496" to "only 96 of 8,501" (`docs/board/done/0020-campsites-tab-from-openstreetmap.md`, the 2026-09-09 thread entry).
+
+Two problems. `docs/board/README.md`, under "Comments: one thread", says plainly *"Nothing is rewritten. New entries go under `## Comments`."* And the rewrite makes the entry contradict itself: it now reads "Criterion #2 says 'only 96 of 8,501'ÔÇª So HANDOVER is right and this card's own criterion is five out" ÔÇö the evidence for its own finding deleted.
+
+The build note on `0054` says "Nothing else in that sentence changed" and lists the card file under TOUCHED without saying a historical entry was edited. That is a change that grew quietly past what `## Tasks` item 2 asked for ("changing the count and nothing else").
+
+This disproves no acceptance criterion on `0054`: criterion #1 asks only that criterion #2 state the real count, and it does.
+
+VERDICT: defect
+
+**breakage: defect**
+
+**The guard can grade the wrong file, and the board's own attachment convention triggers it.**
+
+In `scripts/selftest.js`, the card-0054 block (`--- dataset counts carried in prose ---`, the `card0020` lookup) enumerates every subdirectory of `docs/board` as a lane and takes the first entry whose name `startsWith('0020-')` ÔÇö with **no `.md` filter**. `docs/board/attachments/` is such a subdirectory, and it holds screenshots named exactly `NNNN-YYYY-MM-DD-N.png` (`0008-2026-09-10-1.png`, `0019-ÔÇª`, `0057-ÔÇª`). Lanes enumerate alphabetically, so `attachments` precedes `done`: the first screenshot ever attached to card 0020 ÔÇö the campsites UI card, the kind this board screenshots ÔÇö becomes `card0020`, the regex finds nothing in PNG bytes, and the check fails with *"criterion #2 carries no such count"* while the criterion is perfectly correct. The card-0055 block immediately below gets this right (`f.endsWith('.md')`); this one does not.
+
+The count itself is right: I summed `data/raw/osm/*.json` here and got **8,501**, matching criterion #2. The 2026-09-11 reviewer's decoy bypass no longer reproduces ÔÇö card 0020 now carries that sentence once, inside `AC:BEGIN`/`AC:END` ÔÇö though anchoring is still the cheap fix and would close both faults at once.
+
+The criterion's named proof is therefore unsound: it can report red on correct prose and reads whatever the filesystem enumerates first.
+
+UNMET: #1 the assertion that proves it picks card 0020 by `startsWith('0020-')` across every `docs/board` subdirectory including `attachments/`, with no `.md` filter, so a screenshot attached to card 0020 is read as the card and the check fails on correct text.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#1 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the assertion that proves it picks card 0020 by `startsWith('0020-')` across every `docs/board` subdirectory including `attachments/`, with no `.md` filter, so a screenshot attached to card 0020 is read as the card and the check fails on correct text.
+
