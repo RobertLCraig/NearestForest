@@ -510,3 +510,5 @@ VERDICT: defect
 - **#2 reopened**, by the acceptance lens: the opening block of 0062's section gives the ask and a fail but no pass, and the pass sits far below it, next to a second, different fail
 - **#2 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: in the 0062 card, the block under the heading gives the ask and a fail but never says what a pass is, and the two routes that follow are options, not a pass condition
 
+
+**2026-09-21** The loop moved this card from todo/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
