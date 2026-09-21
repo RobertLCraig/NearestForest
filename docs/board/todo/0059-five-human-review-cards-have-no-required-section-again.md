@@ -86,7 +86,7 @@ board tooling: both live in `C:\Dev\ProgressBoard`, outside this repository.
       hit, directly under its title. proves: none - this project's suite is one node script over the
       app and cannot read the board; the check is `grep -c '^## What I need from you' <path>` per
       file, run against the five paths rather than against a lane
-- [x] #2 WHEN a reader opens any of the five, THE CARD SHALL state the ask, what a pass is and what
+- [ ] #2 WHEN a reader opens any of the five, THE CARD SHALL state the ask, what a pass is and what
       a fail is, within the first three lines under the title. proves: manual - whether an ask is
       legible in three lines is a reader's judgement, not a string match
 <!-- AC:END -->
@@ -279,3 +279,54 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921022447-4422)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Criterion #1 ÔÇö met.** `grep -c '^## What I need from you'` returns exactly 1 for all five paths, and 0056 now sits in `docs/board/todo/`, which the criterion survives because it names files by path rather than a lane ÔÇö the card's `## Plan` chose that deliberately, and this move is the case it was choosing against. In each file the heading is the line immediately after the `#` title (`0011` only has YAML frontmatter above the title). No file has a second copy.
+
+**Criterion #2 ÔÇö met.** In all five, the first paragraph under the heading is one bold sentence naming two routes and closing "Doing neither is the fail", so the ask, the pass and the fail are all inside the first three lines. Each then restates them under explicit **Pass** / **Fail** / **Why it needs you** labels.
+
+**What I tried to break.** The known false sentences ÔÇö `0056`'s "the eleven cards have since moved to other lanes" and its and `0053`'s "carries the heading nowhere" ÔÇö are still in the files, and `0056`'s is still false in a second way now that `0056` itself holds the heading. But neither criterion says anything about the truth of the section's prose; #1 is a heading count and #2 is legibility of the ask. That finding is the breakage lens's, already recorded, and it disproves no criterion here. Inventing an UNMET for it would be unticking work that was done.
+
+No criterion is unmet.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check, card 0059, re-review.**
+
+The build is two commits, `2039b0c` and `51378cc`. `2039b0c` touches exactly the five named card files, this card, and two new cards `0060`/`0061` in `todo/`. Every hunk in the five is a pure insertion ÔÇö `git show 2039b0c -- docs/board/human-review/` produces no `-` lines at all, so no `## Acceptance`, `## Comments`, `## Direction` or `## Decided` content was edited or removed, and no card moved lane. The `## Not this card` fence holds: nothing under `app/`, `scripts/` or `docs/board/README.md` changed, and no reviewer finding inside the five was acted on.
+
+Nothing left half done against the four tasks. Each of the five carries exactly one `^## What I need from you` directly under its title, and each carries the over-budget note task 3 asks for (`0011`, `0053`, `0054`, `0056` under "Note on length", `0012` the same wording). Task 4's re-grep is reported and its three results ÔÇö `0019`, `0021`, `0058` ÔÇö are all three named by path in `0060`'s `## Why`, not just summarised.
+
+The two new cards are growth, but raising rather than fixing is this board's practice and both are declared `OUT-OF-SCOPE` in the log.
+
+I attacked the fence and the task list and found neither breached nor short.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding, breakage lens ÔÇö the sections this card wrote contain statements the same commit made false, and they are still false today.**
+
+**Self-falsifying sentence, still in both files.** In `docs/board/human-review/0053-card-0019-entered-human-review-without-the-required-section.md`, under `## What I need from you`, reason 2 reads "This card mentions the phrase many times over and carries the heading nowhere". `grep -c '^## What I need from you'` on that file returns 1 ÔÇö the heading this very card added, three lines above the sentence. The identical sentence sits in the same section of `docs/board/todo/0056-eleven-more-human-review-cards-have-no-required-section.md`, also returning 1.
+
+**False premise driving an untick.** `0056`'s reason 1 says "The eleven cards have since moved to other lanesÔÇª Strip the section out of all eleven today and it still reports a pass." `ls docs/board/human-review/` lists `0032-handover-carries-a-self-test-count-nothing-re-measures.md` and `0038-the-forestry-england-briefing-counts-predate-scotland.md`, two of the eleven `0056` itself names. A lane-named check still measures both, so the stated reason is wrong and the "still passes" claim is false.
+
+These are the ask a person reads before unticking `0056` and `0053`. The ask is misstated in its first three lines under the title.
+
+UNMET: #2 the ask in `0056` and `0053` rests on two statements that are false in the files as they stand ÔÇö each says it "carries the heading nowhere" while carrying it, and `0056` says all eleven cards left the lane while `0032` and `0038` are still in it
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 reopened**, by the breakage lens: the ask in `0056` and `0053` rests on two statements that are false in the files as they stand ÔÇö each says it "carries the heading nowhere" while carrying it, and `0056` says all eleven cards left the lane while `0032` and `0038` are still in it
+
