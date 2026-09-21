@@ -102,7 +102,7 @@ is a `## Links` line and nothing else; no measurement, acceptance tick or verdic
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN a card in the table above names another card in a sentence, THE CARD SHALL also name it
+- [ ] #1 WHEN a card in the table above names another card in a sentence, THE CARD SHALL also name it
       under `## Links` with the relationship type and one line saying why the reader is sent there.
       proves: `every card number named in a sentence also appears in that card's Links section`
 - [x] #2 WHEN the sweep is re-run over every non-terminal lane, THE BOARD SHALL report no card
@@ -272,3 +272,60 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921021312-6f8e)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**Acceptance, card 0058.**
+
+**#1 ÔÇö not met.** The criterion asks that each number named in a sentence also appear under `## Links` "with the relationship type and one line saying why the reader is sent there." Commit `9f7a556` added two lines to `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, under `## Links`, **Relates to**:
+
+- `0026` ÔÇö "its missing `## Links` reason **is** the single failure the convention check reports, and it **is** the whole of what criterion #4 is waiting on"
+- `0028` ÔÇö "the card that fixes `0026`, so #4 closes on the run **after it lands**"
+
+Both are false in the present tense, and the same file disproves them: its own thread records "**Criterion #4 is now met, measured rather than waived**", and `ls docs/board/done/` shows `0026-scraped-at-says-the-parse-date-not-the-fetch-date.md` and `0028-card-0026-links-0023-without-saying-why.md` both in `done/`. This card's own build log also records `board:convention --cards` at zero, so "the single failure the convention check reports" was already untrue when written. A reason line that tells the reader a closed dependency is still blocking does not satisfy "one line saying why the reader is sent there"; it sends them to a fault that does not exist.
+
+**#2 and #3 held.** The added lines are present in all nine files; the `0024` diff is additions only, no tick, measurement or append-only section touched.
+
+UNMET: #1 the two `## Links` reason lines added to `0024` for `0026` and `0028` state in the present tense that the convention check still reports that failure and that criterion #4 is waiting on it, while `0026` and `0028` are both in `done/` and `0024`'s own thread records #4 as met
+
+VERDICT: defect
+
+**scope: sound**
+
+**Scope check, card 0058.**
+
+The build is one commit, `9f7a556`. I read every hunk in it.
+
+**Nothing over the fence.** All nine edits are bullets appended inside the existing `**Relates to**` group under `## Links`, and nothing else in those files changed: no `## Comments`, `## Direction`, `## Decided`, no acceptance block, no measurement, no lane move, no file under `app/` or `scripts/`. Nothing in `C:\Dev\ProgressBoard` and nothing in `docs/board/README.md` is in the commit, and no card in `done/` or `discarded/` is touched. The only deletions in the commit are on `0058` itself (its own ticks).
+
+**Nothing left half done.** I matched the added bullets against the card's own table card by card: `0057`ÔåÆ`0020`; `0015`ÔåÆ`0052`; `0024`ÔåÆ`0026`,`0028`; `0032`ÔåÆ`0040`,`0041`,`0044`,`0045`,`0055`; `0033`ÔåÆ`0003`,`0017`,`0018`,`0037`; `0035`ÔåÆ`0003`,`0010`,`0017`,`0027`,`0037`; `0037`ÔåÆ`0001`,`0002`,`0003`,`0017`,`0018`,`0020`,`0024`; `0053`ÔåÆthe seven; `0056`ÔåÆ`0043`. All 33 present, none extra. Where `## Plan` allowed a short line pointing back at an enumeration (`0032`, `0037`, `0053`) that is what was written, and the enumerations survive.
+
+**The one growth is card `0059`**, new in `todo/`, declared `OUT-OF-SCOPE: 0059` in the log. Raising rather than fixing is this board's stated practice and it edits nothing the fence protects.
+
+I tried to find growth and a half-done edge on this lens and found neither. The known false sentence in `0024`'s new line is a breakage finding, not a scope one, and I am not re-reporting it here.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding.** In `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, under `## Links`, the line added by this card's build commit `9f7a556` says `0026`'s missing reason "is the single failure the convention check reports, and it is the whole of what criterion #4 is waiting on". Both halves are false in this tree. `0028`, the card that fixed `0026`, is in `docs/board/done/0028-card-0026-links-0023-without-saying-why.md`, and `0024`'s own `## What I need from you` records `board:convention` returning zero failing cards on 2026-09-20 with criterion #4 met. So a reader of `0024` is told, in the section this card wrote, that #4 is blocked by a fault that no longer exists ÔÇö and the card's own ask two screens above says the opposite. The adjacent `0028` line ("#4 closes on the run after it lands") carries the same stale future tense.
+
+This is the 2026-09-11 reviewer's finding, unchanged: nothing in the branch since has touched that line. The other eight cards' added lines I spot-checked (`0033`'s `0003`/`0017`/`0018` `**Decided:**` claim, `0056`'s `0043`) still hold.
+
+Criterion #1 requires each link to carry "one line saying why the reader is sent there"; a reason that is untrue does not meet it.
+
+UNMET: #1 the `0026` link reason added to card 0024 states criterion #4 is still blocked by the convention check, but `0028` is in `done/` and the check reports zero, so the reason the reader is given is false
+
+VERDICT: defect
+
+**acceptance**
+
+- **#1 reopened**, by the acceptance lens: the two `## Links` reason lines added to `0024` for `0026` and `0028` state in the present tense that the convention check still reports that failure and that criterion #4 is waiting on it, while `0026` and `0028` are both in `done/` and `0024`'s own thread records #4 as met
+- **#1 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the `0026` link reason added to card 0024 states criterion #4 is still blocked by the convention check, but `0028` is in `done/` and the check reports zero, so the reason the reader is given is false
+
