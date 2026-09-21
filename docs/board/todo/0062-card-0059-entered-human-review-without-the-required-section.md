@@ -71,12 +71,12 @@ this repository.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md`
+- [ ] #1 WHEN `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md`
       is searched for the heading `## What I need from you` anchored to the start of a line, THE CARD
       SHALL return exactly one hit, directly under its title. proves: none - this project's suite is
       one node script over the app and cannot read the board; the check is
       `grep -c '^## What I need from you' <path>`, run against that path rather than against a lane
-- [x] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
+- [ ] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
       is, within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
@@ -257,3 +257,61 @@ criterion and send this to `todo/` with something a builder can act on, or pass 
 `9fcf175`. It did not take, and the reason is measurable rather than a guess: those re-reviews all
 ran on 2026-09-11, one day before the capability existed, and every one of the thirteen came back
 "all N criteria ticked" a second time. That one day is the whole of what has changed.
+
+### 2026-09-21 review (v20260921025211-e8b2)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**Criterion #1 ÔÇö one anchored hit, directly under the title.** `grep -c '^## What I need from you'` on `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md` returns 1. Line 1 is the title; the heading is the next line-anchored heading, above `## Why`. No second copy. The card `0062` is now in `ai-review/`, but `0059` is still at the exact path the criterion names, so the criterion is checkable as written.
+
+**Criterion #2 ÔÇö ask, pass and fail near the top.** The first block under the heading is one bold paragraph: its first sentence gives the ask ("Pick one of two routes and write your answer at the bottom of this card"), its second names the fail ("Doing neither is the fail"). The two routes that constitute a pass are the next two lines, and an explicit **Pass** block follows.
+
+**I tried to break it.** Counted as raw lines, the routes sit on the fourth and fifth line under the title, not the third. The criterion is `proves: manual` and calls legibility a reader's judgement; a reader meets ask, routes and fail in one unbroken block. I will not fault that.
+
+**The check is not one that always passes.** The same anchored sweep over the lane names other files, so it discriminates.
+
+The two defects on this card's thread (hand-typed figures; bare card numbers in prose) are real but belong to the scope and breakage lenses. Neither criterion says anything about counts or links, so neither is disproved by them ÔÇö I will not untick a box on a finding the criterion never claimed.
+
+I could not fault either criterion.
+
+VERDICT: sound
+
+**scope: defect**
+
+**Scope finding: the build broke its own `## Plan` prohibition, and its build note claims the opposite.**
+
+Card `0062`'s `## Plan` says in bold: "Do not write a count into the section. Point at the folder instead." The section the build wrote, `## What I need from you` in `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md`, carries three hand-typed figures: "three times already", "the eleven cards `0056` lists", and "Two are still in it, `0032` and `0038`". The last is the one that rots the moment either card leaves the lane ÔÇö the exact failure the section exists to report.
+
+The build note under `## Comments` on `docs/board/ai-review/0062-card-0059-entered-human-review-without-the-required-section.md` states "No count is written into the new section." That is false against the file it describes. Build `51378cc` touched only the three files the card allows, so the fence itself held; what went over is the Plan's one explicit instruction, and the note that certified compliance.
+
+Nothing since 2026-09-11 has repaired it. The 2026-09-20 entry only moved the lane.
+
+Measured against criterion #2 as written, the section's **Pass** and **Fail** blocks sit roughly thirty lines under the title, not three.
+
+UNMET: #2 under the title come the heading and a blank line, then an ask paragraph carrying three hand-typed counts the card's own Plan forbade, while Pass and Fail do not appear until ~30 lines down
+
+VERDICT: defect
+
+**breakage: defect**
+
+**Breakage findings on card `0062`.**
+
+**1. The card asserts the suite cannot read the board, and it can.** `scripts/selftest.js`, in the block printed as `board cards fit the agent file reader (card 0055)`, walks every directory under `docs/board/` and collects every `NNNN*.md` at any depth; the block `card 0020 quotes the raw OSM feature count correctly` reads a card's text. Criterion #1's own `proves:` clause says "this project's suite is one node script over the app and cannot read the board", and `## Plan` repeats it as "`node scripts/selftest.js` cannot see this either way". Both are false, and the false clause is inside the acceptance block, so every later pass inherits it ÔÇö `0063`, `0064`, `0065` and `0066` in `ai-review/` all carry the same sentence verbatim. A reviewer already recorded this against `0063`; it was never repaired here.
+
+**2. The section this card wrote into `0059` still breaks the board's link rule and still states a falsehood.** In `docs/board/human-review/0059-five-human-review-cards-have-no-required-section-again.md`, under `## What I need from you`, the prose names `` `0032` `` and `` `0038` ``; that card's `## Links` lists `0056`, `0053`, `0011`, `0012`, `0054`, `0045`, `0052` and neither number. `docs/board/README.md`, section "Links: say what the relationship IS, never a bare card number", forbids exactly that. The same section says "the eleven cards `0056` lists have all left the lane" and then that two have not ÔÇö self-contradictory as written ÔÇö and carries the hand-typed figures `## Plan` prohibited. The build note's claims "No count is written into the new section" and "both are named in `0059`'s own `## Links` chain" are untrue against the file on disk today.
+
+UNMET: #1 its `proves:` clause states the suite cannot read the board, which `scripts/selftest.js` disproves by walking every lane, and four later cards copied the false clause
+UNMET: #2 the section it certifies contradicts itself on whether the eleven cards left the lane and names `0032` and `0038` as bare numbers absent from that card's `## Links`
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 reopened**, by the scope lens: under the title come the heading and a blank line, then an ask paragraph carrying three hand-typed counts the card's own Plan forbade, while Pass and Fail do not appear until ~30 lines down
+- **#1 reopened**, by the breakage lens: its `proves:` clause states the suite cannot read the board, which `scripts/selftest.js` disproves by walking every lane, and four later cards copied the false clause
+- **#2 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the section it certifies contradicts itself on whether the eleven cards left the lane and names `0032` and `0038` as bare numbers absent from that card's `## Links`
+
