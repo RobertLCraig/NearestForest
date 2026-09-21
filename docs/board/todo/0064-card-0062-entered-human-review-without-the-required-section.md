@@ -76,7 +76,7 @@ this repository.
       SHALL return exactly one hit, directly under its title. proves: none - this project's suite is
       one node script over the app and cannot read the board; the check is
       `grep -c '^## What I need from you' <path>`, run against that path rather than against a lane
-- [x] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
+- [ ] #2 WHEN a reader opens the card, THE CARD SHALL state the ask, what a pass is and what a fail
       is, within the first three lines under the title. proves: manual - whether an ask is legible in
       three lines is a reader's judgement, not a string match
 <!-- AC:END -->
@@ -452,3 +452,61 @@ ran on 2026-09-11, one day before the capability existed, and every one of the t
 **On this card in particular.** Its ask is which of two same-day reviews stands. A fresh pass
 settles that by re-reading the build itself, rather than by asking a person to adjudicate between
 two stale opinions, neither of which was able to untick anything when it was written.
+
+### 2026-09-21 review (v20260921031548-8a2b)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+I checked both criteria against `docs/board/human-review/0062-card-0059-entered-human-review-without-the-required-section.md`. There is no code to trace. This card only produces text on another card, so I judged that file's own sections.
+
+**Criterion #1 holds.** The anchored `grep -c '^## What I need from you'` returns 1, and the heading sits directly under the title.
+
+**Criterion #2 fails.** The criterion wants the ask, the pass and the fail in the first three lines under the title. In `## What I need from you`, the opening paragraph gives the ask ("Pick one of the two routesÔÇª") and a fail ("Doing neitherÔÇª that is the fail"). There is no **Pass** in it. The pass only appears later, as a separate bolded block after the numbered routes, a horizontal rule and the "What's wrong" and "Cause" paragraphs. The block under it opens with a second **Fail** ("Fail is unticking a criterion"), which is not the fail given at the top.
+
+Even read generously as `proves: manual`, a reader who stops at the opening block gets no pass and one of two different fails. The later review excused this because other cards passed similar sections. That is precedent, not evidence from this file. The earlier review stands, which is route 2 on this card.
+
+UNMET: #2 the opening block of 0062's section gives the ask and a fail but no pass, and the pass sits far below it, next to a second, different fail
+
+VERDICT: defect
+
+**scope: sound**
+
+**scope: sound**
+
+I checked who wrote what rather than trusting the 63-file stat. `git log` on this card's path shows three commits: `7d0fe26`, the build; `681f72e`, a `board:` move to `todo/`; and `df8935f`, the `board:` commit that moved 17 cards into `ai-review/`. Nothing in this card changed `selftest.js`, `HANDOVER.md`, `PRD.md`, `.gitignore`, `requirements.txt` or the other cards in the diff. Those belong to other cards' builds and to that batch commit, and this card's fences don't cover them.
+
+**The fences in `## Not this card` held.** `0062` is still in `human-review/`, and `7d0fe26` added one section to its top and nothing else. No acceptance box in `0062` was unticked, none of its reviewer findings was acted on, and nothing was built in `C:\Dev\ProgressBoard`.
+
+**Earlier findings, weighed again.**
+- `7d0fe26` also moved this card from `todo/` to `ai-review/`, and its `TOUCHED:` line still names the `todo/` path. That breaks the house rule that lane moves get their own commit, but it crosses no fence on this card. The card is in the lane it had to reach, so nothing is left half done.
+- Raising `0065` is declared as `OUT-OF-SCOPE` on the card's thread, and fixing `0063` in passing is what the fence forbids.
+
+**Half done:** nothing within scope. Criterion #2 may still fail, but that's for the acceptance lens.
+
+This finding disproves no criterion.
+
+VERDICT: sound
+
+**breakage: defect**
+
+Card `0064` does not stand. On the breakage lens I found three problems, and one of them disproves criterion #2.
+
+**Criterion #2 is not met.** It asks for the ask, the pass and the fail within the first three lines under the title of `docs/board/human-review/0062-card-0059-entered-human-review-without-the-required-section.md`. I read the file as it is now. The first block under `## What I need from you` gives the ask ("Pick one of the two routes belowÔÇª") and the fail ("Doing neitherÔÇª that is the fail"). It never says what a pass is. The two numbered routes come after that block, and they are options, not a pass condition. The earlier review's finding survives a re-read.
+
+**The new ask on `0064` gets the later review wrong.** Route 1 in its `## What I need from you` says "the later review standsÔÇª the card leaves this lane as finished work." But that later review graded breakage a `defect` and sent the card back. So a reader who picks route 1 is choosing an outcome that neither review supports.
+
+**A false sentence from an earlier card is still in this one.** Criterion #1 of `0064` still says the suite "cannot read the board". The block in `scripts/selftest.js` titled `board cards fit the agent file reader (card 0055)` walks every lane under `docs/board/`, so the sentence is false. The card's own `## Plan` corrects it and the acceptance line still carries it.
+
+UNMET: #2 in the 0062 card, the block under the heading gives the ask and a fail but never says what a pass is, and the two routes that follow are options, not a pass condition
+
+VERDICT: defect
+
+**acceptance**
+
+- **#2 reopened**, by the acceptance lens: the opening block of 0062's section gives the ask and a fail but no pass, and the pass sits far below it, next to a second, different fail
+- **#2 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: in the 0062 card, the block under the heading gives the ask and a fail but never says what a pass is, and the two routes that follow are options, not a pass condition
+
