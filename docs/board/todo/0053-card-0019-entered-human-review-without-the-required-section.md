@@ -81,7 +81,7 @@ this repository.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN `docs/board/human-review/0019-use-forestry-englands-own-attribution-wording.md` is
+- [ ] #1 WHEN `docs/board/human-review/0019-use-forestry-englands-own-attribution-wording.md` is
       searched for the heading `## What I need from you`, THE CARD SHALL return a hit directly under
       its title. proves: none - this project's suite is one node script over the app and cannot read
       the board; the check is `grep -rL "## What I need from you" docs/board/human-review/*.md` not
@@ -398,3 +398,64 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-21 review (v20260921013402-a3d9)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**Criterion #2 ÔÇö met.** `docs/board/done/0019-use-forestry-englands-own-attribution-wording.md` carries `## What I need from you` at line 6, directly under the title, with only the two-line frontmatter above it. Its first paragraph ("**One call, and I would take the first.** Send this card to `todo/` ÔÇª **or** write on this thread ÔÇª Doing neither is the fail") states the ask, both pass routes and the fail before any supporting detail. There is no code to cite: this is a documentation card and both criteria are `proves: none` / `proves: manual`.
+
+**Criterion #1 ÔÇö disproved, and worse than the 2026-09-10 reviewer found it.** The criterion names the file by path, `docs/board/human-review/0019-ÔÇªmd`, and names a check over `docs/board/human-review/*.md`. That path does not exist. `0019` is now in `docs/board/done/`; the `human-review/` lane holds no `0019` file at all. So the criterion's subject cannot be searched, and its named check passes because the folder it globs no longer contains the card ÔÇö exactly the vacuity recorded on the thread, now permanent rather than transient. The second hole is unchanged and still live: `grep -rL` is an unanchored substring search, so a card that merely mentions the phrase certifies as compliant; this card itself mentions it repeatedly. The fix a builder can make is the one `0059` already models ÔÇö anchor the search (`grep -c '^## What I need from you'`) and name the card by number, not by lane folder.
+
+UNMET: #1 the criterion names a path in `human-review/` where `0019` no longer sits (it is in `done/`), so its check passes on an absent subject, and the unanchored `grep -rL` it names matches prose as readily as a heading.
+
+VERDICT: defect
+
+**scope: sound**
+
+Scope findings.
+
+This card owns exactly two commits, `123663d` and `3f2273a`. Nothing else in the branch diff is its work: the `app/`, `scripts/` and `data/` churn, the attachments, and the later `docs/HANDOVER.md` rewrites all belong to other cards (`0019` itself, `0057`, `0071`, the review-pass commits).
+
+Against the fence in `## Not this card`:
+
+- `123663d` is `38 +, 0 -` on `docs/board/human-review/0019-...md`. Nothing in `0019` was unticked, no verdict or `## Comments` entry altered, no lane move. `app/index.html` and the `attribution` string built by `build_dataset` in `scripts/parse.py` are untouched by both commits, as the fence demanded. No entry-guard check was added here, which the card said belongs in ProgressBoard.
+- `3f2273a` edits `docs/HANDOVER.md`, beyond the Plan's "only `0019` changes". It exists solely to close the 2026-09-09 `breakage: defect`, is thirteen lines, is declared on the thread, and its two edits ("What's next" item 1, and the "built and not yet deployed" bullet in `## Current state`) do nothing but hold `0019` out of the deploy batch. A reviewer-ordered fix, declared, not growth.
+- Nothing left half done: all four `## Tasks` are real. The lane re-grep names eleven cards and `0056` in `todo/` carries exactly that list, so raising no new card was right.
+
+The open `acceptance` defect on criterion #1 is a fault in the criterion's proof, not scope growth, and it is already recorded for a person.
+
+I tried to find a change that quietly grew over the fence and could not.
+
+UNMET: none ÔÇö this lens disproves no criterion.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding, breakage lens.**
+
+The check criterion #1 names cannot go red, and a live case proves the failure mode is real.
+
+1. *It inspects the wrong path.* The named check is `grep -rL "## What I need from you" docs/board/human-review/*.md` not naming `0019`. `0019` now sits at `docs/board/done/0019-use-forestry-englands-own-attribution-wording.md`, so the lane glob never reads it. The check passes because its subject is absent; deleting the section from `0019` today changes nothing. The criterion's own subject line names the `human-review/` path, and so does this card's `## Why` ("One card in the lane has that fault", naming that path) ÔÇö both are now false against the tree.
+
+2. *Substring, not heading ÔÇö and it is missing a card right now.* Run both forms over the lane:
+
+   - `grep -rL` (the named check): misses `0072`, `0074`.
+   - `grep -rLE '^## What I need from you'`: misses `0070`, `0072`, `0074`.
+
+   `0070-card-0055-is-blocked-by-an-answered-card.md` is in `human-review/` with no heading, and the check this card wrote certifies it compliant. Not hypothetical ÔÇö that is silent breakage today.
+
+UNMET: #1 the named check greps a lane `0019` has left and matches prose rather than a heading, so it reports a pass whether or not the section exists ÔÇö and it already passes `0070`, which has no heading.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#1 reopened**, by the acceptance lens: the criterion names a path in `human-review/` where `0019` no longer sits (it is in `done/`), so its check passes on an absent subject, and the unanchored `grep -rL` it names matches prose as readily as a heading.
+- **#1 was named by the breakage lens and is not a ticked criterion here**, so nothing was changed: the named check greps a lane `0019` has left and matches prose rather than a heading, so it reports a pass whether or not the section exists ÔÇö and it already passes `0070`, which has no heading.
+
