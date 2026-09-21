@@ -250,3 +250,57 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-21 review (v20260921032647-4107)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+Card `0063` has since moved from `human-review/` to `todo/`, because the loop moved it and not because of this build. Both criteria were checked against the file where it now sits: `docs/board/todo/0063-card-0060-entered-human-review-without-the-required-section.md`.
+
+**Criterion #1.** The criterion's own check, `grep -c '^## What I need from you'`, returns `1`. The heading is on line three, directly under the title, and it appears nowhere else. This is still true after the lane move. The path in the criterion is out of date, but this build did not cause that and it does not change the result: the heading is present exactly once, in the right place.
+
+**Criterion #2.** Under the heading, the first bold paragraph gives the ask ("does the returned review finding need a criterion unticked, or only a correctionÔÇª"). The pass comes next (an untick with a return to the build lane, or a line on the thread saying no criterion changes), then the fail (leaving it as it stands, so the loop promotes it again). All three are in one block before the horizontal rule. The criterion is `proves: manual`, and a reader meets ask, pass and fail together at the top.
+
+The earlier breakage finding, a Plan sentence copied into `0066` that names a card missing from its Links, is not something either criterion covers. Neither criterion is disproved.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope: sound**
+
+The 63-file diff in this prompt covers the whole branch. It is not what this card built. `git log -- 'docs/board/*/0065-*'` shows one build commit for this card, `f8a150a` ("give card 0063 its `## What I need from you` section"). It changed three files, all under `docs/board/`, with 181 insertions and 6 deletions:
+- the target card `0063`;
+- this card's own thread;
+- the new follow-on card `0066`, raised in `todo/`.
+
+The other commits that touched this card only moved it between lanes (`af08e54`, `9f7cdcd`, `71896c6`, `2aa89e0`) or released it (`ec7dc04`, Rob's instruction). The changes to `HANDOVER.md`, `PRD.md`, `selftest.js`, `requirements.txt` and card `0020` come from other commits and other cards. None of them is this build going beyond its scope.
+
+I checked each item in "Not this card" against `f8a150a`:
+- **No action on reviewer findings inside `0063`:** the change to that card only adds the new section above `## Why`. Its acceptance block and thread are untouched.
+- **No unticking:** both boxes are still `[x]`.
+- **No lane move:** the build commit moves no card between lanes.
+- **No lane-entry check built:** nothing under `app/`, `scripts/` or ProgressBoard changed.
+
+Raising `0066` is outside the one named path, but the thread declares it as `OUT-OF-SCOPE: 0066` and the tasks ask for the lane re-grep that found it.
+
+Nothing is left half done within scope. The 100-line budget overrun is reported on the thread, as the task allows. The breakage reviewer's finding about the missing `0020` link and the hand-typed count is on `0066`, which is not this card's target, and I leave it to that lens.
+
+This finding disproves no criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+Card `0063`, the card this build edited, has moved lanes. It is now `docs/board/todo/0063-card-0060-entered-human-review-without-the-required-section.md`, not the `human-review/` path criterion #1 names. The grep `grep -c '^## What I need from you'` against it still returns `1`, and the heading still sits directly under the title. The ask, pass and fail are in the first paragraph. Its section has since been reworded, but it still meets #1 and #2 in substance. The lane move came from the loop after this build, not from this build, so it doesn't count against this card.
+
+The last reviewer's breakage finding was that `0066` named `0020` without linking it and carried the count `306 passed, 1 failed`. Half of that has been fixed: `0066`'s `## Links` now includes `0020`. The count is still in `0066`'s `## Plan` and its thread. `scripts/selftest.js` has grown by about 520 lines since, so the figure is almost certainly out of date now. That fault belongs to card `0066`, which is in `ai-review/` under its own review. Neither of this card's criteria covers it, so it disproves neither.
+
+I tried to break this card and couldn't. The follow-on issue is `0066`'s to fix.
+
+VERDICT: sound
+
