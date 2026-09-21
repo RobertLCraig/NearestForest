@@ -73,7 +73,7 @@ building a test that reads the docs, in a project whose suite is one node script
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] #1 WHEN `docs/HANDOVER.md` states how many self-tests pass, THE FILE SHALL state the number
+- [ ] #1 WHEN `docs/HANDOVER.md` states how many self-tests pass, THE FILE SHALL state the number
       the suite prints that day. proves: none - this project has no test that reads the docs; the
       check is `node scripts/selftest.js` read against the file
 - [x] #2 WHEN the brief tells a reader how many self-tests pass, THE FILE SHALL name the command
@@ -346,3 +346,59 @@ either reopen a criterion and send it to `todo/` with something a builder can ac
 **The bounce limit was raised to five on the same day**, so a card released here is not parked again
 the moment it reaches `todo/`. The backstop still stands; it was counting laps that the tooling had
 already rigged.
+
+### 2026-09-21 review (v20260921005819-8161)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**#1 ÔÇö met, and met in the strongest way available.** The criterion is conditional: *when* `docs/HANDOVER.md` states how many self-tests pass, the number must be the one the suite prints that day. `grep -nE "[0-9]+ (tests|passed)" docs/HANDOVER.md` returns nothing but the run-block line `# expect: all passed, 0 failed`. No self-test total is carried anywhere in the file, so there is no number that can be wrong. I ran `node scripts/selftest.js`: `319 passed, 0 failed`. The earlier 279-vs-280 finding is gone because the number it attached to is gone.
+
+**#2 ÔÇö met.** `docs/HANDOVER.md` `## Current state` names the command in place of a figure ("`node scripts/selftest.js` passes, covering geometry, sunset..."), and the run block near the end repeats `node scripts/selftest.js  # expect: all passed, 0 failed`. The two do not disagree, and neither carries a count.
+
+**I tried to break it.** The nearest surviving hand-written claim about the suite is the "deliberately red on exactly one assertion" line, which the green run contradicts ÔÇö but that is a claim about redness, not about *how many self-tests pass*, so it triggers neither criterion. It belongs to whichever card owns that line, not to this one.
+
+Both criteria trace to real text in `docs/HANDOVER.md` and both agree with the suite as it runs today.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope, judged on this card's own commit, not the branch.**
+
+The diff handed to me is the whole branch and contains card `0020`'s campsite parse work, `0015`'s `mapHint()` in `app/core.js`, and `0012`'s salted counters in `app/api/tiles.php`. None of it is this card's. `git show --stat 7a0e0de` ("count the things the brief claims to count") is four files: `docs/HANDOVER.md`, this card, and `0033`/`0034`, both declared `OUT-OF-SCOPE` in the card's own log. `git show --name-only --format= 7a0e0de | grep -E '^(app|scripts)/'` returns nothing. The 2026-09-08 scope defect was a misread of the branch and stays withdrawn.
+
+**The fences in "## Not this card" were not crossed.** The record counts `1,180` and `3,681` were checked and left; no doc-reading test was added (`scripts/selftest.js` reads `app/` and `scripts/` only); the size budget was `0031`'s and the file sits at 39,945 bytes.
+
+**Nothing is left half done today.** Task 3's owing lane counts no longer exist: commit `a0d9ff7` replaced every hand-written card count with `ls docs/board/...` (`docs/HANDOVER.md`, "Read this first" and "What's next"). The one sweep figure this card wrote that survives, "Twenty-two decisions" in `## Sibling docs`, still matches: `grep -cE '^## ' docs/DECISIONS.md` gives 22. And `docs/HANDOVER.md` now states no self-test total anywhere, so the count it was accused of carrying stale is gone rather than wrong.
+
+I found nothing over the fence and nothing unfinished.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**Finding (breakage): `docs/HANDOVER.md`, the "Read this first" block, asserts a red suite that does not exist.**
+
+The bullet beginning "**`node scripts/selftest.js` is deliberately red on exactly one assertion**, `no board card is too large for the agent file reader`" is false today:
+
+    node scripts/selftest.js  ->  319 passed, 0 failed
+    All self-tests passed.
+
+No assertion is red, and no test by that name fails. Its stated cause is gone too: `docs/board/done/0020-campsites-tab-from-openstreetmap.md` is 32,333 bytes, well under the 200 KB reader limit it is said to exceed, and it is in `done/`, not awaiting Rob's pruning.
+
+It also contradicts the same file's own run block, which says `node scripts/selftest.js  # expect: all passed, 0 failed`, and the "Current state" bullet, which says the suite "passes". A reader who trusts the first block will treat a genuinely red run as expected and ship on it ÔÇö the precise failure this card exists to remove, in the same file, in a sentence that likewise carries the command beside it.
+
+The count itself is clean: the hand-typed number has been removed, and `## Current state` now names the command with no figure.
+
+UNMET: #1 the brief's "Read this first" block still tells a reader the suite is red on one assertion when `node scripts/selftest.js` prints 319 passed, 0 failed, so what the file says about that day's run is wrong.
+
+VERDICT: defect
+
+**acceptance**
+
+- **#1 reopened**, by the breakage lens: the brief's "Read this first" block still tells a reader the suite is red on one assertion when `node scripts/selftest.js` prints 319 passed, 0 failed, so what the file says about that day's run is wrong.
+
