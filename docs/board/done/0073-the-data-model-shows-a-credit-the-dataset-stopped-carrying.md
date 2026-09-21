@@ -193,3 +193,62 @@ ran on 2026-09-11, one day before the capability existed, and every one of the t
 is an infrastructure failure, not a finding. There is nothing here for a person to answer and
 nothing for a builder to act on, because this card has never actually had an adversarial pass. That
 pass is the whole of what it is owed.
+
+### 2026-09-21 review (v20260921041345-a58a)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break both criteria and could not.
+
+**#1: met.** The `sites.json` example in `docs/DATA-MODEL.md` holds exactly the `attribution` string and the `generated_at` value that `app/data/sites.json` carries. I checked this myself rather than relying on the build note. I pulled the fenced JSON block after the `data/sites.json` heading and looked for each shipped value, JSON-encoded, inside it. Both were there, byte for byte, ┬® sign included. The `Ôö¼┬«` in the diff is only how the terminal displayed that sign.
+
+**#2: met.** The check is the `the data model example matches the shipped dataset header` assertion in `scripts/selftest.js`, in the card 0036 block:
+- It reads the example block and pulls each key out as a JSON string literal.
+- It compares `attribution` and `generated_at` separately against the parsed `app/data/sites.json`. Any value that differs is named, with what the example says against what the file holds.
+- A missing key or a missing fenced block is reported as a failure too, so a gap cannot pass.
+- The fence matcher accepts both CRLF and LF line endings, so on this Windows checkout it cannot fail for the wrong reason.
+
+When I ran the suite this assertion passed.
+
+**One limit.** I did not re-do the builder's red-proof (breaking one character of the credit and watching the run fail), because I cannot edit files in this review. But the comparison is strict equality on each value separately, so any change to either value fails it and names it.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope review of card 0073 (the data model shows a credit the dataset stopped carrying)**
+
+I looked for work outside the card's fence and for anything left half done, and found neither.
+
+**What this card changed.** It touched two files, and both are named in the Plan:
+- **`scripts/selftest.js`.** One new check, `the data model example matches the shipped dataset header`. It sits in the card 0036 block, as the Plan asks. It compares `attribution` and `generated_at` in the example with the parsed `DATA`, and names each value that differs.
+- **`docs/DATA-MODEL.md`.** The example now holds the shipped credit and the shipped date. It also gained one new bullet saying both values are pinned by that check. The Plan asked the builder to say so on the card, so this bullet is a small addition, not scope growth.
+
+**The "Not this card" fence holds.** `scripts/parse.py`, the footer in `app/index.html` and `app/data/sites.json` are unchanged by this card. The `counts` lines in the example are untouched, and the pipeline was not re-run.
+
+**Nothing is half done.** The date is pinned knowingly, which is one of the two options the Plan allowed, and the card says why.
+
+**The rest of the diff is other cards' work.** HANDOVER, PRD, `requirements.txt`, `.gitignore` and the lane moves all belong to other cards merged on this branch. This card's build note does not claim any of them.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this and couldn't.
+
+- **The check in `scripts/selftest.js`** (`the data model example matches the shipped dataset header`) takes the first fenced ```` ```json ```` block after the `` `data/sites.json` `` heading. It reads `attribution` and `generated_at` as JSON string literals and compares both exactly against the parsed `app/data/sites.json`. If either key is missing, or no block is found, it fails and says so. It can't pass on an empty block, and it lists each value that differs on its own.
+- **The CRLF edge case is handled** by `\r?\n`. If the heading ever disappears, `indexOf` returns -1 and the slice finds no fence, so the check fails loudly rather than passing.
+- **No stale copies are left.** The old one-line credit and `"2026-08-29"` appear nowhere outside `docs/board/`. The only other `attribution` and `generated_at` literals in `docs/DATA-MODEL.md` belong to the campsites example. That is a different file under a different licence, and this card leaves it out of scope.
+- **Nothing in the app reads the doc**, so no caller could break. `scripts/parse.py`, the footer and the shipped file are untouched.
+- **The one new rule is written down.** Re-running the pipeline now means updating the doc's date. That rule is stated in the doc's own bullet under the example and in the comment above the check. The check enforces it, so nothing drifts silently.
+
+No criterion is disproved.
+
+VERDICT: sound
+
