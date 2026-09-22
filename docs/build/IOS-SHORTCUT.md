@@ -40,6 +40,11 @@ say it out loud once to check it dictates cleanly).
 Step 5 shows each entry using its `label` field automatically, which reads as
 `Friston Forest - 10.8 miles (BN20 0AT)`.
 
+Where a car park had no published name, the app names it after the nearest forest, and the
+label says so: `Car park near Friston Forest (our name for it, not a published one) - 10.8
+miles`. Each result also carries `name_is_derived` (`true` or `false`) so a Shortcut that
+builds its own text from `name` can still tell an invented name from an official one.
+
 ### Asking which map app each time
 
 To match the PWA's behaviour, replace steps 6 and 7 with:
@@ -64,7 +69,8 @@ CarPlay surfaces shortcuts through the Shortcuts CarPlay app, so pin it there to
 ## Useful variations
 
 - **Car parks instead of named forests:** append `&source=carpark` in step 2. Add `&source=all` to
-  mix both. Bear in mind 170 car parks are unnamed, so the list reads poorly aloud.
+  mix both. Most car parks the dataset left unnamed now read as "Car park near <forest>",
+  marked as our name; the few with no forest within five miles stay "Unnamed car park".
 - **More or fewer options:** change `&n=5`. The endpoint clamps to 25.
 - **Show opening times:** the `access` key on each result is `always`, `dusk`, `hours` or `unknown`,
   and `opening` carries the full published text if you want Siri to read it.

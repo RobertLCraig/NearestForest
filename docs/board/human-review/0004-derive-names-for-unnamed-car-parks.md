@@ -53,8 +53,8 @@ records are single points, not polygons, so nearest-neighbour is the available a
 <!-- AC:BEGIN -->
 - [x] #1 WHEN a car park has no usable upstream name, THE APP SHALL display a derived name naming
       the nearest forest, for example "Car park near Friston Forest".
-- [ ] #2 WHEN a name is derived rather than published, THE APP SHALL mark it visually so it is not
-      mistaken for an official name.
+- [x] #2 WHEN a name is derived rather than published, THE APP SHALL mark it visually so it is not
+      mistaken for an official name. proves: `the Shortcut endpoint says a derived name is ours`
 - [x] #3 IF the nearest forest is further away than a sane threshold, THEN THE APP SHALL keep the
       generic label rather than claiming a misleading association.
 <!-- AC:END -->
@@ -261,3 +261,45 @@ VERDICT: defect
 
 
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 2 of 3 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-22** Rob accepted the reviewer's finding: the iPhone Shortcut is a surface criterion #2
+covers, so the card's first ask is answered and closed. **#2 was already unticked** when this
+session opened the card; the 2026-09-20 acceptance lens had reopened it, so there was nothing to
+untick, only something to build.
+
+**What was built.** `app/api/nearest.php` now emits `name_is_derived` as a boolean on every result,
+and when it is true the `label` the Shortcut speaks reads `Car park near Friston Forest (our name
+for it, not a published one) - 10.8 miles`. The wording is the detail sheet's, copied rather than
+rephrased, so the app says one thing about a derived name wherever it says anything. A published
+name is untouched: `Abbot's Wood Car Park - 13.2 miles`, `Friston Forest - 10.8 miles (BN20 0AT)`.
+`docs/build/IOS-SHORTCUT.md` describes the field and the label form under step 5, and its "170 car
+parks are unnamed" bullet, which this card had made false, now describes what the label says
+instead of quoting a count that would go stale again.
+
+**The test, and its red run.** `the Shortcut endpoint says a derived name is ours` runs the real
+endpoint under php-cli via a two-line harness, `scripts/selftest-nearest.php`, which fills `$_GET`
+from an environment variable and requires `nearest.php`. It asks for the 25 car parks nearest
+Brighton and checks every result against the dataset record at the same coordinates: the flag must
+be a boolean equal to the record's, a derived label must carry the wording, a published label must
+not, and at least one derived row must be in the answer or the test failed to exercise anything. It
+is deliberately not a grep of the PHP source, because a `name_is_derived` in a comment would satisfy
+a grep and mark nothing. Against the unfixed endpoint it went red:
+
+    FAIL  the Shortcut endpoint says a derived name is ours — Car park near Friston Forest: name_is_derived is undefined, not a boolean | Abbot's Wood Car Park: name_is_derived is undefined, not a boolean | Butchershole Car Park: name_is_derived is undefined, not a boolean
+    318 passed, 1 failed
+
+With the fix, `node scripts/selftest.js` ends `319 passed, 0 failed` / `All self-tests passed.`
+The baseline on this tree, at the same commit as `main`, was 318, not the 319 the handover
+conversation quoted.
+
+**The harness is a file for a measured reason.** On this machine `php` is a `.cmd` shim, and node's
+`spawnSync` refuses a batch file without a shell (`EINVAL`); the first red run failed with `spawnSync
+php ENOENT`, which is red for the wrong reason and would have been a check nobody could trust. So the
+test spawns one plain command string through a shell and passes the query in `NF_QUERY`, with no
+inline PHP to quote for cmd.exe. A missing php is a FAIL with the reason, as the python-backed checks
+already behave, not a skip.
+
+**Not done.** #1 and #3 still carry no `proves:`; only #2 was in question and only #2 was touched.
+The one 2026-09-20 review finding still open that needs no person, the nearest-forest reduce in
+`selftest.js` that includes Scottish forests where `parse.py` uses English ones only, is not this
+comment's work either; the map-label truncation Rob answered on 2026-09-20 as acceptable in use.
