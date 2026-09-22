@@ -3744,6 +3744,104 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
        /Thunderforest/.test(hint()), `"${hint()}"`);
   }
 
+  /* Card 0009 #4, reopened by the 2026-09-20 review. `readKey` in app/api/tiles.php
+     used to accept a `tiles.key` at the repository root as a fallback "in case the
+     docroot is ever the repo root", which made a key inside this public repository a
+     supported, working configuration; `.gitignore` was the only thing between that and
+     a commit. `the key is read from outside the web root` above is a regex over the
+     source and was green the whole time, because the outside-the-root path was also
+     there. So this block runs the real proxy: a throwaway checkout is laid out as the
+     server lays it out (<dir>/repo/app/api/tiles.php with the docroot at repo/app), a
+     dummy key is planted at repo/tiles.key and nothing is put at <dir>/tiles.key, and
+     the proxy is asked for a tile over PHP's built-in server. The only acceptable answer
+     is the 503 it gives when no key exists at all.
+
+     https_proxy is pointed at a port that answers nothing, so a proxy that DOES take the
+     planted key fails on the spot with a 502 rather than sending a made-up key to
+     Thunderforest. THUNDERFOREST_KEY is stripped from the environment so a developer's
+     own key cannot turn the check green. The fixture is deleted in a finally, and it is
+     never inside this checkout, where `.gitignore` refuses *.key anyway. */
+  console.log('\n--- the tile key is never read from inside the repository (card 0009) ---');
+  {
+    const { spawn, spawnSync } = require('child_process');
+    const http = require('http');
+    const net = require('net');
+    const osmod = require('os');
+    const NAME = 'no path inside the repository is a key location (card 0009)';
+    const NAME2 = 'a planted repo-root key gets the same refusal as no key at all (card 0009)';
+
+    // Resolve the real binary: `php` on PATH here is a .cmd shim, and a server spawned
+    // through a shell cannot be killed through it on Windows.
+    // One command string, no spaces in the -r code: the shell gets nothing to quote.
+    const which = spawnSync('php -r echo(PHP_BINARY);', { encoding: 'utf8', shell: true });
+    const PHP = (which.stdout || '').trim();
+    if (!PHP || which.status !== 0) {
+      ok(NAME, false, 'php not runnable: ' + ((which.error && which.error.message) || (which.stderr || '').trim() || 'no output'));
+      ok(NAME2, false, 'php not runnable');
+    } else {
+      const fx = fs.mkdtempSync(path.join(osmod.tmpdir(), 'nf-0009-'));
+      const docroot = path.join(fx, 'repo', 'app');
+      fs.mkdirSync(path.join(docroot, 'api'), { recursive: true });
+      fs.copyFileSync(path.join(ROOT, 'app', 'api', 'tiles.php'), path.join(docroot, 'api', 'tiles.php'));
+      const plantedKey = path.join(fx, 'repo', 'tiles.key');
+      fs.writeFileSync(plantedKey, 'planted-by-selftest-not-a-real-key\n');
+
+      const env = Object.assign({}, process.env, {
+        https_proxy: 'http://127.0.0.1:9', HTTPS_PROXY: 'http://127.0.0.1:9',
+      });
+      delete env.THUNDERFOREST_KEY;
+
+      const port = await new Promise((res, rej) => {
+        const s = net.createServer();
+        s.once('error', rej);
+        s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => res(p)); });
+      });
+      const get = (p) => new Promise((res, rej) => {
+        const r = http.get({ host: '127.0.0.1', port, path: p, timeout: 15000 }, (resp) => {
+          let body = '';
+          resp.setEncoding('utf8');
+          resp.on('data', (c) => { body += c; });
+          resp.on('end', () => res({ status: resp.statusCode, body }));
+        });
+        r.on('timeout', () => r.destroy(new Error('timed out')));
+        r.on('error', rej);
+      });
+
+      const server = spawn(PHP, ['-S', '127.0.0.1:' + port, '-t', docroot], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+      let serverErr = '';
+      server.stderr.on('data', (c) => { serverErr += c; });
+      try {
+        // Wait for the listener rather than sleeping a fixed time.
+        let up = false;
+        for (let i = 0; i < 100 && !up; i++) {
+          try { await get('/api/tiles.php'); up = true; }
+          catch (e) { await new Promise((r) => setTimeout(r, 100)); }
+        }
+        if (!up) {
+          ok(NAME, false, 'php -S never answered on 127.0.0.1:' + port + ' ' + serverErr.trim());
+          ok(NAME2, false, 'php -S never answered');
+        } else {
+          const want = 'no API key file found';
+          const withPlanted = await get('/api/tiles.php?z=0&x=0&y=0');
+          ok(NAME,
+             withPlanted.status === 503 && withPlanted.body.includes(want),
+             `got ${withPlanted.status} "${withPlanted.body.slice(0, 120)}", wanted 503 "${want}"`);
+
+          // Fail closed means indistinguishable from unconfigured: same status, same body.
+          fs.unlinkSync(plantedKey);
+          const withNone = await get('/api/tiles.php?z=0&x=0&y=0');
+          ok(NAME2,
+             withNone.status === withPlanted.status && withNone.body === withPlanted.body,
+             `planted: ${withPlanted.status} "${withPlanted.body.slice(0, 80)}"; none: ${withNone.status} "${withNone.body.slice(0, 80)}"`);
+        }
+      } finally {
+        server.kill();
+        await new Promise((r) => server.once('exit', r));
+        fs.rmSync(fx, { recursive: true, force: true });
+      }
+    }
+  }
+
   console.log(`\n${pass} passed, ${failures.length} failed`);
   if (failures.length) {
     console.log('\nFAILURES:');

@@ -45,26 +45,29 @@ function fail(int $status, string $message): void
 
 /* The key lives above the web root, so Apache cannot serve it even if this
    script is removed or misconfigured. Resolved relative to this file rather
-   than hard-coded, but the layout is asserted so a move fails loudly. */
+   than hard-coded, but the layout is asserted so a move fails loudly.
+
+   Exactly one file is consulted: `tiles.key` in the domain directory, one level
+   above the checkout (api -> app -> repo -> <domain dir>). There used to be a
+   second candidate at the repository root, "in case the docroot is ever the repo
+   root", and the 2026-09-20 review read it for what it was: a key inside a public
+   repository was a supported, working configuration, and the only thing between
+   that and a commit was `.gitignore`. A `tiles.key` anywhere under the checkout is
+   now ignored and the layer reports itself unconfigured, exactly as if no key
+   existed. Local development sets THUNDERFOREST_KEY in the environment instead,
+   which never touches the tree. `no path inside the repository is a key location
+   (card 0009)` in scripts/selftest.js plants one at the repo root and checks. */
 function readKey(): string
 {
-    $candidates = [
-        getenv('THUNDERFOREST_KEY') ?: null,
-        __DIR__ . '/../../../tiles.key',   // api -> app -> repo -> <domain dir>
-        __DIR__ . '/../../tiles.key',      // if the docroot is ever the repo root
-    ];
-    foreach ($candidates as $c) {
-        if ($c === null) {
-            continue;
-        }
-        if (!str_contains($c, '/')) {      // an env var holds the key itself
-            return trim($c);
-        }
-        if (is_readable($c)) {
-            $k = trim((string) file_get_contents($c));
-            if ($k !== '') {
-                return $k;
-            }
+    $env = trim((string) getenv('THUNDERFOREST_KEY'));
+    if ($env !== '') {
+        return $env;
+    }
+    $file = __DIR__ . '/../../../tiles.key';
+    if (is_readable($file)) {
+        $k = trim((string) file_get_contents($file));
+        if ($k !== '') {
+            return $k;
         }
     }
     fail(503, 'Tile layer is not configured on this server: no API key file found. '
