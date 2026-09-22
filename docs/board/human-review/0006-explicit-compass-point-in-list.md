@@ -55,8 +55,9 @@ directions. Not the map, which is card `0007`. Not changing how the bearing itse
       point as text (N, NE, E, SE, S, SW, W, NW) next to the arrow, not only as a tooltip.
 - [x] #2 WHEN the detail sheet is opened for a site, THE APP SHALL phrase the bearing as a bearing
       from the user, for example "10.8 miles NE of you".
-- [ ] #3 WHEN a screen reader reads a row, THE APP SHALL announce the spoken point name
+- [x] #3 WHEN a screen reader reads a row, THE APP SHALL announce the spoken point name
       ("north-east") rather than the abbreviation, which VoiceOver pronounces as "nee".
+      proves: `a screen reader gets the spoken point name as real text, not the letters`
 - [x] #4 WHEN the app or its data changes, THE APP SHALL ship a bumped service-worker CACHE key so
       installed copies do not keep the old markup.
 <!-- AC:END -->
@@ -67,6 +68,9 @@ directions. Not the map, which is card `0007`. Not changing how the bearing itse
 - [x] Style the letters at mileage weight rather than the dimmed unit weight
 - [x] Self-test that `POINTS` and `POINT_NAMES` stay aligned, so the two cannot drift apart
 - [x] Bump `CACHE` in `app/sw.js`
+- [x] 2026-09-22: move the spoken name off the `aria-label` and into a `.visually-hidden` span,
+      hide the letters from readers, add the clip class to `app.css`, bump `CACHE` again
+- [x] 2026-09-22: self-test that renders the distance column and reads it as a reader would
 
 ## Direction
 **2026-08-08** Shipped and deployed. Worth a sceptical read on one point in review: the letters
@@ -218,3 +222,40 @@ VERDICT: defect
 
 
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 3 of 4 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-22** Rob accepted the reviewer's finding: the spoken point name was an `aria-label` on
+a role-less `<div class="row__arrow">`, browsers discard a name on `generic`, so VoiceOver read
+the visible `NE` as "nee". Criterion #3 was unticked on that ruling, then built, tested and
+re-ticked in this entry with the test named.
+
+**What was built.** In `render()` in `app/app.js` the `aria-label` is gone. The arrow glyph and
+the letters are both `aria-hidden="true"` and a third span, `<span class="visually-hidden">`,
+carries `north-east of you` as a real text node, which every screen reader gets without any role
+being honoured. `.visually-hidden` is added to `app/app.css` as the 1px clip pattern
+(`position:absolute; width:1px; height:1px; clip:rect(0 0 0 0); clip-path:inset(50%)`), so the
+words take no room and the distance column stays at 84px; the letters look exactly as before. The
+comment over `POINT_NAMES` in `app/core.js`, which still said "for aria-label only", now says what
+the markup does. `BUILD` and `CACHE` bumped to `v29-2026-09-22` per #4.
+
+**The check, and proof it can fail.** `scripts/selftest.js` now lifts the distance branch of the
+row builder out of `app.js` source and runs it (the pattern the campsite-row checks use), drops
+every `aria-hidden` subtree, strips the tags, and asserts the remaining text says `north-east of
+you` and never a bare `NE`. An `aria-label` on the div does not satisfy it, on purpose. A second
+check pins the `.visually-hidden` rule so it cannot be deleted or swapped for `display:none`,
+which would take the words out of the tree. Red run, with `app/app.js` and `app/app.css` checked
+out to HEAD and the new test in place:
+
+    FAIL  a screen reader gets the spoken point name as real text, not the letters — the name is an aria-label on the row__arrow div, which browsers discard: <div class="row__arrow" aria-label="north-east of you"><span class="row__glyph" aria-hidden="true">↗</span><span class="row__point">NE</span></div>
+    FAIL  the visually-hidden class clips the spoken name off screen without hiding it from readers — .visually-hidden is not defined in app.css
+    318 passed, 2 failed
+
+Fix restored: `320 passed, 0 failed`, `All self-tests passed.` Baseline on this worktree before
+the change was 318 passed, 0 failed, not the 319 the brief quoted; nothing was removed to get
+there. The two array-alignment checks above it were kept, since they test a different thing and
+did not contradict the new one.
+
+**Not done, deliberately.** The reviewer also noted the distance column sits outside
+`<button class="row__main">`, so a user tabbing button to button never lands on it and hears the
+bearing only in browse mode (VoiceOver swipe). Moving the words inside the button would change the
+button's accessible name for every row and is a different decision from the one this card asked
+for; it is noted here rather than done.

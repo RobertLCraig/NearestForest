@@ -69,6 +69,48 @@ ok('every compass index has an arrow and a name',
      return NF.ARROWS[i] && NF.POINTS[i] && NF.POINT_NAMES[i];
    }));
 
+// Card 0006 #3. The two checks above prove POINTS and POINT_NAMES line up as arrays and
+// nothing else: for a year the spoken name was an aria-label on a role-less div, which
+// browsers discard, so VoiceOver read "NE" as "nee" and the suite stayed green because
+// no assertion ever rendered a row. This one lifts the distance branch of the row builder
+// out of app.js source and runs it, the way the campsite branch is lifted further down,
+// then reads the markup the way an accessibility tree would: aria-hidden subtrees are
+// dropped, tags are stripped, and what is left is what a reader speaks. It must find the
+// words as a real text node. An aria-label on the div does not count, on purpose, because
+// that is the exact thing that was wrong.
+{
+  const appjs006 = fs.readFileSync(path.join(ROOT, 'app', 'app.js'), 'utf8');
+  const chunk006 = appjs006.match(/var idx = NF\.compassIdx\(s\._bear\);[\s\S]*?'<\/div>';\r?\n/);
+  const distBranch006 = chunk006
+    ? new Function('s', 'NF', 'esc', 'var dist;\n' + chunk006[0] + 'return dist;')
+    : null;
+  const row006 = distBranch006 ? distBranch006({ _mi: 10.8, _bear: 45 }, NF, x => String(x)) : '';
+  const arrow006 = (row006.match(/<div class="row__arrow"[^>]*>[\s\S]*?<\/div>/) || [''])[0];
+  const spoken006 = arrow006
+    .replace(/<[a-z]+[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/[a-z]+>/g, '')
+    .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  ok('a screen reader gets the spoken point name as real text, not the letters',
+     !!distBranch006 &&
+     /^<div class="row__arrow">/.test(arrow006) &&
+     /north-east of you/.test(spoken006) &&
+     !/\bNE\b/.test(spoken006) &&
+     /<span class="row__point" aria-hidden="true">NE<\/span>/.test(row006),
+     !distBranch006 ? 'the distance branch could not be lifted out of app.js'
+       : !arrow006 ? 'no row__arrow in the rendered distance column: ' + row006
+       : /aria-label/.test(arrow006.split('>')[0]) ? 'the name is an aria-label on the row__arrow div, which browsers discard: ' + arrow006
+       : 'a reader would speak "' + spoken006 + '" from ' + arrow006);
+
+  // The words must be there for a reader and nowhere for an eye, or they widen the distance
+  // column the card already had to defend. A class that is not defined, or that hides with
+  // display:none, fails both halves in different ways, so pin the clip pattern itself.
+  const css006 = fs.readFileSync(path.join(ROOT, 'app', 'app.css'), 'utf8');
+  const vh006 = (css006.match(/\.visually-hidden\s*\{[^}]*\}/) || [''])[0];
+  ok('the visually-hidden class clips the spoken name off screen without hiding it from readers',
+     /position:\s*absolute/.test(vh006) && /width:\s*1px/.test(vh006) &&
+     /clip(-path)?:/.test(vh006) && !/display:\s*none|visibility:\s*hidden/.test(vh006),
+     vh006 ? 'got ' + vh006 : '.visually-hidden is not defined in app.css');
+}
+
 console.log('');
 console.log('--- web mercator projection (map view) ---');
 ok('equator projects to the vertical middle', Math.abs(NF.projY(0) - 0.5) < 1e-12);

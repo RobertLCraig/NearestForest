@@ -13,11 +13,13 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v28-2026-09-10';
+  var BUILD = 'v29-2026-09-22';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  /* Spoken forms, for aria-label only: VoiceOver reads "NE" as "nee". */
+  /* Spoken forms, rendered as visually-hidden text on each row because VoiceOver
+     reads "NE" as "nee". Never an aria-label on a div: a role-less div cannot be
+     named and browsers drop the label. */
   var POINT_NAMES = ['north', 'north-east', 'east', 'south-east',
                      'south', 'south-west', 'west', 'north-west'];
 
