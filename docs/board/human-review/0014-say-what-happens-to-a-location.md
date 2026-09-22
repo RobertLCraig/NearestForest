@@ -61,7 +61,8 @@ paragraph in the footer is read and a linked page is not.
 <!-- AC:BEGIN -->
 - [x] #1 WHEN the list is scrolled to the bottom, THE APP SHALL state that the location stays on
       the device, that nothing is sent anywhere, and what the tile layer changes.
-- [ ] #2 WHEN the statement is checked against the code, THE APP SHALL be doing what it says.
+- [x] #2 WHEN the statement is checked against the code, THE APP SHALL be doing what it says.
+      proves: `the footer says a map app gets the site you picked and not your position, and navUrl agrees`
 <!-- AC:END -->
 
 ## Tasks
@@ -301,3 +302,59 @@ VERDICT: defect
 
 
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 3 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 1 of 2 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-22** **Decided:** Rob accepted both of the reviewer's findings. `#2` stands unticked
+(the 2026-09-21 reviewer's `UNMET: #2` line had already cleared the box, so there was nothing left
+for a person to untick; this entry records that the call was made, not that the box was touched
+again). The footer said the Tiles layer was the one exception and the guard pinned one phrase of
+the paragraph. Both are this card's to fix and both are fixed below.
+
+**What the code actually sends.** `navUrl` in `app/core.js` takes `(app, site)` and puts
+`site.lat, site.lng` in the URL, identically for Apple, Google and Waze. The user's position is
+never in it. What a top-level navigation does hand the destination is the chosen site and, as any
+link does, the visitor's connection address. So the footer says "the site you picked, and your
+internet address as any link does. Your own position is not passed to it", and says nothing wider.
+
+**Footer** (`app/index.html`, the paragraph in `<footer class="foot">`): "Your location stays on
+this phone" is kept, the sentence "nothing you do is sent anywhere. The one exception is the
+optional Tiles layer" is replaced by "the app itself sends nothing anywhere. Two things do leave
+it, both only when you choose", followed by the Tiles sentence unchanged in substance and a new
+sentence naming Apple Maps, Google Maps and Waze as the second exception.
+
+**Guard** (`scripts/selftest.js`, the hardening block, beside the one regex that used to be the
+whole check). Four checks added, all scoped to the one `<p>` that carries the bold sentence:
+- `the footer says the app itself sends nothing`
+- `the footer names the Tiles layer as an exception`
+- `the footer names every navigation app navUrl builds a URL for`: the app list is read off the
+  `app === '...'` branches in `navUrl`'s source, each mapped to its `data-app` button label in
+  `index.html`, and every label must appear in the paragraph. Nothing is typed into the test.
+- `the footer says a map app gets the site you picked and not your position, and navUrl agrees`:
+  for every derived app the built URL holds exactly one coordinate pair and it is the site's,
+  `navUrl` takes two arguments, and the two footer sentences are present.
+
+**Red-proof, measured and not reasoned about.** Each break was made to the working tree, the
+suite run, and the file restored from the original bytes before the next. The runner prints a
+dash between a failing name and its detail; it is written as a hyphen here:
+- Tiles sentence deleted: `FAIL  the footer names the Tiles layer as an exception`, `321 passed,
+  1 failed`.
+- Map-apps sentence deleted: `FAIL  the footer names every navigation app navUrl builds a URL
+  for - navUrl builds for [apple, google, waze]; footer is missing [Apple Maps, Google Maps,
+  Waze]` and `FAIL  the footer says a map app gets the site you picked and not your position,
+  and navUrl agrees - the footer sentence about the hand-off is missing or changed`, `320
+  passed, 2 failed`.
+- Only `Waze` removed from the footer: `FAIL  the footer names every navigation app navUrl
+  builds a URL for - navUrl builds for [apple, google, waze]; footer is missing [Waze]`,
+  `321 passed, 1 failed`.
+- "the app itself sends nothing anywhere" deleted: `FAIL  the footer says the app itself sends
+  nothing`, `321 passed, 1 failed`.
+- A fourth `bing` branch added to `navUrl` in `core.js`, footer untouched: `FAIL  the footer
+  names every navigation app navUrl builds a URL for - ... footer is missing [bing]` and `FAIL
+  the footer says a map app gets the site you picked ... - navUrl carries more than the site
+  for [bing]` (plus the pre-existing `unknown map app returns null`), `319 passed, 3 failed`.
+Restored state: `322 passed, 0 failed`, `All self-tests passed.` (318 before this card).
+
+`#2` is ticked again on the strength of the last check named above, which is the one that
+compares the statement with what `navUrl` builds. No cache key was bumped: `app/sw.js` is
+unchanged and no test asked for it; the deploy script's cache-key guard is where that is decided.
+Not done here: reading the new paragraph on the phone, which is a person's check and is what the
+third task already recorded for the earlier wording.
