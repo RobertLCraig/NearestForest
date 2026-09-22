@@ -14,11 +14,13 @@ dataset of Scottish forest car parks exists. Map complete (bundled outline plus 
 project's recurring defect**, not a closed chapter: four were fixed on 2026-09-10 and a reviewer
 found two more the same day, both in builds whose notes claimed a red-proof that had not been done.
 A green run means more than it did. Assume there are others and keep looking.
-**`node scripts/selftest.js` is deliberately red on exactly one assertion**, `no board card is too
-large for the agent file reader`: card `0020` is over the 200 KB reader limit, and only Rob may
-prune a comment thread. **Read the size off the run, not off this line** - a hand-typed figure here
-was wrong when it was written and a reviewer caught it on card `0068`. Card `0055` carries the ask.
-Do not exempt the card to get green.
+**`node scripts/selftest.js` is fully green again** since card `0020`'s thread was pruned (cards
+`0020` and `0055` are both in `done/`). Until 2026-09-22 this paragraph said the suite was
+deliberately red on the card-size assertion; three reviewers in one day reported that as stale.
+**Read the count off the run, never off this file.** Note that one assertion, the card 0020 raw OSM
+feature count, only runs when the gitignored `data/raw/` cache is present, so a worktree or fresh
+clone counts one fewer than the main checkout. That is a check that vanishes silently and nobody
+has carded it yet.
 **This file names no card lists and no card counts.** Five cards in a row wrote one here by hand and
 every one was stale within a day, so the rule now is: **list the folder, do not read a number.**
 `ls docs/board/todo` and `ls docs/board/in-progress` are what an agent can pick up;
@@ -29,9 +31,9 @@ because two different cards carried that number. `0022` now means only the foote
 The last unevidenced PRD criterion is card **0001** check 5.
 **A worktree can be rendered**: serve it yourself with `php -S`, since Herd only serves the main
 checkout. See card 0015's second comment entry and card 0016's.
-_Last updated: 2026-09-10. What each card did is on its own comment thread under `docs/board/`, and
-the commit log is the narrative; what outlived a build is in the sections below, in DATA-MODEL and
-in DECISIONS. Do not append a run report here._
+_Last updated: 2026-09-22. What each card did is on its own comment thread under `docs/board/`, and
+the commit log is the narrative. Trap: a loop review entry written during a usage limit reads as a
+finding and is not one; card 0004's thread shows the shape. Do not append a run report here._
 
 ## Goal & success criteria
 
