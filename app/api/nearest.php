@@ -93,11 +93,17 @@ $out = array_map(static function (array $s): array {
     $ll = $s['lat'] . ',' . $s['lng'];
     $summary = $s['opening_summary'] ?? null;
     $access = is_array($summary) ? ($summary['access'] ?? null) : null;
+    // A derived car park name ("Car park near Friston Forest") reads exactly like a published
+    // one, and the Shortcut speaks `label` straight to the driver, so the label has to say the
+    // name is ours. Same wording as the detail sheet in app.js, so the app says one thing.
+    $derived = !empty($s['name_is_derived']);
 
     return [
         'name'      => $s['name'],
+        'name_is_derived' => $derived,
         'miles'     => $s['miles'],
-        'label'     => $s['name'] . ' - ' . $s['miles'] . ' miles'
+        'label'     => $s['name'] . ($derived ? ' (our name for it, not a published one)' : '')
+                       . ' - ' . $s['miles'] . ' miles'
                        . (!empty($s['postcode_satnav']) ? ' (' . $s['postcode_satnav'] . ')' : ''),
         'postcode'  => $s['postcode_satnav'] ?? null,
         'lat'       => $s['lat'],

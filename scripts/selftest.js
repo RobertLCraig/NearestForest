@@ -345,6 +345,51 @@ console.log('\n--- derived car park names ---');
      /sheet__name--derived/.test(appjs004) && /\.sheet__name--derived/.test(appcss));
   ok('the detail sheet says the name is ours', /not a published one/.test(appjs004));
   ok('the map marks a derived label', /name_is_derived \? 'italic/.test(mapjs));
+
+  // The fourth surface, found by the 2026-09-07 and 2026-09-20 reviews: the iPhone Shortcut.
+  // api/nearest.php shapes its own response and the Shortcut reads `label` straight out to
+  // the driver (docs/build/IOS-SHORTCUT.md step 5), so Siri said "Car park near Friston
+  // Forest" as though Forestry England had published it. Before this card that field read
+  // "Unnamed car park", which marked itself. Run the real endpoint under php-cli rather than
+  // grep the source: a `name_is_derived` in a comment would satisfy a grep and mark nothing.
+  // Brighton is the fixture because its nearest car park is the derived one the card was
+  // written about, so a response with no derived row in it is itself a failure. A missing
+  // php is a failure too, with the reason, matching how the python-backed checks behave.
+  // On Windows `php` is a .cmd shim, which node will only spawn through a shell, so this
+  // runs one plain command string and hands the query over in the environment rather than
+  // as an argument that would need quoting for cmd.exe.
+  {
+    const { spawnSync } = require('child_process');
+    const PHP = process.env.PHP || 'php';
+    const q = `lat=${BRIGHTON.lat}&lng=${BRIGHTON.lng}&source=carpark&n=25`;
+    const r = spawnSync(PHP + ' scripts/selftest-nearest.php',
+                        { cwd: ROOT, encoding: 'utf8', shell: true,
+                          env: Object.assign({}, process.env, { NF_QUERY: q }) });
+    let body = null;
+    try { body = JSON.parse((r.stdout || '').trim()); } catch (e) { body = null; }
+    const said = ((r.stdout || '') + (r.stderr || '') + (r.error ? r.error.message : ''))
+                   .trim().split('\n').slice(-2).join(' / ');
+    const results = body && body.ok && Array.isArray(body.results) ? body.results : null;
+    const OURS = /\(our name for it, not a published one\)/;
+    const record = (x) => carparks.find(s => Math.abs(s.lat - x.lat) < 1e-6
+                                          && Math.abs(s.lng - x.lng) < 1e-6);
+    const wrong = !results ? ['php did not produce a readable response: ' + said]
+      : results.map(x => {
+          const s = record(x);
+          if (!s) return `${x.name}: no dataset record at ${x.lat},${x.lng}`;
+          const want = !!s.name_is_derived;
+          if (typeof x.name_is_derived !== 'boolean') return `${x.name}: name_is_derived is ${JSON.stringify(x.name_is_derived)}, not a boolean`;
+          if (x.name_is_derived !== want) return `${x.name}: name_is_derived is ${x.name_is_derived}, dataset says ${want}`;
+          if (want && !OURS.test(x.label)) return `${x.name}: derived but the label reads "${x.label}"`;
+          if (!want && OURS.test(x.label)) return `${x.name}: published but the label says it is ours: "${x.label}"`;
+          return null;
+        }).filter(Boolean);
+    if (results && !results.some(x => record(x) && record(x).name_is_derived)) {
+      wrong.push('no derived car park in the ' + results.length + ' nearest to Brighton, so nothing here was exercised');
+    }
+    ok('the Shortcut endpoint says a derived name is ours',
+       wrong.length === 0, wrong.slice(0, 3).join(' | '));
+  }
 }
 
 console.log('\n--- Scotland, from Forestry and Land Scotland (card 0016) ---');
