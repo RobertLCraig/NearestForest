@@ -77,9 +77,15 @@ function render() {
       // car happens to be pointing.
       dist = '<div class="row__mi">' + (s._mi < 10 ? s._mi.toFixed(1) : Math.round(s._mi)) + '</div>' +
              '<div class="row__unit">miles</div>' +
-             '<div class="row__arrow" aria-label="' + esc(NF.POINT_NAMES[idx]) + ' of you">' +
+             // The spoken form is a real text node in a visually-hidden span, never an
+             // aria-label: a plain div is role "generic", which ARIA forbids naming, so
+             // browsers drop a label there and VoiceOver falls back to reading the
+             // visible "NE" as "nee". The arrow and the letters are hidden from readers
+             // so the point is announced once, as words.
+             '<div class="row__arrow">' +
                '<span class="row__glyph" aria-hidden="true">' + NF.ARROWS[idx] + '</span>' +
-               '<span class="row__point">' + NF.POINTS[idx] + '</span>' +
+               '<span class="row__point" aria-hidden="true">' + NF.POINTS[idx] + '</span>' +
+               '<span class="visually-hidden">' + esc(NF.POINT_NAMES[idx]) + ' of you</span>' +
              '</div>';
     }
 

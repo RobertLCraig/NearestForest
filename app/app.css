@@ -99,6 +99,13 @@ button { font:inherit; color:inherit; }
 /* The cardinal letters carry the meaning, so they must survive a sunlit
    windscreen: same weight as the mileage, never dimmed. */
 .row__point { font-size:14px; font-weight:700; letter-spacing:.01em; }
+/* Text for screen readers only. Not display:none and not visibility:hidden, which both
+   drop it from the accessibility tree: a 1px clipped box keeps it announced and
+   takes no room in the row, so the distance column does not widen. */
+.visually-hidden {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+  clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0;
+}
 .row__go {
   width:60px; flex:0 0 60px; border:0; border-left:1px solid var(--line);
   background:var(--accent); color:var(--accent-ink); font-size:24px; font-weight:700; cursor:pointer;
