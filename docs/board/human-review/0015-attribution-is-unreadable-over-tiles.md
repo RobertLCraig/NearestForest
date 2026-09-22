@@ -72,6 +72,7 @@ into the detail sheet or a credits screen: it has to be on the map it credits.
 <!-- AC:BEGIN -->
 - [x] #1 WHEN the tile layer is on, THE APP SHALL render the provider attribution legibly against a
       light basemap at every zoom level.
+      proves: `the attribution panel is black at an alpha of at least 0.72, read as a number`
 - [x] #2 WHEN the tile layer is off, THE APP SHALL render the hint exactly as it does today.
 - [x] #3 WHEN either state is shown, THE APP SHALL keep the text clear of the safe-area inset.
 <!-- AC:END -->
@@ -428,3 +429,38 @@ VERDICT: defect
 
 
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 3 times between todo and ai-review, all 3 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 3 of 3 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-22** **Rob accepted the reviewer's finding and #1 came off.** The finding lands on #1
+because the self-test at issue is #1's proof: a criterion is only as checked as the test named
+against it, and that test checked spelling, not opacity. Three reviews said the pill on screen was
+fine and the guard was wrong, and all three were right; the disagreement was only over which box
+carries a broken guard, and Rob's ruling is that the box whose proof it is does. This is the answer
+`## What I need from you` asked for, so the deadlock is over.
+
+**What was built.** The check in `scripts/selftest.js` (tile-layer block, after the `updateHint`
+runs) no longer matches the alpha as text. It pulls the alpha out of `background:rgba(0,0,0,A)` in
+the `.map__hint--attrib` rule, reads it with `parseFloat`, and asserts `0.72 <= A <= 1` alongside
+the existing `color:#fff` check. Its detail line prints the number it read, so a red run says what
+it saw. Renamed, because the old name did not say what it did; the runner now prints
+`the attribution panel is black at an alpha of at least 0.72, read as a number`. **#1 is re-ticked
+with that name as its `proves:`.** `app/app.css` is unchanged in the commit; `.72` is still the
+shipped value.
+
+**Proved by editing the CSS, running, and restoring, three times** (`node scripts/selftest.js`):
+
+| `app.css` alpha | result |
+|---|---|
+| `.8` | `PASS  the attribution panel is black at an alpha of at least 0.72, read as a number` - 318 passed, 0 failed |
+| `0.72` | `PASS  the attribution panel is black at an alpha of at least 0.72, read as a number` - 318 passed, 0 failed |
+| `0.5` | `FAIL  the attribution panel is black at an alpha of at least 0.72, read as a number — alpha read as 0.5` - **317 passed, 1 failed**, exit 1 |
+
+The first two are exactly the values the old pattern rejected, and the third is the one it was
+supposed to reject and now does for the right reason. The CSS was restored to `rgba(0,0,0,.72)`
+between runs and the file is byte-identical to before. The full suite ends `318 passed, 0 failed`
+/ `All self-tests passed`, the same count as before this change since it replaced one assertion
+with one assertion. (The count before this work was 318 on this tree, not the 319 quoted when the
+card was handed over; nothing was removed.)
+
+**Not done, and it is Rob's.** Task 2, the phone check over a live Thunderforest tile, is still
+unticked. Nothing here changes what the pill looks like; it changes what the suite is able to say
+about it.
