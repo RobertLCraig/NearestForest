@@ -464,3 +464,83 @@ card was handed over; nothing was removed.)
 **Not done, and it is Rob's.** Task 2, the phone check over a live Thunderforest tile, is still
 unticked. Nothing here changes what the pill looks like; it changes what the suite is able to say
 about it.
+
+**2026-09-22** Adversarial review of commit `8f8dc05`, the guard rewrite. **Nothing reopens.** The
+new test is a real floor, the pill reads on screen in both appearances, and the two gaps I found are
+limits of a text check that the card's criterion does not own. Detail below so the next reader can
+tell this pass from one that never happened.
+
+**Suite.** `node scripts/selftest.js` on main: **328 passed, 0 failed**, and the renamed test ran:
+`PASS  the attribution panel is black at an alpha of at least 0.72, read as a number`. (The build
+entry above says 318; ten tests from other cards have landed since. Nothing was removed.)
+
+**Attacking the guard.** Nineteen edits to `.map__hint--attrib` in `app/app.css`, suite run after
+each, file restored to byte-identical between runs; `git diff` on `app/app.css` and
+`scripts/selftest.js` is empty now.
+
+| edit | suite | right? |
+|---|---|---|
+| alpha `0.5` | red, detail says alpha read as 0.5 | yes |
+| alpha `.8`, alpha `0.72` | green | yes, both values the old pattern rejected |
+| alpha `1.5` | red, alpha read as 1.5 | yes, the ceiling works |
+| `color:#000` in place of `#fff` | red | yes, black on black is caught |
+| `rgb(0,0,0)`, `#000000b8`, `hsla(0,0%,0%,.72)`, `rgb(0 0 0 / .72)`, `background-color:` | red, alpha read as NaN | false red: all legal, all at least .72 |
+| `.map__hint--attrib{` with no space before the brace | red, no rule found | false red on formatting |
+| a second `.map__hint--attrib { background:transparent }` later in the file | **green** | wave-through |
+| the same override inside the light `@media` block | **green** | wave-through |
+| `background:transparent` appended after the rgba in the same rule | **green** | wave-through |
+| `color:#000` appended after `color:#fff` in the same rule | **green** | wave-through |
+| `opacity:.2`, `display:none`, `font-size:0`, `-webkit-text-fill-color:transparent` | **green** | wave-through |
+
+So the finding the last three reviews made is fixed: the floor is now a number, `.8` and `0.72` are
+green, `0.5` is red, and the red run says what it saw. What is left is the ordinary limit of reading
+CSS as text rather than as a computed style: the check takes the **first** `.map__hint--attrib`
+block and the **first** `background:rgba(...)` inside it, so anything that legally overrides it later
+passes. The false reds go the safe way (a red suite for a spelling the check does not read, with
+`NaN` printed) and the test name says "read as a number" from an rgba, so I grade those a note.
+**None of this is criterion #1's to carry.** #1 asks that the pill render legibly, and it does; its
+`proves:` is a floor on the shipped value, which it now is. If the parent wants the cheap half
+closed in place: assert the rule appears exactly once in the file, and that the block carries no
+`opacity`, `display`, `visibility` or second `background`. The rest needs a browser, which this
+suite does not have.
+
+**One flake, not this card's.** In one of the twenty runs, the `0.5` one, `the Shortcut endpoint
+says a derived name is ours` also failed (`name_is_derived is false, dataset says true`, three car
+parks). It spawns `scripts/selftest-nearest.php`; three clean reruns afterwards, 0 failed each. A
+one-off, recorded so it is not mistaken for something my edit caused.
+
+**Attacking the code.** The check reads the right rule: with tiles on, `mapHint` in `app/core.js`
+returns `credit: true` and `updateHint` in `app/map.js` toggles `map__hint--attrib` on the line after
+it sets the text. There is **no dark-theme variant** to miss: the only `@media` in `app.css` is the
+light-scheme block at the top, it touches `:root` variables only, and the pill is hard-coded
+black-and-white on purpose, because a basemap is not themed. One path worth knowing: tiles **on**
+but the layer **dead** (no key locally, `api/tiles.php` returns 503) gives `Tiles unavailable. Tap
+Tiles twice to retry.` with **no pill**, and that is right, since no provider tile is drawn and the
+text sits on the app's own outline.
+
+**Looked at live.** The shared preview tab at `127.0.0.1:8765` was being driven by another reviewer
+at the same time (its action log carried clicks I never sent, and my forced state was reset twice),
+and the preview tool does not write its images to disk. So I drove a private headless Chrome over
+the DevTools protocol against the same server, 390x844 at 2x, touch, geolocation pinned to
+Brighton, `--safe-b` pinned to 34px for the home indicator. The proxy refuses here, so after pressing
+Tiles I set the credit text and class by hand to photograph the styled panel; nothing under `app/`
+changed and the profile is deleted.
+![credit pill, light appearance, over the light outline](../attachments/0015-2026-09-22-1.png)
+![credit pill, dark appearance, over the dark outline](../attachments/0015-2026-09-22-2.png)
+Both appearances, measured: computed `rgba(0, 0, 0, 0.72)`, `rgb(255, 255, 255)`, `text-shadow:
+none`; the pill spans 98 to 293 at 390 wide, three lines, bottom edge 44px above the screen edge
+(34 inset plus 10). That is the 2026-08-29 table reproduced to the pixel. Canvas behind the pill
+reads (246,249,246) in light and (15,26,18) in dark. **The light basemap here is the app's own
+light theme, not a Thunderforest tile**, so Task 2 stays open exactly as written.
+
+**The three questions.** Unchanged from the 2026-09-10 entry: today's commit touched one test in
+`scripts/selftest.js`, which reads a file the repository ships and parses a number out of it. No new
+input, no new entry point, nothing new to leak.
+
+**Per criterion.** **#1** holds: legible over the light outline and over the dark one, and the
+named proof is now a numeric floor that goes red at 0.5 and green at .8 and 0.72. **#2** holds: with
+tiles off on Forests the hint is bare `map__hint`, dim text and its glow; the 2026-09-10 note about
+Campsites getting the pill from card `0020` still stands and is not this card's. **#3** holds: one
+`bottom` rule on the base class, 44px clear with the inset pinned, in both appearances.
+
+VERDICT: sound. Task 2 is the only open line and it is a person's.
