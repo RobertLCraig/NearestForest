@@ -1001,8 +1001,17 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
   {
     const css = fs.readFileSync(path.join(ROOT, 'app', 'app.css'), 'utf8');
     const attrib = /\.map__hint--attrib \{([^}]*)\}/.exec(css);
-    ok('the attribution style exists and is opaque enough to read on white', !!attrib &&
-       /background:rgba\(0,0,0,\.(7[2-9]|[89]\d)\)/.test(attrib[1]) && /color:#fff/.test(attrib[1]));
+    // Card 0015. This used to match the alpha as text, `\.(7[2-9]|[89]\d)`, which rejected
+    // `.8` (one digit), `0.72` (leading zero) and `1` (fully opaque): a spelling check wearing
+    // an opacity check's name, found by three reviews in a row. Read the number instead. The
+    // floor is 0.72 because a pure white tile composites black at .72 to rgb(71), and white on
+    // rgb(71) is 9.29:1; no tile can be brighter than white, so the bound holds at every zoom.
+    const alphaMatch = attrib &&
+      /background:\s*rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*(\d*\.?\d+)\s*\)/.exec(attrib[1]);
+    const alpha = alphaMatch ? parseFloat(alphaMatch[1]) : NaN;
+    ok('the attribution panel is black at an alpha of at least 0.72, read as a number', !!attrib &&
+       alpha >= 0.72 && alpha <= 1 && /color:#fff/.test(attrib[1]),
+       attrib ? `alpha read as ${alpha}` : 'no .map__hint--attrib rule');
     // Both states share .map__hint, so one bottom rule keeps both off the home bar.
     ok('the hint clears the safe-area inset in both states',
        /\.map__hint \{[^}]*bottom:calc\(var\(--safe-b\)/.test(css) && !/bottom:/.test(attrib[1]));
