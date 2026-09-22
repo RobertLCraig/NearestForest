@@ -1261,6 +1261,45 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // Now that other people use it, the app says what it does with a location.
   ok('the app states its privacy position in the footer',
      /location stays on this phone/i.test(indexhtml));
+  // Card 0014, returned three times by review. That one regex was the whole guard, so the
+  // 2026-09-10 review deleted the entire Tiles caveat and got 280 passed, 0 failed. The
+  // statement makes three claims and names two exceptions; each is pinned on its own, on
+  // the one paragraph that carries the bold sentence, so re-wrapping cannot break it and
+  // a sentence moved into a different paragraph does not count.
+  const privacyP = (indexhtml.replace(/\s+/g, ' ')
+    .match(/<p>[^]*?location stays on this phone[^]*?<\/p>/i) || [''])[0];
+  ok('the footer says the app itself sends nothing',
+     privacyP.includes('the app itself sends nothing anywhere'));
+  ok('the footer names the Tiles layer as an exception',
+     /<em>Tiles<\/em> layer on the map: while it is on, map images are fetched through this site/
+       .test(privacyP) && /off unless you turn it on/.test(privacyP));
+  // The second exception is the maps hand-off. Which apps that means is read off navUrl in
+  // core.js and the [data-app] buttons that call it, never typed here, so adding a fourth app
+  // to the chooser without naming it in the footer turns this red on its own.
+  const navUrlSrc = (fs.readFileSync(path.join(ROOT, 'app', 'core.js'), 'utf8')
+    .match(/function navUrl\([^]*?\n  \}/) || [''])[0];
+  const navApps = [...navUrlSrc.matchAll(/app === '([a-z]+)'/g)].map(m => m[1]);
+  const navLabels = navApps.map(app => {
+    const m = indexhtml.match(new RegExp('data-app="' + app + '"[^>]*>([^<]+)<'));
+    return m ? m[1].trim() : app;
+  });
+  const unnamed = navLabels.filter(l => !privacyP.includes('<em>' + l + '</em>'));
+  ok('the footer names every navigation app navUrl builds a URL for',
+     navApps.length >= 3 && unnamed.length === 0,
+     `navUrl builds for [${navApps.join(', ')}]; footer is missing [${unnamed.join(', ')}]`);
+  // What the hand-off carries has to match what the footer says it carries. navUrl takes
+  // the site and nothing else, so each URL holds one coordinate pair and it is the site's.
+  const handSite = { lat: 51.072249, lng: 0.447006 };
+  const leaks = navApps.filter(app => {
+    const pairs = (NF.navUrl(app, handSite) || '').match(/-?\d+\.\d+%2C-?\d+\.\d+/g) || [];
+    return pairs.length !== 1 || pairs[0] !== '51.072249%2C0.447006';
+  });
+  ok('the footer says a map app gets the site you picked and not your position, and navUrl agrees',
+     leaks.length === 0 && NF.navUrl.length === 2 &&
+     /hands that company the site you picked/.test(privacyP) &&
+     /Your own position is not passed to it/.test(privacyP),
+     leaks.length ? `navUrl carries more than the site for [${leaks.join(', ')}]`
+                  : 'the footer sentence about the hand-off is missing or changed');
 
   // Attribution is a licence condition rather than a courtesy, and there are now two
   // agencies to name. Adding a name also means extending the non-affiliation line:
