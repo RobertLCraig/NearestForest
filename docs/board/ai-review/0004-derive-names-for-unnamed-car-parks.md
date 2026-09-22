@@ -322,3 +322,8 @@ You've hit your session limit ┬À resets 10am (Europe/London)
 
 You've hit your session limit ┬À resets 10am (Europe/London)
 
+
+**2026-09-22** The review entry above is not a review. The reviewing session hit its usage limit and
+wrote the limit message into all three lenses, and its "no suite this job could find" is the loop
+looking for a Pest suite in a project whose suite is `node scripts/selftest.js`. Nothing on the card
+was assessed, so the bounce to `todo/` rested on nothing. Returned to `ai-review/` for a real pass.
