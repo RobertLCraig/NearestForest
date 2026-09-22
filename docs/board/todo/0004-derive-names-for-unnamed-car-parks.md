@@ -303,3 +303,22 @@ already behave, not a skip.
 The one 2026-09-20 review finding still open that needs no person, the nearest-forest reduce in
 `selftest.js` that includes Scottish forests where `parse.py` uses English ones only, is not this
 comment's work either; the map-label truncation Rob answered on 2026-09-20 as acceptable in use.
+
+### 2026-09-22 review (v20260922064424-b8da)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: unclear**
+
+You've hit your session limit ┬À resets 10am (Europe/London)
+
+**scope: unclear**
+
+You've hit your session limit ┬À resets 10am (Europe/London)
+
+**breakage: unclear**
+
+You've hit your session limit ┬À resets 10am (Europe/London)
+
