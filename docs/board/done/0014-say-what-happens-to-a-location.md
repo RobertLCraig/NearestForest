@@ -70,11 +70,6 @@ paragraph in the footer is read and a linked page is not.
 - [x] Self-test asserting the statement is present, so a future edit cannot quietly drop it
 - [x] Read it on the phone and check it does not push the attribution off the useful part of the page
 
-## Plan
-Wording stays plain and specific: what is collected, where it stays, and the single exception,
-named as the control the reader can see (**Tiles**) rather than described. It sits above the OGL
-attribution because it is the more useful of the two to a person holding the phone.
-
 ## Direction
 **2026-08-10** Read on the device. Seven lines at phone width, sitting under the build string and
 above the OGL attribution, which is still fully visible below it. Nothing is pushed off, and
@@ -358,3 +353,111 @@ compares the statement with what `navUrl` builds. No cache key was bumped: `app/
 unchanged and no test asked for it; the deploy script's cache-key guard is where that is decided.
 Not done here: reading the new paragraph on the phone, which is a person's check and is what the
 third task already recorded for the earlier wording.
+
+**2026-09-22** Adversarial pass on the 4edcd36 build. Not clean: two findings, both small enough
+to fix in place, and no reason to bounce the card.
+
+**Suite.** `node scripts/selftest.js` on this checkout: `328 passed, 0 failed` before and after,
+and `git diff -- app scripts` empty, because I never edited it. Every break below was made in a
+copy at `/tmp/nf0014`, and that was the right call for a reason worth recording: while I was
+copying, `app/api/nearest.php` in this shared checkout lost and regained its `name_is_derived`
+line thirty seconds apart (mtime 10:51:37 in my copy, 10:52:07 here). Another session was
+red-proofing card 0004 in the tree other reviewers were reading. The copy therefore carried one
+unrelated red throughout (`the Shortcut endpoint says a derived name is ours`), so its baseline
+was `327 passed, 1 failed` and every count below is against that.
+
+**Red-proof, measured.** All four new checks ran. Breaks and what they turned red:
+- Tiles sentence deleted: `the footer names the Tiles layer as an exception`. Held.
+- Map-apps sentence deleted: `the footer names every navigation app navUrl builds a URL for` and
+  the `#2` proof. Held.
+- Fourth `bing` branch in `navUrl`: `... navUrl builds for [apple, google, bing, waze]; footer is
+  missing [bing]`. Held.
+- Apple URL given `&saddr=` with a URL-encoded pair: the `#2` proof, `navUrl carries more than
+  the site for [apple]`. Held.
+- Google URL given `&origin=` fed from a module variable, arity still 2: the `#2` proof. Held, so
+  the arity check is not what is doing the work; the pair count is.
+- "Your own position is not passed to it" reworded to "is passed to it": the `#2` proof. Held.
+- "the app itself sends nothing anywhere" reworded: `the footer says the app itself sends
+  nothing`. Held.
+- `navUrl` refactored to a lookup table with no `app === '...'` branches: `navUrl builds for []`.
+  Held, loudly; a refactor gets a false alarm rather than silence, which is the right side.
+- **Apple URL given `&saddr=51.5,-0.1`, plain comma, as a quick edit would type it: the `#2`
+  proof stayed GREEN.** Only the older exact-string check `apple maps url` caught it. That is
+  Finding 1.
+
+**Finding 1, the named proof is one regex short.** `the footer says a map app gets the site you
+picked and not your position, and navUrl agrees` counts pairs matching `-?\d+\.\d+%2C-?\d+\.\d+`.
+A second coordinate pair joined by a literal comma, or by anything other than `%2C`, is invisible
+to it, so "navUrl agrees" proves "exactly one URL-encoded pair" and not "nothing but the site".
+The suite as a whole still went red, so nothing ships this way today, but the criterion's own
+proof does not by itself settle the criterion, and the exact-string checks that saved it are the
+ones a future contributor updates by hand when they change a URL. One-line fix: strip the site's
+own pair out of the built URL and assert no `\d+\.\d+` remains in it.
+
+**Finding 2, "Two things do leave it" is a count, and it is short.** Every place a site or the
+position leaves the phone or is kept, read from the code:
+- Position: `localStorage['nf.lastpos']` in `app/app.js`, written in `locate`, read in
+  `loadStale`, no expiry (out of scope by `## Not this card`). Never in any request. The footer's
+  "remembered here" covers it.
+- Same-origin fetches: `data/*.json` in `app.js` and `map.js`, the precache list in `app/sw.js`.
+  The worker caches nothing under `api/` and never sees the position.
+- Tiles: `api/tiles.php?z=&x=&y=` only, from `map.js`; the proxy forwards z/x/y/style and the key
+  to Thunderforest by server-side curl, so the provider never sees the visitor's address, and
+  the access log here does. Footer matches.
+- `api/nearest.php`: no caller anywhere in `app/`; it is the Shortcut's, and the Shortcut sends
+  the position to this server by design. Outside the PWA and outside this footer. Fine.
+- Map apps: `navUrl` in `app/core.js` carries `site.lat, site.lng` only, top-level navigation
+  from the `[data-app]` handler in `app.js`. Footer matches.
+- **The More link on a detail sheet** (`openSheet` in `app.js`, `rel="noopener noreferrer"`,
+  Forestry England or FLS page) **and the OpenStreetMap credit link in the footer.** Tapping More
+  hands that agency the site you picked and your address, which is the map-app sentence with the
+  referrer removed. The footer says two things leave and names two; this is a third, and the
+  defect that reopened `#2` last time was precisely an undercount of exceptions.
+My judgement: a labelled web link doing what links do is not something I would reopen `#2` for,
+but "Two things" is a countable claim a reader can falsify with one tap, and this card exists to
+be exactly true. Cheapest fix is a clause, not a sentence: "as does the More link to a forest's
+own page", or replace the count with "Nothing leaves it unless you tap something that opens
+another site or app". Rob's wording to pick; the guard then needs one `includes`.
+
+**Wording.** Plain, specific, no marketing, reads as Rob. One optional clause: the map opens on
+you plus the six nearest sites (`fitToInterest` in `map.js`), so with Tiles on "which part of the
+map you are looking at" is, on first open, a few kilometres around you. True as written; "which
+opens around you" would stop a careful reader having to work that out.
+
+**Live.** Served copy at `http://127.0.0.1:8765/`, 375x812, headless Chrome at 2x, scrolled to the
+paragraph: 12px text, box from y=382 to y=562 of 812, nothing clipped, credits fully visible
+below it. Geolocation is denied in headless, which is why the status line is red; it is not a
+finding.
+
+![the footer at 375px, 2026-09-22](../attachments/0014-2026-09-22-1.png)
+
+**Security, the three questions.** Weakest: nothing server-side to attack; the realistic
+adversary is a contributor editing `navUrl`, and Finding 1 is the hole they would fall through.
+Unchecked: the stored fix has no range check and no expiry, noted on 2026-09-10 and out of scope.
+Leaks on failure: none; every error path in `api/` is a plain message with no key and no address.
+
+**The `Decided:` mark.** The README makes it a decision card's exit condition. Here it records
+Rob's answer to the `## What I need from you` ask that parked this card, which is the one thing
+the mark is for, so it is defensible on a feature card. What is wrong with the entry is that the
+answer and the build report are one entry when they are two events, and `## What I need from
+you` still asks a question that has been answered. Delete that section, or add one line under it
+saying answered 2026-09-22. `## Plan` still says "the single exception" and goes at `done/`
+anyway.
+
+**Per criterion.** `#1` met, looked at rather than grepped, screenshot above. `#2` met on the two
+claims that matter, the position never leaves and the map apps get the site only, and short on
+two small things: its named proof does not catch a plain-comma second pair (Finding 1), and the
+paragraph's count of exceptions omits the ordinary links (Finding 2). Both are a line each. Fix
+in place and this card is done.
+
+**2026-09-22** Both findings fixed in place by the parent session, not the reviewer. Finding 1:
+the `proves:` check now removes the site's own encoded pair from each built URL and fails on any
+decimal number left behind, however it is encoded or separated. Red-proof: `&saddr=51.5,-0.1`
+appended to the Apple URL gives `FAIL  the footer says a map app gets the site you picked and not
+your position, and navUrl agrees - navUrl carries more than the site for [apple]`, 326 passed, 2
+failed (the other being the older exact-string check). Finding 2: "Two things do leave it" is gone.
+The paragraph now says "Nothing leaves it unless you tap something that opens another site or app"
+and ends "The link to a site's own web page works the same way." Both phrases are pinned by `the
+footer says the app itself sends nothing`; removing the last sentence gives `FAIL  the footer says
+the app itself sends nothing`, 327 passed, 1 failed. Finding 3 (wording about where the map opens)
+and the `**Decided:**` mark are left as they are. `## Plan` is deleted on the move to `done/`.

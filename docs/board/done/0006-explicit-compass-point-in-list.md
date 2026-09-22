@@ -245,8 +245,8 @@ check pins the `.visually-hidden` rule so it cannot be deleted or swapped for `d
 which would take the words out of the tree. Red run, with `app/app.js` and `app/app.css` checked
 out to HEAD and the new test in place:
 
-    FAIL  a screen reader gets the spoken point name as real text, not the letters — the name is an aria-label on the row__arrow div, which browsers discard: <div class="row__arrow" aria-label="north-east of you"><span class="row__glyph" aria-hidden="true">↗</span><span class="row__point">NE</span></div>
-    FAIL  the visually-hidden class clips the spoken name off screen without hiding it from readers — .visually-hidden is not defined in app.css
+    FAIL  a screen reader gets the spoken point name as real text, not the letters - the name is an aria-label on the row__arrow div, which browsers discard: <div class="row__arrow" aria-label="north-east of you"><span class="row__glyph" aria-hidden="true">↗</span><span class="row__point">NE</span></div>
+    FAIL  the visually-hidden class clips the spoken name off screen without hiding it from readers - .visually-hidden is not defined in app.css
     318 passed, 2 failed
 
 Fix restored: `320 passed, 0 failed`, `All self-tests passed.` Baseline on this worktree before

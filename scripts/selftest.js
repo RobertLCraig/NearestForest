@@ -1268,8 +1268,13 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // a sentence moved into a different paragraph does not count.
   const privacyP = (indexhtml.replace(/\s+/g, ' ')
     .match(/<p>[^]*?location stays on this phone[^]*?<\/p>/i) || [''])[0];
+  // "Two things do leave it" was a count, and the 2026-09-22 review found it short by one
+  // (the link to a site's own page). The statement now names the rule instead of a number,
+  // and names that link, so both are pinned.
   ok('the footer says the app itself sends nothing',
-     privacyP.includes('the app itself sends nothing anywhere'));
+     privacyP.includes('the app itself sends nothing anywhere') &&
+     privacyP.includes('unless you tap something that opens another site or app') &&
+     /link to a site's own web page works the same way/.test(privacyP));
   ok('the footer names the Tiles layer as an exception',
      /<em>Tiles<\/em> layer on the map: while it is on, map images are fetched through this site/
        .test(privacyP) && /off unless you turn it on/.test(privacyP));
@@ -1290,9 +1295,14 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // What the hand-off carries has to match what the footer says it carries. navUrl takes
   // the site and nothing else, so each URL holds one coordinate pair and it is the site's.
   const handSite = { lat: 51.072249, lng: 0.447006 };
+  // The 2026-09-22 review appended `&saddr=51.5,-0.1` with a plain comma and the pair count
+  // stayed at one, so counting encoded pairs proved less than it claimed. Now the site's own
+  // pair is removed from the URL and any decimal number left behind is a leak, however it is
+  // encoded or separated.
   const leaks = navApps.filter(app => {
-    const pairs = (NF.navUrl(app, handSite) || '').match(/-?\d+\.\d+%2C-?\d+\.\d+/g) || [];
-    return pairs.length !== 1 || pairs[0] !== '51.072249%2C0.447006';
+    const url = NF.navUrl(app, handSite) || '';
+    const rest = url.split('51.072249%2C0.447006');
+    return rest.length !== 2 || /\d+\.\d+/.test(rest.join(''));
   });
   ok('the footer says a map app gets the site you picked and not your position, and navUrl agrees',
      leaks.length === 0 && NF.navUrl.length === 2 &&
@@ -3783,13 +3793,18 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
       const docroot = path.join(fx, 'repo', 'app');
       fs.mkdirSync(path.join(docroot, 'api'), { recursive: true });
       fs.copyFileSync(path.join(ROOT, 'app', 'api', 'tiles.php'), path.join(docroot, 'api', 'tiles.php'));
-      const plantedKey = path.join(fx, 'repo', 'tiles.key');
-      fs.writeFileSync(plantedKey, 'planted-by-selftest-not-a-real-key\n');
+      // Planted at every level of the checkout, not only its root: the 2026-09-22 review
+      // showed a candidate at app/ or app/api/ slipping past a fixture that plants one file.
+      const plantedKeys = [['repo'], ['repo', 'app'], ['repo', 'app', 'api']]
+        .map(rel => path.join(fx, ...rel, 'tiles.key'));
+      for (const k of plantedKeys) fs.writeFileSync(k, 'planted-by-selftest-not-a-real-key\n');
 
       const env = Object.assign({}, process.env, {
         https_proxy: 'http://127.0.0.1:9', HTTPS_PROXY: 'http://127.0.0.1:9',
       });
       delete env.THUNDERFOREST_KEY;
+      // A developer's no_proxy=* would let the unfixed proxy reach Thunderforest for real.
+      delete env.no_proxy; delete env.NO_PROXY;
 
       const port = await new Promise((res, rej) => {
         const s = net.createServer();
@@ -3828,7 +3843,7 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
              `got ${withPlanted.status} "${withPlanted.body.slice(0, 120)}", wanted 503 "${want}"`);
 
           // Fail closed means indistinguishable from unconfigured: same status, same body.
-          fs.unlinkSync(plantedKey);
+          for (const k of plantedKeys) fs.unlinkSync(k);
           const withNone = await get('/api/tiles.php?z=0&x=0&y=0');
           ok(NAME2,
              withNone.status === withPlanted.status && withNone.body === withPlanted.body,

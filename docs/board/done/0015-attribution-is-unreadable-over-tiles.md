@@ -452,7 +452,7 @@ shipped value.
 |---|---|
 | `.8` | `PASS  the attribution panel is black at an alpha of at least 0.72, read as a number` - 318 passed, 0 failed |
 | `0.72` | `PASS  the attribution panel is black at an alpha of at least 0.72, read as a number` - 318 passed, 0 failed |
-| `0.5` | `FAIL  the attribution panel is black at an alpha of at least 0.72, read as a number — alpha read as 0.5` - **317 passed, 1 failed**, exit 1 |
+| `0.5` | `FAIL  the attribution panel is black at an alpha of at least 0.72, read as a number - alpha read as 0.5` - **317 passed, 1 failed**, exit 1 |
 
 The first two are exactly the values the old pattern rejected, and the third is the one it was
 supposed to reject and now does for the right reason. The CSS was restored to `rgba(0,0,0,.72)`

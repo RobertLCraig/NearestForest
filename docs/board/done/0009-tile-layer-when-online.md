@@ -284,8 +284,8 @@ to Thunderforest; `THUNDERFOREST_KEY` is stripped from the environment; the fixt
 `finally` and lives in the system temp directory, never in the checkout. Red-proof, with the committed
 `tiles.php` swapped back in and the new test in place:
 
-    FAIL  no path inside the repository is a key location (card 0009) — got 502 "Tile upstream unreachable.", wanted 503 "no API key file found"
-    FAIL  a planted repo-root key gets the same refusal as no key at all (card 0009) — planted: 502 "Tile upstream unreachable."; none: 503 "Tile layer is not configured on this server: no API key file found. The map stil"
+    FAIL  no path inside the repository is a key location (card 0009) - got 502 "Tile upstream unreachable.", wanted 503 "no API key file found"
+    FAIL  a planted repo-root key gets the same refusal as no key at all (card 0009) - planted: 502 "Tile upstream unreachable."; none: 503 "Tile layer is not configured on this server: no API key file found. The map stil"
 
 That 502 is the unfixed proxy taking the planted key and going upstream with it. With the fix restored:
 `320 passed, 0 failed`, `All self-tests passed.` The existing `the key is read from outside the web
@@ -294,3 +294,89 @@ present; it could never have caught this, which is why the new one runs the code
 
 The two other scope findings from the same review are not this card's criteria and were left alone:
 the `s=` style whitelist and the ticked "cancellation on pan" task. Both still stand as findings.
+
+**2026-09-22** Adversarial review of the #4 rebuild (commit 7c204e1). Nothing moved, no code file
+edited: the mutated proxies and the harness that drove them lived in the system temp directory, and
+the live server on 8765 was only ever read from.
+
+**The two older findings were rightly left alone.** Neither the `s=` whitelist nor the ticked
+"cancellation on pan" task is one of this card's four criteria, and a criterion is the only thing a
+review can reopen. Both remain written down above; the second deserves its own small card rather
+than an untick here, because the task box describes work nobody has scoped.
+
+**Suite.** `node scripts/selftest.js`: 328 passed, 0 failed, and both new names ran. HANDOVER still
+says the suite is deliberately red on the card 0020 size check; 0020 is in `done/` at 32 KB and the
+run is green, so that HANDOVER line is stale. Not this card's, noted for whoever touches HANDOVER next.
+
+**Attacking the new tests.** The block was extracted verbatim and pointed at copies of `tiles.php`
+in `%TEMP%`, so the shared checkout was never mutated:
+- Repo-root candidate re-added to `readKey` (`__DIR__ . '/../../tiles.key'`): both tests FAIL, 502
+  "Tile upstream unreachable." Caught, and the failure text says exactly what happened.
+- Candidate at `app/tiles.key` (`__DIR__ . '/../tiles.key'`): both tests PASS. Not caught. Same for
+  `app/api/tiles.key`. The fixture plants the dummy only at `repo/tiles.key`, so the name "no path
+  inside the repository is a key location" claims more than it checks. With dummies also planted at
+  `app/` and `app/api/`, the committed code still answers 503 (the code holds today) and the mutated
+  code fails the first test (planting there would catch it). Fix in place: plant at all three. Low.
+- Egress. With `https_proxy` swapped for a local listener, the unfixed proxy sent
+  `CONNECT api.thunderforest.com:443` to it, so libcurl honours the variable and the dead port really
+  does stop the request; it failed in 2.5 s, not the 8 s timeout. Caveat: the fixture spreads
+  `process.env` and deletes only `THUNDERFOREST_KEY`, so a developer with `no_proxy=*` or
+  `NO_PROXY=*` set would bypass the guard and the made-up key would go to Thunderforest. Delete those
+  two as well. Low, and it only bites when the code is already broken.
+- `php` missing from PATH: both tests FAIL with "php not runnable: 'php' is not recognized". Loud.
+- Cleanup: zero `nf-0009-*` directories left in `%TEMP%` after ten runs including the failing ones.
+  One edge: a `get()` that rejects mid-test (php -S dying) is awaited outside any catch, which would
+  end the run as an unhandled rejection before the summary line. Still non-zero, still loud.
+
+**Attacking the code, live on 127.0.0.1:8765 with no key.** A valid tile: 503 "no API key file
+found". z/x/y: `1.0`, `0x1`, `1%00`, `z[]=1`, a 20-digit integer, `z=99`, `-1`, `max+1` all 400;
+`+1`, a leading space and `-0` are accepted as integers, which is PHP's filter and harmless because
+`sprintf %d` rebuilds the URL. `s`: strict `in_array` over ten literals; `Outdoors`, empty and
+`s[]=` all 400, and the value never reaches the URL unless it equals a literal, so there is no
+traversal to find. Origin: `Sec-Fetch-Site` of cross-site, same-site, none and upper-case
+SAME-ORIGIN all 403; a foreign Referer, `http://127.0.0.1@evil.example/`, `127.0.0.1.evil.example`
+and a garbage Referer all 403; our host on any port passes. A foreign `Host` with a matching
+Referer passes, which is right: the vhost owns Host, not the script. `X-Forwarded-For` is ignored.
+POST is served like GET (no method check; same handler, nothing gained). `/tiles.key` and
+`/api/../tiles.key` return `index.html` here because `php -S` falls back to it for unknown paths; on
+the server they 404 (verified 2026-08-08) and the key is above `public_html` regardless.
+
+The three questions:
+1. **Weakest:** a script that sends neither `Sec-Fetch-Site` nor `Referer` gets tiles until 2000 per
+   address per day. Anyone with an IPv6 /64 or a proxy pool multiplies that, and 75 addresses a day
+   would drain the 150k free tier. The cap is a speed bump, not a lock, and the file says so.
+   Residual, accepted on card 0012.
+2. **Unchecked:** `THUNDERFOREST_KEY` is consulted before the file, so on a host that honours
+   `SetEnv` in `.htaccess` a key could be set from inside the repository through `app/.htaccess`
+   and the code would use it. The grep guard catches `SetEnv THUNDERFOREST_KEY <32 lowercase hex>`
+   (tested) but not upper-case hex or another variable name. Anyone who can commit can already read
+   the key file with one line of PHP, so this is an accidental-commit route, not an attack route.
+   Low; recorded so "exactly one file" is read precisely: one file plus one environment variable.
+3. **Leaks:** no path, no key; `curl_error` is swallowed; the 503 says a key file is missing, which
+   is true and harmless; a 401 from Thunderforest would surface as 502 "Tile upstream returned 401",
+   which tells an observer the key is dead. Minor, and useful to Rob. A PHP fatal (curl extension
+   missing) with `display_errors` on would print the script path; that is hosting config.
+
+**Live behaviour, criterion #3, browser at 375x812.** Layer on from localStorage at startup: 8
+requests to `api/tiles.php`, all 503, zero requests off-origin, canvas 304,500 px all opaque, 0 grey
+pixels, hint "Tiles unavailable. Tap Tiles twice to retry.", button "Tiles on". Off then on again:
+same, 16 requests total. With the layer off: 7 resources loaded, none of them `tiles.php`.
+![map canvas with every tile refused](../attachments/0009-2026-09-22-1.png)
+That is the map canvas captured from the page at half scale, not a window screenshot, which is why
+the button bar and hint are recorded as text above. One oddity: toggling off and back on inside
+400 ms once left the hint on the Thunderforest credit while every tile was refused; a clean cycle
+does not reproduce it, and it is the counter-reset race the 2026-09-20 breakage entry describes.
+
+**Verdict.** #1 holds (0 requests with the toggle off, measured). #2 unchanged since 2026-09-20,
+draw order read only. #3 holds, measured. #4 holds: the repository-root path is gone, the test
+catches its return, and the test drives the real proxy rather than reading it. Nothing disproves a
+criterion. Findings ranked: (a) the new test plants one location and claims all three, fix in place;
+(b) strip `no_proxy`/`NO_PROXY` from the fixture environment, fix in place; (c) HANDOVER's
+"deliberately red" line is stale; (d) the `SetEnv` route, noted, no action. Pass.
+
+**2026-09-22** (a) and (b) fixed in place by the parent session, not the reviewer. The fixture now
+plants the dummy key at `repo/`, `repo/app/` and `repo/app/api/` and unlinks all three before the
+"no key" comparison, so the test checks what its name claims; the reviewer measured that a mutant
+reading `app/tiles.key` fails against a key planted there. `no_proxy` and `NO_PROXY` are deleted from
+the fixture environment alongside `THUNDERFOREST_KEY`. Suite: 328 passed, 0 failed. (c) goes to the
+handover update this session; (d) stays noted.

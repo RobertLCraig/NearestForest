@@ -285,7 +285,7 @@ not, and at least one derived row must be in the answer or the test failed to ex
 is deliberately not a grep of the PHP source, because a `name_is_derived` in a comment would satisfy
 a grep and mark nothing. Against the unfixed endpoint it went red:
 
-    FAIL  the Shortcut endpoint says a derived name is ours — Car park near Friston Forest: name_is_derived is undefined, not a boolean | Abbot's Wood Car Park: name_is_derived is undefined, not a boolean | Butchershole Car Park: name_is_derived is undefined, not a boolean
+    FAIL  the Shortcut endpoint says a derived name is ours - Car park near Friston Forest: name_is_derived is undefined, not a boolean | Abbot's Wood Car Park: name_is_derived is undefined, not a boolean | Butchershole Car Park: name_is_derived is undefined, not a boolean
     318 passed, 1 failed
 
 With the fix, `node scripts/selftest.js` ends `319 passed, 0 failed` / `All self-tests passed.`
