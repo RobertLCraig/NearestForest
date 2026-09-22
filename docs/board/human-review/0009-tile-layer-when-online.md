@@ -56,7 +56,7 @@ underneath. Do not commit a key.
       site markers and above the bundled outline.
 - [x] #3 IF a tile request fails or times out, THEN THE APP SHALL keep the bundled outline visible
       and SHALL NOT leave blank or grey areas.
-- [ ] #4 WHEN the repository is inspected, THE APP SHALL contain no provider key.
+- [x] #4 WHEN the repository is inspected, THE APP SHALL contain no provider key. proves: `no path inside the repository is a key location (card 0009)`
 <!-- AC:END -->
 
 ## Tasks
@@ -265,3 +265,32 @@ and never decreases, so it cannot learn that.
 hidden the history and defeated the backstop for real. The backstop still stands, at five.
 
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 3 of 4 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-22** #4 built and ticked. The reviewer's finding was right: `readKey` in `app/api/tiles.php`
+tried three sources in order, `THUNDERFOREST_KEY` from the environment, `tiles.key` one level above the
+checkout, and `tiles.key` at the repository root, the last one commented "if the docroot is ever the
+repo root". That third candidate is gone. The proxy now consults exactly one file, the domain-directory
+one, and a `tiles.key` anywhere under the checkout is ignored: the proxy answers the same 503 "no API
+key file found" it gives when no key exists. The environment variable stays as the local-development
+route, because it never touches the tree. **Nothing changes on the server**: the key at
+`~/domains/forestlocator.enhanceify.co.uk/tiles.key`, one level above `public_html -> repo/app`, is the
+one path that was kept.
+
+The proof drives the real proxy rather than reading it. `scripts/selftest.js` lays out a throwaway
+checkout as the server has it (`<dir>/repo/app/api/tiles.php`, docroot `repo/app`), plants a dummy
+`tiles.key` at `repo/` with nothing at `<dir>/tiles.key`, serves it with `php -S`, and asks for a tile.
+`https_proxy` points at a dead port so an unfixed proxy fails locally rather than sending a made-up key
+to Thunderforest; `THUNDERFOREST_KEY` is stripped from the environment; the fixture is removed in a
+`finally` and lives in the system temp directory, never in the checkout. Red-proof, with the committed
+`tiles.php` swapped back in and the new test in place:
+
+    FAIL  no path inside the repository is a key location (card 0009) — got 502 "Tile upstream unreachable.", wanted 503 "no API key file found"
+    FAIL  a planted repo-root key gets the same refusal as no key at all (card 0009) — planted: 502 "Tile upstream unreachable."; none: 503 "Tile layer is not configured on this server: no API key file found. The map stil"
+
+That 502 is the unfixed proxy taking the planted key and going upstream with it. With the fix restored:
+`320 passed, 0 failed`, `All self-tests passed.` The existing `the key is read from outside the web
+root` check was green throughout, because it is a regex over the source and the outside path was also
+present; it could never have caught this, which is why the new one runs the code.
+
+The two other scope findings from the same review are not this card's criteria and were left alone:
+the `s=` style whitelist and the ticked "cancellation on pan" task. Both still stand as findings.
