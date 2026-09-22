@@ -259,3 +259,65 @@ did not contradict the new one.
 bearing only in browse mode (VoiceOver swipe). Moving the words inside the button would change the
 button's accessible name for every row and is a different decision from the one this card asked
 for; it is noted here rather than done.
+
+### 2026-09-22 review (v20260922102727-b285)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break each of the four criteria and couldn't. All four hold in the current code.
+
+**#1 is met.** In `app/app.js`, `render()` puts `<span class="row__point">` holding `NF.POINTS[idx]` right beside `row__glyph` inside `row__arrow`. It's visible text, not a tooltip, and `.row__point` in `app/app.css` gives it the same weight as the mileage.
+
+**#2 is met.** `openSheet()` in `app/app.js` writes `"<miles> miles <POINT> of you"` into `#sheet-sub`.
+
+**#3 is met.** The finding from the earlier reviews no longer applies to the current code:
+- **No `aria-label` on the div any more.** In `render()`, `<div class="row__arrow">` carries no label.
+- **The words are real text.** A span with class `visually-hidden` holds `esc(NF.POINT_NAMES[idx]) + ' of you'`, so a screen reader reads "north-east of you" without needing any role.
+- **The letters are hidden from readers.** The arrow and the `NE` span are both `aria-hidden="true"`, so the point is announced once, as words, and never as "nee".
+- **The hiding class is safe.** `.visually-hidden` in `app/app.css` uses the 1px clip method, not `display:none` or `visibility:hidden`, so the words stay readable by a screen reader.
+- **Nothing hides the whole row.** No parent element in the row markup is `aria-hidden`.
+
+**#4 is met.** `CACHE = 'nearest-forest-v29-2026-09-22'` in `app/sw.js` matches `BUILD = 'v29-2026-09-22'` in `app/core.js`.
+
+I didn't run `scripts/selftest.js`, so the "320 passed" result on the card is the builder's claim, not something I checked. The distance column still sits outside the row's button, but no criterion covers that, and the card records leaving it on purpose.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked the 2026-09-22 build of card 0006 through the `scope` lens and found nothing that crossed the fence and nothing left half done. The large cumulative diff above holds other cards' work; this card's fix is only one commit, `0fa17d3`.
+
+**What changed, and all of it matches a ticked task:**
+- **`render()` in `app/app.js`:** the `aria-label` on `<div class="row__arrow">` is gone. The arrow glyph and the letters are now hidden from screen readers. A visually hidden span carries the spoken text, for example "north-east of you". This is the reviewer's own suggested fix.
+- **`app/app.css`:** adds the `.visually-hidden` clip rule and nothing else.
+- **`app/core.js`:** changes only the comment above `POINT_NAMES` and bumps `BUILD`. The bearing maths (`compassIdx`, `bearingDeg`) is untouched.
+- **`app/sw.js`:** bumps `CACHE` to match the new `BUILD`, as #4 requires.
+- **`scripts/selftest.js`:** adds two checks that close the untested gap the earlier reviews named. One renders the distance column and reads it as a screen reader would. The other pins the `.visually-hidden` rule.
+
+**Nothing crossed the fence:** no `deviceorientation`, no heading-relative wording, no map work and no road directions.
+
+**Left undone, but not half done:** the distance column still sits outside `<button class="row__main">`, so tabbing from button to button skips the bearing. Criterion #3 only says what a reader announces when it reads a row, and browse-mode reading now announces the words. The builder recorded this on the card as a separate decision rather than quietly widening the change, which is the right call.
+
+This lens disproves no criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the fix for criterion #3 and could not. **Criterion #3 now holds, and I am not reopening anything.**
+
+- **The old label is gone everywhere.** In `render()` in `app/app.js`, `row__arrow` is now a plain div with no `aria-label`. The arrow and the `NE` letters are both hidden from screen readers. The words "north-east of you" sit in a `.visually-hidden` span, so a reader gets them as ordinary text. Nothing else in `app/` builds `row__arrow` or relied on the old label.
+- **The layout does not change.** The `.visually-hidden` class in `app/app.css` takes the span out of normal layout (`position:absolute`), so the flex `gap` does not apply to it. The distance column stays at 84px.
+- **The code comment is now true.** The comment over `POINT_NAMES` in `app/core.js` describes what the markup actually does.
+- **The new test can fail.** The check in `scripts/selftest.js` runs the real distance code from `app.js`. It fails if the label moves back onto the div, if the letters stop being hidden from readers, or if the CSS class is deleted or switched to `display:none`. I read the test but did not run the suite.
+
+One gap, which is not a #3 defect: in `openSheet()`, `#sheet-sub` still shows "10.8 miles NE of you". A screen reader will say "nee" there. Criterion #3 covers list rows and #2 asks for that exact text, so this is a gap for a future card, not a failure here.
+
+As the builder noted, the bearing is outside the row's button, so a reader moving button to button never reaches it. Criterion #3 does not ask for that.
+
+VERDICT: sound
+
