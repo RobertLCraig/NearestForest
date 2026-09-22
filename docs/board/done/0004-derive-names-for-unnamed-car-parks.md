@@ -52,11 +52,11 @@ records are single points, not polygons, so nearest-neighbour is the available a
 ## Acceptance
 <!-- AC:BEGIN -->
 - [x] #1 WHEN a car park has no usable upstream name, THE APP SHALL display a derived name naming
-      the nearest forest, for example "Car park near Friston Forest".
+      the nearest forest, for example "Car park near Friston Forest". proves: `every derived name names the forest it is actually nearest to`
 - [x] #2 WHEN a name is derived rather than published, THE APP SHALL mark it visually so it is not
       mistaken for an official name. proves: `the Shortcut endpoint says a derived name is ours`
 - [x] #3 IF the nearest forest is further away than a sane threshold, THEN THE APP SHALL keep the
-      generic label rather than claiming a misleading association.
+      generic label rather than claiming a misleading association. proves: `no car park beyond the threshold claims a forest`
 <!-- AC:END -->
 
 ## Tasks
@@ -327,3 +327,71 @@ You've hit your session limit ┬À resets 10am (Europe/London)
 wrote the limit message into all three lenses, and its "no suite this job could find" is the loop
 looking for a Pest suite in a project whose suite is `node scripts/selftest.js`. Nothing on the card
 was assessed, so the bounce to `todo/` rested on nothing. Returned to `ai-review/` for a real pass.
+
+**2026-09-22** Adversarial review of the #2 rebuild (commit 32b0be9). Verdict: **sound, with three
+trivial fixes for the parent and one pre-existing finding to carry forward.** Nothing here disproves
+a criterion.
+
+**What was attacked, and what held.**
+- **The named test runs and can fail.** `node scripts/selftest.js` on this tree ends `328 passed, 0
+  failed` (not the 319 the build quoted; other cards have landed since) and `the Shortcut endpoint
+  says a derived name is ours` prints PASS. I broke `app/api/nearest.php` three separate ways and ran
+  the suite each time: dropping the `name_is_derived` key gave `name_is_derived is undefined, not a
+  boolean`; changing the wording to `(our name, not a published one)` gave `derived but the label
+  reads ...`; forcing `$derived = false` gave `name_is_derived is false, dataset says true`. All
+  three ended `327 passed, 1 failed`. Each mutation was restored with `git checkout` and
+  `git diff app/api/nearest.php` is empty. The test compares the live response against the dataset
+  record at the same coordinates (630 car parks, no duplicate coordinates, so the match is exact),
+  and it fails if php is missing or if no derived row comes back, so it cannot pass by accident.
+- **Input validation, live on 127.0.0.1:8765.** Missing lat/lng, `lat=abc`, `lat[]=1`, `lat=0x10`,
+  `lat=NaN`, `lat=1e308`, `source=forest'`, `source[]=carpark`, `source=<script>`,
+  `source=campsite` and a POST body all return 400 with a one-line reason and nothing else. `n=-5`,
+  `n=abc` and `n=99999999999999999999` are clamped to 1 / 1 / 25 rather than refused, which
+  contradicts the file's own "explicit rather than coerced" comment but leaks nothing and breaks
+  nothing. The Brighton query returns the derived row first with `name_is_derived: true` and the
+  label the doc promises; published rows carry `false` and plain labels.
+- **Doc matches the response.** `docs/build/IOS-SHORTCUT.md` step 5 and the source-filter bullet
+  describe exactly what the endpoint now sends. Its `_Last updated: 2026-08-08_` line was not
+  bumped by the edit, which is the first trivial fix.
+
+**Security, the three README questions, for this endpoint.**
+1. *Weakest:* an attacker who wants the site down hits `nearest.php` in a loop. Every request reads
+   and decodes the 719 KB `sites.json` and ranks 1,180 rows with no cache and no rate limit, so it
+   is the cheapest CPU on the host. Public open data, no user data, so the cost is availability
+   only. Pre-existing, not this card.
+2. *Unchecked:* nothing that matters. All four inputs are validated or clamped before use, `source`
+   is a strict whitelist, and the response is built only from dataset fields. No write path, no
+   auth to bypass, no other entry point.
+3. *Leaks on failure:* the 500 path names `sites.json` by basename and the `source` value echoed
+   back is one of three whitelisted strings, so a bad query gets no path, no trace and nothing about
+   the host. Observed, not inferred.
+
+**What is arguable, and I did not count it against #2.** The 19 car parks with no forest within
+five miles are served as `Unnamed car park (our name for it, not a published one)`. A placeholder
+is not really "our name for it". But the detail sheet in `app/app.js` (`openSheet()`, line 193)
+says the identical thing for the identical records, because `name_is_derived` is true on all 177,
+and the card's whole point on #2 was that every surface says the same thing. Changing the wording
+for that subset is a wording decision across four surfaces, which is a new card and not a defect
+in this one. Named here so nobody reads it as an oversight.
+
+**Per criterion.**
+- **#1 met**, and evidenced by named tests that the card does not cite: `the nearest car park to
+  Brighton is named after Friston Forest`, `every derived name names the forest it is actually
+  nearest to`, `every derived name reads as a place near a forest`. Second trivial fix: put one on
+  the line as `proves:`.
+- **#2 met**, on all four surfaces, and the Shortcut half is proven by a test shown red three ways
+  above.
+- **#3 met**, evidenced by `no car park within the threshold is left unnamed` and `no car park
+  beyond the threshold claims a forest`, again with no `proves:` on the line. Third trivial fix.
+
+**Carried forward, not this build.** The 2026-09-20 finding stands: the `nearestForest` reduce in
+`scripts/selftest.js` runs over every forest including the 276 Scottish ones while
+`scripts/parse.py` joins against English forests only. Zero mismatches today, so it is a latent
+false red, not a wrong name. No card in `todo/` or `in-progress/` names it; one should.
+
+**Not done here.** No screenshot. The preview browser available to this session could not reach
+127.0.0.1:8765 or localhost:8765 (`ERR_CONNECTION_REFUSED`, while curl from the same machine
+reaches it), so the Car parks tab was not looked at from this session. Rob's 2026-09-20 "so far so
+good" on a real phone remains the visual evidence for the list, sheet and map. The working tree
+also carries an uncommitted one-line `app/app.css` change (map pill background .72 to .8) that is
+not mine and was left untouched.

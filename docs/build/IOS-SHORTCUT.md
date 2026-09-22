@@ -1,6 +1,6 @@
 # Building the iOS Shortcut
 
-_Last updated: 2026-08-08_
+_Last updated: 2026-09-22_
 
 The second access method (see [DECISIONS](../DECISIONS.md), 2026-08-08). Siri-triggerable and
 therefore hands-free, which the PWA cannot be. It calls `api/nearest.php` because Shortcuts is far
