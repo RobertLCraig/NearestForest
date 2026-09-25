@@ -167,3 +167,5 @@ is still open would be inventing the answer.
 **Still not started, and rightly.** Rob's own preference is no accounts, and the trigger is
 whichever future feature turns out to need them. A card that begins on a maybe is how a static
 offline app grows a login screen nobody asked for.
+
+**2026-09-25** **Decided:** Google and Apple sign-in. Rob, 2026-09-25. Sign in with Apple needs the Apple Developer Program membership (79 GBP a year). The same membership is what any App Store release would need too.

@@ -158,3 +158,5 @@ rather than sitting here looking like an unanswered question.
 
 **Card `0027` is the send and it is downstream of this**, which Rob confirmed in the same breath: "I
 think gets answered by 0018". Its `needs: 0018` already says so and nothing there changes.
+
+**2026-09-25** **Decided:** a fourth option, not one of the three drafted: send an email that is purely informational and asks for nothing. No pitch, no trade mark question, and no request for introductions, so question 2 is no. Rob, 2026-09-25. Card 0027 draft needs rewriting to that shape before it is sent.

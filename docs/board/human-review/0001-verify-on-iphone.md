@@ -117,3 +117,5 @@ it in this lane with a ten-second ask is the same outcome without the two lane m
 
 **Not done, and worth saying plainly:** the two map fixes built on 2026-09-10 are still not
 deployed, so the phone that passed this test is running the old build. Cards `0008` and `0012`.
+
+**2026-09-25** Rob ran the check on the iPhone, 2026-09-25, with location set to Never. The top line read: Location permission denied. Enable it in Settings > Safari > Location. Showing distances from your last known position. So the app says why, and none of the fail cases (empty screen, endless spinner, no message) happened. One difference from the card: the list was ranked from the last known position, not alphabetically, because the phone had a stored position. Tick the criterion if that fallback is intended, which it reads as. If not, say so here.
