@@ -929,3 +929,12 @@ and never decreases, so it cannot learn that.
 hidden the history and defeated the backstop for real. The backstop still stands, at five.
 
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 3 of 4 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-28** Manager pass: back to `todo/`; #2 is already open and its finding still holds.
+`settledBecause` in `scripts/selftest.js` still takes `where.find(w => SETTLED_LANES.includes(w.lane))`,
+so a dependency with one settled copy is named stale even while an open copy exists, and no test
+builds that case. No card number sits in two lanes today (only `attachments/*.png` repeat), so it
+fires on nothing now, but the code and #2's "found only in" still disagree. The 2026-09-20 re-park
+came from a loop still at `-BounceLimit 2`; the orchestrator now runs NearestForest with
+`-BounceLimit 5` (every run in `storage/logs/work-card.log` on 2026-09-28), so a bounce count of 2
+no longer parks it.
