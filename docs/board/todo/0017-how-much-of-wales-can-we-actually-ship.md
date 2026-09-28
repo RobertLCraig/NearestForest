@@ -1,6 +1,3 @@
----
-waiting_on: the enquiry in docs/outreach/nrw-licence-enquiry.md to be sent to NRW - recheck 2026-09-27
----
 # How much of Wales can we actually ship?
 
 ## What I need from you
@@ -157,3 +154,5 @@ was answered Yes on 2026-08-18 and built on 2026-08-29, and the non-goal is reti
 **`waiting_on:` updated.** It had been `recheck 2026-09-11`, which is nine days past. It is now the
 send itself rather than their answer, because nothing has been sent and waiting on a reply to an
 email nobody posted is how a card sits still for a month while looking busy.
+
+**2026-09-29** **Decided:** option 1, the 116 named Welsh sites from NRW's own pages, coordinates from their OS grid references, no Welsh car parks. Settled by an attended agent under Rob's rule that human-review holds only what he must decide: it is this card's own recommendation, Rob said on `0016` on 2026-09-25 that Wales is next, and this card's Fail line already chose option 1 if NRW had not answered by the 2026-09-27 recheck, which has passed with nothing sent. Option 1 needs nobody's permission, so the build no longer waits on the email and the `waiting_on:` is removed. The NRW email in `docs/outreach/nrw-licence-enquiry.md` only gates option 2, the 3,472 recreation points, which the recommendation already says belong on their own later card; it stays written and ready for whenever Rob chooses to send it.
