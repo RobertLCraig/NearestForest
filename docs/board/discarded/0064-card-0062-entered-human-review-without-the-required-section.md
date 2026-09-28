@@ -512,3 +512,5 @@ VERDICT: defect
 
 
 **2026-09-21** The loop moved this card from todo/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
+
+**2026-09-29** Discarded by an attended agent under Rob's rule that human-review holds only what he must decide, as obsolete. **Its one subject was discarded today.** Card `0062`, whose section this card wrote and whose ask the two reviews disagree about, is in `discarded/`, so neither review needs to be chosen. The README requires `## What I need from you` only of a card in `human-review/`, so what is left open here is prose on cards nobody is asked to read in that lane, and a builder rewriting it would spend a session on nothing. The cause this series kept recording, a card entering the lane without the section, is fixed where it starts or not at all: ProgressBoard card `0210` (a card the loop parks reaches Rob flagged no ask) is that fix.
