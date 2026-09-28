@@ -1044,3 +1044,11 @@ VERDICT: defect
 
 
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 4 times between todo and ai-review, all 4 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 4 of 4 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-28** Manager pass: the 2026-09-21 finding is already fixed on `main`, so nothing is
+reopened. The review passed all four criteria and its only defect was `docs/HANDOVER.md` still
+calling the suite "deliberately red" on the card-size check. Commit `149b266` (2026-09-22, "docs:
+handover says the suite is green again") rewrote that paragraph: it now reads "`node
+scripts/selftest.js` is fully green again" and records that the old claim was stale. A walk of
+every lane today finds no card number in two lanes (only `attachments/*.png` repeat). Sent back for
+the final review.
