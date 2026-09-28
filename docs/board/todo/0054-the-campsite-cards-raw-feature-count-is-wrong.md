@@ -61,8 +61,12 @@ this fault is worth.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [x] WHEN card `0020`'s criterion #2 is read, THE APP SHALL state the raw feature count that
+- [ ] WHEN card `0020`'s criterion #2 is read, THE APP SHALL state the raw feature count that
       `data/raw/osm/` actually holds. proves: `card 0020 quotes the raw OSM feature count correctly`
+      Unticked 2026-09-29 on this finding: the proving assertion in `scripts/selftest.js` picks
+      card 0020 by `startsWith('0020-')` in every `docs/board` folder with no `.md` filter, so an
+      `attachments/0020-*.png` is read as the card, and its regex runs over the whole file rather
+      than the `AC:BEGIN`/`AC:END` block, so a quoted copy in `## Comments` can stand in for it.
 <!-- AC:END -->
 
 ## Tasks
@@ -327,3 +331,5 @@ VERDICT: defect
 
 
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, all 1 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 1 of 1 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-29** Checked by an attended agent under Rob's rule that human-review holds only what he must decide. **Both findings reproduce in the code, so the criterion is unticked with the disproof written beside it.** In `scripts/selftest.js`, the card 0054 block finds card 0020 with `fs.readdirSync(d).filter(f => f.startsWith('0020-'))` over every folder under `docs/board`, `attachments/` included and with no `.md` filter, and takes the first hit; it then runs `/only [\d,]+ of ([\d,]+) records carry any opening hours/` over the whole file. The 2026-09-21 reviewer's `UNMET: #1` could not untick it because this card's criterion carries no `#N`. The fix is a builder's: filter to `.md`, skip `attachments/`, and cut the file to the `AC:BEGIN`/`AC:END` block before matching. Moved to `todo/`; bounce count 2 against the loop's `-BounceLimit 5`.
