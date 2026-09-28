@@ -3252,7 +3252,10 @@ console.log('\n--- no compiled python is committed (card 0072) ---');
     // inside a comment never counted. -v names the pattern that decided, so a `!` pattern, or a
     // match from somewhere other than `.gitignore` (a global excludes file), is not a refusal.
     // --no-index, so a tracked copy of the sample path cannot change the answer.
-    const samples = [['scripts/__pycache__/probe', '__pycache__'], ['probe.pyc', '*.pyc']];
+    // `*.pyc` is sampled at the root AND in `scripts/`, where `parse.py` and the artefact live, so a
+    // `!scripts/*.pyc` or a root-only `/*.pyc` is not a refusal (the 2026-09-28 review).
+    const samples = [['scripts/__pycache__/probe', '__pycache__'], ['probe.pyc', '*.pyc'],
+      ['scripts/probe.pyc', '*.pyc']];
     const refused = new Set();
     const r = spawnSync('git', ['check-ignore', '-z', '--stdin', '-v', '--no-index', '--non-matching'],
       { cwd: root, env, input: samples.map(([p]) => p + '\0').join('') });
@@ -3263,9 +3266,8 @@ console.log('\n--- no compiled python is committed (card 0072) ---');
         if (source === '.gitignore' && !pattern.startsWith('!')) refused.add(p);
       }
     }
-    for (const [p, rule] of samples) {
-      if (!refused.has(p)) problems.push(`.gitignore carries no ${rule} rule`);
-    }
+    new Set(samples.filter(([p]) => !refused.has(p)).map(([, rule]) => rule))
+      .forEach(rule => problems.push(`.gitignore carries no ${rule} rule`));
     return problems;
   };
 
@@ -3340,6 +3342,16 @@ console.log('\n--- no compiled python is committed (card 0072) ---');
      && clean.length === 0,
      `!*.pyc: ${negPyc.join(' | ') || 'nothing'} // !__pycache__/: ${negCache.join(' | ') || 'nothing'}`
      + ` // clean: ${clean.join(' | ') || 'nothing'}`);
+
+  // The 2026-09-28 review: the `*.pyc` sample sat at the root, so a rule cancelled or never applied
+  // in `scripts/`, where the artefact actually lived, passed. `!scripts/*.pyc` re-includes it there;
+  // `/*.pyc` refuses the root only. Both must be named.
+  const negScripts = fixtureProblems('__pycache__/\n*.pyc\n!scripts/*.pyc\n', []);
+  const rootOnly = fixtureProblems('__pycache__/\n/*.pyc\n', []);
+  ok('no compiled python artefact is tracked: a *.pyc rule that misses scripts/ does not count',
+     negScripts.includes('.gitignore carries no *.pyc rule')
+     && rootOnly.includes('.gitignore carries no *.pyc rule'),
+     `!scripts/*.pyc: ${negScripts.join(' | ') || 'nothing'} // /*.pyc: ${rootOnly.join(' | ') || 'nothing'}`);
 }
 
 console.log('\n--- blockers outlive their answers (card 0070) ---');

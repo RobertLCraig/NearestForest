@@ -48,7 +48,7 @@ one example beyond that is a rule nobody measured.
       proves: `no compiled python artefact is tracked`
 - [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
       `__pycache__` or `*.pyc`. proves: `no compiled python artefact is tracked`
-- [ ] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
+- [x] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
       either rule is absent. proves: `no compiled python artefact is tracked`
 <!-- AC:END -->
 
@@ -429,4 +429,35 @@ VERDICT: sound
 **acceptance**
 
 - **#3 reopened**, by the acceptance lens: the *.pyc rule is tested only at the repo root, so a `!scripts/*.pyc` line cancels it where the artefact actually lived and the assertion stays green
+
+**2026-09-28** RESULT: done
+TESTS: +1 new, all green
+TOUCHED: scripts/selftest.js
+TOUCHED: docs/board/in-progress/0072-a-compiled-python-artefact-is-tracked-in-a-public-repository.md
+OUT-OF-SCOPE: none
+
+This fixes the 2026-09-28 review's acceptance finding on #3. `.gitignore` and `scripts/parse.py` are
+untouched.
+
+`compiledPythonProblems` now asks `git check-ignore` about a third sample, `scripts/probe.pyc`, beside
+`probe.pyc` at the root. `scripts/` is where `parse.py` and the artefact lived. Both samples report
+under the one `*.pyc` rule, and the message is named once however many samples miss.
+
+**The new test**, `...: a *.pyc rule that misses scripts/ does not count`, builds two throwaway
+repositories: one with `*.pyc` then `!scripts/*.pyc`, one with the root-only `/*.pyc`. Both must name
+`.gitignore carries no *.pyc rule`. **Seen failing before the fix**, for the reviewer's reason:
+`!scripts/*.pyc: nothing // /*.pyc: nothing`. Green after it. The clean case in the earlier `!` test
+still names nothing, so the new sample does not make the check stuck red.
+
+**Checked on the real tree too:** `!scripts/*.pyc` appended to `.gitignore` makes the main assertion
+fail with `.gitignore carries no *.pyc rule`. `.gitignore` was put back.
+
+**What this does not cover.** The sample is `scripts/`, not every folder. A `!app/*.pyc` would still
+pass. No Python lives outside `scripts/`, so that is where a cache can appear; I did not widen it to a
+list of folders nobody measured.
+
+Suite: 330 passed, 1 failed. The failure is `no open card is blocked by a settled card` (0027 needs
+0018), which card `0077` carries. A fresh run leaves no `scripts/__pycache__`. **`pest` and `pint`
+were not run**: this repository has no `vendor/` and no PHP suite. **No browser check applies**:
+nothing under `app/` changed.
 
