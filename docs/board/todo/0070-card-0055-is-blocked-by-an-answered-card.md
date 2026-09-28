@@ -52,7 +52,7 @@ it, and a rule written from one example beyond that is a rule nobody measured.
 - [x] #3 THE SUITE SHALL also fail when that card number is in `ai-review/`, or carries an entry
       marked `**Decided:**` in any lane, because `docs/board/README.md` calls both settled.
       proves: `no open card is blocked by a settled card`
-- [x] #4 WHEN a card's frontmatter cannot be read reliably, THE SUITE SHALL fail naming that card
+- [ ] #4 WHEN a card's frontmatter cannot be read reliably, THE SUITE SHALL fail naming that card
       rather than reading it as carrying no blockers. proves: `every needs: on this board can be
       read`
 <!-- AC:END -->
@@ -969,3 +969,73 @@ loose body scan reads raw lines, so a quoted `needs:` in a code fence is reporte
 
 **No pest or pint.** This project has no PHP suite and no `vendor/`; `node scripts/selftest.js` is the
 suite. **Not checked in a browser**: nothing under `app/` changed.
+
+### 2026-09-28 review (v20260928192952-407c)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break all four criteria and could not. I found no defect.
+
+**#1 holds.** Card `0055` is now at `docs/board/done/0055-card-0020-has-outgrown-the-agent-file-reader.md`. It has no frontmatter and no `needs:` line. Under `## Links`, `0025` sits under **Relates to** with the answer as its reason. There is no `Blocked by` heading.
+
+**#2 holds.** The check is the `card 0070` block in `scripts/selftest.js`. The helper `settledWhere` names a card only when every copy is in a settled lane. So a copy still in an open lane keeps it open. Fixtures in the same block prove this.
+
+**#3 holds.** `SETTLED_LANES` includes `ai-review`. `settledWhere` also treats a `**Decided:**` entry at the start of a line, in any lane, as settled. `prose()` first removes samples in code fences and indented blocks. The code comment says why a `## Decided` heading alone does not count: card `0018` sits under one and is still undecided.
+
+**#4 holds.** The frontmatter parse reports each bad shape to the test `every needs: on this board can be read`: a block that never closes, a key in the wrong case or with a leading space, an empty value, a number that is not four digits, and a `needs:` outside the frontmatter. It reads the YAML list forms, and it reports files it cannot read. A closing `---` with a trailing space now parses correctly.
+
+One small gap remains, and it breaks no criterion. If the frontmatter never closes but a `---` line comes later in the card, the check reads the card too strictly. It does not skip anything.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked the scope of this card. I looked only at the commits for card 0070, not the whole branch diff.
+
+**Scope review, card 0070**
+
+The large diff covers the whole branch. The changes to `app/`, `docs/HANDOVER.md`, `docs/PRD.md` and the other card moves come from other cards' commits. None of them is in a 0070 commit. Only three commits belong to this card: `5528c7b`/`60819b1` (the first build), `7b1ed20` and `7cd807b`.
+
+**One growth over the fence, and it is justified.** `7b1ed20` also removed `needs: 0016` from cards `0017` and `0020`, not only from `0055`. The fence says "One key on one card". But criterion #3 made those two blockers settled, so the widened check went red on them for a true reason. The commit message says why. It is the same key, the `## Comments` threads were not touched, and card `0075` was discarded, not left open.
+
+**Nothing is left half done without a card.** The latest build, `7cd807b`, fixes the "an open copy is not settled" finding in `settledWhere` inside the `blockers outlive their answers (card 0070)` block of `scripts/selftest.js`, and it adds fixture cases for it. It raised two new cards instead of fixing the problems:
+- `0077`: card `0027` has a stale blocker, `0018`.
+- `0078`: the loose `needs:` body scan reads raw text instead of `prose()`.
+
+Both have acceptance and a plan. `0078` reports too much. It never hides a blocker, so it does not disprove #4.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: defect**
+
+**What I checked:** the two checks in `scripts/selftest.js`, in the `blockers outlive their answers (card 0070)` block. I tried to make them miss a blocker without failing.
+
+**What holds:**
+- Settled now means `done/`, `discarded/`, `ai-review/`, or a card with a `**Decided:**` entry. That covers #2 and #3.
+- A copy that is still open blocks correctly.
+- A sample marker inside a code fence is ignored.
+- Many bad shapes now fail loudly: an unclosed block, a trailing space on `---`, `Needs:`, an indented key, an empty value, a bare `25`, and a quoted `"0025"`.
+
+**What breaks (#4):**
+1. The value parser splits only on commas. Each piece then passes if it *starts* with four digits (the regex is `/^(\d{4})\b/`). This lets a reason follow the number, but it also drops a second number with no report:
+   - `needs: 0025 0071` reads as `0025` only.
+   - `needs: 0025; 0071` does the same.
+   - `needs: 0025 and 0071` does the same.
+
+   `0071` is lost, and the run stays green. That is a card that "cannot be read reliably" read as having fewer blockers.
+2. In the YAML list form, the loop stops at the first line that is not a `- ` line. A `# comment` line between items stops it early. All items after the comment are dropped with no report.
+
+UNMET: #4 a `needs:` value with two numbers split by a space or semicolon, or a YAML list broken by a comment line, silently drops every blocker after the first instead of failing naming the card
+
+VERDICT: defect
+
+**acceptance**
+
+- **#4 reopened**, by the breakage lens: a `needs:` value with two numbers split by a space or semicolon, or a YAML list broken by a comment line, silently drops every blocker after the first instead of failing naming the card
+
