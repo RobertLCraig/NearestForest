@@ -316,3 +316,11 @@ and never decreases, so it cannot learn that.
 hidden the history and defeated the backstop for real. The backstop still stands, at five.
 
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 1 of 2 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+**2026-09-28** Manager pass: back to `todo/`; #1 is already open and its finding still holds.
+`httpsRedirect` in `scripts/selftest.js` still ends the host with `(?=[\/%\s]|$)`, so any `%`
+variable (`%{ENV:X}`, `%1`, `%{HTTP:X-Forwarded-Host}`) straight after the host passes. Fix as the
+review says: allow only `/`, whitespace, end of line or the literal `%{REQUEST_URI}` after the host,
+and add a `%{HTTP:...}` case to the lookalike assertion. The 2026-09-20 re-park came from a loop
+still at `-BounceLimit 2`; the orchestrator now runs NearestForest with `-BounceLimit 5` (every run
+in `storage/logs/work-card.log` on 2026-09-28), so a bounce count of 2 no longer parks it.
