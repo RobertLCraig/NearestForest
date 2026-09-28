@@ -6,29 +6,22 @@ not_for_the_loop: sends an email to a public body in Rob's name
 
 ## What I need from you
 
-**Two checks, then one send.**
+**Send Forestry England the purely informational email you chose on card `0018` on 2026-09-25,
+once the draft says only that.** The draft on file still carries the old asks, so it needs
+rewriting first.
 
-1. **Confirm the two `[confirm]` claims** in `docs/outreach/forestry-england-enquiry.md`: that you
-   are a Forestry England member, and that you have visited more than twenty of their sites. Fix the
-   number or cut the sentence. **Do not send with either still unverified.** They are what make you
-   a member who built something rather than a stranger scraping a website.
-2. **Read `docs/outreach/forestry-england-enquiry-review.md`** and decide what to change. Three cold
-   reviewers, given the draft and no other context, all predicted no reply at all; the sharpest line
-   is "nothing in this email makes yes cheaper than no". You need not take their advice, since some
-   of it contradicts your own instructions on `0018`, but nobody has yet read them.
-3. **Fill the `[phone]` and `[email]` placeholders** in the signature, send it to
-   **info@forestryengland.uk**, and paste whatever comes back into this card.
+1. **Have the draft rewritten.** Open a session in `C:\Dev\NearestForest` and say "rewrite
+   `docs/outreach/forestry-england-enquiry.md` as the no-ask notification card 0018 chose". It
+   drops the pitch, the name question and the introductions, and with them the two `[confirm]`
+   claims and the cold reviews, which were about the asks. Expected: a short email saying you had a
+   problem, built this, and thought they might like to know, with the site's link.
+2. **Read it, fill `[phone]` and `[email]` if the signature keeps them, and send it** to
+   **info@forestryengland.uk**. Paste any reply into this card.
 
-**Pass** is a written reply naming which of the asks they agree to. Any of these is a pass, because
-all three settle something that is currently unsettled:
-
-- a yes to the app staying public, which is the one that matters
-- a no to the app staying public, which is worth knowing now rather than later
-- a handoff to another team, which means it reached a person
-
-**Fail** is silence by **2026-09-11**, four weeks. Treat that as a soft yes to the status quo, set
-this card aside, and do not chase twice. A reply asking for the app to come down is **not** a fail
-and is not this card: it is an action with a deadline, and it gets its own card immediately.
+**Pass:** the email is sent with no `[confirm]`, `[phone]` or `[email]` left in it, and a dated
+line here says so. Any reply, or none, is fine after that: it asked for nothing.
+**Fail:** the old draft goes out with its asks still in it. A reply asking for the app to come down
+is not a fail and is not this card: it gets its own card straight away.
 
 **Why it needs you.** It is outward-facing correspondence to a public body, sent in your name, and
 it tells the organisation whose data the app uses that the app exists. That is a risk you own, and
