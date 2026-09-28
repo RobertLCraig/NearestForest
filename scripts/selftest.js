@@ -3223,14 +3223,16 @@ console.log('\n--- no compiled python is committed (card 0072) ---');
   // The `.gitignore` half is in the same assertion on purpose. Untracking the file without the
   // rules leaves the repository one `git add -A` away from exactly where it started, which is how
   // this artefact arrived in the first place.
-  const { execFileSync } = require('child_process');
+  const { execFileSync, spawnSync } = require('child_process');
   const compiledPythonProblems = (root, env) => {
     const problems = [];
 
+    // -z, because without it git quotes any path holding a non-ASCII byte, a quote or a backslash,
+    // and `"caf\303\251.pyc"` ends in a quote, so neither test below would match it.
     let tracked = [];
     try {
-      tracked = execFileSync('git', ['ls-files'], { cwd: root, env, stdio: ['ignore', 'pipe', 'pipe'] })
-        .toString().split('\n').map(f => f.trim()).filter(Boolean);
+      tracked = execFileSync('git', ['ls-files', '-z'], { cwd: root, env, stdio: ['ignore', 'pipe', 'pipe'] })
+        .toString('utf8').split('\0').filter(Boolean);
     } catch (e) {
       const why = String((e.stderr && e.stderr.toString().trim()) || e.message).split('\n')[0];
       problems.push(`git ls-files could not list the tracked files, so none were checked: ${why}`);
@@ -3239,22 +3241,30 @@ console.log('\n--- no compiled python is committed (card 0072) ---');
       .filter(f => /(^|\/)__pycache__(\/|$)/.test(f) || /\.pyc$/i.test(f))
       .forEach(f => problems.push(`${f} is tracked`));
 
-    // Read every non-comment rule, so a rule that only appears inside a comment does not count.
-    // A missing or unreadable `.gitignore` carries neither rule, so it is named and both rules below
-    // are then reported absent, rather than the read throwing.
-    let rules = [];
+    // A missing or unreadable `.gitignore` is named here, rather than the check throwing.
     try {
-      rules = fs.readFileSync(path.join(root, '.gitignore'), 'utf8').split(/\r?\n/)
-        .map(l => l.trim())
-        .filter(l => l && !l.startsWith('#'));
+      fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
     } catch (e) {
       problems.push(`.gitignore could not be read: ${e.code || e.message}`);
     }
-    if (!rules.some(r => r === '__pycache__/' || r === '__pycache__')) {
-      problems.push('.gitignore carries no __pycache__ rule');
+    // Ask git whether it refuses a sample of each, rather than looking for the rule's line: a later
+    // `!*.pyc` cancels a `*.pyc` that is still sitting there (the 2026-09-17 review), and a rule
+    // inside a comment never counted. -v names the pattern that decided, so a `!` pattern, or a
+    // match from somewhere other than `.gitignore` (a global excludes file), is not a refusal.
+    // --no-index, so a tracked copy of the sample path cannot change the answer.
+    const samples = [['scripts/__pycache__/probe', '__pycache__'], ['probe.pyc', '*.pyc']];
+    const refused = new Set();
+    const r = spawnSync('git', ['check-ignore', '-z', '--stdin', '-v', '--no-index', '--non-matching'],
+      { cwd: root, env, input: samples.map(([p]) => p + '\0').join('') });
+    if (r.status === 0 || r.status === 1) {
+      const f = r.stdout.toString('utf8').split('\0');
+      for (let i = 0; i + 3 < f.length; i += 4) {
+        const [source, , pattern, p] = f.slice(i, i + 4);
+        if (source === '.gitignore' && !pattern.startsWith('!')) refused.add(p);
+      }
     }
-    if (!rules.some(r => r === '*.pyc')) {
-      problems.push('.gitignore carries no *.pyc rule');
+    for (const [p, rule] of samples) {
+      if (!refused.has(p)) problems.push(`.gitignore carries no ${rule} rule`);
     }
     return problems;
   };
@@ -3287,6 +3297,49 @@ console.log('\n--- no compiled python is committed (card 0072) ---');
        && got.includes('.gitignore carries no *.pyc rule'),
        got.join(' | '));
   }
+
+  // The 2026-09-17 review of this card found two ways past the check, and each needs a real
+  // repository to show, because the fault is in what git reports rather than in the file list.
+  // A throwaway repository per case: `.gitignore` as given, each file force-added to the index.
+  const fixtureProblems = (gitignore, files) => {
+    const dir = fs.mkdtempSync(path.join(osmod.tmpdir(), 'nf-0072-'));
+    try {
+      const env = { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(dir) };
+      execFileSync('git', ['init', '-q'], { cwd: dir, env });
+      fs.writeFileSync(path.join(dir, '.gitignore'), gitignore);
+      for (const f of files) {
+        fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true });
+        fs.writeFileSync(path.join(dir, f), 'x');
+        execFileSync('git', ['add', '-f', '--', f], { cwd: dir, env });
+      }
+      return compiledPythonProblems(dir, env);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  };
+  const RULES = '__pycache__/\n*.pyc\n';
+
+  // Finding 1: without -z, git quotes a path holding a non-ASCII byte, so `café.pyc` came back as
+  // `"caf\303\251.pyc"`, which ends in a quote and matched neither test. Both must be named as-is.
+  const quoted = fixtureProblems(RULES, ['café.pyc', '__pycache__/é']);
+  ok('no compiled python artefact is tracked: a path git would quote is still named',
+     quoted.includes('café.pyc is tracked') && quoted.includes('__pycache__/é is tracked'),
+     quoted.join(' | ') || 'named nothing');
+
+  // Finding 2: a later `!` line cancels a rule while the rule's own line is still there, so the
+  // rule being PRESENT proved nothing. What counts is whether git refuses the file. The clean case
+  // is in the same assertion so it cannot pass by being stuck red.
+  const negPyc = fixtureProblems(RULES + '!*.pyc\n', []);
+  const negCache = fixtureProblems(RULES + '!__pycache__/\n', []);
+  const clean = fixtureProblems(RULES, []);
+  ok('no compiled python artefact is tracked: a rule cancelled by a later ! line does not count',
+     negPyc.includes('.gitignore carries no *.pyc rule')
+     && !negPyc.includes('.gitignore carries no __pycache__ rule')
+     && negCache.includes('.gitignore carries no __pycache__ rule')
+     && !negCache.includes('.gitignore carries no *.pyc rule')
+     && clean.length === 0,
+     `!*.pyc: ${negPyc.join(' | ') || 'nothing'} // !__pycache__/: ${negCache.join(' | ') || 'nothing'}`
+     + ` // clean: ${clean.join(' | ') || 'nothing'}`);
 }
 
 console.log('\n--- blockers outlive their answers (card 0070) ---');

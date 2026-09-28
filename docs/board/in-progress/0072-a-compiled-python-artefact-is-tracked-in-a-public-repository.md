@@ -46,9 +46,9 @@ one example beyond that is a rule nobody measured.
 <!-- AC:BEGIN -->
 - [x] #1 THE REPOSITORY SHALL track no file under a `__pycache__` directory and no `*.pyc` file.
       proves: `no compiled python artefact is tracked`
-- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
+- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
       `__pycache__` or `*.pyc`. proves: `no compiled python artefact is tracked`
-- [ ] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
+- [x] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
       either rule is absent. proves: `no compiled python artefact is tracked`
 <!-- AC:END -->
 
@@ -321,3 +321,46 @@ exist, so a later `!*.pyc` cancels them unseen (#3; `git check-ignore` on a samp
 git actually does). The 2026-09-20 re-park came from a loop still at `-BounceLimit 2`; the
 orchestrator now runs NearestForest with `-BounceLimit 5` (every run in
 `storage/logs/work-card.log` on 2026-09-28), so a bounce count of 2 no longer parks it.
+
+**2026-09-28** RESULT: done
+TESTS: +2 new, all green
+TOUCHED: scripts/selftest.js
+TOUCHED: docs/board/in-progress/0072-a-compiled-python-artefact-is-tracked-in-a-public-repository.md
+OUT-OF-SCOPE: none
+
+This fixes both findings of the 2026-09-17 review. `.gitignore` and `scripts/parse.py` are untouched.
+
+**#2, quoted paths.** `compiledPythonProblems` now runs `git ls-files -z` and splits on NUL, so git
+never quotes a path and `café.pyc` arrives as `café.pyc`.
+
+**#3, a rule that does not take effect.** The check no longer looks for the rule's line. It asks git:
+`git check-ignore -z --stdin -v --no-index --non-matching` on two sample paths,
+`scripts/__pycache__/probe` for the `__pycache__/` rule and `probe.pyc` for `*.pyc`. A sample counts
+as refused only when the pattern that decided it comes from `.gitignore` and does not start with
+`!`. So a later `!*.pyc` fails it, and so does a match from a global excludes file rather than the
+repository's own `.gitignore`. The messages are unchanged (`.gitignore carries no *.pyc rule`), and
+the old bare-folder test still passes, since `check-ignore` outside a repository refuses nothing.
+One side effect, stricter in no direction the criterion names: an equivalent rule such as
+`*.py[cod]` now satisfies `*.pyc`, because git does refuse the file.
+
+**The two new tests build a throwaway git repository each** (`git init`, `.gitignore` as given,
+files force-added), since the faults are in what git reports and a file list cannot show them:
+- `...: a path git would quote is still named` tracks `café.pyc` and `__pycache__/é`, and passes only
+  if both are named by their real names.
+- `...: a rule cancelled by a later ! line does not count` checks that `!*.pyc` names only the
+  `*.pyc` rule, `!__pycache__/` names only the `__pycache__` rule, and the clean `.gitignore` names
+  nothing, so it cannot pass by being stuck red.
+
+**Seen failing before the fix**, for the reviewer's reasons: the first `named nothing`, the second
+`!*.pyc: nothing // !__pycache__/: nothing` (the old check saw both rule lines and passed). Both
+green after it.
+
+**Checked on the real tree too:** `!*.pyc` appended to `.gitignore` makes the main assertion fail
+with `.gitignore carries no *.pyc rule`; the `__pycache__/` line deleted makes it fail with
+`.gitignore carries no __pycache__ rule`. `.gitignore` was put back both times. A fresh run leaves
+no `scripts/__pycache__`.
+
+Suite: 329 passed, 1 failed. The failure is `no open card is blocked by a settled card` (0027 needs
+0018), which card `0077` in `todo/` already carries, so no card was raised. **`pest` and `pint` were
+not run**: this repository has no `vendor/` and no PHP suite; the suite is `node scripts/selftest.js`.
+**No browser check applies**: nothing under `app/` changed.
