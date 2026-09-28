@@ -5,35 +5,38 @@ no_outward_effect: "send" in criterion #2 is the server emitting HTTP response h
 
 ## What I need from you
 
-**One call, and I would take the first.** Untick criterion #7 and send this card to `todo/`, so a
-builder closes the two things the 2026-09-11 reviewer found, **or** write on this thread that those
-findings are the next card's work and let this one go to `done/`. Doing neither is the fail: it
-comes back to this lane unchanged on the next run.
+**Should this card get one more build in a session you start, now that the loop will not build it
+again?** It has come back from review five times, which is the loop's limit, so moving it to `todo/`
+only gets it parked here again.
 
-**What's wrong.** The reviewer graded the work itself sound, twice over, and then found two loose
-ends underneath it.
+**What is still open.** Criterion #7, already unticked by the 2026-09-20 review. Two things, both
+checked on `main` on 2026-09-29:
 
-1. `docs/HANDOVER.md` still teaches the old, narrower rule. Its `app/.htaccess` bullet says no
-   inline script, inline handler or `style=` attribute may enter `index.html`. The tests now cover
-   every shipped script, so somebody following the brief believes a handler inside a template
-   string is allowed.
-2. `setAttribute('style', ...)` breaks the same policy and slips past both of the widened checks,
-   because each is a text match for a literal `style=`.
+1. The style check in `scripts/selftest.js` (`no style attribute in any shipped markup`) matches only
+   a quoted literal `style="`. `setAttribute('style', ...)` and an unquoted `style=` inside a shipped
+   template string both break the CSP and leave the suite green.
+2. `docs/HANDOVER.md`, the `app/.htaccess` bullet, still says the rule covers `index.html` only.
+   The tests cover every shipped script.
 
-**Cause.** Neither finding disproves a criterion, so a reviewer had nothing to hand back, and a
-builder opening the card sees seven ticked boxes and nothing to do. The card cycles instead of
-moving.
+**The two options.**
 
-**Pass** is either of:
-- criterion #7 unticked and the card in `todo/`, so a builder widens the style check past a literal
-  `style=` and corrects the brief's bullet; or
-- a line here saying both are new work, with a new card carrying them.
+1. **Build it once more, attended.** Open a session in `C:\Dev\NearestForest` and say "work card
+   0011 criterion #7". It widens the check to catch both shapes, proves each goes red, corrects the
+   brief, and hands the card to review.
+2. **Close it with the gap written down.** The same session rewrites #7 to what the tests prove
+   today, quoted `style=` and `on*=` in every shipped script, and raises a new card for the rest.
 
-**Fail** is leaving all seven ticked with the card in this lane.
+**I recommend 1.** Option 2 moves the open work onto a card number with no bounces, which is the
+laundering of the count you turned down on 2026-09-20. And the gap sits inside the defence this card
+exists for.
 
-**Why it needs you.** Only a person may untick. The judgement underneath is whether a gap a
-reviewer found in a check counts as this card's debt or the next card's job, and nothing in the
-repository settles that.
+**Pass:** #7 ticked by a build whose tests go red on `setAttribute('style'` and on an unquoted
+`style=` in a shipped script, the brief's bullet names every shipped script, and the card is in
+`ai-review/`.
+**Fail:** the card is still here with #7 open. If the session finds a reason #7 cannot be met, it
+says so on this thread and the card stays here for you.
+
+Paste to answer: `**2026-09-29** **Decided:** option 1, build #7 once more in an attended session.`
 
 **Note on length.** This card is past the 100-line budget and this section could not bring it back:
 `## Direction` and `## Comments` are append-only and hold most of the file.
