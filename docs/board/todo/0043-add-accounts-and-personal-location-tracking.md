@@ -1,3 +1,6 @@
+---
+not_for_the_loop: needs an Apple Developer Program membership paid for and Google and Apple sign-in clients created in Rob's name
+---
 # Add accounts and personal location tracking
 
 ## What I need from you
@@ -169,3 +172,5 @@ whichever future feature turns out to need them. A card that begins on a maybe i
 offline app grows a login screen nobody asked for.
 
 **2026-09-25** **Decided:** Google and Apple sign-in. Rob, 2026-09-25. Sign in with Apple needs the Apple Developer Program membership (79 GBP a year). The same membership is what any App Store release would need too.
+
+**2026-09-29** Moved to `todo/` by an attended agent, because the answer above is already here and the card never moved. **`not_for_the_loop:` added**, since building this means paying for the Apple Developer Program and creating Google and Apple sign-in clients, which are third-party accounts in Rob's name; without the key the loop would also refuse it at once, because all seven criteria say `proves: manual`. Whoever builds it in an attended session rewrites criterion #2 first (it describes email-and-password registration, which the chosen OAuth design removes) and gives the criteria real proofs where a test can reach them.
