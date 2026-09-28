@@ -1,6 +1,3 @@
----
-waiting_on: Rob and Cheryl to settle whether the email carries any ask at all - recheck 2026-10-04
----
 # Do we write to Forestry England, and with which asks?
 
 ## What I need from you
