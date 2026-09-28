@@ -2,8 +2,8 @@
 
 ## What I need from you
 
-**One question, and it is not about this card. Should a card in `human-review/` be held to the
-100-line budget at all?** Yes or no.
+**Should a card in `human-review/` be held to the 100-line budget at all, given its thread only
+grows? Yes or no.** The question is about the convention on every board, not about this card.
 
 **Why you are being asked.** This card's job was to cut two long cards down to 100 lines. It did:
 `0018` and `0020` were both at 100 when it finished. **Today `0018` is 160 lines and `0020` is 344.**
@@ -27,6 +27,13 @@ rather than this project's, which is why it is yours.
 
 I would take **no**. The budget exists so a reader can meet a card without wading; a thread of dated
 review verdicts is a log, and nobody reads a log to understand the ask.
+
+**Pass:** a dated `**Decided:**` line on this card saying yes or no. The README change it implies is
+estate-wide, so it lands on ProgressBoard's board, not here; this card then goes to `done/`.
+**Fail:** no answer, and this card stays here with all four criteria met.
+
+Paste to answer: `**2026-09-29** **Decided:** no, the 100-line budget does not count a card's
+Comments thread in human-review.`
 
 **This card itself is finished either way and needs nothing from you.** All four criteria are met.
 #4 was the only one open and it is now genuinely true rather than waived: the one failure it was
