@@ -1068,3 +1068,72 @@ partial though all four criteria are ticked.
 **No pest or pint.** This project has no PHP suite and no `vendor/`; `node scripts/selftest.js` is
 the suite. **Not checked in a browser**: nothing under `app/` changed.
 
+### 2026-09-28 review (v20260928194150-d083)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I reviewed card 0070 through the acceptance lens. I found no defect. I changed nothing.
+
+**#1 holds.** Card `0055` is now in `done/`. It has no `needs:` line. Under `## Links`, `0025` is listed under **Relates to**, with the answer written on it.
+
+**#2 holds.** The code is in `scripts/selftest.js`, in the block `blockers outlive their answers (card 0070)`. The function `settledWhere` names a blocker when every copy of that card sits in a settled lane.
+
+**#3 holds.** The lane `ai-review` is in `SETTLED_LANES`. The same function `settledWhere` also treats a card as settled when a line starts with `**Decided:**` in any lane. Before it looks, it cuts out fenced and indented samples, so an example marker does not count. Built-in test cases cover a card that has copies in more than one lane.
+
+**#4 holds.** The frontmatter loop feeds the check `every needs: on this board can be read`. That check fails and names the card for each of these:
+- frontmatter that never closes
+- a `needs:` line outside the frontmatter
+- a wrongly written key
+- an empty value
+- a bad token
+- a card file that cannot be read
+
+Block lists and bracket lists are read as real blockers.
+
+**Live run:** 327 passed, 1 failed. The one failure is this check doing its job. It says `0027` still waits on `0018`, and `0018` now has an answer. Card `0077` already covers that.
+
+VERDICT: sound
+
+**scope: sound**
+
+**What I checked.** The big 98-file diff is not this card's work. It covers many cards. Card 0070's own build commits are `5528c7b`, `60819b1`, `8cbec9e`, `7b1ed20` and `d9d982e`. They touch only `scripts/selftest.js` (the `blockers outlive their answers` block), card `0055`, cards `0017` and `0020`, and new cards `0075`, `0077` and `0078`. Nothing under `app/`, `data/` or `scripts/*.py`.
+
+**Where it went past the fence.** `7b1ed20` removed `needs: 0016` from cards `0017` and `0020`. The card says "one key on one card". But criterion #3 made `0016` settled, so the check was right to fail on those two cards. Nobody hid this growth. The commit message says it, the card's thread says it, and the fix follows `docs/board/README.md`.
+
+**Half done?** An earlier review said card `0017`'s `## What I need from you` still said "Answer 0016 first." That line is now struck through and marked "Spent". It is fixed.
+
+**Left open on purpose.** Card `0077` is the true red for card `0027`. Card `0078` is the code-fence edge case. Both are real cards in `todo/`, not notes in prose.
+
+**Fences that held.** Nothing edits another card's `## Comments`. Card `0055`'s ask is not touched. The check reads only the `needs:` key.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the check in `scripts/selftest.js` (the block `--- blockers outlive their answers (card 0070) ---`). I could not find a new silent failure.
+
+**Held up:**
+- **Criterion #3.** `settledWhere` treats `ai-review` as a settled lane. It also counts a `**Decided:**` marker at the start of a line, in any lane. It skips samples inside code fences or indented blocks. If a card has a second copy in an open lane, it is not called settled, and fixtures in the suite build that case.
+- **Criterion #4.** The frontmatter read now reports every bad shape the last review found:
+  - a trailing space on the closing `---` now matches, because the line is trimmed
+  - frontmatter that never closes
+  - a key spelled `Needs:`, `NEEDS:`, or with a leading space
+  - a `needs:` key with no value
+  - any value that is not a four-digit number
+  - two numbers joined by a space, a semicolon or a word
+  - a `needs:` line in the body of a card
+  - a lane or file it cannot read
+
+  The block-list form and the `[a, b]` list form now parse.
+- **Comments.** The comment on `0016` has no `**Decided:**` marker, so this check cannot see its answer. The comment says so, and it is true.
+
+**Known gap, already on a card:** the scan for a `needs:` line in the body reads raw lines. So a quoted `needs:` inside a code fence is reported as malformed. This is a false alarm: the suite goes red when it should not. It does not hide anything. Card `0078` already tracks it, so it does not disprove #4.
+
+VERDICT: sound
+
