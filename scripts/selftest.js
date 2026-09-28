@@ -3352,19 +3352,30 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
   const prose = (text) => text
     .replace(/^ {0,3}(`{3,}|~{3,})[\s\S]*?^ {0,3}\1[^\n]*$/gm, '')
     .split('\n').filter(l => !/^(?: {4,}|\t)/.test(l)).join('\n');
-  // Why a card is settled, said in the reader's words, or null.
-  const settledBecause = (num) => {
-    const where = lanesOf.get(num) || [];
+  // Why a card is settled, said in the reader's words, or null. `where` is every copy of it.
+  const settledWhere = (where, read) => {
     if (!where.length) return null;                       // names no card on this board: not ours
-    const lane = where.find(w => SETTLED_LANES.includes(w.lane));
-    if (lane) return `in ${lane.lane}`;
+    if (where.every(w => SETTLED_LANES.includes(w.lane))) return `in ${where[0].lane}`;
     const answered = where.find(w => {
-      const text = readCard(w.file);
+      const text = read(w.file);
       return text !== null
         && /^(?:\*\*\d{4}-\d{2}-\d{2}\*\*\s+)?\*\*Decided:\*\*/m.test(prose(text));
     });
     return answered ? 'answered on its own thread' : null;
   };
+  const settledBecause = (num) => settledWhere(lanesOf.get(num) || [], readCard);
+  // The board rarely holds a duplicated card, so the duplicate case is built here rather than
+  // waited for: a card with a copy still in an open lane is NOT settled by its other copy.
+  const fixture = { open: 'no answer here', answered: '**2026-09-10** **Decided:** Option 1' };
+  [
+    [[{ lane: 'done' }, { lane: 'todo', file: 'open' }], null],
+    [[{ lane: 'human-review', file: 'open' }, { lane: 'discarded' }], null],
+    [[{ lane: 'done' }, { lane: 'discarded' }, { lane: 'ai-review' }], 'in done'],
+    [[{ lane: 'done' }, { lane: 'todo', file: 'answered' }], 'answered on its own thread'],
+  ].forEach(([where, want]) => {
+    const got = settledWhere(where, f => fixture[f]);
+    if (got !== want) stale.push(`fixture ${where.map(w => w.lane).join('+')} reads as ${got}, want ${want}`);
+  });
   // The frontmatter parse is hand-rolled, so every shape it cannot read reliably is REPORTED.
   // Silently reading a malformed block as "no blockers here" is the check-that-cannot-fail shape
   // this project keeps being caught by: one trailing space on a closing `---` hid a real blocker.

@@ -46,7 +46,7 @@ it, and a rule written from one example beyond that is a rule nobody measured.
 - [x] #1 THE CARD `0055` SHALL carry no `needs:` naming a settled card, and its `## Links` SHALL
       record `0025` as answered rather than as a blocker. proves: `no open card is blocked by a
       settled card`
-- [ ] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every open card whose `needs:`
+- [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every open card whose `needs:`
       lists a card number found only in `done/` or `discarded/`. proves: `no open card is blocked
       by a settled card`
 - [x] #3 THE SUITE SHALL also fail when that card number is in `ai-review/`, or carries an entry
@@ -938,3 +938,34 @@ fires on nothing now, but the code and #2's "found only in" still disagree. The 
 came from a loop still at `-BounceLimit 2`; the orchestrator now runs NearestForest with
 `-BounceLimit 5` (every run in `storage/logs/work-card.log` on 2026-09-28), so a bounce count of 2
 no longer parks it.
+
+**2026-09-28** RESULT: partial
+TESTS: red: no open card is blocked by a settled card
+TOUCHED: scripts/selftest.js
+TOUCHED: docs/board/in-progress/0070-card-0055-is-blocked-by-an-answered-card.md
+TOUCHED: docs/board/todo/0077-card-0027-is-blocked-by-an-answered-card.md (new)
+TOUCHED: docs/board/todo/0078-a-quoted-needs-key-in-a-code-fence-reads-as-malformed.md (new)
+OUT-OF-SCOPE: 0077, 0078
+
+**#2 is met: a lane now settles a card only when every copy of it sits in a settled lane.** The
+code, not the test, was changed. `settledBecause` took `where.find(...)`, so one copy in `done/`
+won over a copy still open. The logic is now `settledWhere(where, read)`, which takes a list of
+copies, so the suite builds the duplicate case instead of waiting for the board to hold one. Four
+fixture cases are folded into the named assertion. Written first, the run went red naming three of
+them: `done+todo reads as in done, want null`, `human-review+discarded reads as in discarded, want
+null`, and `done+todo` with a marker on the open copy reading as the lane rather than the answer.
+With `.find` changed to `.every`, all four are silent. A marker in any copy still settles the card,
+per #3.
+
+**The suite is 327 passed, 1 failed, and the one red is true.** It names `0027 in human-review needs
+0018, which is answered on its own thread`. Card `0018` got a marked answer on 2026-09-25. HEAD's
+copy of the suite, run before this change, prints the same line, so this build did not cause it.
+Clearing it is an edit to card `0027`, which a card session may not make, so it is card `0077`. The
+assertion stays red until that card is built, and it should. That red is why RESULT is partial even
+though every criterion here is ticked.
+
+**Raised the reviewers' second finding as `0078`**, because it was on this thread only in prose: the
+loose body scan reads raw lines, so a quoted `needs:` in a code fence is reported as malformed.
+
+**No pest or pint.** This project has no PHP suite and no `vendor/`; `node scripts/selftest.js` is the
+suite. **Not checked in a browser**: nothing under `app/` changed.
