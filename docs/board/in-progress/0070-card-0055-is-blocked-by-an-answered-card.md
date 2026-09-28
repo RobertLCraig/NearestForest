@@ -52,7 +52,7 @@ it, and a rule written from one example beyond that is a rule nobody measured.
 - [x] #3 THE SUITE SHALL also fail when that card number is in `ai-review/`, or carries an entry
       marked `**Decided:**` in any lane, because `docs/board/README.md` calls both settled.
       proves: `no open card is blocked by a settled card`
-- [ ] #4 WHEN a card's frontmatter cannot be read reliably, THE SUITE SHALL fail naming that card
+- [x] #4 WHEN a card's frontmatter cannot be read reliably, THE SUITE SHALL fail naming that card
       rather than reading it as carrying no blockers. proves: `every needs: on this board can be
       read`
 <!-- AC:END -->
@@ -1038,4 +1038,33 @@ VERDICT: defect
 **acceptance**
 
 - **#4 reopened**, by the breakage lens: a `needs:` value with two numbers split by a space or semicolon, or a YAML list broken by a comment line, silently drops every blocker after the first instead of failing naming the card
+
+**2026-09-28** RESULT: partial
+TESTS: +9 fixture cases inside `every needs: on this board can be read`, all green | red: no open card is blocked by a settled card
+TOUCHED: scripts/selftest.js
+TOUCHED: docs/board/in-progress/0070-card-0055-is-blocked-by-an-answered-card.md
+OUT-OF-SCOPE: none
+
+**#4 is met: a `needs:` value the parse cannot read whole is now reported, not cut short.** The
+value parse moved into `readNeeds()` so the suite can feed it shapes rather than wait for a card to
+carry one. Written first, five fixtures went red naming the reviewer's shapes, each as "drops 0071
+in silence": a space, a semicolon or a word between two numbers, a second number inside a reason,
+and a comment line inside a block list. A sixth, a list with a blank line and a trailing comment on
+an item, read as one blocker instead of two. Then the fix: a token must be one four-digit number,
+optionally followed by ` - reason` holding no other card number, and anything else is reported. A
+blank or comment line inside a block list no longer ends it, and a trailing YAML `# comment` is cut
+first. All nine fixtures are green, including the four plain shapes that must stay one clean read.
+
+**The suite was dead at HEAD, and this card's own fixture killed it.** The previous build's
+`settledWhere` fixture passes a copy with no file, `read` returns `undefined`, the guard checked
+`!== null`, and `prose(undefined)` threw. The run stopped at this block, so no later assertion and
+no summary ran. I ran HEAD's copy from `scripts/` to confirm it crashed there too, before any change
+of mine. The guard is now `!= null`. The code was fixed, not the test.
+
+**The suite is 327 passed, 1 failed.** The one red is `0027 in human-review needs 0018, which is
+answered on its own thread`. It is true, and it is card `0077` in `todo/`, which is why RESULT is
+partial though all four criteria are ticked.
+
+**No pest or pint.** This project has no PHP suite and no `vendor/`; `node scripts/selftest.js` is
+the suite. **Not checked in a browser**: nothing under `app/` changed.
 

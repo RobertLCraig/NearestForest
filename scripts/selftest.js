@@ -3358,7 +3358,7 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
     if (where.every(w => SETTLED_LANES.includes(w.lane))) return `in ${where[0].lane}`;
     const answered = where.find(w => {
       const text = read(w.file);
-      return text !== null
+      return text != null    // `!=`: a fixture copy with no file reads as undefined, not null
         && /^(?:\*\*\d{4}-\d{2}-\d{2}\*\*\s+)?\*\*Decided:\*\*/m.test(prose(text));
     });
     return answered ? 'answered on its own thread' : null;
@@ -3375,6 +3375,51 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
   ].forEach(([where, want]) => {
     const got = settledWhere(where, f => fixture[f]);
     if (got !== want) stale.push(`fixture ${where.map(w => w.lane).join('+')} reads as ${got}, want ${want}`);
+  });
+  // The numbers a `needs:` key at fm[i] names, and every token it could not read. `value` is what
+  // follows the colon on the key's own line.
+  const readNeeds = (fm, i, value) => {
+    // YAML's block-list form puts the values on the lines BELOW the key, so reading the key's
+    // own line alone saw an empty value and reported no blockers. Take both forms.
+    // A blank or comment line inside the list is part of it, not its end: stopping there dropped
+    // every item below it in silence.
+    const uncomment = (s) => s.replace(/(^|\s)#.*$/, '');
+    value = uncomment(value);
+    for (let j = i + 1; j < fm.length && /^\s*(?:-\s*\S|#|$)/.test(fm[j]); j += 1) {
+      if (/^\s*-/.test(fm[j])) value += `, ${uncomment(fm[j].replace(/^\s*-\s*/, ''))}`;
+    }
+    // A token is one number, optionally followed by ` - reason`. Anything else, including a second
+    // number joined by a space, a semicolon or a word, is reported: reading only the leading number
+    // dropped every blocker after it and stayed green.
+    const deps = [];
+    const bad = [];
+    value.replace(/[[\]]/g, ' ').split(',').map(s => s.trim()).filter(Boolean).forEach(tok => {
+      const dep = /^(\d{4})(?:\s+-\s+(.*))?$/.exec(tok);
+      if (dep && !/\b\d{4}\b/.test(dep[2] || '')) deps.push(dep[1]); else bad.push(tok);
+    });
+    return { deps, bad, empty: !value.trim() };
+  };
+  // Shapes that once dropped a second blocker in silence. Each must name it or report a token.
+  const needsOf = (text) => { const fm = text.split('\n'); return readNeeds(fm, 0, fm[0].replace(/^needs:/, '')); };
+  [
+    ['needs: 0025 0071', 'a space between two numbers'],
+    ['needs: 0025; 0071', 'a semicolon between two numbers'],
+    ['needs: 0025 and 0071', 'a word between two numbers'],
+    ['needs: 0025 - waits on 0071', 'a second number inside the reason'],
+    ['needs:\n  - 0025\n  # why\n  - 0071', 'a comment line inside a block list'],
+  ].forEach(([text, shape]) => {
+    const got = needsOf(text);
+    if (!got.deps.includes('0071') && !got.bad.length) malformed.push(`fixture with ${shape} drops 0071 in silence`);
+  });
+  // And shapes that are plain blockers and must read as exactly those, not as a complaint.
+  [
+    ['needs: 0025 - it settles where the ask sits', ['0025']],
+    ['needs: 0025 # a trailing comment', ['0025']],
+    ['needs: [0025, 0071]', ['0025', '0071']],
+    ['needs:\n  - 0025 # first\n\n  - 0071', ['0025', '0071']],
+  ].forEach(([text, want]) => {
+    const got = needsOf(text);
+    if (got.bad.length || got.deps.join() !== want.join()) malformed.push(`fixture "${text.replace(/\n/g, '\\n')}" reads as ${JSON.stringify(got)}`);
   });
   // The frontmatter parse is hand-rolled, so every shape it cannot read reliably is REPORTED.
   // Silently reading a malformed block as "no blockers here" is the check-that-cannot-fail shape
@@ -3401,21 +3446,15 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
           malformed.push(`${num} in ${w.lane} writes its needs key as "${l.trim().split(':')[0]}", which no reader of this board looks for`);
           return;
         }
-        // YAML's block-list form puts the values on the lines BELOW the key, so reading the key's
-        // own line alone saw an empty value and reported no blockers. Take both forms.
-        let value = m[4];
-        for (let j = i + 1; j < fm.length && /^\s*-\s*\S/.test(fm[j]); j += 1) {
-          value += `, ${fm[j].replace(/^\s*-\s*/, '')}`;
-        }
-        if (!value.trim()) {
+        const got = readNeeds(fm, i, m[4]);
+        if (got.empty) {
           malformed.push(`${num} in ${w.lane} carries a needs: key with no value`);
           return;
         }
-        value.replace(/[[\]]/g, ' ').split(',').map(s => s.trim()).filter(Boolean).forEach(tok => {
-          const dep = /^(\d{4})\b/.exec(tok);
-          if (!dep) { malformed.push(`${num} in ${w.lane} needs "${tok}", which is not a four-digit card number`); return; }
-          const why = settledBecause(dep[1]);
-          if (why) stale.push(`${num} in ${w.lane} needs ${dep[1]}, which is ${why}`);
+        got.bad.forEach(tok => malformed.push(`${num} in ${w.lane} needs "${tok}", which is not a four-digit card number`));
+        got.deps.forEach(dep => {
+          const why = settledBecause(dep);
+          if (why) stale.push(`${num} in ${w.lane} needs ${dep}, which is ${why}`);
         });
       });
     });
