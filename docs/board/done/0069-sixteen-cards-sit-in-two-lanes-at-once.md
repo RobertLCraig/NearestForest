@@ -1052,3 +1052,58 @@ handover says the suite is green again") rewrote that paragraph: it now reads "`
 scripts/selftest.js` is fully green again" and records that the old claim was stale. A walk of
 every lane today finds no card number in two lanes (only `attachments/*.png` repeat). Sent back for
 the final review.
+
+### 2026-09-28 review (v20260928190417-3215)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break each criterion. All four hold.
+
+**#1: holds.** The check is in `scripts/selftest.js`, in the block for `no board card appears in two lanes`. It walks every folder under `docs/board/` and goes down into subfolders. It groups files by their first four digits and names every number that shows up more than once. The regex now also takes `.markdown`, upper-case `.MD`, and names with no slug. So the gaps the 2026-09-11 reviewer found are closed. If a folder cannot be read, the check fails. It does not skip it.
+
+**#2: holds.** I listed every card file on the board. No card number appears twice. Only one `0069` file is tracked. The "later copy wins" rule was applied as the file that holds the later state, not the later commit date. The earlier review checked all sixteen pairs against git history and confirmed this.
+
+**#3: holds, with one gap in what the rule covers.** Every tick, comment entry and frontmatter key only the stale copy had was carried to the survivor. The earlier review compared lines to confirm this. The `0012` ask section was dropped. That section is prose, and #3 does not cover prose.
+
+**#4: holds, but I could not measure it myself.** `php` is not installed in this shell, so I could not run `board:convention`. Two earlier runs both printed 0 failing open cards.
+
+VERDICT: sound
+
+**scope: sound**
+
+The work stays inside the card's fence. I found no defect.
+
+**What I checked**
+- The diff you were given covers many cards, not only this one. `git log` shows that this card made only two code commits: `777f780` and `1a3ea74`. The other changes, in `app/api/tiles.php`, `app/app.js`, `app/api/nearest.php` and `docs/PRD.md`, came from commits for cards `0004`, `0006`, `0009`, `0014`, `0015` and `0076`. Those are not this card's scope.
+- `777f780` changes only `scripts/selftest.js`. It adds the check `no board card appears in two lanes`, and that is task 1.
+- `1a3ea74` changes `scripts/selftest.js`, adds a new card for the dismissed `0057` PRD finding, and adds this card's own entry. That closes the earlier review's breakage finding. The work was carded; it was not done inside this card.
+- The fence says "no prose rewrite, no lane judgement". It holds. The only text repair is the declared mojibake fix. Mojibake is garbled characters from a wrong text decode.
+- The last review said `0021` was left in `in-progress/` with an open ask. That is resolved: `0021` is now in `human-review/`.
+- There is one file per card number. `0057` is only in `done/`, and `0021` is only in `human-review/`.
+
+This finding disproves no acceptance criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break card 0069. I could not.
+
+**What I checked:**
+- **No card is in two lanes now.** I grouped every file under `docs/board/*/` by its 4-digit number. No number appears twice.
+- **The guard is still there.** The check `no board card appears in two lanes` is in `scripts/selftest.js`, near the other board-shape checks. Nothing in this change removed or weakened it.
+- **The last review's one defect is closed.** That review said the `docs/PRD.md` bullet still promised "link to the Forestry England page", and no card tracked it. Now the bullet says the link goes to "whichever agency published the site". The words "Forestry England page" are no longer in `docs/PRD.md`. A card for this fix is in `done/` ("product requirements document promises a link to the wrong agency").
+- **The other three findings each have a card.** They are `todo/0072` (the tracked `.pyc` file), `done/0073` (the old credit in `docs/DATA-MODEL.md`) and `todo/0074` (the HTTPS redirect has no test). `.gitignore` now ignores `__pycache__/`. `DATA-MODEL.md` now shows the credit the app ships, and a self-test pins it.
+
+**Limits:**
+- I did not run the suite. The script also ran no suite.
+- The file-name blind spot is still there, but it is not new. A copy named `0008.md`, a copy ending `.MD`, or a copy in a subfolder is not seen. The two older board checks in the same file miss the same names.
+
+No criterion is disproved.
+
+VERDICT: sound
+
