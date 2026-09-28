@@ -48,7 +48,7 @@ one example beyond that is a rule nobody measured.
       proves: `no compiled python artefact is tracked`
 - [x] #2 WHEN the self-test suite runs, THE SUITE SHALL fail naming every tracked path matching
       `__pycache__` or `*.pyc`. proves: `no compiled python artefact is tracked`
-- [x] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
+- [ ] #3 `.gitignore` SHALL refuse `__pycache__/` and `*.pyc`, and the same assertion SHALL fail if
       either rule is absent. proves: `no compiled python artefact is tracked`
 <!-- AC:END -->
 
@@ -364,3 +364,69 @@ Suite: 329 passed, 1 failed. The failure is `no open card is blocked by a settle
 0018), which card `0077` in `todo/` already carries, so no card was raised. **`pest` and `pint` were
 not run**: this repository has no `vendor/` and no PHP suite; the suite is `node scripts/selftest.js`.
 **No browser check applies**: nothing under `app/` changed.
+
+### 2026-09-28 review (v20260928195443-6075)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: defect**
+
+**acceptance: defect**
+
+**#1 is met.** `git ls-files` shows no compiled Python file. `.gitignore` carries `__pycache__/` and `*.pyc`.
+
+**#2 is met.** The function is `compiledPythonProblems` in `scripts/selftest.js`. It now runs `git ls-files -z`, so git does not wrap odd file names in quotes. It names every file under `__pycache__` or ending in `.pyc`. The fixture test `a path git would quote is still named` covers the quoted-name case.
+
+**#3 still has a gap.** The same function now asks git itself whether a file is ignored, using `git check-ignore`. That fixes the old problem of a later `!` line cancelling a rule. But it only tests two sample paths:
+
+- `probe.pyc`, at the repository root
+- `scripts/__pycache__/probe`
+
+The `.pyc` sample is at the root. The real problem file was in `scripts/`. So a `.gitignore` with `*.pyc` and then `!scripts/*.pyc` still passes the check. Git does not ignore `scripts/x.pyc`, so `git add -A` would pick it up. This is the same kind of cancelled rule the 2026-09-17 review found, just limited to one folder. A root-only rule such as `/*.pyc` passes too.
+
+**The fix:** also test a `.pyc` sample under `scripts/`, which is where `parse.py` lives.
+
+UNMET: #3 the *.pyc rule is tested only at the repo root, so a `!scripts/*.pyc` line cancels it where the artefact actually lived and the assertion stays green
+
+VERDICT: defect
+
+**scope: sound**
+
+**scope: sound**
+
+I checked the newest build commit, `3f0243e`. It changes two files: `scripts/selftest.js` and the card. No other files changed.
+
+**It stays inside the fence.** The diff does not touch `scripts/parse.py`. It does not change `PYTHONDONTWRITEBYTECODE`. It does not change how the stub blocks import the parser. It does not change `.gitignore`, so the file still has only the two rules the card asked for. The work stays in `compiledPythonProblems` in `scripts/selftest.js`. The commit subject says what it fixes: quoted paths, and a rule that a later `!` line cancels. Those are the two findings from the last review, and nothing more.
+
+**The earlier commits are also tight.** `4e5123b` changed `.gitignore`, `selftest.js`, the removed artefact and the card. `6479a27` changed `selftest.js` and the card.
+
+**The big diff is not from this card.** Other cards' own commits brought in the `app/` edits, the docs, `requirements.txt` and the other board cards.
+
+**Nothing is half done.** The cache file is gone from the index. Both rules exist. The check lives in one assertion.
+
+This finding disproves no criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the fix in `scripts/selftest.js`, `compiledPythonProblems`. I could not.
+
+**The two findings from the last review are fixed.**
+- `git ls-files -z` now splits on `\0`. A name that git would quote (`café.pyc`) is named as it is. A fixture test proves it.
+- The rule check now asks `git check-ignore -v --no-index`. It does not look for the rule's line. A `!` pattern does not count as a refusal. A match from a global excludes file does not count. The fixtures for `!*.pyc` and `!__pycache__/` go red, and the clean case stays green in the same assertion.
+
+**Failure paths still get a named reason.** If `check-ignore` fails (status 128, or git is missing), each rule is named as absent. The `ls-files` catch adds git's own reason. Nothing throws.
+
+**One narrow gap. It disproves no criterion.** The `*.pyc` probe is `probe.pyc` at the root. A nested `scripts/.gitignore` holding `!*.pyc` would re-include a loose `scripts/x.pyc`, and the check would not see it. The real artefact path stays refused, because git cannot re-include a file inside an ignored `__pycache__/` directory.
+
+No comment is now false. No caller was missed.
+
+VERDICT: sound
+
+**acceptance**
+
+- **#3 reopened**, by the acceptance lens: the *.pyc rule is tested only at the repo root, so a `!scripts/*.pyc` line cancels it where the artefact actually lived and the assertion stays green
+
