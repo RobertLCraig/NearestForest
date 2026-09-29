@@ -218,3 +218,59 @@ the real hour and wait for a night before BST ends in late October. Criterion #1
 by a named assertion and is not in question.
 
 **2026-09-29** Checked by an attended agent under Rob's rule that human-review holds only what he must decide. **Criterion #2 was run as written, inside the real window, so the question above no longer needs an answer.** At 00:39 local on 2026-09-29, BST in force, on `main` at `154fe90` with a clean tree, `node scripts/selftest.js` printed `330 passed, 1 failed`, and `PASS  fetch records a download date alongside every cached page` was among the passes. The two clocks disagreed at that moment, read the same minute: node's `toISOString()` gave `2026-09-28`, node's `toLocaleDateString('en-CA')` and Python's `date.today()` both gave `2026-09-29`. That is the exact divergence that turned this test red on 2026-09-06, and it stayed green. The one failure was `no open card is blocked by a settled card` (`0027` needing the answered `0018`), which is card `0077`'s and unrelated. No clock was moved. Nothing is left to build. Moved to `ai-review/` for its review; #2 stays unticked, because this pass never ticks a box.
+
+### 2026-09-29 review (v20260929012519-dd36)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break this card. I could not.
+
+**#1 is met.** The fix is in `scripts/selftest.js`, in the fetch-date block (the card 0026 block, `ok('fetch records a download date alongside every cached page')`).
+- The Python stub imports `scripts/fetch.py`. Its last line prints `m.date.today().isoformat()`.
+- `fetch.py` does `from datetime import date`, so `m.date` is the same clock that `record_fetch` uses to write `fetched.json`.
+- `dayOf()` reads that printed line back. The check needs all four pages dated to a day the fetcher itself reported.
+- Node does not work out any date in this comparison. The only `toISOString` is inside a comment. So the result does not depend on the time of day.
+- There are two runs, and the test accepts either run's day. This also stops a false fail if midnight falls between the two runs.
+
+**#2 is not disproved.** It is a manual check. The card's 2026-09-29 comment says the suite ran at 00:39 local, with BST in force. The test passed at a moment when node's UTC date and Python's local date were different. The code agrees with that result: nothing in the comparison reads UTC. The box stays open. Ticking it is a person's job, not mine.
+
+The script found no suite to run. I judged the code by reading it.
+
+VERDICT: sound
+
+**scope: sound**
+
+**What I checked.** I looked at how much this change grew beyond the card. The card's own build entry says it touched only `scripts/selftest.js` and two lines of `docs/HANDOVER.md`.
+
+**The large diff is not this card's work.** The 152-file list shows the whole branch since an old base. It includes work from many other cards, for example the tile proxy, Scotland and campsites. No commit for this card touches `scripts/fetch.py`, `scripts/parse.py` or `scripts/build_boundary.py`. So the fence in "Not this card" holds: nothing moved to UTC, and nothing was fetched again.
+
+**The fix stays inside its scope.** In `scripts/selftest.js`, in the `fetch records a download date alongside every cached page` block, `dayOf()` reads the date that the Python stub prints. `toISOString` now appears only in a comment. No other assertion changed.
+
+**Nothing is left half done.** Criterion #2 is still unticked, but that is correct: it is a manual check. The 2026-09-29 comment on the card records a run inside the real window (00:39 BST). That test passed while node's UTC date and the local date were different. The one failure in that run belongs to card `0077`.
+
+None of the criteria is disproved.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the fetch-date fix and could not. Nothing else calls the code it changed.
+
+**How the test works now.** In `scripts/selftest.js`, the stub for the test `fetch records a download date alongside every cached page` imports `scripts/fetch.py`. On its last line it prints `m.date.today().isoformat()`. `m.date` is the same `date` (from `from datetime import date`) that `fetch.py` uses to stamp each page. `dayOf()` reads back only that last printed line. So both sides of the check use the same clock. No UTC value is in the check.
+
+**The edge cases I checked:**
+- **Midnight between the two runs.** Either day is accepted, so the test does not go red.
+- **The stub prints no date.** The test fails and says why. It does not pass by mistake.
+- **`fetch.py` is changed to stamp a UTC date or a fixed date.** The stamp stops matching the local date, so the test still goes red.
+- **Comments.** The comments beside the test are still true. They do not claim anything the code does not do.
+
+**Criterion #2** asks for the suite to pass inside the failing hour. The card's comment of 2026-09-29 records a run at 00:39 local time, with British Summer Time in force. At that moment the two clocks named different days, and this test passed. That is the check as the card wrote it. I did not see this run myself. The card's log records it.
+
+I found nothing that disproves #1 or #2.
+
+VERDICT: sound
+
