@@ -121,3 +121,60 @@ deployed, so the phone that passed this test is running the old build. Cards `00
 **2026-09-25** Rob ran the check on the iPhone, 2026-09-25, with location set to Never. The top line read: Location permission denied. Enable it in Settings > Safari > Location. Showing distances from your last known position. So the app says why, and none of the fail cases (empty screen, endless spinner, no message) happened. One difference from the card: the list was ranked from the last known position, not alphabetically, because the phone had a stored position. Tick the criterion if that fallback is intended, which it reads as. If not, say so here.
 
 **2026-09-29** Checked by an attended agent under Rob's rule that human-review holds only what he must decide. **The last-known-position fallback is intended, and it is written down twice.** `docs/PRD.md` FR5 says to persist the last known position so a cold launch without a GPS fix still shows a plausible list. The error branch of `locate()` in `app/app.js` does exactly that: it calls `loadStale()` and, when a stored position exists, sets the status to the denial message plus "Showing distances from your last known position." Only when nothing is stored does it say "The list is alphabetical until a fix arrives." Rob's 2026-09-25 reading on the iPhone is the first branch, word for word. So #4 holds: the app says why in the status line, and the fallback is the PRD's own. The alphabetical branch is the `else` of the same `if`, and the self-test `no-position ranking falls back to alphabetical` covers the ranking half. Nothing is left to build. Moved to `ai-review/` for its review; #4 stays unticked, because this pass never ticks a box.
+
+### 2026-09-29 review (v20260929011046-fa79)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break the one open criterion, #4. I could not.
+
+**#4, the status line.** In `app/app.js`, the error callback inside `locate()` handles a refused permission (`err.code` 1). It sets the text "Location permission denied. Enable it in Settings > Safari > Location." through `setStatus()`. It then adds one of two endings:
+- If `loadStale()` finds a stored position, it adds "Showing distances from your last known position." The line uses class `status--stale`.
+- If no position is stored, it adds "The list is alphabetical until a fix arrives." The line uses class `status--err`.
+
+Both branches call `render()`. So the list is never empty and never stuck. The spinner class is also removed.
+
+**#4, the alphabetical list.** `NF.rank` in `app/core.js` sorts by name when there is no position. The self-test `no-position ranking falls back to alphabetical` covers this.
+
+**One gap, but not a failure.** Rob saw the stored-position branch on 2026-09-25. His text matches the code word for word. That branch ranks by distance, not by name. `docs/PRD.md` FR5 asks for this behaviour, so the code does what the spec says. That line shows amber (`--warn`), not red. The card's pass test asked for a red line, but #4 itself only says "say so in the status line", and it does.
+
+Criteria #1 to #3 are closed by Rob's check on the phone.
+
+VERDICT: sound
+
+**scope: defect**
+
+I checked what the work on this card did, and what it left undone.
+
+**Nothing crossed the card's limits.** The work on card 0001 is one commit, `8034406`. That commit changed one file: `docs/board/ai-review/0001-verify-on-iphone.md`. It did not change app code, the Shortcut (0002) or the deploy (0005). Most of the 166 files in the diff come from other cards' commits in the same range.
+
+Criterion #4 is supported by what Rob saw on the phone. On 2026-09-25 the status line read "Location permission denied...". That text comes from the error branch of `locate()` in `app/app.js`, which reads the stored position through `loadStale()`. PRD FR5 asks for exactly this fallback.
+
+**One card task is half done.** The card's Tasks list says "Tick the matching lines in `HUMAN_ACTIONS.md`". The offline check (#2) was closed on 2026-09-20. But in `HUMAN_ACTIONS.md`, section "Created 2026-08-08", the line "Test offline properly" is still unticked. It also still says the check is "still unevidenced". Its link goes to `docs/board/human-review/0001-verify-on-iphone.md`, and that file was moved, so the link is broken. The `0002` and `0003` links in the same block may be out of date too. I did not check them.
+
+This does not disprove any acceptance criterion. So I give no `UNMET:` line, and the card will come back to review. The fix is to tick that line and repoint the link to `docs/board/ai-review/0001-verify-on-iphone.md`.
+
+VERDICT: defect
+
+**breakage: sound**
+
+I tried to break criterion #4. I could not.
+
+**What I checked**
+
+- The error branch of `locate()` in `app/app.js`. The denial message (code 1) says: "Location permission denied. Enable it in Settings > Safari > Location."
+- When a stored position exists, `loadStale()` returns true. Then the app adds "Showing distances from your last known position." This is word for word what Rob saw on the iPhone on 2026-09-25.
+- When nothing is stored, the app adds "The list is alphabetical until a fix arrives." Then `render()` runs, so the list is never empty.
+- `docs/PRD.md` FR5 asks the app to keep the last known position. So the ranked-from-last-position result is intended. The card's "alphabetical" wording describes the other branch only.
+- None of the three fail cases can happen on the denial path. There is no empty screen: `render()` always runs. There is no endless spinner: the error callback removes `is-spinning`. There is always a message: the status line is set in both branches.
+
+**What is left**
+
+Nothing is broken. #4 can be ticked on Rob's 2026-09-25 reading. Ticking it is the script's job, not mine.
+
+VERDICT: sound
+
