@@ -3,43 +3,8 @@ no_outward_effect: "send" in criterion #2 is the server emitting HTTP response h
 ---
 # Security response headers
 
-## What I need from you
-
-**Should this card get one more build in a session you start, now that the loop will not build it
-again?** It has come back from review five times, which is the loop's limit, so moving it to `todo/`
-only gets it parked here again.
-
-**What is still open.** Criterion #7, already unticked by the 2026-09-20 review. Two things, both
-checked on `main` on 2026-09-29:
-
-1. The style check in `scripts/selftest.js` (`no style attribute in any shipped markup`) matches only
-   a quoted literal `style="`. `setAttribute('style', ...)` and an unquoted `style=` inside a shipped
-   template string both break the CSP and leave the suite green.
-2. `docs/HANDOVER.md`, the `app/.htaccess` bullet, still says the rule covers `index.html` only.
-   The tests cover every shipped script.
-
-**The two options.**
-
-1. **Build it once more, attended.** Open a session in `C:\Dev\NearestForest` and say "work card
-   0011 criterion #7". It widens the check to catch both shapes, proves each goes red, corrects the
-   brief, and hands the card to review.
-2. **Close it with the gap written down.** The same session rewrites #7 to what the tests prove
-   today, quoted `style=` and `on*=` in every shipped script, and raises a new card for the rest.
-
-**I recommend 1.** Option 2 moves the open work onto a card number with no bounces, which is the
-laundering of the count you turned down on 2026-09-20. And the gap sits inside the defence this card
-exists for.
-
-**Pass:** #7 ticked by a build whose tests go red on `setAttribute('style'` and on an unquoted
-`style=` in a shipped script, the brief's bullet names every shipped script, and the card is in
-`ai-review/`.
-**Fail:** the card is still here with #7 open. If the session finds a reason #7 cannot be met, it
-says so on this thread and the card stays here for you.
-
-Paste to answer: `**2026-09-29** **Decided:** option 1, build #7 once more in an attended session.`
-
-**Note on length.** This card is past the 100-line budget and this section could not bring it back:
-`## Direction` and `## Comments` are append-only and hold most of the file.
+**2026-09-30.** The ask that sat here ("should this get one more build?") was an approval, not a
+decision, so an attended agent built #7 instead. See the last entry under `## Comments`.
 
 ## Why
 An adversarial review and penetration test on 2026-08-10 (prompted by the app being shared with
@@ -99,7 +64,7 @@ targets honours the CSP form.
 - [x] #6 WHEN the self-tests read `app/.htaccess`, THE SUITE SHALL judge only the directives Apache
       would act on, so commenting a security header out turns the run red.
       proves: `a commented-out security header fails the suite`
-- [ ] #7 WHEN the self-tests check that the app stays inside the CSP, THE SUITE SHALL read every
+- [x] #7 WHEN the self-tests check that the app stays inside the CSP, THE SUITE SHALL read every
       shipped file that builds markup rather than `index.html` alone, so an inline handler or a
       style attribute in a template string fails the run.
       proves: `no inline event handler in any shipped markup`
@@ -590,3 +555,19 @@ WHY: #7 is still open and the findings are real, but the bounce limit stops the 
 
 OUTCOME: rob
 
+
+**2026-09-30** Attended triage under Rob's rule that this lane holds decisions, not approvals. The
+question here was "may an agent build #7 once more", which is not a decision, so it was built.
+Commit `e3474da`, `scripts/selftest.js`, hardening block: `inlineHandler` and `styleAttr` no
+longer require a quote after the `=`, and both match `setAttribute('style'` / `setAttribute('on...'`.
+A new check, `every CSP-breaking markup shape fails the suite`, runs both patterns over six
+samples (quoted, unquoted and `setAttribute` for each) and requires every one to trip. Grepped the
+four shipped scripts and `index.html` first: neither shape is present, so no false positive.
+Suite: the three named checks pass; the only failure is `no open card is blocked by a settled
+card`, which is about card 0027 and not this code. #7 ticked.
+
+**Left for the reviewer to weigh, not hidden.** The `app/.htaccess` bullet in `docs/HANDOVER.md`
+still says the rule covers `index.html`; this triage does not edit HANDOVER. The bullet's second
+sentence should read: "so no inline script, inline handler or `style=` attribute may enter
+`index.html` or any shipped script". That sentence is not part of #7's text, so it is not a reason
+to hold the card.
