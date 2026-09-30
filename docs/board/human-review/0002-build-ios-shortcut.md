@@ -2,30 +2,25 @@
 
 ## What I need from you
 
-**Build the Shortcut from `docs/build/IOS-SHORTCUT.md`, then use it and the PWA side by side for a
-couple of weeks and say which one you actually reach for.**
+**Get the Shortcut past step 2 using the new "When step 2 will not build the URL" table in
+`docs/build/IOS-SHORTCUT.md`, then use it and the PWA side by side for two weeks and say which one
+you reach for.**
 
-No longer blocked: card 0005 deployed the endpoint on 2026-08-08. Step 3 of the recipe should call
+1. Put a **Show Result** action after step 2 of the recipe and run the Shortcut. Expected: a URL
+   like `https://forestlocator.enhanceify.co.uk/api/nearest.php?lat=50.8168&lng=-0.0894&n=5`. If
+   it shows anything else, the table in the recipe names the cause and the fix for each shape.
+2. Finish the seven actions. Expected: "Hey Siri, Nearest Forest" reads out five forests with
+   distances and opens your chosen map app on the one you pick.
+3. Use both for two weeks and write one line under `## Direction` saying which you kept using, and
+   whether the Shortcut ever failed in a car park where the PWA did not.
 
-    https://forestlocator.enhanceify.co.uk/api/nearest.php?lat=<lat>&lng=<lng>&n=5
+**Pass:** all three criteria ticked and that one line written.
+**Fail:** the recipe is wrong in a way the table does not cover, or an action name has changed in
+the Shortcuts app. Write what you saw as a comment and move the card to `todo/`; the doc gets fixed
+rather than worked around on the phone.
 
-which is live now and returns Friston Forest first from Brighton.
-
-The comparison is the point of building both. The two things worth noticing:
-1. Does Siri triggering actually get used while driving, or does the phone stay in the cradle?
-2. Does the Shortcut fail in a real forest car park where the PWA keeps working?
-
-**Pass** is the Shortcut built and working, plus a verdict recorded under `## Direction` naming
-which of the two you kept using.
-
-**Fail** is the recipe being wrong, which is a real possibility: if an action name has changed in
-the current Shortcuts app, note it here and move the card to `todo/` so the doc gets fixed rather
-than working around it on the phone.
-
-**Why it needs you** A `.shortcut` file is a signed Apple format that cannot be generated
-off-device, so the build is five minutes by hand rather than something anybody can hand you. The
-verdict is the other half: only real use over a couple of weeks settles which access method is worth
-keeping, and keeping both forever is a maintenance cost for a personal app.
+**Why it needs you.** A `.shortcut` is a signed Apple format that only the phone can build, and the
+verdict is two weeks of your own use.
 
 ## Why
 Two access methods were built deliberately (DECISIONS 2026-08-08) because they have different
