@@ -1180,10 +1180,27 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // strings passed the suite and failed only as a dead button on somebody's phone. The
   // .htaccess comment already claims "no inline event handler anywhere in the app", so
   // widening these to every shipped file is making the test say what the file says.
+  // Third pass, 2026-09-30: both patterns used to require a quote after the `=`, so an
+  // unquoted `style=${x}` in a template string and `setAttribute('style', ...)` broke the
+  // CSP with the suite green. Neither shape is in the shipped files (grepped before the
+  // patterns were widened), so nothing here trips on a false positive.
   const markup = indexhtml + '\n' + shipped;
-  ok('no inline event handler in any shipped markup',
-     !/\son[a-z]{3,}\s*=\s*["']/i.test(markup));
-  ok('no style attribute in any shipped markup', !/\sstyle\s*=\s*["']/i.test(markup));
+  const inlineHandler = /\son[a-z]{3,}\s*=|setAttribute\(\s*["']on[a-z]{3,}["']/i;
+  const styleAttr = /\sstyle\s*=|setAttribute\(\s*["']style["']/i;
+  ok('no inline event handler in any shipped markup', !inlineHandler.test(markup));
+  ok('no style attribute in any shipped markup', !styleAttr.test(markup));
+  // Prove both go red on every shape they exist to catch, the same way the headers below
+  // are proved against an all-commented copy of .htaccess.
+  const cspBreakers = [
+    ['quoted style', '<div style="color:red">', styleAttr],
+    ['unquoted style', '<div style=${s}>', styleAttr],
+    ['setAttribute style', "el.setAttribute('style', s)", styleAttr],
+    ['quoted handler', '<a onclick="go()">', inlineHandler],
+    ['unquoted handler', '<a onclick=${f}>', inlineHandler],
+    ['setAttribute handler', 'el.setAttribute("onclick", f)', inlineHandler]
+  ].filter(([, sample, re]) => !re.test(sample)).map(([n]) => n);
+  ok('every CSP-breaking markup shape fails the suite', cspBreakers.length === 0,
+     `still pass: ${cspBreakers.join(', ')}`);
   ok('no eval or Function constructor in the shipped JS',
      !/\beval\s*\(|\bnew\s+Function\s*\(/.test(shipped));
 
