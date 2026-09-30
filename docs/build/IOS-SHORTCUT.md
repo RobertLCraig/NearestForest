@@ -75,6 +75,22 @@ CarPlay surfaces shortcuts through the Shortcuts CarPlay app, so pin it there to
 - **Show opening times:** the `access` key on each result is `always`, `dusk`, `hours` or `unknown`,
   and `opening` carries the full published text if you want Siri to read it.
 
+## When step 2 will not build the URL
+
+Rob's first attempt (2026-09-20) stalled on "issues with the shortcut using location variables",
+which is step 2. Before anything else, drop a **Show Result** action straight after step 2 and run
+the Shortcut: it displays the URL the Text action built. Paste that same URL into Safari as the
+control; the live endpoint answers with Friston Forest first from Brighton. Then match what you saw:
+
+| What Show Result shows | Cause | Fix |
+|---|---|---|
+| A place name or address where the number should be | The magic variable was inserted as the whole **Current Location** object | Tap the variable chip in the Text action and pick **Latitude** (or **Longitude**) under its details, so it carries the number alone |
+| `50.8168°`, `50,8168` or a number with a thousands separator | Shortcuts formats the number for the locale | In the variable chip's details set the number format to plain, or wrap it in a **Format Number** action with no grouping and a `.` decimal |
+| Nothing at all, or a URL ending `lat=&lng=` | Shortcuts itself has no location permission; it is separate from Safari's | Settings > Privacy & Security > Location Services > Shortcuts > While Using, then run again |
+| A correct-looking URL | The fault is downstream of step 2 | Check step 3's output with another **Show Result**; `{"ok":false,...}` carries the reason in `error` |
+
+Remove the Show Result actions once it works.
+
 ## Known limits
 
 - **Needs signal.** This is the real difference from the PWA, which works with no connection at all.
