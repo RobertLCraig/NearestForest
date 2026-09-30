@@ -180,3 +180,28 @@ VERDICT: sound
 
 
 **2026-09-29** The loop moved this card from todo/ to human-review/ WITHOUT trying it. All 1 of its open acceptance criteria say proves: manual, so there is nothing left an unattended session could close and starting one would change nothing. Each open criterion names what to look at and what a pass is: tick what passes and move the card on, or say what failed and move it back to todo/.
+
+### 2026-09-30 manager (m20260930012953-f99a)
+
+**outcome: rob**
+
+The work looks finished and your 2026-09-25 reading passes #4, but only you can tick a manual criterion.
+
+**what the session said**
+
+I read the code. The work on this card looks finished.
+
+- The status text is set in `locate()` in `app/app.js`. It is the same, word for word, as the text you saw on the iPhone on 2026-09-25.
+- The list uses your last known position. `docs/PRD.md` FR5 asks for that.
+- The alphabetical list is the other branch. It only runs when no position is stored.
+
+None of the fail cases can happen. There is no empty screen, no spinner that does not stop, and no missing message.
+
+Criterion #4 is `proves: manual`. Only you can tick it.
+
+There is one small chore, and it closes no criterion. In `HUMAN_ACTIONS.md`, the line "Test offline properly" is still unticked. Its link still points to `docs/board/human-review/0001-verify-on-iphone.md`. Do it when you tick the card.
+
+WHY: The work looks finished and your 2026-09-25 reading passes #4, but only you can tick a manual criterion.
+
+OUTCOME: rob
+
