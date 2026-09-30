@@ -1,5 +1,9 @@
 # Handover: the Forestry England enquiry
 
+> **Superseded 2026-09-30.** Card 0018 decided on 2026-09-25 that the email asks for nothing. The
+> text below is the earlier pitch and is kept for the record only; the email to send is
+> `forestry-england-enquiry.md`, and nothing in this file should be sent or reviewed.
+
 **Project:** NearestForest
 **Stage:** drafted, not sent
 **Date of this handover:** 2026-08-15

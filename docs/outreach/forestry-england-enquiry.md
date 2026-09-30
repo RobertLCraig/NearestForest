@@ -1,98 +1,42 @@
-# Draft email to Forestry England
+# Email to Forestry England
 
-*For review. Nothing has been sent.*
+*Ready to send. Purely informational and asks for nothing, which is what card 0018 decided on
+2026-09-25. Rewritten 2026-09-30 from the earlier pitch; the earlier drafts are in `backups/`.*
 
 **To:** info@forestryengland.uk
-**Subject:** Free forest-finder app for Forestry England visitors
+**Subject:** A free forest-finder app built on your open data
 
 ---
 
 Hello,
 
-I built a free app that helps people find their nearest Forestry England forests, even with no phone
-signal. I would like to keep publishing it, clearly badged as a Forestry England forest finder, and
-I am writing to check you are happy with that and to ask whether there is any interest in working
-together on it.
+I have built a small free app that finds the nearest Forestry England forest from wherever you
+happen to be, and I thought you might like to know it exists.
 
-**The problem.** If someone has a free afternoon and wants a walk somewhere green, your website works
-best when they already know which forest they want. On the road it is harder again. I have often sat
-somewhere unfamiliar, with little signal, trying to work out which Forestry England site is nearest
-and giving up.
+It is here: https://forestlocator.enhanceify.co.uk/
 
-**What I built.** A free app that opens with the nearest Forestry England forests first, then sends
-the user to their chosen site in Apple Maps, Google Maps or Waze with one tap. It works without
-signal, requires no sign-up, and has no tracking or adverts.
+The problem it solves is a familiar one. Out on the road with a free afternoon and not much signal,
+working out which of your sites is nearest is harder than it should be. The app opens with the
+nearest forests first, works with no signal at all, and sends people to the site they choose in
+Apple Maps, Google Maps or Waze with one tap. Every forest in it links back to that forest's own
+page on your website. There is no sign-up, no tracking and no advertising.
 
-**It is here: https://forestlocator.enhanceify.co.uk/**
+The car park locations come from the open data you publish, and the forest details come from your
+website, reused under the Open Government Licence. Forestry England is credited in the app. I have
+not used your logos or photographs.
 
-I am a Forestry England member **[confirm]** and I have visited more than twenty of your sites so far
-**[confirm the number]**. I built this for myself, but everyone I have shown it to has asked me to
-put it on their phone too, which is why I am writing rather than quietly keeping it.
+I am not asking for anything. If anyone there would like to see it, or has any concern about it,
+I would be glad to hear from them.
 
-## Why I think it is worth your time
-
-- It reaches people at the moment they are choosing where to go, instead of needing them to already
-  know a forest by name.
-- It puts your quieter sites in front of people. Well-known forests are easy to search for; smaller
-  sites are much harder to discover unless someone already knows they exist.
-- It helps avoid wasted trips to a closed gate, which means fewer disappointed visitors and fewer
-  avoidable enquiries.
-- It sends people to you. Every forest in it links back to that forest's own page on your website.
-
-## What I am asking
-
-I would like to speak to the team this belongs with. There are two routes I can see, and the first is
-the one I would prefer:
-
-1. **You are happy for me to carry on.** I would like to put it in the app stores so people can
-   actually find it, and to be able to say clearly that it helps them find Forestry England forests. I understand your name is not covered by the open licence, so I would
-   not use it in that way without your agreement.
-
-   It will stay free to use, and I have no intention of putting adverts in it. I would like to add a
-   quiet way for anyone who finds it useful to put something towards the running costs, and I may
-   offer a paid version alongside the free one. The open licence does allow for that, so I am
-   telling you rather than asking, but I would far rather you heard it from me now than came across
-   it later.
-
-   If you are happy with that, my plan from there is to extend it beyond England: Forestry and Land
-   Scotland first, then Natural Resources Wales, then Northern Ireland and Ireland, so that it still
-   works when somebody crosses a border they cannot see. Longer term I would like to take the same
-   idea further afield. Every one of those means a separate conversation with a separate
-   organisation, and yours is the first, partly because England is where I started and partly
-   because your open data made it possible at all.
-
-   **On that last point, one small thing that would help enormously:** if you think this is worth
-   doing, an introduction to your counterparts at Forestry and Land Scotland and Natural Resources
-   Wales would save me starting from nothing twice over.
-
-2. **You bring me in.** If you would rather it were closer to home, I would be glad to work on it for
-   you, or on the forest finder on your own website, which is the problem I started with.
-
-Anything that gets it in front of more people would be a good outcome. If you would rather simply
-link to it or mention it to your members, I would value that too.
-
-For completeness: the car park locations come from the open data you publish, and the forest details
-come from your website, which says its content may be reused under the Open Government Licence. I
-have not used your logos or photographs, and I credit Forestry England in the app.
-
-I would be very happy to show the app to anyone who would like to see it, or for this email to be
-passed to the right team.
-
-Many thanks,
+Best wishes,
 
 Robert Craig
-[phone]
-[email]
 https://forestlocator.enhanceify.co.uk/
 
 ---
 
-## Proposed attachments
+## Attachments, if any
 
-*Not part of the email body. Four screenshots, resized so the email stays light enough for any inbox
-to accept.*
-
-![Your nearest forests, closest first](../img/2026-08-14_Screenshots/web/IMG_5821.jpg) ![What is there when you arrive, and a link back to your page](../img/2026-08-14_Screenshots/web/IMG_5822.jpg) ![One tap and you are on your way](../img/2026-08-14_Screenshots/web/IMG_5825.jpg) ![Every forest at once, with no signal needed](../img/2026-08-14_Screenshots/web/IMG_5829.jpg)
-
-*The last one earns its place twice over: the map it draws is Great Britain, and Scotland and Wales
-are visibly empty. It makes the point about extending it better than a sentence does.*
+*Optional. Three phone screenshots from `docs/img/2026-08-14_Screenshots/`: IMG_5792 (the list),
+IMG_5796 (the detail sheet), IMG_5797 (the map chooser). Resize before attaching so the email stays
+light.*
