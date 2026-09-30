@@ -1,31 +1,27 @@
 ---
-needs: 0018
 not_for_the_loop: sends an email to a public body in Rob's name
 ---
-# Send the Forestry England enquiry, once the draft is fixed
+# Send the Forestry England enquiry
 
 ## What I need from you
 
-**Send Forestry England the purely informational email you chose on card `0018` on 2026-09-25,
-once the draft says only that.** The draft on file still carries the old asks, so it needs
-rewriting first.
+**Send `docs/outreach/forestry-england-enquiry.md` to info@forestryengland.uk and say here that it
+went.** The draft is now the no-ask notification you chose on card `0018` on 2026-09-25, rewritten
+2026-09-30: no pitch, no name question, no introductions, and no `[confirm]`, `[phone]` or
+`[email]` left in it. Card `0018`'s answer is on its own thread, so nothing gates this any more.
 
-1. **Have the draft rewritten.** Open a session in `C:\Dev\NearestForest` and say "rewrite
-   `docs/outreach/forestry-england-enquiry.md` as the no-ask notification card 0018 chose". It
-   drops the pitch, the name question and the introductions, and with them the two `[confirm]`
-   claims and the cold reviews, which were about the asks. Expected: a short email saying you had a
-   problem, built this, and thought they might like to know, with the site's link.
-2. **Read it, fill `[phone]` and `[email]` if the signature keeps them, and send it** to
-   **info@forestryengland.uk**. Paste any reply into this card.
+1. Open the file and read it once. Change anything you would not say; it is 200 words.
+2. Send it from any address that can send, with the three screenshots named at the foot of the
+   file attached if you want them. Expected: it goes, and the signature is your name and the site.
+3. Add a dated line under `## Comments` saying it was sent. Paste any reply there when it arrives.
 
-**Pass:** the email is sent with no `[confirm]`, `[phone]` or `[email]` left in it, and a dated
-line here says so. Any reply, or none, is fine after that: it asked for nothing.
-**Fail:** the old draft goes out with its asks still in it. A reply asking for the app to come down
-is not a fail and is not this card: it gets its own card straight away.
+**Pass:** a dated line here saying it was sent, and the body carried no placeholder.
+**Fail:** an older draft goes out with asks in it. The Word copies in `docs/outreach/` are all the
+old pitch; only the `.md` named above is current. A reply asking for the app to come down is not a
+fail and not this card: it gets a card of its own straight away.
 
-**Why it needs you.** It is outward-facing correspondence to a public body, sent in your name, and
-it tells the organisation whose data the app uses that the app exists. That is a risk you own, and
-not one an agent can price.
+**Why it needs you.** Rule two: it is an email to a public body in your name, and no `git revert`
+recalls it.
 
 ## Why
 The email was drafted on 2026-08-15 and has never been sent. Two sentences about Rob are still marked
@@ -63,9 +59,10 @@ chasing a reply, and not a second email.
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Settle the two `[confirm]` claims in the draft
-- [ ] Read the review notes and decide what changes in the draft
-- [ ] Fill `[phone]` and `[email]`, and send to info@forestryengland.uk
+- [x] Settle the two `[confirm]` claims in the draft (removed with the ask they supported, 2026-09-30)
+- [x] Read the review notes and decide what changes in the draft (all three reviews were about the
+      asks; none applies to a no-ask email, so none was taken, 2026-09-30)
+- [ ] Send to info@forestryengland.uk
 - [ ] Paste the reply, or record the silence, on this card
 
 ## Plan
@@ -125,3 +122,11 @@ about why the ask fails. An email with no ask needs neither.
 lands as a notification, this card is a rewrite rather than a fix, and a much shorter one.
 
 `not_for_the_loop:` stands unchanged: it sends an email to a public body in Rob's name.
+
+**2026-09-30** Attended triage. Step 1 of the ask, "have the draft rewritten", was agent work sitting
+in a person's queue, so it was done: `docs/outreach/forestry-england-enquiry.md` is now the no-ask
+notification card `0018` chose on 2026-09-25, about 200 words, no placeholders. The old pitch is in
+`docs/outreach/backups/` and `forestry-england-handover.md` carries a superseded note at its head
+so a Word session cannot send the wrong text. `needs: 0018` is removed: that card's answer is on
+its own thread, and the self-test `no open card is blocked by a settled card` was red on exactly
+this. What is left is the send, which is yours.
