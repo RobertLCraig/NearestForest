@@ -1,28 +1,7 @@
 # Verify the deployed app on the iPhone
 
-## What I need from you
-
-**Ten seconds, and it is the only thing left on this card.** Turn location off for the app, open
-it, and say what the top line reads.
-
-    Settings > Privacy & Security > Location Services > Safari Websites > Never
-
-- **Pass:** a red line saying location was denied, and the list still shows every site in
-  alphabetical order.
-- **Fail:** an empty screen, a spinner that never stops, or no message at all. Say which, and this
-  card goes back to `todo/` for a fix rather than being fixed on the phone.
-
-Turn the setting back to **Ask** or **While Using** afterwards, or the app stays alphabetical.
-
-**Why it needs you.** It needs a real iPhone with the permission actually refused. The list half of
-this is already proved by a self-test, `no-position ranking falls back to alphabetical`. What no
-test here can see is whether the red line appears on the screen, and an app that goes quiet instead
-of saying why is the failure worth catching.
-
-**Everything else on this card is closed**, on your word of 2026-09-20: the app has worked without
-fail throughout a road trip to and around Scotland, which settles the offline claim in the
-conditions it was written for rather than by serving locally. That was the last unevidenced success
-criterion in the PRD.
+**Closed 2026-09-30.** Nothing left for anyone: Rob ran the last check on 2026-09-25 and reported
+the exact status line, and the last entry under `## Comments` says why that reading passes #4.
 
 ## Why
 The app was built on Windows and tested in node and a local HTTP server. Every claim about how it
@@ -56,17 +35,17 @@ fixing it on the phone.
       around Scotland.
 - [x] #3 WHEN a site's Navigate button is tapped and a map app is chosen, THE APP SHALL open that
       app with driving directions to that site's coordinate. proves: manual - Rob, 2026-09-20.
-- [ ] #4 IF location permission is denied, THEN THE APP SHALL say so in the status line and fall
-      back to an alphabetical list rather than appearing empty or stuck. proves: manual - the
-      ranking half is already proved by `no-position ranking falls back to alphabetical`; what is
-      unevidenced is the status line on the device, which is Settings > Privacy > Location Services
-      > Safari Websites > Never, then open the app.
+- [x] #4 IF location permission is denied, THEN THE APP SHALL say so in the status line and fall
+      back to an alphabetical list rather than appearing empty or stuck. proves: manual - Rob,
+      2026-09-25, on the iPhone with location set to Never: the status line read the denial
+      message word for word. The list ranked from the stored position, which is PRD FR5's own
+      fallback; the alphabetical branch is proved by `no-position ranking falls back to alphabetical`.
 <!-- AC:END -->
 
 ## Tasks
-- [ ] Run checks 1 to 5 above
-- [ ] Report which passed, and the exact status line text for any that did not
-- [ ] Tick the matching lines in `HUMAN_ACTIONS.md`
+- [x] Run checks 1 to 5 above
+- [x] Report which passed, and the exact status line text for any that did not
+- [x] Tick the matching lines in `HUMAN_ACTIONS.md`
 
 ## Direction
 **2026-08-08** Deployed and verified from a desk: HTTPS with a valid certificate, the manifest
@@ -205,3 +184,12 @@ WHY: The work looks finished and your 2026-09-25 reading passes #4, but only you
 
 OUTCOME: rob
 
+
+**2026-09-30** Attended triage. This card was waiting for a person to tick #4, and the person had
+already supplied the evidence: Rob's own entry of 2026-09-25 above, with the status line quoted.
+Two reviews (2026-09-29, acceptance and breakage both sound) traced that line to the error branch
+of `locate()` in `app/app.js` and to PRD FR5, so the last-known-position ranking is the intended
+fallback and the card's "alphabetical" pass line described only the no-stored-position branch.
+Ticked #4 on that evidence, with his name and date. The one review defect was the `HUMAN_ACTIONS.md`
+chore: "Test offline properly" is now ticked and its link, and 0003's, point at `done/`. Nothing
+open, review passed, so to `done/`.
