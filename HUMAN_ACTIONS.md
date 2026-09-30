@@ -36,12 +36,11 @@ Tick them off as they are done; do not delete the history.
       vhost is pinned to PHP 8.4 (it came up on 8.3 while the account CLI is 8.4).*
 - [x] **Add to Home Screen on the iPhone.** *Done 2026-08-08.*
 - [x] **Grant location permission** on first launch. *Done: the list sorts by real distance.*
-- [ ] **Test offline properly.** Now card
-      [0001](docs/board/human-review/0001-verify-on-iphone.md) check 5, and the only PRD success
-      criterion still unevidenced. Run it twice, tiles off and tiles on.
+- [x] **Test offline properly.** Card [0001](docs/board/done/0001-verify-on-iphone.md). *Done
+      2026-09-20: worked without fail across a road trip to and around Scotland.*
 - [ ] **Build the iOS Shortcut.** Now card [0002](docs/board/human-review/0002-build-ios-shortcut.md).
-- [ ] **Sanity-check one destination in the real world.** Now card
-      [0003](docs/board/human-review/0003-straight-line-distance-in-practice.md).
+- [x] **Sanity-check one destination in the real world.** Card
+      [0003](docs/board/done/0003-straight-line-distance-in-practice.md). *Decided 2026-09-20.*
 
 **Anything still open lives on [the board](docs/board/), not here.** This file is the historical
 record of what the initial build needed from a person; the board is the queue. Keeping open items in
