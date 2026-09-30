@@ -373,3 +373,28 @@ lookup. The ask at the top is now that, with a recommendation attached so it is 
 
 **Nothing here was ticked that was not met**, and the two line-budget criteria were true on the day
 they were ticked. They are not true today, and saying so is the point of this entry.
+
+### 2026-09-30 manager (m20260930012953-f99a)
+
+**outcome: question**
+
+The work is done, but three shared board rules conflict, and only Rob can decide which one gives way.
+
+**The question:** Should the 100-line budget count only the part of a card above `## Comments`, so that the append-only thread in `human-review/` does not count? (Yes or no. The card recommends yes.)
+
+**what the session said**
+
+I read the card. I also read the budget rule in `docs/board/README.md`.
+
+**What I found:**
+- All 4 criteria are ticked. No review finding shows that one of them is false. So `reopen` would give the builder nothing to do.
+- The README rule says "A whole card fits in 100 lines". The number came from counting cards in `human-review/`. So the rule counts the whole card, Comments included. It does not exempt this lane.
+- Two other rules make a card in `human-review/` grow. It must have a `## What I need from you` section, and `## Comments` is append-only (you can add, never remove). So the three rules cannot all be true at once.
+- The README is shared by every board. Changing it is Rob's decision, not a builder's.
+
+QUESTION: Should the 100-line budget count only the part of a card above `## Comments`, so that the append-only thread in `human-review/` does not count? (Yes or no. The card recommends yes.)
+
+WHY: The work is done, but three shared board rules conflict, and only Rob can decide which one gives way.
+
+OUTCOME: question
+
