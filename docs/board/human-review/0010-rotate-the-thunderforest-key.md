@@ -14,9 +14,8 @@ Paste this into a terminal with your new key in place of `NEW_KEY`, and nowhere 
 
 - **Pass:** open <https://forestlocator.enhanceify.co.uk/>, open the map, tap **Tiles**, and the
   basemap draws.
-- **Fail:** the coastline draws with no tiles on top. That means the file is empty, has a trailing
-  newline, or holds a key that is already revoked. `printf` rather than `echo` is what avoids the
-  newline, which is why the command is written that way.
+- **Fail:** the coastline draws with no tiles on top. That means the file is empty or holds a key
+  that is already revoked; a trailing newline is not it, because `api/tiles.php` trims the file.
 
 Then one more thing, and it is the one that actually ends the exposure: **ask Thunderforest to
 confirm the old key is revoked, not merely superseded.** A new key alongside a live old one changes
@@ -25,70 +24,27 @@ nothing about the key that reached a chat transcript.
 **Do not paste the new key into this card, into the repository, or into a chat with me.** That is
 the whole reason the old one needed rotating, and it is why no agent can do this step.
 
----
+**Why it needs you.** Rule two: the key must reach the server without passing through the
+repository, a card or a chat, and the revocation request has to come from the account's own
+address. Step 1 of the original three, asking support for the replacement, you did on 2026-09-20.
 
-**Superseded, kept so nobody redoes it.** The original three steps were: ask support for a
-replacement, install it, confirm revocation. Step 1 is done, and with it the blocker this card
-carried for six weeks.
-
-1. ~~Ask Thunderforest support for a replacement key, from the account's own email address.~~
-   **Done, Rob, 2026-09-20.** The card had been waiting on `enhanceify.co.uk` mail being fixed,
-   because Thunderforest checks the sending address against the account. That is no longer the
-   blocker and the `waiting_on:` is gone.
-2. Replace the server copy. Do not paste the new key into chat, into the repo, or into a card:
-
-       ssh hostinger "printf '%s' 'NEW_KEY' > ~/domains/forestlocator.enhanceify.co.uk/tiles.key && chmod 600 ~/domains/forestlocator.enhanceify.co.uk/tiles.key"
-
-   *Pass:* open <https://forestlocator.enhanceify.co.uk/> , open the map, tap **Tiles**, and the
-   basemap still draws. *Fail:* the outline draws but no tiles, which means the file is empty, has
-   a trailing newline, or holds a key that has already been revoked.
-3. Confirm the old key is dead rather than merely superseded, by asking support to say so.
-   *Pass:* a reply confirming revocation. This is the step that actually ends the exposure; a new
-   key alongside a live old one changes nothing.
-
-**Pass** is all three, and step 3 is the one that ends the exposure: a new key alongside a live old
-one changes nothing.
-
-**Fail** at step 1 is silence for a week, which is the recheck date in this card's `waiting_on`. At
-step 2 it is the outline drawing with no tiles, which means the file is empty, carries a trailing
-newline, or holds a key that has already been revoked.
-
-**Why it needs you** The request has to come from the account's own email address, and the new key
-must not pass through chat, the repository or a card. That leaves nowhere for an agent to stand.
-
-**The mail blocker that held this card for six weeks is spent**, because step 1 has happened. The
-measurement behind it is kept under `## Decided` below rather than repeated here, since it is still
-true of the domain and still belongs to the enhanceify-V2 board. It no longer holds anything here.
-
-No redeploy is needed. `api/tiles.php` reads the file on every request, which is exactly why it was
-built that way rather than baking the key into the app.
+No redeploy is needed: `api/tiles.php` reads the file on every request and trims it, which is why
+the key lives in a file above the web root rather than in the app.
 
 ## Why
-Hygiene rather than an incident, and worth stating plainly so nobody over- or under-reacts. Nothing
-leaked into the repository: a self-test greps every tracked file for a key and `.gitignore` refuses
-`*.key`. The server copy is `-rw-------` and sits above the web root, and `/tiles.key`,
-`/../tiles.key` and `/api/../../tiles.key` were each checked and return 404. The only exposure is
-the transcript, and the realistic worst case is someone spending the free tier's 150k tiles a month.
-
-**2026-08-10, and it cuts both ways.** A penetration test found the proxy would serve a tile to
-anyone who omitted a `Referer`, so until card `0012` landed, spending the quota needed no key at all
-and this rotation was not the control anyone thought it was. `0012` closed that. What is left here
-is the original point, undiminished: a key that has been in a transcript is not private, and only a
-revocation makes it so.
+Hygiene rather than an incident. Nothing leaked into the repository: a self-test greps every
+tracked file for a key and `.gitignore` refuses `*.key`. The server copy is `-rw-------` above the
+web root, and `/tiles.key`, `/../tiles.key` and `/api/../../tiles.key` each return 404. The only
+exposure is a chat transcript, and the realistic worst case is someone spending the free tier's
+150k tiles a month. Card `0012` closed the hole that let the quota be spent with no key at all;
+what is left is the original point: a key that has been in a transcript is not private until it is
+revoked.
 
 ## Links
 
 **Relates to**
-- `0012` - closed the hole that made the quota spendable with no key at all, which is why this card
-  is hygiene rather than the only control. It is not a prerequisite: the key is still exposed
-  whether or not that card exists.
-- `0009` - installed the key this card replaces, and set the pattern of keeping it in a file above
-  the web root so a swap needs no redeploy.
-
-## Not this card
-Not changing provider and not changing the proxy. Rate limiting and the access control that should
-have been on the endpoint are card `0012`, which was built rather than deferred once the review
-showed the endpoint was open in practice and not merely in theory. Not server-side tile caching.
+- `0012` - closed the hole that made the quota spendable with no key at all. Not a prerequisite.
+- `0009` - installed the key this card replaces, and set the pattern of a file above the web root.
 
 ## Acceptance
 <!-- AC:BEGIN -->
