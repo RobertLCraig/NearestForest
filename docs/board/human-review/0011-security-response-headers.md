@@ -564,3 +564,29 @@ VERDICT: defect
 
 
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 5 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 6 of 7 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
+
+### 2026-09-30 manager (m20260930012953-f99a)
+
+**outcome: rob**
+
+#7 is still open and the findings are real, but the bounce limit stops the loop from building it again, so only a session you start can finish it.
+
+**what the session said**
+
+I read the code. Both review findings are still true on `main` today.
+
+- In `scripts/selftest.js`, the hardening block has the check `no style attribute in any shipped markup`. It matches only a quoted `style="` or `style='`. So `setAttribute('style', ...)` passes. An unquoted `style=` also passes.
+- In `docs/HANDOVER.md`, the `app/.htaccess` bullet still says the rule covers `index.html` only.
+
+Criterion #7 is already unticked. The builder does have work to do.
+
+But `reopen` does not help. The card has bounced 5 times, which is the limit. If I move it to `todo/`, the loop parks it here again straight away.
+
+Option 2 (close it and raise a new card) is the count-laundering you turned down on 2026-09-20. So that choice is already made.
+
+Only one path is left: an attended build. Only you can start that session. Open a session in `C:\Dev\NearestForest` and say "work card 0011 criterion #7".
+
+WHY: #7 is still open and the findings are real, but the bounce limit stops the loop from building it again, so only a session you start can finish it.
+
+OUTCOME: rob
+
