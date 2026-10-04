@@ -157,3 +157,9 @@ rather than sitting here looking like an unanswered question.
 think gets answered by 0018". Its `needs: 0018` already says so and nothing there changes.
 
 **2026-09-25** **Decided:** a fourth option, not one of the three drafted: send an email that is purely informational and asks for nothing. No pitch, no trade mark question, and no request for introductions, so question 2 is no. Rob, 2026-09-25. Card 0027 draft needs rewriting to that shape before it is sent.
+
+**2026-10-04** RESULT: done
+TOUCHED: docs/board/todo/0080-the-docs-still-say-forestry-england-will-be-asked-about-the-name.md
+0080 - record the 2026-09-25 no-ask answer in the docs: the two PRD lines that call 0018 the trade mark question, a new DECISIONS entry superseding the 'enquiry survives' reasoning, and the stale 0018 bullet in HANDOVER.
+No decision card: the only question the answer raises, how the name is handled with no enquiry, is already settled by DECISIONS 2026-08-15 (do not use the name as the app or store title).
+No card for the draft rewrite or for the stale blocker on 0027: the draft was rewritten on 2026-09-30 (6b2f575), and the blocker is already card 0077.
