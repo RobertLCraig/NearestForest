@@ -571,3 +571,62 @@ still says the rule covers `index.html`; this triage does not edit HANDOVER. The
 sentence should read: "so no inline script, inline handler or `style=` attribute may enter
 `index.html` or any shipped script". That sentence is not part of #7's text, so it is not a reason
 to hold the card.
+
+### 2026-10-04 review (v20261004170512-9d10)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked all seven criteria against the code and could not break any of them.
+
+- **#1, #2, #3:** `app/.htaccess`, in the "Security headers" block. Every header is live (it does not start with `#`) and uses `Header always set`.
+  - The CSP has `script-src 'self'` and `style-src 'self'`. It has no `unsafe-inline` and no `unsafe-eval`.
+  - `frame-ancestors 'none'` is in the CSP line.
+  - HSTS sets `max-age=31536000`. nosniff, Referrer-Policy and Permissions-Policy are also there.
+  - The 2026-08-10 device evidence covers render, locate, list and map.
+- **#4:** `app/.htaccess`. The `sw\.js$` `FilesMatch` block comes after the general block, so `no-store` is the value Apache sends. The order check in `scripts/selftest.js` reads the text with the comments removed.
+- **#5:** `map.js` asks for tiles at `api/tiles.php`, which is the same origin. `img-src 'self'` covers it. The phone evidence agrees.
+- **#6:** `scripts/selftest.js`. `stripHtaccessComments` and `htaccessDirectives` drop every line that starts with `#`. Apache treats only those lines as comments. The `wantHeaders` checks read the stripped text. The `a commented-out security header fails the suite` check comments out the whole real file and requires every pattern to fail.
+- **#7:** In the `hardening` block, `markup` joins `index.html` with `app.js`, `core.js`, `map.js` and `sw.js`. The inline-handler and style checks now also catch unquoted values and `setAttribute`. The `cspBreakers` check proves the patterns go red on every shape they exist to catch.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked the scope of this card. I found nothing that went past the fence. I found nothing left half done.
+
+**What this card changed:**
+- The big diff mixes in many other cards (0012 - 0020, the campsites work, docs). Their work is in `tiles.php`, the campsite code in `app.js`, `core.js` and `nearest.php`. It is not this card's work.
+- In `app/.htaccess`, the only change in this range is comment punctuation. No directive changed. There is no `X-Frame-Options`. There is no Cloudflare change.
+- The card's own work is in `scripts/selftest.js`.
+
+**The two earlier findings are now fixed:**
+- **#6:** `stripHtaccessComments` (used by `htaccessDirectives`) removes comment lines before any header check reads the file. The check `a commented-out security header fails the suite` puts `#` in front of every line of the real file. Then it requires every pattern in `wantHeaders` to fail. So a commented-out header now turns the run red.
+- **#7:** The checks `no inline event handler in any shipped markup` and `no style attribute in any shipped markup` now read `indexhtml + shipped`, not only `index.html`. They also catch unquoted `=` and `setAttribute('on...'/'style')`. The `cspBreakers` list proves that they go red.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this card's test changes. I could not.
+
+**What I checked**
+
+- `htaccessDirectives()` and `stripHtaccessComments` in `scripts/selftest.js`. This drops every line that starts with `#`. Apache only treats a whole line as a comment. It does not allow a comment at the end of a line. So the strip matches what Apache does.
+- Both blocks that read `.htaccess` go through `htaccessDirectives()`: the hardening block and the redirect block.
+- The check `a commented-out security header fails the suite` puts `#` in front of every line of the real file. Then it needs every `wantHeaders` pattern to fail. So a header pattern added later is also covered.
+- The `markup` scan now reads `index.html`, `app.js`, `core.js`, `map.js` and `sw.js`. Those are every shipped file that builds markup. `nearest.php` and `tiles.php` return JSON and images, not HTML.
+- `cspBreakers` proves both patterns go red on quoted, unquoted and `setAttribute` forms.
+- No other caller reads `.htaccess` raw. No comment in the changed code is now false.
+
+**What I did not do**
+
+I did not run the suite. This review was read-only. The script also found no suite before it started me.
+
+VERDICT: sound
+
