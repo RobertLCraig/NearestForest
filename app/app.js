@@ -220,11 +220,13 @@ function openSheet(site) {
     h += field('Opening times', site.opening_times, { missing: 'Not published' });
     h += field('Parking', site.parking);
   }
-  if (site.facilities && site.facilities.length) {
-    h += '<dt>Facilities</dt><dd><div class="tags">' +
-         site.facilities.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') +
-         '</div></dd>';
-  }
+  /* Always a row. A page that lists no facilities is silent, not "none", and leaving the
+     row out read as none (card 0016 #2). */
+  h += field('Facilities', site.facilities && site.facilities.length
+    ? '<div class="tags">' +
+      site.facilities.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') +
+      '</div>'
+    : null, { raw: true });
   if (site.status) h += field('Status', site.status);
   /* Shared, not campsite-only. Every record has carried `country` since card 0016, and
      while this row sat inside the campsite branch a Scottish CAMPSITE said Scotland and a

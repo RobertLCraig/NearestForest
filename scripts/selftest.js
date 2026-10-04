@@ -945,6 +945,28 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
          ? `${what} invented a Country row reading ${JSON.stringify(got)}`
          : `${what} reads ${JSON.stringify(got)} where it should read ${JSON.stringify(want)}`
        ).join(' | '));
+
+    // Card 0016 #2, reopened by the 2026-09-20 review. The Facilities row was drawn only
+    // inside `if (site.facilities && site.facilities.length)`, so a Scottish page that lists
+    // no facilities got no row at all, and silence upstream read as "this forest has none".
+    // Sat nav and opening times both say "not known"; this one said nothing. Rendered through
+    // the same lifted tail as the Country row, then swept over every shipped Scottish record
+    // the parser stored as null, with a non-zero guard so the sweep cannot pass on nothing.
+    const facRow = (s) => {
+      const m = /<dt>Facilities<\/dt><dd([^>]*)>([\s\S]*?)<\/dd>/
+        .exec(tail057(Object.assign({ lat: 56, lng: -4, source: 'forest', country: 'Scotland' }, s), field020, esc020));
+      return m ? { missing: /is-missing/.test(m[1]), body: m[2] } : null;
+    };
+    const silentFls = sites.filter(s => s.country === 'Scotland' && s.facilities == null);
+    const unsaid = silentFls.filter(s => { const r = facRow(s); return !r || !r.missing; });
+    const listed = facRow({ facilities: ['Toilets'] });
+    ok('a scottish site whose page lists no facilities says so rather than showing no row',
+       silentFls.length > 0 && unsaid.length === 0 &&
+       facRow({ facilities: [] }) && facRow({ facilities: [] }).missing &&
+       listed && !listed.missing && /Toilets/.test(listed.body),
+       `${unsaid.length} of ${silentFls.length} shipped Scottish records with no facilities ` +
+       `render no "not known" Facilities row; an empty list renders ${JSON.stringify(facRow({ facilities: [] }))}; ` +
+       `a listed one renders ${JSON.stringify(listed)}`);
   }
 
   // Acceptance #3, on the one screen a reader actually looks a place up on. Every other
