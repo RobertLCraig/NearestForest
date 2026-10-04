@@ -253,3 +253,70 @@ settled, which is what made the card unre-verifiable.
 **Still `not_for_the_loop:`**, and the frontmatter is untouched. The reason on it has not changed:
 the card creates a live DNS record and deploys to a shared host, and neither is undone by deleting a
 file. Adding the markers is an edit to a board card and reaches nothing outside this repository.
+
+### 2026-10-04 review (v20261004144322-ce0a)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked each criterion against the code. I could not break any of them.
+
+**What I found:**
+
+- **#1 (the DNS record)** has `proves: manual`. A repository test cannot check a live DNS record. The record id `b110a9f9d9a730df168893e92d7f67cc` is written in `## Outcome` and in `HUMAN_ACTIONS.md`.
+- **#2 (the HTTPS certificate)** has `proves: manual`. The `ssl_verify_result=0` result is written down. `.htaccess` (in its mod_rewrite block) sends all HTTP traffic to the HTTPS host.
+- **#3 (the manifest type)**: `app/.htaccess` has `AddType application/manifest+json .webmanifest`. `scripts/deploy.sh` checks the served content-type after each deploy. If the type is wrong, the deploy fails.
+- **#4 (the PHP endpoint)**: `app/api/nearest.php` builds the ranked JSON. The smoke test in `scripts/deploy.sh` requires the reply to start with `{"ok":true,`. The last review ran it locally and got Friston Forest first.
+- **#5 (an honest report)**: `## Direction` names the step the MCP could not do, and says why. Line 28 of `HUMAN_ACTIONS.md` marks the upload as "superseded", not done by an MCP. This criterion has `proves: none`, with the reason written on the line.
+
+The 2026-09-10 review found one defect: no criterion said how it was proved. That defect is now fixed. All five criteria now say how they are proved.
+
+No criterion is unmet.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope review of card 0005**
+
+The card fence says these things:
+- No phone checks. That is card 0001.
+- No Shortcut. That is card 0002.
+- No code change.
+- Do not proxy the DNS record.
+- Do not touch the apex record or the regenesis subdomain.
+
+**What I checked:**
+- The large diff (`app/map.js`, `app/api/tiles.php`, campsites, the board cards) is the history of the whole branch. It is not this card's work. Each part has its own card (for example 0007, 0008, 0009, 0011 and 0020).
+- This card's own output is `scripts/deploy.ps1`, `scripts/deploy.sh`, `.gitattributes`, the deploy line in `CLAUDE.md`, and the ticks in `HUMAN_ACTIONS.md`. All of them are deploy tooling, not app code.
+- The card fixed two deploy-script bugs in place. That is inside the fence. The fence protects the app, and a deploy card that cannot repair its own deploy script cannot finish.
+- Nothing is half done. All nine tasks are done, and the `## Outcome` section records the evidence. The open `HUMAN_ACTIONS.md` item is the Shortcut. That is card 0002, so it is outside this card.
+- The 2026-09-20 edit added `proves:` markers to all five criteria. That is the fix the earlier review asked for, and it changed no tick.
+
+**Result:** I found no work over the fence and no part left half done. Criteria #1 to #4 are `proves: manual`, so I do not report them as findings.
+
+**What you do now:** Nothing. The card can go to `done/`.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to find breakage in this card and I found none. My verdict is **sound**.
+
+**What I checked:**
+
+- **Cache key guard.** `app/sw.js` has `var CACHE = 'nearest-forest-v29-2026-09-22';`. The check in `scripts/deploy.ps1` (step 2) looks for a `+var CACHE` line in the diff. The read in `scripts/deploy.sh` (stage 2) looks for `CACHE = '...'`. Both match the real line, so neither check is broken.
+- **Self-update.** `deploy.sh` pulls first, then starts the new copy of itself with `exec`. Every check runs in that new copy. The fix for the "old and new file mixed together" bug holds.
+- **Inputs passed to the server.** `deploy.ps1` step 5 sends `REPO_DIR`, `BRANCH` and `SITE`. `deploy.sh` reads the same three names, and the default paths agree.
+- **Smoke test.** It checks that the reply starts with `{"ok":true,`. Its comment says this, and that matches criterion #4.
+- **Comment drift.** `deploy.ps1` usage says `-Force` skips the stale-cache stop. It also skips the dirty-tree stop. That second use is shown in that stop's own error message, so no comment is false.
+
+**One small weak spot, not a defect:** In `deploy.sh` stage 2, the manifest check runs with `set -euo pipefail` and has no `|| ...` fallback. So if the host cannot be reached, the script can stop there. It will exit non-zero, but it may not print its "FAILED" banner. `deploy.ps1` still shows the exit code, so this is not a silent failure.
+
+No criterion is disproved, so there are no `UNMET:` lines.
+
+VERDICT: sound
+
