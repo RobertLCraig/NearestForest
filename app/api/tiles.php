@@ -57,40 +57,53 @@ function fail(int $status, string $message): void
    existed. Local development sets THUNDERFOREST_KEY in the environment instead,
    which never touches the tree. `no path inside the repository is a key location
    (card 0009)` in scripts/selftest.js plants one at the repo root and checks. */
-function readKey(): string
+const KEY_FILE = __DIR__ . '/../../../tiles.key';
+
+/* The one list of places a key may come from. readKey() and counterDir() both ask
+   this, so they cannot disagree about whether the layer is configured: until
+   2026-10-04 counterDir() looked for the file alone, and a key in the environment
+   served tiles while the counters fell to the shared temp directory. */
+function findKey(): ?string
 {
     $env = trim((string) getenv('THUNDERFOREST_KEY'));
     if ($env !== '') {
         return $env;
     }
-    $file = __DIR__ . '/../../../tiles.key';
-    if (is_readable($file)) {
-        $k = trim((string) file_get_contents($file));
+    if (is_readable(KEY_FILE)) {
+        $k = trim((string) file_get_contents(KEY_FILE));
         if ($k !== '') {
             return $k;
         }
+    }
+    return null;
+}
+
+function readKey(): string
+{
+    $k = findKey();
+    if ($k !== null) {
+        return $k;
     }
     fail(503, 'Tile layer is not configured on this server: no API key file found. '
             . 'The map still works without it.');
 }
 
-/* Where the counters live. Beside tiles.key in the domain directory, above the web
-   root, in preference to the system temp directory. On shared hosting the temp
-   directory is commonly a world-writable /tmp, so a co-tenant who creates nf-tiles
-   before we do owns the rate-limit state and can seed any address straight to the
-   cap. The domain directory is this account's.
+/* Where the counters live. In the domain directory, above the web root, in
+   preference to the system temp directory. On shared hosting the temp directory is
+   commonly a world-writable /tmp, so a co-tenant who creates nf-tiles before we do
+   owns the rate-limit state and can seed any address straight to the cap. The
+   domain directory is this account's.
 
-   The key file is what identifies that directory, rather than counting `..` up to
-   it: where tiles.key is readable, that directory is ours by construction. It also
-   keeps a developer's machine clean, since there is no key here and the counters
-   go to the temp directory instead of appearing a level above the checkout. The
-   temp directory is the fallback either way, because a cap that cannot find a home
-   must not take the layer down. */
+   The domain directory is preferred whenever the layer is configured, by either of
+   findKey()'s sources, because that is exactly when the cap is guarding real
+   spending. With no key at all there is nothing to spend, readKey() refuses every
+   request anyway, and the counters go to the temp directory rather than appearing a
+   level above a developer's checkout. The temp directory is the fallback either
+   way, because a cap that cannot find a home must not take the layer down. */
 function counterDir(): ?string
 {
-    $home = __DIR__ . '/../../../tiles.key';
-    $candidates = is_readable($home)
-        ? [dirname($home) . '/nf-tiles', sys_get_temp_dir() . '/nf-tiles']
+    $candidates = findKey() !== null
+        ? [dirname(KEY_FILE) . '/nf-tiles', sys_get_temp_dir() . '/nf-tiles']
         : [sys_get_temp_dir() . '/nf-tiles'];
     foreach ($candidates as $dir) {
         if (is_dir($dir) || @mkdir($dir, 0700, true) || is_dir($dir)) {
@@ -108,18 +121,22 @@ function counterDir(): ?string
    log of every address that used the app, which is the opposite of what the
    comment above it claimed. The salt makes the claim true.
 
-   Two requests racing to create it will write different values and one wins; the
-   loser counts under a salt nobody reads again, which costs a handful of tiles
-   once, on one day. That is the same trade the unlocked counter below makes. */
+   The salt is only ever what the file holds, read back after writing. Until
+   2026-10-04 a salt that could not be stored was handed out fresh on every request,
+   so each request counted under a new filename and the cap never fired. Read back,
+   two racing requests also agree on the winner's value. If nothing usable can be
+   stored, the salt is empty: the filenames become reversible again, which is the
+   lesser loss, because a private counter that never counts is no cap at all. */
 function counterSalt(string $dir): string
 {
     $f = $dir . '/.salt';
-    $s = is_readable($f) ? trim((string) @file_get_contents($f)) : '';
+    $read = fn () => is_file($f) ? trim((string) @file_get_contents($f)) : '';
+    $s = $read();
     if (strlen($s) < 32) {
-        $s = bin2hex(random_bytes(16));
-        @file_put_contents($f, $s, LOCK_EX);
+        @file_put_contents($f, bin2hex(random_bytes(16)), LOCK_EX);
+        $s = $read();
     }
-    return $s;
+    return strlen($s) >= 32 ? $s : '';
 }
 
 /* Per-address daily cap. A counter file per address per day, in the directory

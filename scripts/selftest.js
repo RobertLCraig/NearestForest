@@ -3989,6 +3989,102 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
     }
   }
 
+  /* Card 0012 #3, reopened by the 2026-09-20 review on two counts. `readKey` takes the
+     key from THUNDERFOREST_KEY or from <domain>/tiles.key, but `counterDir` only ever
+     looked for the file, so a key in the environment served tiles while the counters fell
+     to the shared temp directory, where a co-tenant can forge or delete them. And
+     `counterSalt` handed out a fresh random salt on every request whenever `.salt` could
+     not be stored, so each request counted under a new filename and the cap never fired.
+     Every earlier proof of the cap was a regex or a hand-seeded counter at the file
+     layout; this runs the real proxy on the environment layout, with the temp directory
+     moved into the fixture so where the counters land can be seen. `.salt` is planted
+     as a directory in both candidate homes, which is a salt that can be neither read
+     nor written. The dead https_proxy turns every request that passes the cap into a
+     502, so 502 means "counted and let through" and nothing reaches Thunderforest. */
+  console.log('\n--- the tile cap holds on every key layout (card 0012) ---');
+  {
+    const { spawn, spawnSync } = require('child_process');
+    const http = require('http');
+    const net = require('net');
+    const osmod = require('os');
+    const N1 = 'with the key in the environment, counters live beside the domain, not in the shared temp directory (card 0012)';
+    const N2 = 'a salt that cannot be stored still counts one address in one file (card 0012)';
+    const N3 = 'an address at the cap gets 429 on the environment-key layout (card 0012)';
+
+    const which = spawnSync('php -r echo(PHP_BINARY);', { encoding: 'utf8', shell: true });
+    const PHP = (which.stdout || '').trim();
+    if (!PHP || which.status !== 0) {
+      for (const n of [N1, N2, N3]) ok(n, false, 'php not runnable');
+    } else {
+      const fx = fs.mkdtempSync(path.join(osmod.tmpdir(), 'nf-0012-'));
+      const docroot = path.join(fx, 'repo', 'app');
+      const tmp = path.join(fx, 'tmp');
+      fs.mkdirSync(path.join(docroot, 'api'), { recursive: true });
+      fs.copyFileSync(path.join(ROOT, 'app', 'api', 'tiles.php'), path.join(docroot, 'api', 'tiles.php'));
+      const homes = [path.join(fx, 'nf-tiles'), path.join(tmp, 'nf-tiles')];
+      for (const h of homes) fs.mkdirSync(path.join(h, '.salt'), { recursive: true });
+
+      const env = Object.assign({}, process.env, {
+        THUNDERFOREST_KEY: 'planted-by-selftest-not-a-real-key',
+        https_proxy: 'http://127.0.0.1:9', HTTPS_PROXY: 'http://127.0.0.1:9',
+      });
+      delete env.no_proxy; delete env.NO_PROXY;
+
+      const port = await new Promise((res, rej) => {
+        const s = net.createServer();
+        s.once('error', rej);
+        s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => res(p)); });
+      });
+      const get = (p) => new Promise((res, rej) => {
+        const r = http.get({ host: '127.0.0.1', port, path: p, timeout: 15000 }, (resp) => {
+          let body = '';
+          resp.setEncoding('utf8');
+          resp.on('data', (c) => { body += c; });
+          resp.on('end', () => res({ status: resp.statusCode, body }));
+        });
+        r.on('timeout', () => r.destroy(new Error('timed out')));
+        r.on('error', rej);
+      });
+      const counts = () => homes.flatMap(h => fs.existsSync(h)
+        ? fs.readdirSync(h).filter(f => f.endsWith('.count')).map(f => path.join(h, f)) : []);
+
+      const server = spawn(PHP, ['-d', 'sys_temp_dir=' + tmp, '-S', '127.0.0.1:' + port, '-t', docroot],
+        { env, stdio: ['ignore', 'pipe', 'pipe'] });
+      let serverErr = '';
+      server.stderr.on('data', (c) => { serverErr += c; });
+      try {
+        let up = false;
+        // A request without z fails validation with 400 before the cap, so waiting costs no count.
+        for (let i = 0; i < 100 && !up; i++) {
+          try { await get('/api/tiles.php'); up = true; }
+          catch (e) { await new Promise((r) => setTimeout(r, 100)); }
+        }
+        if (!up) {
+          for (const n of [N1, N2, N3]) ok(n, false, 'php -S never answered ' + serverErr.trim());
+        } else {
+          const tile = '/api/tiles.php?z=0&x=0&y=0';
+          const got = [];
+          for (let i = 0; i < 3; i++) got.push((await get(tile)).status);
+          const files = counts();
+          ok(N1, files.length > 0 && files.every(f => f.startsWith(homes[0] + path.sep)),
+             `statuses ${got.join(',')}; counter files: ${files.map(f => path.relative(fx, f)).join(', ') || 'none'}`);
+          const vals = files.map(f => fs.readFileSync(f, 'utf8').trim());
+          ok(N2, files.length === 1 && vals[0] === '3',
+             `${files.length} counter files after 3 requests, holding ${vals.join(',') || 'nothing'}; want 1 holding 3`);
+          // Seed whatever file the proxy chose, so this does not depend on how it names it.
+          for (const f of files) fs.writeFileSync(f, '2000');
+          const capped = await get(tile);
+          ok(N3, files.length === 1 && capped.status === 429,
+             `got ${capped.status} "${capped.body.slice(0, 80)}" with ${files.length} counter files seeded to 2000`);
+        }
+      } finally {
+        server.kill();
+        await new Promise((r) => server.once('exit', r));
+        fs.rmSync(fx, { recursive: true, force: true });
+      }
+    }
+  }
+
   console.log(`\n${pass} passed, ${failures.length} failed`);
   if (failures.length) {
     console.log('\nFAILURES:');
