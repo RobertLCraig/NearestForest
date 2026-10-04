@@ -82,7 +82,7 @@ costs the same quota, so removing nine would be tidying dressed as hardening.
 - [x] #1 WHEN a tile is requested by a page on another origin, THE APP SHALL refuse it, including
       when that page suppresses its own `Referer`.
 - [x] #2 WHEN a tile is requested from the app's own map, THE APP SHALL serve it as before.
-- [ ] #3 WHEN one address has requested more than the daily cap, THE APP SHALL return 429 and
+- [x] #3 WHEN one address has requested more than the daily cap, THE APP SHALL return 429 and
       SHALL NOT call the upstream provider.
 - [x] #4 IF the counter cannot be read or written, THEN THE APP SHALL serve the tile anyway.
 - [x] #5 WHEN the tile layer is switched on from the app itself, THE APP SHALL draw tiles as
@@ -551,3 +551,21 @@ VERDICT: defect
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 4 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 4 of 5 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
 
 **2026-09-29** **Decided:** option 1, back to `todo/` so a builder closes the finding. Settled by an attended agent under Rob's rule that human-review holds only what he must decide: #3 is already unticked by the 2026-09-20 review with two reasons a builder can act on (`counterDir()` must share `readKey()`'s three key locations, and a `.salt` that cannot be written must not hand every request a fresh counter file), both fixes hold on every deploy layout so nobody needs to say which layout is in use, and the card's own recommendation was this. The card was parked at 4 bounces; the loop now runs with `-BounceLimit 5` (ProgressBoard `storage/logs/work-card.log`, 2026-09-29 00:35), so it gets one more lap before it parks again.
+
+**2026-10-04** RESULT: done
+TESTS: +3 new, all green (node scripts/selftest.js: 335 passed, 0 failed)
+TOUCHED: app/api/tiles.php
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+Built the two fixes the 2026-09-20 review gave for #3 and the 2026-09-29 decision sent back.
+
+**counterDir() now shares readKey()'s list.** A new findKey() is the one list of key sources (THUNDERFOREST_KEY, then <domain>/tiles.key). readKey() and counterDir() both call it, so a key in the environment now keeps the counters in <domain>/nf-tiles, not the shared temp directory. The review also named a third place, the repo-root `../../tiles.key`; card 0009 had already removed that from readKey(), so two sources is the whole list today.
+
+**counterSalt() no longer hands out a fresh salt per request.** It writes, then reads the salt back from disk, and uses only what the file holds. If nothing usable can be stored it returns an empty salt: filenames become reversible again in that degraded case, but the cap keeps counting. Reading back also makes two racing requests agree on the winner's salt.
+
+**Tests, watched red first.** A new block, `the tile cap holds on every key layout (card 0012)`, runs the real tiles.php under `php -S` with THUNDERFOREST_KEY set, `sys_temp_dir` moved into the fixture, `.salt` planted as a directory in both homes, and a dead https_proxy, so a request that passes the cap gets 502 and nothing reaches Thunderforest. Before the fix: 3 failed (counters in tmp/nf-tiles; 3 files holding 1,1,1 after 3 requests; 502 not 429 when seeded to 2000). With only the counterDir fix applied: the layout check went green and the two salt checks stayed red, so each check catches its own fault. After both: green.
+
+**What the harness cannot express.** A temp directory owned by a different OS user, which is the co-tenant case itself, cannot be built on this Windows machine. The tests prove the counters no longer go there on a configured install. They do not prove what happens if the domain directory is unwritable and the temp fallback is used: that fallback is still the shared temp directory, unchanged and still commented as the fallback.
+
+**Not done here.** No browser or device check: this change is server-only and has not run on the Hostinger host. CACHE in app/sw.js is not bumped; tiles.php is not precached, but deploy.ps1 will ask for a bump on any app/ change. The Pest/Pint step in the brief does not apply: this project has no vendor/ and no PHP suite. `php -l app/api/tiles.php` is clean.
