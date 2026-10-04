@@ -71,7 +71,7 @@ Scottish forest is a forest. Not a re-scrape of the English pages.
 <!-- AC:BEGIN -->
 - [x] #1 WHEN the pipeline runs, THE APP SHALL carry every currently published FLS destination as a
       `forest` record with a name, WGS84 coordinates and its source URL.
-- [ ] #2 WHEN a Scottish site is shown, THE APP SHALL take its sat-nav postcode, facilities and
+- [x] #2 WHEN a Scottish site is shown, THE APP SHALL take its sat-nav postcode, facilities and
       opening text from that site's own page, and say "not known" wherever the page is silent.
 - [x] #3 WHEN a site publishes only café or visitor-centre hours, THE APP SHALL NOT present those as
       the site's access hours.
@@ -372,3 +372,21 @@ hidden the history and defeated the backstop for real. The backstop still stands
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 5 of 6 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
 
 **2026-09-25** **Decided:** yes, the app leaves England. Rob, 2026-09-25: it has already been expanded to Scotland, Wales is next, then Europe. Change the PRD non-goal that excludes Wales, Scotland and Northern Ireland to match, and card 0017 (Wales) stands.
+
+**2026-10-04** RESULT: done
+TESTS: +1 new, all green (node scripts/selftest.js: 336 passed, 0 failed)
+TOUCHED: app/app.js
+TOUCHED: app/core.js
+TOUCHED: app/sw.js
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+The 2026-09-20 review reopened #2 for one reason: openSheet() drew the Facilities row only when site.facilities was a non-empty list, so a page that lists none got no row and read as "none". That was the only open criterion; #1 and #3-#6 were left alone and are re-listed as met because the same review found them met and nothing here touched them.
+
+Test first: 'a scottish site whose page lists no facilities says so rather than showing no row' renders the sheet's shared tail (the same lifted span the Country row test uses) for every shipped Scottish record with facilities null, plus an empty list and a listed one. Watched it fail for the reviewer's reason: '3 of 3 shipped Scottish records with no facilities render no "not known" Facilities row; an empty list renders null'. It has a non-zero guard, so it cannot pass on an empty sweep.
+
+Fix: the Facilities row now always goes through field(), so a null or empty list shows the standard is-missing 'Not listed'. This is in the shared tail, so it applies to car parks and campsites with no facilities too, not only Scottish forests. That matches HANDOVER's rule 'null means not known and the UI says so'; I did not branch it on country because HANDOVER forbids that. If campsite sheets should stay without the row, that is one condition to add.
+
+CACHE / BUILD bumped to v30-2026-10-04 because app/ changed.
+
+No Pest or Pint run: this repo has no vendor/ and no PHP suite; node scripts/selftest.js is the suite. Not checked in a browser: the change is still owed a look on a screen (php -S from a worktree works, see card 0015) and on the phone. Not deployed.
