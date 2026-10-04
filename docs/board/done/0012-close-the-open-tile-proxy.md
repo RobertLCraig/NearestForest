@@ -569,3 +569,68 @@ Built the two fixes the 2026-09-20 review gave for #3 and the 2026-09-29 decisio
 **What the harness cannot express.** A temp directory owned by a different OS user, which is the co-tenant case itself, cannot be built on this Windows machine. The tests prove the counters no longer go there on a configured install. They do not prove what happens if the domain directory is unwritable and the temp fallback is used: that fallback is still the shared temp directory, unchanged and still commented as the fallback.
 
 **Not done here.** No browser or device check: this change is server-only and has not run on the Hostinger host. CACHE in app/sw.js is not bumped; tiles.php is not precached, but deploy.ps1 will ask for a bump on any app/ change. The Pest/Pint step in the brief does not apply: this project has no vendor/ and no PHP suite. `php -l app/api/tiles.php` is clean.
+
+### 2026-10-04 review (v20261004190216-9429)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break each criterion in `app/api/tiles.php`. I could not break any of them.
+
+**#1 - tiles from another site are refused.** This is the top-level `Sec-Fetch-Site` gate. A page cannot set that header, so a page that hides its `Referer` gets no help from it. Any value other than `same-origin` gets a 403. The `Referer` gate below it is a second check, and it also gives a 403.
+
+**#2 - the app's own map is still served.** `app/map.js` `tile()` asks for a relative, same-origin URL, so it passes the gate. The service worker in `app/sw.js` lets `/api/` requests go straight through.
+
+**#3 - over the cap gives 429 and does not call the tile provider.** `rateLimit()` runs before `readKey()` and before `curl_init`. When the count is at the cap, `fail(429, ...)` stops the request.
+
+**#4 - a broken counter still serves the tile.** In `rateLimit()`, if `counterDir()` finds no folder, the function returns and the tile is served. If `counterSalt()` cannot store a salt, it returns an empty salt and counting goes on. A counter file that cannot be read counts as 0.
+
+**#5 - tiles still draw when switched on.** The draw order is the same. `setTiles` in `app/map.js` now clears the cache when you switch tiles on, so a failed tile is fetched again and does not stick.
+
+**The 2026-09-11 finding (the reason this card came back) is fixed.** `readKey()` and `counterDir()` now both ask the same function, `findKey()`. So when a key is found in either place, the counters go in the domain folder, not the shared temp folder.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked what this change did against what card 0012 asked for. The card asked for one fix: `counterDir()` must use the same key places as `readKey()`, or a comment must say that it does not.
+
+**The ask is done.**
+- In `app/api/tiles.php`, a new function `findKey()` now holds the one list of key places.
+- `readKey()` and `counterDir()` both call it. They can no longer disagree.
+- The self-test (`scripts/selftest.js`) now builds this case: it plants a key in each layout and checks where the counters go. That was the missing proof.
+
+**Extra work, but none of it crosses the fence.**
+- `readKey()` no longer reads a key from the repo root. The comment links this to card 0009 and its 2026-09-20 review. It makes the list shorter, so it does not grow scope here.
+- `counterSalt()` now reads the salt back after it writes it. Before, a salt that could not be saved meant the cap never fired. That is the same counter fault the card is about, so it is in scope.
+- The diff touches nothing under "Not this card": no limit on `nearest.php`, all 10 styles kept, no WAF, no tile cache, same provider.
+
+**Nothing is half done.** The fix, its comment and its test all match.
+
+I disproved no criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the fix and could not. The verdict is **sound**.
+
+**What the finding was.** `readKey()` looked for the key in three places. `counterDir()` looked in only one. So a key could serve tiles while the counters fell into the shared temp folder.
+
+**What the build did.** In `app/api/tiles.php`, a new function `findKey()` is now the one list of key places. `readKey()` and `counterDir()` both call it, so they cannot disagree. The old third place (a key inside the repo) is gone. When a key exists by either route, `counterDir()` puts the counters in the domain folder first and uses the temp folder only as a fallback. The comment above `counterDir()` now says this correctly.
+
+**How I checked it.**
+- In `scripts/selftest.js`, the block "the tile cap holds on every key layout" runs the real PHP with the key in the environment only.
+- That test checks three things. The counters must land beside the domain, not in temp. A salt that cannot be saved must still count one address in one file. An address at the cap must get 429.
+- `counterSalt()` now reads the salt back from the file. If no salt can be saved, it uses an empty salt. Then the count still works, but the filenames can be reversed again. The comment says this.
+- No file in `docs/` still mentions the old temp-folder or repo-root layout.
+
+**One small note (not a defect).** Local development puts the key in an environment variable. That counts as "configured", so on a dev machine the `nf-tiles` folder appears one level above the checkout. The comment only promises a clean dev machine when there is no key at all, so it is still true.
+
+No criterion is disproved.
+
+VERDICT: sound
+
