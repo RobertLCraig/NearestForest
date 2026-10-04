@@ -390,3 +390,64 @@ Fix: the Facilities row now always goes through field(), so a null or empty list
 CACHE / BUILD bumped to v30-2026-10-04 because app/ changed.
 
 No Pest or Pint run: this repo has no vendor/ and no PHP suite; node scripts/selftest.js is the suite. Not checked in a browser: the change is still owed a look on a screen (php -S from a worktree works, see card 0015) and on the phone. Not deployed.
+
+### 2026-10-04 review (v20261004211154-cbda)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I could not break this card. Each criterion traces to real code.
+
+- **#1:** `build_fls()` in `scripts/parse.py` makes one `forest` record for each FLS index entry. Each record has a name, lat/lng and a url. 276 Scottish forests ship.
+- **#2:** This was the open finding. `openSheet()` in `app/app.js` now always shows a Facilities row. When facilities are null, `field()` shows "Not listed". The sat-nav postcode row and the opening row also have a "missing" fallback. So when a page says nothing, the sheet says it is not known. It never reads as "none".
+- **#3:** `fls_opening()` in `scripts/parse.py` sets `access: unknown` and `confidence: unparsed` when the hours are about a café, shop or visitor centre. `NF.status` in `app/core.js` shows a badge only for `parsed` records.
+- **#4:** `build_fls()` checks `RE_CLOSED_TITLE` on the index title and on the page `<h1>`, and drops a match. So the 2 closed sites are not in the list.
+- **#5:** `validate()` in `scripts/parse.py` checks the Great Britain box and a box for each country. `main()` exits 1 before it writes the file.
+- **#6:** `scripts/selftest.js` checks "Allt na Crìche", and `app/data/sites.json` keeps the accent.
+
+No suite ran, so this is from reading the code only.
+
+VERDICT: sound
+
+**scope: sound**
+
+I tried to break the scope on card 0016. I could not.
+
+**The fence holds.**
+- `build_fls()` in `scripts/parse.py` makes only `forest` records. It makes no Scottish car parks.
+- There is no country filter. The tab filter `rank()` in `app/core.js` still uses only `source`.
+- The third tab (Campsites) and `campsites.json` come from card 0020. The tile code comes from cards 0009 and 0012. They are not from this card.
+- There is no English re-scrape.
+
+**Old findings are now fixed.**
+- `openSheet()` in `app/app.js` now always shows a Facilities row. When the page says nothing, the row says "not known". This was the 2026-09-20 finding against #2.
+- The "More" link label now comes from the link's host (`AGENCY_BY_HOST`), not from `source`.
+- The Country row now shows for all records, not only campsites.
+
+**I checked one possible problem: the 904 in `docs/DATA-MODEL.md`.** It is correct. In `main()` in `scripts/parse.py`, `counts_by_country` counts all records, not only forests. England has 274 forests and 630 car parks, which is 904. The doc says this too, in its text near line 198.
+
+**One thing is still open, but it is not a code defect.** The FLS licence depends on a general Crown copyright default. It is in HANDOVER's Blockers. It goes in the same email batch as card 0018.
+
+No criterion fails.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break card 0016 and could not. **The verdict is sound.**
+
+**What I checked:**
+- **The facilities row (#2).** The last review found this gap. It is now closed. `openSheet()` in `app/app.js` always adds the Facilities row. If a site has no facilities, the value is null, and `field()` then shows "Not listed". Other blank fields use the same kind of text. Silence no longer looks like "none".
+- **The link label.** The app now takes the label from the host of the link, through the `AGENCY_BY_HOST` table in `openSheet()`. It does not use `site.source`. Scottish links now say "Forestry and Land Scotland page".
+- **The Country row.** `openSheet()` now shows it for every record, so Scottish forests show it too.
+- **Other places.** I searched `app/` for any other code that shows facilities or the old label. I found none.
+
+**One small thing that does not count against the card.** The comment above `moreHref` in `openSheet()` still says the link "does not tell Forestry England which page sent you". This is now only partly true. It changes no behaviour, so I did not call it a defect.
+
+**What you do now:** nothing. The script moves the card on.
+
+VERDICT: sound
+
