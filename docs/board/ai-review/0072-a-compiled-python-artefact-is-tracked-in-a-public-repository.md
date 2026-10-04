@@ -461,3 +461,19 @@ Suite: 330 passed, 1 failed. The failure is `no open card is blocked by a settle
 were not run**: this repository has no `vendor/` and no PHP suite. **No browser check applies**:
 nothing under `app/` changed.
 
+**2026-10-04** RESULT: done
+TESTS: +0 new, all green
+TOUCHED: none
+OUT-OF-SCOPE: none
+
+**The rebuild found the work already on main.** The superseded branch's one build commit, `c96e05c`, adds a `scripts/probe.pyc` sample to `compiledPythonProblems` and the test `no compiled python artefact is tracked: a *.pyc rule that misses scripts/ does not count`. Main already carries the same change as `154fe90`, with the same sample, the same test name and the same two fixtures (`!scripts/*.pyc` and `/*.pyc`). Only the comment wording differs. So that conflict was two copies of one fix, and nothing from the branch is still missing. I changed no file and made no commit, because there was nothing left to build.
+
+**Re-measured here rather than taken from the branch:**
+- #1: `git ls-files -z` holds no path under `__pycache__` and no `*.pyc`.
+- #3, red proof: a scratch copy of `scripts/selftest.js` in `scripts/`, with only the `scripts/probe.pyc` sample removed (the patch was confirmed to match before the run), fails that test for the 2026-09-28 reviewer's reason: `!scripts/*.pyc: nothing // /*.pyc: nothing`. At HEAD it passes.
+- #3 on the real tree: `!scripts/*.pyc` appended to `.gitignore` fails the main assertion with `.gitignore carries no *.pyc rule`. `.gitignore` was put back, and `git status` is clean.
+- #2: the `-z` test and the guarded-throw test pass at HEAD. Earlier entries on this card red-proved them, and I did not repeat that.
+
+Suite: `node scripts/selftest.js` gives 332 passed, 0 failed (a worktree without `data/raw/`, so one raw-OSM assertion does not run, as HANDOVER says). A fresh run leaves no `scripts/__pycache__`. **`pest` and `pint` were not run**, because this repository has no `vendor/` and no PHP suite. **No browser check applies**, because nothing under `app/` changed.
+
+**Gap left as the 2026-09-28 breakage review left it**: a nested `scripts/.gitignore` holding `!*.pyc` would still pass, because only a match from the root `.gitignore` counts. That review said it disproves no criterion, and the card says not to widen the rule beyond what was measured, so I raised no card for it.
