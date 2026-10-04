@@ -477,3 +477,60 @@ OUT-OF-SCOPE: none
 Suite: `node scripts/selftest.js` gives 332 passed, 0 failed (a worktree without `data/raw/`, so one raw-OSM assertion does not run, as HANDOVER says). A fresh run leaves no `scripts/__pycache__`. **`pest` and `pint` were not run**, because this repository has no `vendor/` and no PHP suite. **No browser check applies**, because nothing under `app/` changed.
 
 **Gap left as the 2026-09-28 breakage review left it**: a nested `scripts/.gitignore` holding `!*.pyc` would still pass, because only a match from the root `.gitignore` counts. That review said it disproves no criterion, and the card says not to widen the rule beyond what was measured, so I raised no card for it.
+
+### 2026-10-05 review (v20261005002744-f4c0)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked the card 0072 work against its 3 criteria. I could not break it.
+
+**#1: no compiled Python file is tracked.** The old artefact is out of the index. `.gitignore` now has `__pycache__/` and `*.pyc`.
+
+**#2: the suite names every tracked artefact.** This is `compiledPythonProblems` in `scripts/selftest.js`. It now runs `git ls-files -z` and splits on the null byte. So git does not quote odd names any more. A name like `café.pyc` is now named too. That fixes the 2026-09-17 finding, and the fixture test `a path git would quote is still named` covers it. If git fails, the function adds a named problem. It does not crash the suite.
+
+**#3: `.gitignore` refuses both, and the check fails if a rule is missing.** The same function no longer looks for the rule's text. It asks `git check-ignore -v --no-index` about three sample paths. A sample counts only if a non-`!` pattern from `.gitignore` refuses it. So a later `!*.pyc` line now fails the check, and so does a rule that exists only in a comment. That fixes the second 2026-09-17 finding. The fixture test `a rule cancelled by a later ! line does not count` covers it, and it has a clean case so it cannot be stuck red. A missing `.gitignore` is named, not thrown.
+
+I read the code only. I did not run the suite.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check on card 0072: I found nothing over the fence and nothing half done.**
+
+**This card's own commits stay small.** The first build, `4e5123b`, changed `.gitignore`, `scripts/selftest.js`, the card file, and deleted the `.pyc` file. The later fixes, `6479a27`, `3f0243e` and `154fe90`, changed only the card-0072 block in `scripts/selftest.js` (`compiledPythonProblems`, the throwaway-repo helper `fixtureProblems`, and its assertions) and the card itself.
+
+**No fence is crossed.**
+- `scripts/parse.py` is not changed.
+- The three test blocks that load `parse.py` are not changed. They still set `PYTHONDONTWRITEBYTECODE`, the setting that stops Python writing `.pyc` files.
+- `.gitignore` gained only `__pycache__/` and `*.pyc`, plus a comment. There is no wider clean-up.
+- The newer checks (`git ls-files -z`, `git check-ignore`, the sample paths in `scripts/`) each answer one review finding. They do not add new features.
+
+**The large diff is not this card's work.** The changes in `app/`, `tiles.php`, `HANDOVER`, `PRD` and the other cards came from other cards' commits. Each one has its own commit message (for example `b6f3801` and `1b4f032`).
+
+**Nothing is left half done.**
+- `git ls-files` lists no compiled Python file.
+- Both ignore rules are real lines, and the test now asks git directly whether it ignores the files.
+- Each review finding has a test that proves the fix.
+
+The card has no criterion that fails on scope, so I wrote no `UNMET:` lines.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the card 0072 check in `scripts/selftest.js` (`compiledPythonProblems`, plus its three test assertions). I could not break it.
+
+- **Listing the tracked files.** It now runs `git ls-files -z`. This fixes the 2026-09-17 finding: git no longer puts quote marks around a path like `café.pyc`, so the check sees the path and names it. The test assertion `a path git would quote is still named` covers this.
+- **Testing the ignore rules.** It now asks git directly, with `git check-ignore -v --no-index`. Git must say that a rule in `.gitignore` refuses the sample path. A later `!*.pyc` or `!__pycache__/` line cancels the rule, and the check then fails. A rule inside a comment does not count. The check also samples `scripts/`, so `!scripts/*.pyc` and a root-only `/*.pyc` fail too. The test assertion `a rule cancelled by a later ! line does not count` covers both negations, and it includes a clean case, so it cannot pass by being stuck red.
+- **When something goes wrong.** If `git ls-files` fails, the check names the reason. If git is missing or `.gitignore` is gone, `check-ignore` refuses nothing, so the check names both rules as missing. Nothing throws, so the suite always reaches its summary.
+- **Other callers.** Nothing else calls this function. The other `git ls-files` call at the top of the file is a different test, and this card did not change it.
+
+One limit, which disproves no criterion: the check samples only the repo root and `scripts/`. A `!` line that cancels the rule in some other folder would not be caught. The card fenced off any wider sweep, so I did not count this.
+
+VERDICT: sound
+
