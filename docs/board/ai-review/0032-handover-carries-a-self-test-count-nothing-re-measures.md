@@ -73,7 +73,7 @@ building a test that reads the docs, in a project whose suite is one node script
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/HANDOVER.md` states how many self-tests pass, THE FILE SHALL state the number
+- [x] #1 WHEN `docs/HANDOVER.md` states how many self-tests pass, THE FILE SHALL state the number
       the suite prints that day. proves: none - this project has no test that reads the docs; the
       check is `node scripts/selftest.js` read against the file
 - [x] #2 WHEN the brief tells a reader how many self-tests pass, THE FILE SHALL name the command
@@ -406,3 +406,16 @@ VERDICT: defect
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 3 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 1 of 2 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
 
 **2026-09-29** Checked by an attended agent under Rob's rule that human-review holds only what he must decide. **The ask at the top is spent: there is no longer a choice to make.** The 2026-09-21 review already unticked #1 itself, and the one reason it gave is fixed on `main`: commit `149b266` (2026-09-22) replaced the "deliberately red on exactly one assertion" bullet in `docs/HANDOVER.md` with "`node scripts/selftest.js` is fully green again ... Read the count off the run, never off this file". `grep -nE "[0-9]+ (tests|passed)" docs/HANDOVER.md` finds only the run block's `# expect: all passed, 0 failed`, so the brief carries no self-test count to go stale. What a builder owes is a fresh measurement of #1 and, if it holds, the tick. One thing to weigh while there: the suite today prints `330 passed, 1 failed` on `no open card is blocked by a settled card`, which is card `0077`'s, so "fully green again" is untrue until `0077` lands. That is a claim about redness, not a count, which the last review ruled outside #1. Moved to `todo/`; bounce count 3 against the loop's `-BounceLimit 5`.
+
+**2026-10-05** RESULT: done
+TESTS: +0 new, all green. Both criteria are `proves: none` and the card's `## Not this card` rules out a test that reads the docs, so no test was written and the watch-it-fail rule does not apply. `node scripts/selftest.js` in this worktree: `336 passed, 0 failed`, `All self-tests passed.`
+TOUCHED: none (no file in the repository changed; this run was a measurement)
+OUT-OF-SCOPE: none
+
+**#1, measured 2026-10-05, holds.** `docs/HANDOVER.md` states no self-test count anywhere: grepping it for `self-test|selftest|passed|assertion` finds only rules that name a test, the run block's `# expect: all passed, 0 failed`, and line 17's "`node scripts/selftest.js` is fully green again" with "Read the count off the run, never off this file". The run agrees: 336 passed, 0 failed. The one reason the 2026-09-21 review reopened #1 (the "deliberately red on exactly one assertion" bullet) was replaced on `main` by commit `149b266`, and the `330 passed, 1 failed` the 2026-09-29 entry saw is gone, so "fully green" is true today.
+
+**#2 still holds.** The brief names the command at `## Current state` (line 305) and in the run block (line 470), and neither carries a figure.
+
+**Nothing was edited**, because the file already meets both criteria and the durable fix the 2026-09-10 review asked for (stop carrying the number) is already in place. No commit was made for the same reason.
+
+**Checked in passing, not changed.** HANDOVER lines 20-23 say the raw OSM feature-count assertion only runs when the gitignored `data/raw/` is present. That is accurate (`scripts/selftest.js` ~3145-3166). This worktree has `data/raw/`, so 336 is the full count here. HANDOVER says nobody has carded that silent skip; I raised no card for it because it is a known, already-written finding, not one this run made. There is no `vendor/`, `pest.bat` or `pint.bat` in this project; the suite is the node script.
