@@ -71,9 +71,10 @@ what it did. Every addition was worth writing somewhere. Nothing ever moved out.
   must survive untouched, which shapes where the cut can fall.
 - `0020` - the other. It is built and in `ai-review/`, so its research sections have already done
   their job.
-- `0026` - its missing `## Links` reason is the single failure the convention check reports, and it
-  is the whole of what criterion #4 is waiting on.
-- `0028` - the card that fixes `0026`, so #4 closes on the run after it lands with no work here.
+- `0026` - its missing `## Links` reason was the one failure the convention check reported, and the
+  whole of what held criterion #4 open until 2026-09-20.
+- `0028` - the card that fixed `0026`. It is in `done/`, and #4 was met on the run after it landed
+  with no work here.
 
 ## Not this card
 Not any other card: everything else here is under 145 lines. Not editing `## Direction`,
