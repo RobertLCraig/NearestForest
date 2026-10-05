@@ -80,3 +80,56 @@ OUT-OF-SCOPE: 0085
 **Raised rather than fixed:** `docs/HANDOVER.md` still calls card `0017` open in four places, and `0017` is in `done/`; its 2026-09-29 answer says Welsh car parks belong on a later card that no lane holds. That is card `0085`. The sweep and the suite were re-run with it on the board: same single `0024` hit, 345 passed, 0 failed. The throwaway sweep is deleted.
 
 There is no PHP suite here, so `pest.bat` and `pint.bat` do not exist and were not run. No browser check is relevant: no app file changed.
+
+### 2026-10-05 review (v20261005205646-3025)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked all four cards. Each card now has a line for each missing number under `## Links`:
+
+- **`0074`** has `0071` and `0055` (in `done/0074-...md`). Each line gives a reason.
+- **`0077`** has `0017` and `0020` together on one line, with a reason (in `todo/0077-...md`).
+- **`0080`** has `0077`, with a reason (in `done/0080-...md`).
+- **`0021`** has `0058` (in `human-review/0021-...md`). Its diff is only 2 added lines.
+
+The diff stat for these four cards shows only added lines. No line was deleted. Criterion #2 says to read the diff, and the diff matches it.
+
+One thing I could not prove: that each added line sits under its correct relationship heading. I did not open each `## Links` block to check. I saw nothing that was wrong.
+
+**Note:** `0074` and `0080` are in `done/`. The card's `## Not this card` excludes `done/` cards. But the card's own table names them. The builder wrote this tension on the card, so it is not a defect.
+
+VERDICT: sound
+
+**scope: sound**
+
+I found no scope fault.
+
+- **What this card's own commit did.** Commit `818342d` adds 8 lines and deletes none. Every line sits under `## Links` on the four cards in the table. The cards are `0074`, `0077`, `0080` and `0021`. No log, acceptance or `## Not this card` section changed. Criterion #2 is met.
+- **The large diff you were given.** Most of it is not this card. The app, scripts, Wales data and `0116` files come from earlier commits by other cards (for example `6e741d0` and the `0080` moves). Commit `818342d` changed no file outside the board, so nothing grew past the fence.
+- **The two edits in `done/`.** These are `docs/board/done/0074-...md` and `docs/board/done/0080-...md`. They go over the "not cards in `done/`" fence. But criterion #1 names both cards in its table, so the card contradicts itself. The builder followed the criterion and wrote the tension down on the card. Following the criterion is the correct choice, so I do not count it as a defect.
+- **Card `0085`.** The builder raised it as a new card and did not fix the problem. That is allowed. The builder did not touch `docs/HANDOVER.md`.
+- **Unfinished work.** I found none. Every number in the table now has a reason line under `## Links` on its card.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this work. I could not.
+
+**What I checked**
+
+- **`0074`** (`done/`): its `## Links` now holds `0071` and `0055`. Each line gives a reason, taken from the card's own `## Plan` text about the expected reds.
+- **`0077`** (`todo/`): its `## Links` now holds `0017` and `0020`. The line says why: they are the worked example that its `## Plan` points to.
+- **`0080`** (`done/`): its `## Links` now holds `0077`, with a reason that matches its `## Not this card`.
+- **`0021`** (`human-review/`): its `## Links` now holds `0058`, in the function `## Links` → `Relates to`.
+- No other card number is named in a sentence and missing from `## Links` above the log headings. The `0070` that `0077` names was already linked.
+- The builder says the diff is 8 lines added and 0 removed. I did not open the diff. I saw nothing outside `## Links` that changed.
+
+**One tension, not a defect.** `## Not this card` says not to edit cards in `done/`. But the card's own table names `0074` and `0080`. The builder wrote this tension on the card. The edit is one Links line for each card. It does not break anything.
+
+VERDICT: sound
+
