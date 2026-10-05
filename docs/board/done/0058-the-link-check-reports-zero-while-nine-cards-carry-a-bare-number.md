@@ -351,3 +351,73 @@ OUT-OF-SCOPE: 0084
 **Not run:** `.\vendor\bin\pest.bat` and `pint.bat`. NearestForest has no PHP suite and no `vendor/`. `board:convention --path=<worktree>` was not re-run: php is not on the Git Bash PATH here, and since 2026-10-05 the command refuses a build worktree anyway. There is no fresh convention count from this session.
 
 **Tension, recorded:** the session brief says edit no card other than by raising one, while this card's whole scope is editing `## Links` on the nine. I edited `0024` only, the one line the reviewers named, and no `## Comments`, `## Direction`, `## Decided`, acceptance tick or measurement.
+
+### 2026-10-05 review (v20261005161533-dbe9)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+**What I checked.** The past reviewers found one false line. It sat on card `0024` and claimed `0026` still blocked criterion #4. I read that card as it stands today.
+
+**#1 holds now.** Commit `858ad0c` rewrote both reason lines on `0024`, in the `## Links` section of `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`. They now use the past tense, and they are true:
+- `0026`: its missing reason "was the one failure... until 2026-09-20".
+- `0028`: "It is in `done/`, and #4 was met on the run after it landed."
+
+Both `0026` and `0028` are in `done/`, so these lines match the board. The other eight cards' reason lines were not part of any finding. Earlier reviewers spot-checked them and they held.
+
+**#2 holds.** Two earlier reviewers re-ran the sweep and got zero. The builder proved it red first by removing the `0043` line on `0056`.
+
+**#3 holds.** The fix only adds or reworded `## Links` lines. No tick, measurement or append-only section changed.
+
+**One small thing, not this card's fault.** The `0020` line on `0024` still says "in `ai-review/`", but `0020` is now in `done/`. This card did not add that line, so it is not a finding here.
+
+I tried to break each criterion and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check for card 0058.** I found nothing outside the card's limits and nothing left half done.
+
+**The build commit, `9f7a556`:**
+- On each of the nine cards in the table, the only change is new `## Links` lines.
+- The only lines it removed are the ticks on card `0058` itself.
+- No append-only section changed.
+- Nothing in `docs/board/README.md`, `done/`, `discarded/` or `C:\Dev\ProgressBoard` changed.
+- The new card `0059` was declared as `OUT-OF-SCOPE`. Raising a card instead of fixing it is how this board works.
+
+**The fix commit, `858ad0c`:**
+- In `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, it changes only the two `## Links` reason lines for `0026` and `0028`. They are in the past tense now and say that both cards are done. This is the one-line fix that the earlier reviewers asked for.
+- It also adds the new card `0084` in `todo/`. The commit message names it. It records four newer cards found by the same sweep and does not fix them, so the card did not grow.
+
+**Left half done:** nothing. All 33 links are present, and the false reason line has now been rewritten.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: sound**
+
+**Breakage: what I checked**
+
+The two earlier reviews found one fault. That fault was in `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, under `## Links`. The `0026` and `0028` reason lines said the convention check *still* blocked criterion #4.
+
+Commit `858ad0c` corrected those two lines. They now use the past tense:
+- `0026`: its missing reason "was the one failure the convention check reported... until 2026-09-20".
+- `0028`: "It is in `done/`, and #4 was met on the run after it landed."
+
+These lines now agree with:
+- the `## What I need from you` section on `0024`;
+- the `done/` lane, which holds both `0026` and `0028`.
+
+The reason lines are now true, so criterion #1 holds for `0024`. Nothing calls these lines, and no code uses them. No other section of `0024` changed.
+
+On `0024`, the `0020` line still says "in `ai-review/`". This card did not add that line, so it is not this card's breakage.
+
+I tried to break the fix and I could not.
+
+VERDICT: sound
+
