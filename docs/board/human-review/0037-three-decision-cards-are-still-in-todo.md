@@ -303,3 +303,5 @@ OUT-OF-SCOPE: none
 **#1 re-checked and holds.** No card in `todo/`, `in-progress/`, `ai-review/` or `human-review/` carries `## Options`.
 
 **The `0024` path fault is already carried by `0083`**, which is in `todo/`. `0024` line 108 still says `wc -l docs/board/todo/0018-write-to-forestry-england.md`, and `0018` is not in `todo/`. No new card was raised, because `0083` covers it.
+
+**2026-10-05** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 1 of 2 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
