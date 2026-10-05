@@ -346,3 +346,85 @@ Fixed both faults the 2026-09-29 untick names, in the card 0054 block of `script
 **Red-proof of the named proof** `card 0020 quotes the raw OSM feature count correctly`, on the real card, restored with `git checkout` after: 8,496 put back -> `FAIL card says 8,496, data/raw/osm holds 8501`; number dropped from the criterion -> `FAIL criterion #2 carries no such count`, the arm the 2026-09-11 reviewer showed was unreachable. Unchanged card -> PASS.
 
 Suite: `node scripts/selftest.js`, with `data/raw/osm` present in this worktree. There is no `vendor/`, so Pest and Pint were not run; this project has no PHP suite. No UI change, so no browser check is owed.
+
+### 2026-10-05 review (v20261005131733-06ad)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break it, and I could not.
+
+**Criterion #1** says card `0020`'s criterion #2 must state the real raw feature count. The check for it is in `scripts/selftest.js`, in the card 0054 block. It uses two helpers there: `find0020` and `quotedRawCount`.
+
+Both faults from earlier reviews are now fixed:
+
+- **Wrong file.** `find0020` skips the `attachments` folder. It also takes only files that end in `.md`. So a screenshot named `0020-*.png` can no longer be read as the card.
+- **Wrong text.** `quotedRawCount` cuts the card down to the `AC:BEGIN` / `AC:END` block first. Only then does it search for the count. So a comment that quotes the sentence can no longer stand in for it.
+
+Two fixture tests prove each fix can fail:
+
+- `card 0020 lookup ignores attachments and non-markdown files`
+- `card 0020 count is read from the acceptance block, not a comment quoting it`
+
+The decoy fixture is the exact bypass from 2026-09-11. It has no count inside the block and a quoted count in the comments. The check gives no match, which is correct.
+
+The main check adds up the `elements` arrays in `data/raw/osm/*.json`. It compares that total with the number in the acceptance block. When the cache is missing, it prints SKIP with a reason and does not count a pass.
+
+I did not run the suite. This review was read-only.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope review of card 0054 (the 2026-10-05 build)**
+
+**What was asked.** On 2026-09-29 the card went back to `todo/` with two faults to fix in `scripts/selftest.js`:
+- Look up card 0020 only in `.md` files, and skip `attachments/`.
+- Read the count only from inside the `AC:BEGIN` / `AC:END` block.
+
+**What the build did.** The build note says it touched only `scripts/selftest.js`. The code in the card 0054 block matches that:
+- `find0020` skips `attachments`. It also keeps only names that start with `0020-` and end in `.md`.
+- `quotedRawCount` cuts the card down to the acceptance block before it searches for the count.
+- Two new fixture checks were added. A fixture is a small fake board in a temp folder. One check plants a decoy `0020-*.png`. The other plants a decoy quote in `## Comments`. Both are deleted after the run. They prove the two fixes, so they are in scope.
+
+**The fence (`## Not this card`).** Nothing crossed it:
+- No change to `data/raw/osm/`.
+- No rebuild of `campsites.json`.
+- No change to card 0020's text.
+- No general checker for board prose. The guard still reads one sentence on one card.
+
+**Half done?** No. Both faults named in the untick are fixed. The `!!m` arm can now be reached, so a criterion with no number now fails. The build note shows that arm going red.
+
+**One thing to know.** The diff summary covers the whole branch, about 168 files. That is many cards of work, not this card. The only file this card touched is `scripts/selftest.js`, and it holds no change outside the card 0054 block.
+
+This finding does not disprove the criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break the fixed guard. I could not.
+
+**Two things checked, both now fixed.** I read the card 0054 block in `scripts/selftest.js`.
+
+- **The `find0020` lookup** skips the `attachments` folder. It also keeps only `.md` files. So a screenshot cannot pass as the card any more.
+- **The `quotedRawCount` check** looks only between `AC:BEGIN` and `AC:END`. So a comment that quotes the old sentence cannot stand in for the real one.
+
+**Each fix has its own test.** Two new fixture tests build each bad case:
+- one adds a decoy `0020-*.png` file;
+- one adds a comment that quotes the count while the real criterion has no number.
+
+The tests check that the guard ignores both. I did not run the suite. I am in read-only plan mode.
+
+**Two small gaps are left.** Neither one disproves criterion #1.
+
+- **Two matching cards:** if `0020-*.md` is in two lanes at once, the lookup still takes the first one. It gives no warning.
+- **A bad cache file:** `JSON.parse` on a damaged `data/raw/osm` file stops the whole suite. It does not fail just this one check.
+
+What you do now: nothing. The card can go to `done/`.
+
+VERDICT: sound
+
