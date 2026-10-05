@@ -290,3 +290,16 @@ OUT-OF-SCOPE: 0083
 **#1 re-checked and holds.** No card with `## Options` is in `todo/`, `in-progress/`, `ai-review/` or `human-review/`; all five (`0003`, `0007`, `0017`, `0018`, `0025`) are in `done/`.
 
 **The 2026-09-29 entry's claim about `0024` is stale again, raised as `0083`.** It said `0024`'s `wc -l docs/board/todo/0018-write-to-forestry-england.md` resolves because `0018` was back in `todo/`. `0018` is now in `done/`, so the command errors again. Not fixed here: it is an edit to another card.
+
+**2026-10-05** RESULT: blocked
+TESTS: +0 new, all green (336 passed, 0 failed - `node scripts/selftest.js`; this project has no vendor/, so no Pest or Pint)
+TOUCHED: none
+OUT-OF-SCOPE: none
+
+**Nothing has changed since the 2026-10-05 blocked entry, so this take repeats it. Nothing was built and nothing was committed.**
+
+**#2 is still blocked.** The 2026-09-29 decision tells the builder to rewrite #2's text. The unattended brief forbids a build session from editing the card. Rewriting a criterion is an edit to the card, so #2 was not rewritten and is not named as met. As written, #2 cannot be met: meeting it means putting a count back into `docs/HANDOVER.md`, which `a0d9ff7` forbids. What the rewritten #2 would check is already true. `docs/HANDOVER.md` line 24 says "This file names no card lists and no card counts", and line 27 names `ls docs/board/human-review` as what waits on Rob. **To close this card, a person or an attended session rewrites #2 to that sentence and ticks it.** Another unattended run cannot do it and will land here again.
+
+**#1 re-checked and holds.** No card in `todo/`, `in-progress/`, `ai-review/` or `human-review/` carries `## Options`.
+
+**The `0024` path fault is already carried by `0083`**, which is in `todo/`. `0024` line 108 still says `wc -l docs/board/todo/0018-write-to-forestry-england.md`, and `0018` is not in `todo/`. No new card was raised, because `0083` covers it.
