@@ -323,3 +323,61 @@ Re-ran the sweep on 2026-10-05 over every lane except `done/`. Criterion #1 hold
 proves: is none, so no test was written; the check is the folder listing above. Nothing in the tree changed, so this session has no commit. This card's own `## What I need from you` block is stale in the same way and is left unedited, per the brief.
 
 The brief names `pest` and `pint`; this project has neither (no vendor/, no PHP suite). The suite is `node scripts/selftest.js`.
+
+### 2026-10-05 review (v20261005075527-01dc)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked criterion #1 against how the board looks today.
+
+**Criterion #1: a card that asks for a decision and has no `**Decided:**` entry must sit in `docs/board/human-review/`.**
+
+- I searched all of `docs/board/` for `## Options`. That heading is the board's own sign of a decision card. Five cards have it: `0003`, `0007`, `0017`, `0018` and `0025`. All five are in `done/`.
+- No decision card is in `todo/`, `in-progress/`, `ai-review/` or `human-review/`.
+- So no decision card is waiting without an answer in a work lane. The rule holds.
+- The scope review on 2026-09-20 asked for one more thing: a line on the thread that admits the old sweep was wrong. That line is in `## Comments` of `ai-review/0033-...md`. It says the 2026-09-06 sweep's "all three are answered" was wrong.
+
+There is no code to trace here. A lane is a folder, and the criterion's `proves:` names that folder check.
+
+I tried to break the criterion and could not.
+
+VERDICT: sound
+
+**scope: sound**
+
+I could not break this card, so the verdict is sound.
+
+**What the last session changed.** It changed only the card. Commit `f57759e` adds 17 lines to `docs/board/ai-review/0033-a-decision-card-nobody-can-see-sits-in-todo.md`, and the commit before it only moved the card into `in-progress/`. No app file, script or doc outside the card changed. The large diff above is the history of other cards that are already on `main`.
+
+**The fence.** The card says not to answer `0025`, not to edit its text, and not to build a board check. The session did none of these.
+
+**Half-done work.** I found none:
+- **The sweep.** It was run again. I checked the claim myself: no card in `todo/`, `ai-review/` or `human-review/` has a `## Options` section. `0003`, `0017`, `0018` and `0025` are no longer in `todo/` or `human-review/`.
+- **The admission.** The 2026-09-20 scope finding asked for a one-line admission that the old sweep was wrong. The new entry gives it, and it names the bare `## Decided` heading as the cause.
+- **The tick.** Criterion #1 was ticked again. That is correct, because the board now matches what it says.
+
+**One small gap, not a defect.** The card's own `## What I need from you` block is now out of date. The builder said so and left it alone, which follows the brief. It disproves no criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I checked the board for breakage. Nothing is broken.
+
+**What I checked:**
+- Five cards on the board are decision cards (they have a `## Options` section): `0003`, `0007`, `0017`, `0018` and `0025`. All five are in `docs/board/done/`. No unanswered decision card is in `todo/`, `in-progress/` or `ai-review/`.
+- `0003`, `0017`, `0018` and `0025` each have a `**Decided:**` entry in their thread.
+- `0007` has no `**Decided:**` marker. But its `## Decided` section holds a real answer from Rob, "Option 3", dated 2026-08-08. That answer was built as cards `0008` and `0009`. So it is not an open question. It is an old card format, and this card does not cover it.
+- The card's thread now has the one-line correction the 2026-09-20 review asked for. It says the 2026-09-06 sweep's claim that "all three are answered" was wrong, and names card `0037` as the fix.
+- No code reads the board folders. A card move cannot break the app or `scripts/selftest.js`.
+
+No criterion is disproved.
+
+**What you do now:** nothing. The review script uses the verdict below to move the card.
+
+VERDICT: sound
+
