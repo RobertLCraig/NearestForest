@@ -87,6 +87,8 @@ it was written to.
   a session can load, which is the same failure one level up.
 - `0024` - raised by this card. Two cards on this board are two to three times the reader's line
   budget, and shortening them needs deletion, which this card's own scope fence forbids.
+- `0058` - written the same day, it records the suite red that finding 1 under
+  `## What I need from you` says this card's entry missed.
 
 ## Not this card
 **Changing the convention.** `docs/board/README.md` here is a COPY of a canonical file outside every

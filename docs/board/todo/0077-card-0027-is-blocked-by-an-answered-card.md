@@ -21,6 +21,8 @@ card's `needs:` when its blocker is answered, and the check that reports it is t
 - `0018` - the answered card. Its `**2026-09-25**` `Decided` entry is the answer.
 - `0070` - the card that owns the check. Its session could not clear this, because a card session
   may not edit another card.
+- `0017`, `0020` - the two cards whose stale blockers card `0070` cleared with the same edit; `## Plan`
+  points at them as the worked example.
 
 ## Not this card
 **Not rewriting `0027`'s draft email or answering its ask.** That stays on `0027` and with Rob.

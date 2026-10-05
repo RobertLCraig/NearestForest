@@ -40,6 +40,9 @@ replaced with a literal host. Nobody wrote the assertion that the thing itself i
   is in `human-review/` waiting on a different question, so the finding would not have been picked
   up off its thread.
 - `0069` - the merge that carried that review onto the surviving copy of `0011` and raised this.
+- `0071` - the undeclared `requests` module, the cause of two of the reds `## Plan` says to expect
+  at HEAD and leave alone.
+- `0055` - the board card over the file-reader size limit, the third of those reds.
 
 ## Not this card
 **Not changing `app/.htaccess`.** The redirect is correct: it tests `%{HTTPS} !=on`, it names the

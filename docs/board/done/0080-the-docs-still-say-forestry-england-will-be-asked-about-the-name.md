@@ -29,6 +29,7 @@ non-affiliation line. With no ask going out, that rule is now the whole answer, 
   yet record.
 - `0027` - the send itself; it already carries the rewritten draft and is Rob's, so it is out of
   scope here.
+- `0077` - owns `0027`'s stale `Blocked by` line, which `## Not this card` keeps out of this card.
 
 ## Not this card
 Not the email: `docs/outreach/` is not touched. Not card `0027` or its stale `Blocked by` line,
