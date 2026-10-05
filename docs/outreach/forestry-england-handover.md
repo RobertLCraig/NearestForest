@@ -110,9 +110,9 @@ are visibly empty of markers. It makes the expansion point better than a sentenc
 - **The tiled map shots** render the Thunderforest and OpenStreetMap attribution as grey on a pale
   basemap, close to unreadable. That is an open defect and a licence obligation, and it would sit
   badly in an email that mentions crediting people properly.
-- **The car park views** show rows and markers reading "Unnamed car park". 196 of the 630 car parks
+- **The car park views** show rows and markers reading "Unnamed car park". 177 of the 630 car parks
   publish no usable name. **These two shots are from 2026-08-14 and predate the fix**: card 0004
-  now names 177 of those 196 after their nearest forest ("Car park near Friston Forest"), shown in
+  now names 158 of those 177 after their nearest forest ("Car park near Friston Forest"), shown in
   dim italic to mark them as ours rather than Forestry England's, and only **19** still read
   "Unnamed car park". That work is built but not yet deployed, so a fresh screenshot must be taken
   from a build that includes it, not from the live site. Either way, these three are not a first
