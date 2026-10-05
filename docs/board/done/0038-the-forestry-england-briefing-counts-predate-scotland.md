@@ -418,3 +418,65 @@ The car park bullet in the screenshots section now says 177 of the 630 car parks
 #1 still holds: the Verified row reads 1,180 / 550 / 630 and the `dataset counts in comments match sites.json` test is green.
 
 forestry-england-enquiry.md checked again: no 196, 177 or 158 in it, so nothing to edit there. Nothing under app/ changed, so no CACHE bump and no browser check applies. PHP suite (pest/pint) does not exist in this project; the suite is node scripts/selftest.js.
+
+### 2026-10-05 review (v20261005121014-cea7)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked both criteria. I could not break either one.
+
+**#1: met.** The handover file has a row in its verified table. That row says `1,180 locations, 550 forests, 630 car parks`. I counted `app/data/sites.json` myself and got the same numbers: 1180, 550 and 630. The `carried` table in the card-0036 block of `scripts/selftest.js` reads this row back. I did not run the suite, because this job cannot run it. The 2026-09-10 review broke all three numbers and the test failed on each one. So the check is real.
+
+**#2: met now.** This was the earlier defect. The car park bullet in the screenshots section of `docs/outreach/forestry-england-handover.md` now says:
+- 177 of the 630 car parks publish no usable name.
+- Card 0004 names 158 of those 177.
+- Only 19 still read "Unnamed car park".
+
+I measured `app/data/sites.json`. 177 car parks have `name_is_derived`. 19 are still named `Unnamed car park`. 177 − 19 = 158. This agrees with `docs/DATA-MODEL.md` and with the comment above `GENERIC_NAME` in `scripts/parse.py`. The 196 is gone, so nothing counts twice now.
+
+The card's "Pass" condition was 196 becoming 177 and 177 becoming 158. Both changes are in the file.
+
+There is one gap. No test reads the numbers in that bullet. The criterion says `proves: none`, and the card allows that. It is not a defect.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope review of card 0038: sound**
+
+**What the fix did.** Commit `e33077e` changes one file, `docs/outreach/forestry-england-handover.md`. It changes two lines in the "car park views" bullet:
+- "196 of the 630 car parks" now says **177**.
+- "names 177 of those 196" now says **names 158 of those 177**.
+
+The "19" stays the same. That is correct, because those 19 are part of the 177. This is the change that the card's "What I need from you" section asked for. Nothing else in that commit changed.
+
+**Over the fence.** I found nothing. The commit does not touch `docs/outreach/forestry-england-enquiry.md`. The large changes to that file in the combined diff come from other commits, so I did not count them against this card. No ask changed, so cards 0018 and 0027 are safe. Nothing under `app/` changed, so no `CACHE` bump was needed.
+
+**Half done.** I found nothing that the card requires. The bullet in the car park section is still not checked by the `carried` table in the card 0036 block of `scripts/selftest.js`. But criterion #2 says on purpose that it is checked by reading, not by a test. The last review offered a test for it only as an option.
+
+**Criteria.** Criterion #2 was unticked because of the 196/177 error. The bullet now agrees with `docs/DATA-MODEL.md` and with the `GENERIC_NAME` comment in `scripts/parse.py`: 177 have no usable name, 158 get a derived name, and 19 stay plain. So I do not disprove any criterion.
+
+VERDICT: sound
+
+**breakage: sound**
+
+The two wrong numbers are now fixed. I could not break this work.
+
+**What I checked.** I read the car park bullet in `docs/outreach/forestry-england-handover.md`. It now says:
+
+- **177** of the 630 car parks publish no usable name. Before, it said 196.
+- Card 0004 names **158** of those 177. Before, it said 177.
+- **19** still read "Unnamed car park".
+
+The math is right: 158 + 19 = 177. These match `scripts/parse.py`, in the comment above `GENERIC_NAME`. They also match the `name_is_derived` row in `docs/DATA-MODEL.md`. The two earlier reviews measured the same figures in `app/data/sites.json`.
+
+**What I did not do.** I did not run the suite (`node scripts/selftest.js`). The script also found no suite to run. The edit is to prose that no test reads, so nothing is lost there. Criterion #1 is the counts row; the self-test already checks it, and this edit does not touch that row. So criterion #2 is now met, and no criterion is disproved.
+
+**What you do now.** Nothing. With this verdict, the card can go to `done/`.
+
+VERDICT: sound
+
