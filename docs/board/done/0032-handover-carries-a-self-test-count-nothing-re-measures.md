@@ -419,3 +419,68 @@ OUT-OF-SCOPE: none
 **Nothing was edited**, because the file already meets both criteria and the durable fix the 2026-09-10 review asked for (stop carrying the number) is already in place. No commit was made for the same reason.
 
 **Checked in passing, not changed.** HANDOVER lines 20-23 say the raw OSM feature-count assertion only runs when the gitignored `data/raw/` is present. That is accurate (`scripts/selftest.js` ~3145-3166). This worktree has `data/raw/`, so 336 is the full count here. HANDOVER says nobody has carded that silent skip; I raised no card for it because it is a known, already-written finding, not one this run made. There is no `vendor/`, `pest.bat` or `pint.bat` in this project; the suite is the node script.
+
+### 2026-10-05 review (v20261005061454-ff0b)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked the two criteria against `docs/HANDOVER.md` as it is today. I tried to break each one and could not.
+
+**#1: met.** The rule only applies when the brief gives a self-test count. It gives none now. I searched for any "N passed" or count of self-tests. The only hit is the run block in `## How to run`: `node scripts/selftest.js  # expect: all passed, 0 failed`. With no number in the file, there is no number to go stale. The old 279-against-280 finding is gone because that number is gone.
+
+**#2: met.** In `## Current state`, the brief names the command where the number used to be: "`node scripts/selftest.js` passes, covering geometry, sunset...". The run block names the same command. The two places agree.
+
+I did not run the suite myself. The criteria only ask what the file says, and the file now carries no count to check against a run.
+
+**The sweep (the third task) is not a criterion.** In my reading, `ls docs/board/...` now stands in for every hand-written lane count. I found no "twenty-nine", no "eleven" and no `0045` line. That is a task, though, and not an acceptance box, so it does not change the verdict.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope check on card 0032**
+
+**What the card's own work changed.** This card's build is one commit, `7a0e0de` ("count the things the brief claims to count"). `git show --stat 7a0e0de` lists four files:
+- `docs/HANDOVER.md`
+- this card
+- two new cards, `0033` and `0034`. The card's log lists both as `OUT-OF-SCOPE`.
+
+None of the four files is under `app/` or `scripts/`.
+
+**Why the big diff above is not this card's.** That diff is the whole branch. It holds other cards' work, for example card 0015's map credit and card 0009's key rules in `tiles.php`. The 2026-09-10 scope review already showed this, and it withdrew the same charge.
+
+**The "## Not this card" fences.** No fence was crossed:
+- The record counts were not changed. The card only checked them.
+- No test reads the docs.
+- The size budget was left to `0031`.
+
+**Nothing is left half done.** I searched `docs/HANDOVER.md` for `[0-9]+ (self-tests|passed)` and found no match. The brief now names `node scripts/selftest.js` and carries no number that can go out of date. The three lane counts that sent the card back are gone too, because commit `a0d9ff7` removed every hand-written lane count. So the sweep that was still owed has been done.
+
+No criterion is disproved.
+
+VERDICT: sound
+
+**breakage: sound**
+
+**Breakage check on card 0032**
+
+The card changed only `docs/HANDOVER.md`. That file now holds no self-test number. Here is what I checked:
+
+- I searched the file for a count next to "tests", "self-tests" or "passed". Nothing matches. No number is left to go stale.
+- The `## Current state` bullet names `node scripts/selftest.js` and gives no figure.
+- The run block says `node scripts/selftest.js  # expect: all passed, 0 failed`. It agrees with that bullet.
+- The old line "deliberately red on exactly one assertion" is gone. The opening section now says the suite is fully green. It also says "Read the count off the run, never off this file."
+- The opening section warns that one check needs the `data/raw/` cache. So a worktree counts one fewer test. Because of that, a fixed number would be wrong in one of the two places. Not carrying a number is the right fix.
+
+The big diff also touches app and script files. Those changes belong to other cards on the same branch. The 2026-09-10 scope review showed that this card's own commit has no `app/` or `scripts/` files. So no caller, docblock or comment can break because of this card.
+
+I did not run the suite. The script that started this review found no suite either. So this is a read of the file only.
+
+I disproved no criterion.
+
+VERDICT: sound
+
