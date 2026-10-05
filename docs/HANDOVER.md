@@ -437,10 +437,8 @@ are only the ones still open. Do not re-add a bullet for a card whose ask has be
   on one email to Natural Resources Wales about a licence contradiction the card sets out: their own metadata says OGL with no restrictions, while
   data.gov.uk says the same dataset needs prior approval before use in an internet application. Rob
   sends it from `r@enhanceify.co.uk`; the text is on the card, ready to paste.
-- **0018**, whether to write to Forestry England and with which asks. Rob is working this through
-  with Cheryl and it is not idle. Current direction is a notification with **no ask at all**, which
-  if taken drops the App Store contradiction its third ask carried.
-- **0027**, the send itself, and it is decided by 0018 rather than separately.
+- **0027**, the send itself. 0018 is decided (2026-09-25): the email asks for nothing, so no trade
+  mark question goes to Forestry England and the name is designed around (DECISIONS 2026-09-25).
 - **0043 (accounts and personal location tracking)**, **unbuilt.** All seven criteria say
   `proves: manual`, so no unattended session can close one. Rob's preference is no accounts, but
   features on other cards may force the question. **The card's claim that Hostinger cannot host this
@@ -506,7 +504,7 @@ pwsh ./scripts/deploy.ps1
 |-----|---------|
 | [PRD.md](PRD.md) | Goal, success criteria, scope, non-goals, constraints |
 | [DATA-MODEL.md](DATA-MODEL.md) | The canonical `Site` shape and known divergences |
-| [DECISIONS.md](DECISIONS.md) | Twenty-three decisions with rationale, append-only |
+| [DECISIONS.md](DECISIONS.md) | Twenty-four decisions with rationale, append-only |
 | [build/IOS-SHORTCUT.md](build/IOS-SHORTCUT.md) | Shortcut build recipe and its known limits |
 | [../HUMAN_ACTIONS.md](../HUMAN_ACTIONS.md) | Historical record of the initial build's human actions, plus the recurring refresh. **Anything still open lives on the board, not there.** |
 | [../CLAUDE.md](../CLAUDE.md) | Orient tripwire and project conventions |

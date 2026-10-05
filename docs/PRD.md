@@ -94,8 +94,9 @@ In priority order.
   analytics, no telemetry, no server-side anything. **The App Store half is contradicted by stated
   intent, 2026-08-15:** Rob intends to list it, free with donations or at a low price. The Apple
   half still stands on its own facts, since an iOS release needs a Mac and a paid developer account
-  and he has neither; Android does not. Card 0018 carries the trade mark question that gates a
-  listing either way.
+  and he has neither; Android does not. No listing waits on Forestry England: the email to them
+  asks for nothing (DECISIONS 2026-09-25), and the name is handled with no enquiry by the
+  design-around rule in DECISIONS "2026-08-15: The full licence position, checked source by source".
 - **No live data at runtime.** Notices and closures on the Forestry England site are not fetched;
   the app is a snapshot, refreshed when the pipeline is re-run.
 - Not a general map. No tile rendering, no pan-and-zoom browsing.
@@ -158,8 +159,10 @@ In priority order.
   the site's information for reuse under the same licence, excluding logos and images. Attribution is
   required for both and ships in the app's About view. See DECISIONS 2026-08-15, which supersedes an
   earlier constraint here that wrongly described the forest list as personal-use-only.
-  **What the licence does not cover is trade marks**, so the Forestry England name in an app store
-  listing is a separate question and is card 0018.
+  **What the licence does not cover is trade marks**, and the Forestry England name is handled by
+  designing around it with no enquiry: never the app's name or store title, described factually,
+  with a non-affiliation line. See DECISIONS "2026-08-15: The full licence position, checked source
+  by source", and DECISIONS 2026-09-25 for why no trade mark question is asked.
 - **Both sources are fragile.** The forest list is parsed out of Drupal-rendered HTML and will break
   when they redesign. The pipeline must fail loudly on a parse shortfall, never emit a short file quietly.
 

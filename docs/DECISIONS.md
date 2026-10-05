@@ -29,6 +29,25 @@ named in the parse report; three were, on 2026-10-05. A Google Maps coordinate i
 is compared on every run and never shipped, because that URL changes shape without notice.
 **Status:** active
 
+## 2026-09-25: The email to Forestry England asks for nothing, so the name is designed around
+**Decision:** Rob's call on card 0018, 2026-09-25. The email to Forestry England is purely
+informational and asks for nothing: no pitch, no trade mark question, no request for introductions.
+The draft was rewritten to that shape on 2026-09-30 (`docs/outreach/forestry-england-enquiry.md`);
+sending it is card 0027.
+
+**What it changes.** This supersedes the reasoning in "2026-08-15: The forest data is OGL-licensed,
+and the app never needed permission" that the trade mark gap "is why the enquiry to Forestry England
+(card 0018) survives". No enquiry carries that question now. If a store listing is ever built, it
+follows the design-around rule in "2026-08-15: The full licence position, checked source by source":
+do not use "Forestry England" as the app's name or store title, describe the app factually, and
+carry a non-affiliation line. That rule is now the whole answer on the name.
+
+**Why:** the licence position already lets the app ship, sell and take donations without anyone's
+permission, and the name can be handled without asking. An email with no ask costs Forestry England
+nothing to read. It also drops, rather than resolves, the App Store contradiction its third drafted
+ask carried (card 0018, 2026-09-20).
+**Status:** active
+
 ## 2026-08-29: The Forests tab leaves England, and takes on a second agency
 **Decision:** Card 0016, answered "Yes" by Rob on 2026-08-18. `app/data/sites.json` now carries
 Forestry and Land Scotland's destinations alongside Forestry England's, in the same `forest` tab and
