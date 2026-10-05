@@ -785,3 +785,5 @@ OUT-OF-SCOPE: none
 **Still no fresh count.** `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` still refuses this worktree ('a git worktree of another repository') and exits 1. That is card `0082`, still in `todo/`.
 
 **Not re-checked:** #2, #4 and #5 stay ticked from earlier runs, because the checker would not run here. No PHP suite exists (no `vendor/`, no `composer.json`), so `pest.bat` and `pint.bat` were not run. No browser check: nothing touches `app/`. No commit: this run changed no file in the worktree.
+
+**2026-10-05** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 3 of 6 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
