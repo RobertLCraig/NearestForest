@@ -1264,11 +1264,12 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // four redirect lines left the suite green.
   //
   // Both halves are one fact, so they are one pattern: a RewriteRule whose target begins
-  // with the literal host, and the host ends where the literal does: only a path, a
-  // mod_rewrite variable or the end of the target may follow it. Matching the literal is
-  // what stops this assertion and the negative one below being satisfied by the same wrong
-  // file. It reads the comment-stripped text, so a commented-out rule reads as absent.
-  const httpsRedirect = /RewriteRule\s+\S+\s+https:\/\/forestlocator\.enhanceify\.co\.uk(?=[\/%\s]|$)/m;
+  // with the literal host, and the host ends where the literal does: only a path, the
+  // literal %{REQUEST_URI} or the end of the target may follow it. Any other %-variable could
+  // carry the host on past the literal. Matching the literal is what stops this assertion
+  // and the negative one below being satisfied by the same wrong file. It reads the
+  // comment-stripped text, so a commented-out rule reads as absent.
+  const httpsRedirect = /RewriteRule\s+\S+\s+https:\/\/forestlocator\.enhanceify\.co\.uk(?=\/|%\{REQUEST_URI\}|\s|$)/m;
   ok('the HTTPS redirect is present and literal', httpsRedirect.test(htaccess));
   // And prove the strip the same way the headers above are proved, because "commented out"
   // is the way this directive would actually go missing.
@@ -1278,7 +1279,10 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // pattern and the negative one below, which is every plain-HTTP visitor sent off-site with
   // the suite green. Build that file from the real one and require the pattern to refuse it,
   // along with the userinfo shape, where everything before the @ is not the host at all.
-  const lookalikes = ['.evil.com', '@evil.com'].filter(suffix => httpsRedirect.test(
+  // The 2026-09-17 review found the same gap one character along: any %-variable straight
+  // after the host (a request header, an env var, a RewriteCond capture) becomes part of it.
+  const lookalikes = ['.evil.com', '@evil.com', '%{HTTP:X-Forwarded-Host}', '%{ENV:X}.evil.com',
+                      '%1.evil.com'].filter(suffix => httpsRedirect.test(
     htaccess.replace(/forestlocator\.enhanceify\.co\.uk/g, 'forestlocator.enhanceify.co.uk' + suffix)));
   ok('a redirect to a host that only begins with the site host fails the suite',
      lookalikes.length === 0, `the pattern still accepts a redirect to host + ${lookalikes.join(', ')}`);
