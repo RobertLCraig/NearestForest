@@ -343,3 +343,72 @@ Red-proofs on the real `app/.htaccess`, restored from a copy after each, `git st
 #2 is unchanged: `the HTTPS redirect does not echo the request Host` still runs on the comment-stripped text and passes.
 
 The baseline at HEAD was already fully green (338 passed), so the card's Plan note about three red assertions is stale. `.\vendor\bin\pest.bat` and `pint.bat` do not exist in this repository; the suite is `node scripts/selftest.js`. Nothing under `app/` changed, so no browser check is owed and `CACHE`/`BUILD` are untouched.
+
+### 2026-10-05 review (v20261005173644-7436)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+The new check holds. I tried to break it and could not.
+
+**#1: met.** The check is in `scripts/selftest.js`, in the `.htaccess` block that starts `const htaccess = htaccessDirectives()`. The pattern is `httpsRedirect`, and it reads the comment-stripped `htaccess`. After the host, it now allows only four things: `/`, the literal `%{REQUEST_URI}`, whitespace, or end of line. That closes the gap from the last review. A `%{ENV:X}`, `%{HTTP:...}` or `%1` straight after the host now fails the match. The real rule `https://forestlocator.enhanceify.co.uk%{REQUEST_URI} [L,R=301]` still matches. `%{REQUEST_URI}` always starts with `/`, so it cannot make the host longer.
+
+The comment-out case is tested directly by `a commented-out HTTPS redirect fails the suite`, which runs the pattern against `allCommented`. A deleted rule has nothing to match. The lookalike check, `a redirect to a host that only begins with the site host fails the suite`, now tries all five suffixes from both reviews: `.evil.com`, `@evil.com`, `%{HTTP:X-Forwarded-Host}`, `%{ENV:X}.evil.com` and `%1.evil.com`. Each one must be rejected.
+
+**#2: met.** `the HTTPS redirect does not echo the request Host` is unchanged and still reads `htaccess`.
+
+I checked this by reading the code. I did not run the suite.
+
+VERDICT: sound
+
+**scope: sound**
+
+**Scope: sound.**
+
+I read commit `e64681b`. It is the latest build for this card. It changes one file, `scripts/selftest.js`, with 10 lines added and 6 removed.
+
+What it changed:
+- The `httpsRedirect` pattern, in the `.htaccess` hardening block. Before, any `%` could come after the host. Now only `/`, the exact text `%{REQUEST_URI}`, whitespace or the end of the line can. This is the exact fix the 2026-09-17 reviews asked for.
+- The `lookalikes` list in `a redirect to a host that only begins with the site host fails the suite`. It gets the three cases the reviewers named: `%{HTTP:X-Forwarded-Host}`, `%{ENV:X}.evil.com` and `%1.evil.com`.
+- The comment above the pattern now says what the pattern does.
+
+The card's limits all hold:
+- `app/.htaccess` is not in the commit.
+- The tile proxy, the security headers and the cache blocks are not touched.
+- No other negative assertion was changed.
+- The assertion `the HTTPS redirect does not echo the request Host` (#2) did not change.
+
+Nothing is half done. All three redirect assertions use the one shared pattern, so the fix covers all of them at once.
+
+The large branch diff in the brief comes from other cards and from board moves. Each of those has its own commit.
+
+I ran nothing. I only read the commit.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break it, and I could not.
+
+The check is `httpsRedirect` in the `.htaccess` block of `scripts/selftest.js`. It now allows only `/`, the literal `%{REQUEST_URI}`, a space or the end of the line after the host. This closes the gaps that the last two reviews found:
+
+- `.evil.com` after the host: refused.
+- `@evil.com` after the host: refused.
+- `:` after the host: refused.
+- `%1`, `%{ENV:X}` and `%{HTTP:...}` after the host: refused.
+- `$1` after the host: refused.
+- `%{REQUEST_URI}` always starts with `/`, so it cannot make the host longer.
+
+The lookalike assertion builds the three cases that the reviews named, so the next build session cannot quietly undo this fix. Deleting the rule or commenting it out still turns the suite red, because the check reads the comment-stripped text. The negative `%{HTTP_HOST}` assertion is unchanged.
+
+I checked the comment above the pattern. It now says what the pattern really does.
+
+One thing the suite does not catch: it does not check that `RewriteCond %{HTTPS} !=on` is still there. If someone deletes that line, the redirect loops forever. The card says to assert on the rule only, so this is not a criterion and I did not make it a finding.
+
+I did not run the suite. I only read the code.
+
+VERDICT: sound
+
