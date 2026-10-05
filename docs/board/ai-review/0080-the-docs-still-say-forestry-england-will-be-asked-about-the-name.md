@@ -38,17 +38,17 @@ DECISIONS entry, because that file is append-only. Not a store listing, and not 
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `docs/PRD.md` is read, IT SHALL NOT say that card 0018 carries, or is, a trade mark
+- [x] #1 WHEN `docs/PRD.md` is read, IT SHALL NOT say that card 0018 carries, or is, a trade mark
       question, and both places that did SHALL say the name is handled by the 2026-08-15 design-around
       rule with no enquiry. proves: none - prose; checked by the grep in `## Plan` returning no line
-- [ ] #2 WHEN `docs/DECISIONS.md` is read, IT SHALL carry a new dated entry for 2026-09-25 saying the
+- [x] #2 WHEN `docs/DECISIONS.md` is read, IT SHALL carry a new dated entry for 2026-09-25 saying the
       email asks for nothing, that no trade mark question goes to Forestry England, and that the
       2026-08-15 design-around rule therefore governs any listing; no earlier entry SHALL be edited.
       proves: none - prose; checked by `git diff` showing additions only in that file
-- [ ] #3 WHEN `docs/HANDOVER.md` is read, ITS 0018 bullet SHALL be gone or say the decision is made,
+- [x] #3 WHEN `docs/HANDOVER.md` is read, ITS 0018 bullet SHALL be gone or say the decision is made,
       and its DECISIONS count in `## Sibling docs` SHALL match the file. proves: none - prose; checked
       by counting `^## 20` headings in DECISIONS against the number HANDOVER states
-- [ ] #4 WHEN the work is done, THE SUITE SHALL be no worse than before it. proves: none - doc-only
+- [x] #4 WHEN the work is done, THE SUITE SHALL be no worse than before it. proves: none - doc-only
       change; `node scripts/selftest.js` is run before and after and the failure count compared
 <!-- AC:END -->
 
@@ -83,3 +83,16 @@ than resolving it.
 
 **Question the builder answers by reading:** does `docs/HANDOVER.md` say "Twenty-two decisions"
 anywhere other than `## Sibling docs`? Grep for it and change every copy.
+
+## Comments
+
+**2026-10-05** RESULT: done
+TESTS: +0 new, all green (doc-only card, every criterion proves: none; node scripts/selftest.js 345 passed 0 failed before and after)
+TOUCHED: docs/PRD.md, docs/DECISIONS.md, docs/HANDOVER.md
+OUT-OF-SCOPE: none
+
+#1: both PRD sentences rewritten; `grep -n 0018 docs/PRD.md` prints nothing. Each now points at DECISIONS "2026-08-15: The full licence position, checked source by source" (heading copied exactly) and at the new 2026-09-25 entry.
+#2: new entry `## 2026-09-25: The email to Forestry England asks for nothing, so the name is designed around`, inserted below the 2026-10-05 entry because the file is newest-first. It names Rob's call, supersedes the 'enquiry survives' line in the 2026-08-15 OGL entry, and says a listing follows the design-around rule. `git diff` on DECISIONS has additions only; DECISIONS 87 (Scotland) and 221 (old OGL entry) left as the Plan said.
+#3: HANDOVER 0018 bullet removed and folded into the 0027 bullet as decided. `^## 20` count in DECISIONS is 24; Sibling docs now says Twenty-four. The card's question: HANDOVER said Twenty-three (not Twenty-two), in one place only.
+#4: suite 345/0 before and after.
+The brief's Pest/Pint step does not apply: this project has no PHP suite and no vendor/.
