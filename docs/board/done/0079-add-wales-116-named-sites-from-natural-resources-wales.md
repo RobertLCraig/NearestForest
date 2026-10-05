@@ -115,3 +115,82 @@ Assumptions: the 'How to get here' postcode goes in postcode_satnav (NRW warn so
 Also in the diff: tests and prose that listed two countries or carried counts were extended, not loosened (country list, agency host list, agency credit lists, two parse fixtures given one Welsh site each, core.js count comment plus a new guard on its NRW number). Rebuilding sites.json also moved six opening_summary seasons (fe-creech-wood and five others), because parse_opening() picks the season from today's date; that is existing behaviour.
 
 Not run: the full fetch.py, because it always re-downloads the English car parks and the card rules out a re-scrape; only the NRW functions ran (116 fetched, 0 failed). The worktree's data/raw was stale and was replaced with a copy of C:\Dev\NearestForest\data\raw before parsing. No Pest or Pint: this repo has no vendor/ and no PHP suite; node scripts/selftest.js is the suite. Not checked in a browser or on the phone; that is still owed. Not deployed.
+
+### 2026-10-05 review (v20261005185115-51ef)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I checked every criterion against the code. I could not break any of them.
+
+**What I checked:**
+
+- **#1:** `build_nrw()` in `scripts/parse.py` makes the records. Each one has `id: "nrw-<slug>"`, `country: "Wales"`, a name, coordinates and the page URL. Its test is `Wales fills the Forests tab` in `scripts/selftest.js`. 113 of the 116 sites ship. The other 3 have no grid reference, and #4 says to leave those out. A missing page file goes into `problems`, so the build fails. No site is lost without a message.
+- **#2:** The maths is in three `scripts/parse.py` functions: `grid_ref_to_en()`, `en_to_osgb36()` and `osgb36_to_wgs84()`. The worked-example test exists. The builder also broke the code on purpose and saw the test fail, so the test can catch a real bug.
+- **#3:** A Wales box is in `COUNTRY_RANGE`. Its test is `Welsh coords are in Wales`.
+- **#4:** If a grid reference is missing or will not parse, `build_nrw()` catches the `ValueError`. It puts the site in `nrw_notes["no_grid_ref"]` and skips it. The site is never placed at a guessed position. The "LEFT OUT" list prints these names.
+- **#5, #6 and #7:** Each has its named test: the Rhayader ranking, the Natural Resources Wales link label in `AGENCY_BY_HOST` in `app/app.js`, and the Welsh diacritics.
+
+One small note: the #1 test only checks for at least 100 Welsh records, not an exact count. But the build itself fails if a page file is missing, or if more than 10% of sites have no grid reference.
+
+**What you do now:** nothing on this card. Checking it on the phone and deploying it are still to do.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked only the scope: what this card added that it did not ask for, and what it left half done.
+
+**The extra files are from other commits.** The diff you were shown has 43 files. The Wales commit `936c984` changes only 15 of them. The rest come from other commits in the same range:
+- `app/api/tiles.php` (key lookup and counter salt)
+- the Facilities-row rewrite in `app/app.js`
+- `HUMAN_ACTIONS.md`
+- the other board cards
+- `docs/outreach/forestry-england-enquiry.md`
+
+In `936c984` itself, `app/app.js` gets only the `naturalresources.wales` entry in `AGENCY_BY_HOST`.
+
+**The commit stays inside the "Not this card" fence:**
+- No Welsh car parks, and no `NRW_GB_RECREATION_POINTS`.
+- No country filter and no new tab.
+- No English re-scrape. The builder ran only the NRW fetch functions.
+- No deploy.
+
+**The extra edits are allowed.** `docs/build/IOS-SHORTCUT.md`, `docs/outreach/forestry-england-handover.md` and `app/api/nearest.php` only change site counts that Wales made wrong. They do not add anything new.
+
+**Nothing is half done:**
+- Every task line on the card has matching work in the commit.
+- Three sites are left out: Cwm Idwal, Cwm Carn and Stackpole. Their pages have no grid reference. Criterion #4 allows this, and `parse.py` names them in its printed failure list.
+- `sites.json` grew by about 99 KB, not the 66 KB the card expected. The builder reported this in the thread, so it is not hidden.
+
+**Still open, but not scope defects:**
+- The browser check and the phone check are not done.
+- The deploy is a separate step for a person to run.
+
+I disproved no criterion. So there are no `UNMET:` lines.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to find what this change breaks. I found nothing broken.
+
+**What I checked:**
+
+- **API for the Shortcut** (`app/api/nearest.php`). It has no country or agency logic. Only its count comment changed, and that count is now correct.
+- **Link label** (`AGENCY_BY_HOST` in `app/app.js`). It has the new Welsh host. The parser's allow-list (`URL_HOSTS` in `scripts/parse.py`) has the same host, so the two lists agree.
+- **Footer credit** (`app/index.html`). It now names Natural Resources Wales. The line that says the app is "not affiliated" with each agency names Wales too.
+- **Data-model example** (`docs/DATA-MODEL.md`). The test pins its credit text and date to the shipped `sites.json`. The example was updated to the new date and credit.
+- **Grid-reference reader** (`grid_ref_to_en` in `scripts/parse.py`). It reads references with or without spaces. It skips the letter I. It refuses an odd number of digits.
+- **Wales box** (`COUNTRY_RANGE` in `scripts/parse.py`). It covers Anglesey, the Pembrokeshire islands and Chepstow. A Welsh record placed in London fails the build, so the box does catch errors.
+- **Facilities row** (`openSheet` in `app/app.js`). It now always shows. That matches the card 0016 rule cited in its comment.
+
+**#1 against #4.** 113 of the 116 sites ship. The other 3 publish no grid reference, and #4 tells the build to leave such sites out and name them. So "every site" in #1 is met.
+
+**Not done:** No check in a browser or on the phone. No deploy. The card says both belong to a person.
+
+VERDICT: sound
+
