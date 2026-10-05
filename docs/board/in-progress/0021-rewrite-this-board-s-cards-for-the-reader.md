@@ -772,3 +772,16 @@ OUT-OF-SCOPE: 0081, 0082
 **The finish-line command no longer runs from a worktree.** `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` now prints that the worktree 'is skipped: a git worktree of another repository' and exits 1. It measured worktrees on 2026-09-11. So I have no fresh count for this tree. That is card `0082`.
 
 **Not re-checked:** #2, #4 and #5 are still ticked from earlier runs; I did not re-measure them, because the checker would not run here. No PHP suite exists (no `vendor/`, no `composer.json`). No browser check: nothing touches `app/`.
+
+**2026-10-05** RESULT: blocked
+TESTS: +0 new, all green (node scripts/selftest.js: 336 passed, 0 failed)
+TOUCHED: none
+OUT-OF-SCOPE: none
+
+**Same wall as the 2026-10-05 run above. I checked it again and nothing has changed, so I built nothing and name no criterion met.** The open criteria are #1, #3 and #6, all reopened by the 2026-09-12 review. Every fix it names is an edit to this card: delete the superseded `## What I need from you` block above `## Why` (#1, and the same deletion removes the bare `0058` mention for #3). The unattended brief forbids editing this card. Card `0081` records that conflict, carries `not_for_the_loop:`, and is still unanswered in `todo/`.
+
+**This dispatch was itself the cost `0081` describes.** The card went back to `in-progress/` with nothing a loop session can do. Until someone makes the attended edit, or puts `not_for_the_loop:` on this card as `0081` offers, each dispatch ends here. I raised no new card for that: `0081` already carries it.
+
+**Still no fresh count.** `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` still refuses this worktree ('a git worktree of another repository') and exits 1. That is card `0082`, still in `todo/`.
+
+**Not re-checked:** #2, #4 and #5 stay ticked from earlier runs, because the checker would not run here. No PHP suite exists (no `vendor/`, no `composer.json`), so `pest.bat` and `pint.bat` were not run. No browser check: nothing touches `app/`. No commit: this run changed no file in the worktree.
