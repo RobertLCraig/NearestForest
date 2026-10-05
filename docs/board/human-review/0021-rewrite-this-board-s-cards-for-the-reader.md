@@ -787,3 +787,24 @@ OUT-OF-SCOPE: none
 **Not re-checked:** #2, #4 and #5 stay ticked from earlier runs, because the checker would not run here. No PHP suite exists (no `vendor/`, no `composer.json`), so `pest.bat` and `pint.bat` were not run. No browser check: nothing touches `app/`. No commit: this run changed no file in the worktree.
 
 **2026-10-05** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 3 of 6 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
+
+### 2026-10-05 manager (m20261005064446-0c74)
+
+**outcome: rob**
+
+Every open criterion needs an edit to this card, and only an attended session may make it, so another loop take will fail the same way.
+
+**what the session said**
+
+Criteria #1, #3 and #6 are open already. Each one has the reviewer's reason beside it. So there is nothing to untick.
+
+The builder knows what to do. Both loop takes on 2026-10-05 said it: delete the out-of-date `## What I need from you` block that sits above `## Why`. That fixes #1, and it also removes the bare `0058` mention for #3. Then add a `0058` line to `## Links` and run `board:convention` again from `C:\Dev\NearestForest` for #6.
+
+The unattended brief forbids a loop session to edit its own card. Card `docs/board/todo/0081-card-0021-can-only-be-finished-by-editing-itself.md` records this conflict. So `reopen` sends the card into the same wall a third time.
+
+The other half of #3 needs no fix. That half is card `0070` naming `0020`, and `0070` is in `done/`, which this card fences out. And there is no decision for Rob to make: the edit is clearly right. What is left is a hands-on edit by a person or an attended session.
+
+WHY: Every open criterion needs an edit to this card, and only an attended session may make it, so another loop take will fail the same way.
+
+OUTCOME: rob
+
