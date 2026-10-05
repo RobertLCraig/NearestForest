@@ -53,7 +53,7 @@ require a directive to be present, and card `0011`'s comment-strip covers them.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
+- [x] #1 WHEN the self-test suite runs, THE SUITE SHALL fail if `app/.htaccess` carries no
       `RewriteRule` redirecting to `https://forestlocator.enhanceify.co.uk`, including when the
       rule is present but commented out. proves: `the HTTPS redirect is present and literal`
 - [x] #2 THE EXISTING ASSERTION that no `RewriteRule` echoes `%{HTTP_HOST}` SHALL still run and
@@ -324,3 +324,22 @@ review says: allow only `/`, whitespace, end of line or the literal `%{REQUEST_U
 and add a `%{HTTP:...}` case to the lookalike assertion. The 2026-09-20 re-park came from a loop
 still at `-BounceLimit 2`; the orchestrator now runs NearestForest with `-BounceLimit 5` (every run
 in `storage/logs/work-card.log` on 2026-09-28), so a bounce count of 2 no longer parks it.
+
+**2026-10-05** RESULT: done
+TESTS: +0 new (3 cases added to the existing lookalike assertion), all green, 338 passed 0 failed
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+Answers the 2026-09-17 acceptance and breakage findings and the 2026-09-28 manager pass. `httpsRedirect` now ends the host with `(?=\/|%\{REQUEST_URI\}|\s|$)`: after the literal host only a path, the literal `%{REQUEST_URI}`, whitespace or end of line may follow. Any other `%` variable no longer passes.
+
+Test first. `a redirect to a host that only begins with the site host fails the suite` now also tries `%{HTTP:X-Forwarded-Host}`, `%{ENV:X}.evil.com` and `%1.evil.com` after the host. Against the old pattern it went red for the review's reason: `the pattern still accepts a redirect to host + %{HTTP:X-Forwarded-Host}, %{ENV:X}.evil.com, %1.evil.com`. With the new anchor it is green.
+
+Red-proofs on the real `app/.htaccess`, restored from a copy after each, `git status` then showing only `scripts/selftest.js` modified:
+1. Redirect block commented out: `the HTTPS redirect is present and literal` red, the negative assertion still PASS. 337 passed, 1 failed.
+2. Block deleted: same assertion red. 337 passed, 1 failed.
+3. The breakage review's case written to disk, target `https://forestlocator.enhanceify.co.uk%{HTTP:X-Forwarded-Host}%{REQUEST_URI}`: `present and literal` now red while the negative assertion still passes, which is the gap closed.
+4. Restored: 338 passed, 0 failed.
+
+#2 is unchanged: `the HTTPS redirect does not echo the request Host` still runs on the comment-stripped text and passes.
+
+The baseline at HEAD was already fully green (338 passed), so the card's Plan note about three red assertions is stale. `.\vendor\bin\pest.bat` and `pint.bat` do not exist in this repository; the suite is `node scripts/selftest.js`. Nothing under `app/` changed, so no browser check is owed and `CACHE`/`BUILD` are untouched.
