@@ -96,3 +96,51 @@ OUT-OF-SCOPE: none
 #3: HANDOVER 0018 bullet removed and folded into the 0027 bullet as decided. `^## 20` count in DECISIONS is 24; Sibling docs now says Twenty-four. The card's question: HANDOVER said Twenty-three (not Twenty-two), in one place only.
 #4: suite 345/0 before and after.
 The brief's Pest/Pint step does not apply: this project has no PHP suite and no vendor/.
+
+### 2026-10-05 review (v20261005194023-492e)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break each of the four criteria. I could not break any of them.
+
+- **#1 (PRD):** I ran `grep 0018 docs/PRD.md` and it finds nothing. Both places now point to the DECISIONS rule "2026-08-15: The full licence position, checked source by source". That is in `docs/PRD.md`, at the "No App Store release" non-goal and at the Licensing constraint. The rule says: do not use the name, describe the app factually, and add a "not connected to Forestry England" line.
+- **#2 (DECISIONS):** I found the new entry `## 2026-09-25: The email to Forestry England asks for nothing, so the name is designed around` in `docs/DECISIONS.md`. It says it was Rob's call. It says no trade mark question is sent. It replaces the "enquiry survives" reasoning in the older OGL entry. It says any store listing follows the design-around rule. The diff of that file has no removed lines, so no old entry was changed.
+- **#3 (HANDOVER):** The 0018 bullet is gone. Its content now sits in the 0027 bullet and says 0018 is decided. The file has 24 `^## 20` headings. `## Sibling docs` says "Twenty-four". That is the only place the count appears.
+- **#4 (suite):** I could not run anything, so I could not re-run the suite myself. The builder says 345 passed, 0 failed, before and after. This card only changed prose, so the suite has no way to see it.
+
+The diff also has app and script changes for Wales (card 0116). They are not part of this card, so I did not judge them.
+
+VERDICT: sound
+
+**scope: sound**
+
+I checked the card's own commit, `6e741d0`. It changes only `docs/PRD.md`, `docs/DECISIONS.md` and `docs/HANDOVER.md`. It does not touch `docs/outreach/`, card 0027, any app code or the data.
+
+The big diff you were given (app, scripts, `sites.json`, other cards) comes from other commits in the same range. Those commits belong to other cards (0080 and the Wales work), so they are not this card growing out of scope.
+
+- **PRD:** neither 0018 line is left. The PRD keeps the strike-through and the Apple reason. Both sentences now cite `2026-08-15: The full licence position, checked source by source`. That heading exists at that exact text.
+- **DECISIONS:** the commit only adds lines. The new entry is `## 2026-09-25: ...`. The old entries are not edited. There are 24 `^## 20` headings.
+- **HANDOVER:** the 0018 bullet is gone, and the 0027 bullet now says 0018 is decided. Sibling docs says "Twenty-four", which matches the file.
+- **Suite:** I did not re-run it, because this is a doc-only change. The builder's log says 345 passed before and after.
+
+Nothing is half done. Nothing goes over the "Not this card" fence.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this card. I could not.
+
+- **#1:** `docs/PRD.md` no longer says "0018". Both places that had the trade mark sentence now point to the 2026-08-15 design-around rule and to the new 2026-09-25 entry. That rule is: do not use the name, describe the app factually, say it is not affiliated.
+- **#2:** `docs/DECISIONS.md` has the new 2026-09-25 entry. `git diff` shows no removed lines in that file, so no earlier entry was changed.
+- **#3:** `docs/DECISIONS.md` has 24 `^## 20` headings. `docs/HANDOVER.md` says "Twenty-four" in `## Sibling docs`, and nowhere else. The 0018 bullet is gone. Its text is now in the 0027 bullet, and it says 0018 is decided.
+- **#4:** This card changed only docs. I did not run the suite again. The builder reports 345 passed and 0 failed, before and after.
+
+One thing does not fit. The diff stat also lists app and scraper files: the Wales data, `app/core.js` and `scripts/parse.py`. Those changes came from other cards on the same branch, not from this card. This card's own scope was the three docs, and those are clean.
+
+VERDICT: sound
+
