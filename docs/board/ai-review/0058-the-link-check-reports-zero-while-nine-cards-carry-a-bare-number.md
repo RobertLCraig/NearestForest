@@ -102,7 +102,7 @@ is a `## Links` line and nothing else; no measurement, acceptance tick or verdic
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a card in the table above names another card in a sentence, THE CARD SHALL also name it
+- [x] #1 WHEN a card in the table above names another card in a sentence, THE CARD SHALL also name it
       under `## Links` with the relationship type and one line saying why the reader is sent there.
       proves: `every card number named in a sentence also appears in that card's Links section`
 - [x] #2 WHEN the sweep is re-run over every non-terminal lane, THE BOARD SHALL report no card
@@ -333,3 +333,21 @@ VERDICT: defect
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 2 of 3 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
 
 **2026-09-29** Checked by an attended agent under Rob's rule that human-review holds only what he must decide. **Nothing here is Rob's: #1 is already unticked, and the finding still stands on disk.** `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, `## Links`, still says `0026`'s missing reason "is the single failure the convention check reports" and that `0028` closes #4 "on the run after it lands", while `0026` and `0028` are in `done/` and `0024` records #4 as met on 2026-09-20. The fix is one reason line on each, rewritten in the past tense against the board as it stands, which is a builder's. Moved to `todo/`; bounce count 2 against the loop's `-BounceLimit 5`.
+
+**2026-10-05** RESULT: done
+TESTS: +1 new throwaway check, proved red then green; node scripts/selftest.js 338 passed, 0 failed
+TOUCHED: docs/board/human-review/0024-two-cards-are-over-the-line-budget.md
+TOUCHED: docs/board/todo/0084-four-newer-cards-name-another-card-outside-links.md (new)
+OUT-OF-SCOPE: 0084
+
+**Rewrote the two `## Links` reason lines on `0024` that both reviewers named.** `0026` now reads that its missing reason *was* the one failure the convention check reported and held #4 open until 2026-09-20. `0028` now reads that it fixed `0026`, is in `done/`, and #4 was met on the run after it landed. Both facts come from `0024`'s own `## What I need from you` and its thread, not from a guess. No other line changed: `git diff` is those two bullets only, three lines out and four in.
+
+**Red first, for the reviewer's reason.** A throwaway check read `0024`'s `## Links`, asserted `0026` and `0028` are in `done/` and still linked, and failed on any of the three stale present-tense phrases. Before the edit it printed all three and exited 1. After it, `ok` and exit 0. Deleted with the session, per the card's Plan.
+
+**Criterion #1's own sweep, re-run over the four non-terminal lanes.** None of the nine table cards has a real bare mention. It prints `0024 0077`, but that is line 97 of `0024`'s acceptance block quoting the convention tool's output, whose third column is the highest card number. It is not a mention.
+
+**Raised rather than fixed: `0084`.** The same sweep finds four cards outside this card's table with real bare mentions: `0074` (`0055`, `0071`), `0077` (`0017`, `0020`), `0080` (`0077`), `0021` (`0058`). All were written or edited after this card's 2026-09-11 pass. The table on `0084` is the sweep's output exactly.
+
+**Not run:** `.\vendor\bin\pest.bat` and `pint.bat`. NearestForest has no PHP suite and no `vendor/`. `board:convention --path=<worktree>` was not re-run: php is not on the Git Bash PATH here, and since 2026-10-05 the command refuses a build worktree anyway. There is no fresh convention count from this session.
+
+**Tension, recorded:** the session brief says edit no card other than by raising one, while this card's whole scope is editing `## Links` on the nine. I edited `0024` only, the one line the reviewers named, and no `## Comments`, `## Direction`, `## Decided`, acceptance tick or measurement.
