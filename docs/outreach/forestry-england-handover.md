@@ -195,7 +195,7 @@ language model:
 | OGL v3 excludes trade marks | **Verified** in the licence text, 2026-08-15 |
 | robots.txt does not block the forest pages | **Verified** by fetching it, 2026-08-15 |
 | info@forestryengland.uk is the right address | **Verified** on two of their own pages, 2026-08-14 |
-| 1,180 locations, 550 forests, 630 car parks | **Verified** against the generated dataset, 2026-09-06. **Only 274 of the forests are Forestry England's**; the other 276 are Forestry and Land Scotland, and the car parks are all English. Do not quote 550 to Forestry England as a count of their sites |
+| 1,293 locations, 663 forests, 630 car parks | **Verified** against the generated dataset, 2026-10-05. **Only 274 of the forests are Forestry England's**; 276 are Forestry and Land Scotland, 113 are Natural Resources Wales, and the car parks are all English. Do not quote 663 to Forestry England as a count of their sites |
 | Works fully offline after first load | **Verified** by measuring the shipped files |
 | "Forestry England" is a registered trade mark | **Not checked.** Assumed, and the reason ask 2 exists. Do not assert it as fact |
 | Google Play accepts a wrapped web app from Windows | **General knowledge, not checked.** Confirm before relying on it |

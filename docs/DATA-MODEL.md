@@ -1,6 +1,6 @@
 # Data model: NearestForest
 
-_Last updated: 2026-08-29 (card 0016 added Scotland to the Forests tab)_
+_Last updated: 2026-10-05 (card 0079 added Wales to the Forests tab)_
 
 The single source of truth for this project's data shape. Every layer (scrape, transform, bundled
 JSON, PWA, iOS Shortcut) conforms to this. Anywhere a layer diverges is a bug to close, not a state
@@ -22,9 +22,9 @@ See the campsites section below before changing that.
 
 | Field | Type | Units | Nullable | Format / notes |
 |-------|------|-------|----------|----------------|
-| `id` | string | — | no | Stable slug. `fe-<url-slug>` for Forestry England forests, `fls-<slug>` for Forestry and Land Scotland ones, `cp-<OBJECTID>` for car parks. The prefix is the publishing agency. Never reused. |
+| `id` | string | — | no | Stable slug. `fe-<url-slug>` for Forestry England forests, `fls-<slug>` for Forestry and Land Scotland ones, `nrw-<slug>` for Natural Resources Wales ones, `cp-<OBJECTID>` for car parks. The prefix is the publishing agency. Never reused. |
 | `source` | enum | — | no | `forest` \| `carpark` \| `campsite`. Drives which tab it appears in, nothing else. `campsite` records live in a **different file**; see below. |
-| `country` | enum | | no | `England` \| `Scotland`. Provenance, not control flow: **there is no country filter and no country tab**, and a Scottish forest ranks in the same list as an English one. It exists so the build can assert a tighter bounding box per country and so a count is checkable. |
+| `country` | enum | | no | `England` \| `Scotland` \| `Wales`. Provenance, not control flow: **there is no country filter and no country tab**, and a Scottish or Welsh forest ranks in the same list as an English one. It exists so the build can assert a tighter bounding box per country and so a count is checkable. |
 | `name` | string | — | no | Display name. For car parks with no usable upstream name, see `name_is_derived`. |
 | `name_is_derived` | bool | — | no | `true` when we generated the name because upstream had none usable. **177 car parks: `Car park near <nearest forest>` where a forest point is within 5 miles, otherwise the bare `Unnamed car park`.** Shown in the list, the detail sheet and the map label as dim italic, so it is never mistaken for an official name. |
 | `lat` | number | deg | no | WGS84, EPSG:4326. 7 dp. This is what Navigate uses. |
@@ -32,7 +32,7 @@ See the campsites section below before changing that.
 | `postcode_satnav` | string | — | yes | The **sat-nav** postcode from the page's "How to find us", not the JSON-LD `postalCode`. These genuinely differ. See DECISIONS 2026-08-08. |
 | `postcode_postal` | string | — | yes | JSON-LD `address.postalCode`. Kept for reference, never used for navigation. |
 | `address` | string | — | yes | Human-readable single line, assembled from JSON-LD `streetAddress[]` + `addressLocality`. |
-| `url` | string | — | yes | Absolute page URL on the agency that publishes the record: `www.forestryengland.uk` or `forestryandland.gov.scot`. `null` for car parks. **The host set is closed**, in the build and again in the app, because this string goes into an `href`. |
+| `url` | string | — | yes | Absolute page URL on the agency that publishes the record: `www.forestryengland.uk`, `forestryandland.gov.scot` or `naturalresources.wales`. `null` for car parks. **The host set is closed**, in the build and again in the app, because this string goes into an `href`. |
 | `opening_times` | string | — | yes | Free text, as published. Not parsed into a schedule; see below. |
 | `opening_summary` | object | — | yes | Best-effort parse. `null` when the free text could not be parsed confidently. Never guessed. |
 | `parking` | string | — | yes | Charges and parking notes as published. |
@@ -84,10 +84,10 @@ no stale copy of a position-dependent value on disk.
 
 ```json
 {
-  "generated_at": "2026-09-10",
-  "counts": { "forest": 550, "carpark": 630 },
-  "counts_by_country": { "England": 904, "Scotland": 276 },
-  "attribution": "English forest details: Crown Copyright, courtesy Forestry England, licensed under the Open Government Licence. Scottish forest details from Forestry and Land Scotland contain public sector information licensed under the Open Government Licence v3.0. Car park details contain public sector information licensed under the Open Government Licence v3.0; © Forestry Commission copyright and/or database right 2025. All rights reserved.",
+  "generated_at": "2026-10-05",
+  "counts": { "forest": 663, "carpark": 630 },
+  "counts_by_country": { "England": 904, "Scotland": 276, "Wales": 113 },
+  "attribution": "English forest details: Crown Copyright, courtesy Forestry England, licensed under the Open Government Licence. Scottish forest details from Forestry and Land Scotland contain public sector information licensed under the Open Government Licence v3.0. Welsh forest details: Contains Natural Resources Wales information © Natural Resources Wales and Database Right. All rights reserved. Car park details contain public sector information licensed under the Open Government Licence v3.0; © Forestry Commission copyright and/or database right 2025. All rights reserved.",
   "sites": [ /* Site records, forests first, each tab already sorted by name */ ]
 }
 ```
@@ -102,7 +102,8 @@ no stale copy of a position-dependent value on disk.
   in the six-figure range is a bug, and the build asserts against it.
 - **The bounding-box tripwire is per country, and a Great Britain box on top.** `scripts/parse.py`
   asserts every record inside Great Britain (49.5 to 61.2 N, -8.8 to 2.2 E), and then inside the box
-  for the country it names: England 49.5 to 56.2 N, Scotland 54.5 to 61.2 N. Card 0016 widened this
+  for the country it names: England 49.5 to 56.2 N, Scotland 54.5 to 61.2 N, Wales 51.3 to 53.5 N
+  and -5.7 to -2.6 E (card 0079, where every coordinate is one we computed). Card 0016 widened this
   without loosening it, deliberately: the records that get reprojected are the English car parks, so
   an England box is the one that catches a bad reprojection, and a single box reaching Shetland would
   wave one through.
@@ -146,6 +147,35 @@ shape, no new fields beyond `country`, and nothing in the app branches on where 
   recreation Areas, Points and Routes only, the "National Forest Estate Recreation Scotland 2017"
   ArcGIS items return 403, and FLS's own ArcGIS org has boundaries, blocks and parking machines but
   no recreation points. Scotland fills the Forests tab and not the Car parks tab, on purpose.
+
+## Wales, from Natural Resources Wales (card 0079, 2026-10-05)
+
+113 sites in the same `forest` tab and the same ranked list. Same record shape. This is option 1 of
+card 0017: the named sites only, and no Welsh car parks.
+
+- **The index is five regional pages.** `/days-out/places-to-visit/?lang=en` links the five regions
+  and each region's page lists its sites. 116 were published on 2026-10-05 (17 mid, 36 north-west,
+  13 north-east, 32 south-west, 18 south-east). `fetch.py` floors the index at 100.
+- **NRW publish no coordinates, so we compute them.** Each page gives an OS grid reference in prose
+  under "How to get here", usually to 100 m (`SN 718 812`). `parse.py` takes the first one after that
+  heading, places the record at the centre of the named square, and converts it with the Ordnance
+  Survey's own formulae: inverse transverse Mercator onto OSGB36, then a Helmert transform to WGS84.
+  Good to a few metres; the 100 m square is the bigger error. A self-test pins it to the OS guide's
+  worked examples. A grid reference earlier on the page is usually a trail start and is not read.
+- **113 of 116 shipped.** Cwm Idwal, Cwm Carn Forest and Stackpole publish no grid reference at all.
+  They are left out and named in the parse report, never placed at a guess. If more than 10% of the
+  index has no readable grid reference, the build fails, because that means the page shape changed.
+- **Cross-check, never shipped.** Each page's Google Maps embed carries a coordinate. The parser
+  compares it with the computed one on every run. Measured 2026-10-05 over 112 pages: median 0.07 mi,
+  max 0.43 mi (Ceunant Cynfal). Seven are over 0.25 mi. The embed pin is not always on the car park
+  the grid reference names, so this is a tripwire, not a correction.
+- **Fields.** `postcode_satnav` is the postcode under "How to get here" (111 of 113; NRW warn that
+  some cover a wide area). `facilities` comes from the "What's here" icon list (113 of 113).
+  `parking` is the text of the page's "Parking" section (112 of 113), and a few run to several
+  thousand characters of payment rules. `opening_times`, `opening_summary`, `address` and
+  `postcode_postal` are `null`: the card did not take them on.
+- **Names keep their Welsh.** "Coed Tŷ Canol National Nature Reserve, near Newport" is published as
+  an HTML entity and arrives as `ŷ`. A self-test pins it.
 
 ## Known divergences (to close)
 

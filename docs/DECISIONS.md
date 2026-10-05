@@ -3,6 +3,32 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-10-05: Wales joins the Forests tab, from NRW's own pages, under OGL
+**Decision:** Card 0079 carries out option 1 of card 0017, which Rob chose on 2026-09-29. The 116
+named sites on Natural Resources Wales's places-to-visit pages are scraped the way the English and
+Scottish ones are, and 113 ship. No Welsh car parks: NRW's recreation points dataset is option 2 and
+still waits on NRW's written answer about its licence (`docs/outreach/nrw-licence-enquiry.md`).
+
+**The re-use position for the page text, read 2026-10-05.** NRW's website copyright page
+(`/footer-links/copyright/`) says: "Unless indicated otherwise, you may use and re-use the
+information featured on our website (not including logos) free of charge in any format or medium,
+under the terms of the Open Government Licence". It asks that NRW material is reproduced accurately,
+not used in a misleading context, and attributed with a fixed statement: "Contains Natural Resources
+Wales information © Natural Resources Wales and Database Right. All rights reserved." That statement
+is used verbatim in the About footer and in the `attribution` that `parse.py` stamps into
+`sites.json`. No logo is used. `robots.txt` disallows nothing. This is a different document from the
+dataset licence card 0017 is asking about: that one covers the DataMapWales WFS layers, this one
+covers the website the pages come from.
+
+**The coordinates are ours, and are derived, never guessed.** NRW publish an OS grid reference and no
+latitude or longitude. `parse.py` converts it with the Ordnance Survey's own formulae (inverse
+transverse Mercator, then the section 6.6 Helmert transform), in about sixty lines of standard
+library rather than `pyproj`, because `requirements.txt` holds one module and a self-test keeps it
+so. It is pinned to the OS guide's worked examples. A page with no grid reference is left out and
+named in the parse report; three were, on 2026-10-05. A Google Maps coordinate in each page's embed
+is compared on every run and never shipped, because that URL changes shape without notice.
+**Status:** active
+
 ## 2026-08-29: The Forests tab leaves England, and takes on a second agency
 **Decision:** Card 0016, answered "Yes" by Rob on 2026-08-18. `app/data/sites.json` now carries
 Forestry and Land Scotland's destinations alongside Forestry England's, in the same `forest` tab and

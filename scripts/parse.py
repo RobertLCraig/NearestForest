@@ -15,16 +15,19 @@ FLS_PAGES = os.path.join(RAW, "fls", "pages")
 OUT = os.path.join(ROOT, "app", "data", "sites.json")
 TODAY = date.today().isoformat()
 
-# The redistribution credit stamped into sites.json. Four sentences, one per source, and the
-# same four the About footer shows: Forestry England publish their own statement so theirs is
-# used verbatim, Forestry and Land Scotland publish none so they take the generic wording, and
+# The redistribution credit stamped into sites.json. One sentence per source, and the same
+# ones the About footer shows: Forestry England publish their own statement so theirs is
+# used verbatim, Forestry and Land Scotland publish none so they take the generic wording,
+# Natural Resources Wales publish theirs on their copyright page so it is used verbatim, and
 # the car park dataset publishes its own copyright line whose year is the publisher's and is
-# never updated here. See DECISIONS 2026-08-15 and 2026-08-29.
+# never updated here. See DECISIONS 2026-08-15, 2026-08-29 and 2026-10-05.
 ATTRIBUTION = (
     "English forest details: Crown Copyright, courtesy Forestry England, licensed under the "
     "Open Government Licence. "
     "Scottish forest details from Forestry and Land Scotland contain public sector information "
     "licensed under the Open Government Licence v3.0. "
+    "Welsh forest details: Contains Natural Resources Wales information © Natural Resources "
+    "Wales and Database Right. All rights reserved. "
     "Car park details contain public sector information licensed under the Open Government "
     "Licence v3.0; © Forestry Commission copyright and/or database right 2025. "
     "All rights reserved."
@@ -47,6 +50,10 @@ fetched = json.load(open(FETCHED, encoding="utf-8")) if os.path.exists(FETCHED) 
 COUNTRY_RANGE = {
     "England":  {"lat": (49.5, 56.2), "lng": (-6.8, 2.2)},
     "Scotland": {"lat": (54.5, 61.2), "lng": (-8.8, 0.0)},
+    # Card 0079. Every Welsh coordinate is one we computed from a grid reference, so this
+    # box is what catches a conversion gone wrong. Anglesey's north coast is 53.43N, the
+    # Pembrokeshire islands reach -5.67E, and the Wye at Chepstow is -2.65E.
+    "Wales":    {"lat": (51.3, 53.5), "lng": (-5.7, -2.6)},
 }
 # Great Britain overall, asserted for every record whatever its country says.
 GB_LAT_RANGE = (49.5, 61.2)
@@ -57,7 +64,8 @@ VALID_STATUS = {"Permanent - Official", "Permanent - Unofficial",
 
 # Hosts a site URL may point at. The app puts these in an href, so the set is
 # closed rather than "whatever the scrape found".
-URL_HOSTS = {"www.forestryengland.uk", "forestryengland.uk", "forestryandland.gov.scot"}
+URL_HOSTS = {"www.forestryengland.uk", "forestryengland.uk", "forestryandland.gov.scot",
+             "naturalresources.wales"}
 
 # ------------------------------------------------ derived car park names (card 0004)
 # What the app shows when there is nothing better to say.
@@ -545,6 +553,201 @@ def build_fls():
     return sites
 
 
+# ------------------------------------------------------- Wales (card 0079)
+# Natural Resources Wales publish no coordinates, only an OS grid reference in prose, so
+# the position is computed here: grid letters to easting/northing, the inverse transverse
+# Mercator projection onto the Airy 1830 ellipsoid (OSGB36), then a Helmert transform to
+# WGS84. Formulae and constants are the Ordnance Survey's own, from "A Guide to Coordinate
+# Systems in Great Britain" v3.6, Annex C.2 and section 6.6. The Helmert step is good to
+# about 3.5 m, far inside what "nearest forest" needs, and a grid reference to 100 m is
+# coarser still. Plain maths rather than pyproj: requirements.txt holds one module and a
+# self-test keeps it that way. Pinned against the guide's worked examples in selftest.js.
+AIRY = (6377563.396, 6356256.909)
+GRS80 = (6378137.000, 6356752.3141)
+F0, LAT0, LNG0, E0, N0 = 0.9996012717, math.radians(49), math.radians(-2), 400000, -100000
+# WGS84 -> OSGB36 is (-446.448, 125.157, -542.060) m, 20.4894 ppm, (-0.1502, -0.2470,
+# -0.8421) arcsec. A small Helmert transform reverses by changing every sign (guide 6.2).
+HELMERT_TO_WGS84 = (446.448, -125.157, 542.060, -20.4894, 0.1502, 0.2470, 0.8421)
+
+
+def grid_ref_to_en(ref):
+    """'SN 718 812' -> (271850, 281250). A grid reference names a square, so the centre of
+    that square is returned. Raises ValueError on anything it cannot read."""
+    m = re.fullmatch(r"\s*([HNOST])([A-HJ-Z])\s*(\d+)\s*(\d*)\s*", ref.upper())
+    if not m:
+        raise ValueError("not a grid reference: %r" % ref)
+    digits = m.group(3) + m.group(4)
+    if len(digits) % 2 or not 2 <= len(digits) <= 10:
+        raise ValueError("odd or out-of-range digit count: %r" % ref)
+    l1, l2 = (ord(c) - 65 for c in m.group(1, 2))
+    l1, l2 = l1 - (l1 > 7), l2 - (l2 > 7)          # the grid has no letter I
+    e100 = ((l1 - 2) % 5) * 5 + l2 % 5
+    n100 = (19 - (l1 // 5) * 5) - l2 // 5
+    k = len(digits) // 2
+    unit = 10 ** (5 - k)
+    return (e100 * 100000 + int(digits[:k]) * unit + unit / 2,
+            n100 * 100000 + int(digits[k:]) * unit + unit / 2)
+
+
+def en_to_osgb36(e, n):
+    """National Grid easting/northing -> OSGB36 (lat, lng) in degrees. Guide Annex C.2."""
+    a, b = AIRY
+    e2 = 1 - (b * b) / (a * a)
+    nn = (a - b) / (a + b)
+    phi, m = LAT0, 0.0
+    while True:
+        phi += (n - N0 - m) / (a * F0)
+        dp, sp = phi - LAT0, phi + LAT0
+        m = b * F0 * ((1 + nn + 1.25 * nn ** 2 + 1.25 * nn ** 3) * dp
+                      - (3 * nn + 3 * nn ** 2 + 21 / 8 * nn ** 3) * math.sin(dp) * math.cos(sp)
+                      + (15 / 8 * nn ** 2 + 15 / 8 * nn ** 3) * math.sin(2 * dp) * math.cos(2 * sp)
+                      - 35 / 24 * nn ** 3 * math.sin(3 * dp) * math.cos(3 * sp))
+        if abs(n - N0 - m) < 0.00001:
+            break
+    s2 = math.sin(phi) ** 2
+    nu = a * F0 / math.sqrt(1 - e2 * s2)
+    rho = a * F0 * (1 - e2) / (1 - e2 * s2) ** 1.5
+    eta2 = nu / rho - 1
+    t, sec = math.tan(phi), 1 / math.cos(phi)
+    vii = t / (2 * rho * nu)
+    viii = t / (24 * rho * nu ** 3) * (5 + 3 * t * t + eta2 - 9 * t * t * eta2)
+    ix = t / (720 * rho * nu ** 5) * (61 + 90 * t * t + 45 * t ** 4)
+    x = sec / nu
+    xi = sec / (6 * nu ** 3) * (nu / rho + 2 * t * t)
+    xii = sec / (120 * nu ** 5) * (5 + 28 * t * t + 24 * t ** 4)
+    xiia = sec / (5040 * nu ** 7) * (61 + 662 * t * t + 1320 * t ** 4 + 720 * t ** 6)
+    de = e - E0
+    lat = phi - vii * de ** 2 + viii * de ** 4 - ix * de ** 6
+    lng = LNG0 + x * de - xi * de ** 3 + xii * de ** 5 - xiia * de ** 7
+    return math.degrees(lat), math.degrees(lng)
+
+
+def osgb36_to_wgs84(lat, lng, h=0.0):
+    """OSGB36 (lat, lng, height) in degrees -> WGS84 (lat, lng, height). Geodetic to
+    cartesian on Airy 1830, the Helmert transform, cartesian back to geodetic on GRS80."""
+    a, b = AIRY
+    e2 = 1 - (b * b) / (a * a)
+    p, l = math.radians(lat), math.radians(lng)
+    nu = a / math.sqrt(1 - e2 * math.sin(p) ** 2)
+    x = (nu + h) * math.cos(p) * math.cos(l)
+    y = (nu + h) * math.cos(p) * math.sin(l)
+    z = ((1 - e2) * nu + h) * math.sin(p)
+
+    tx, ty, tz, s, rx, ry, rz = HELMERT_TO_WGS84
+    s = 1 + s * 1e-6
+    rx, ry, rz = (math.radians(r / 3600) for r in (rx, ry, rz))
+    x, y, z = (tx + s * x - rz * y + ry * z,
+               ty + rz * x + s * y - rx * z,
+               tz - ry * x + rx * y + s * z)
+
+    a, b = GRS80
+    e2 = 1 - (b * b) / (a * a)
+    pp = math.hypot(x, y)
+    p = math.atan2(z, pp * (1 - e2))
+    for _ in range(10):
+        nu = a / math.sqrt(1 - e2 * math.sin(p) ** 2)
+        p = math.atan2(z + e2 * nu * math.sin(p), pp)
+    nu = a / math.sqrt(1 - e2 * math.sin(p) ** 2)
+    return math.degrees(p), math.degrees(math.atan2(y, x)), pp / math.cos(p) - nu
+
+
+# "The Ordnance Survey (OS) grid reference for the car park is SN 718 812". Some pages
+# list several car parks; the first one under "How to get here" is the site's own. A
+# grid reference elsewhere on the page is usually where a trail starts, so it is not read.
+RE_NRW_HOW = re.compile(r"<h2[^>]*>\s*How to get here", re.I)
+# Three wordings are published: "... is SN 718 812", "... for Beach car park: SH 405 634"
+# and "(postcode CF34 0AL / OS grid reference SS 851 917)". Letters are upper case only,
+# which is what keeps the 100-character reach from matching ordinary words.
+RE_NRW_GRID = re.compile(r"(?i:grid reference)\b[^.<]{0,100}?\b([HNOST][A-HJ-Z] ?\d[\d ]{2,11}\d)\b")
+RE_NRW_POSTCODE = re.compile(r"(?i:postcode)\b[^.<]{0,100}?\b([A-Z]{1,2}\d[A-Z\d]?) ?(\d[A-Z]{2})\b")
+nrw_notes = {"no_grid_ref": [], "postcode_missing": 0, "parking_missing": 0,
+             "facilities_missing": 0}
+nrw_map_deltas = []
+NRW_MAX_LEFT_OUT = 0.1    # 3 of 116 published on 2026-10-05 carry no grid reference
+
+
+def nrw_section(h, heading_re):
+    """Inner HTML from an h2 matching `heading_re` to the next h2."""
+    m = re.search(r"<h2[^>]*>\s*" + heading_re + r"\s*</h2>", h, re.I)
+    if not m:
+        return None
+    stop = re.search(r"<h2\b|</main\b|<footer\b", h[m.end():], re.I)
+    return h[m.end():m.end() + stop.start()] if stop else None
+
+
+def build_nrw():
+    """The Welsh half. One record per site on NRW's places-to-visit index that publishes a
+    grid reference we can read. A site without one is left out and named: a guessed
+    position is a wrong position, and this app only ever has one job."""
+    index = json.load(open(os.path.join(RAW, "nrw", "index.json"), encoding="utf-8"))
+    sites = []
+    for d in index:
+        cached = "nrw/pages/" + d["slug"] + ".html"
+        path = os.path.join(RAW, cached)
+        if not os.path.exists(path):
+            problems.append("missing NRW page file for %s" % d["slug"])
+            continue
+        h = open(path, encoding="utf-8", errors="replace").read()
+
+        how = RE_NRW_HOW.search(h)
+        tail = htmllib.unescape(re.sub(r"<[^>]+>", " ", h[how.end():])) if how else ""
+        tail = " ".join(tail.replace("\xa0", " ").split())
+        g = RE_NRW_GRID.search(tail)
+        try:
+            if not g:
+                raise ValueError("no grid reference under 'How to get here'" if how
+                                 else "no 'How to get here' section")
+            lat, lng, _ = osgb36_to_wgs84(*en_to_osgb36(*grid_ref_to_en(g.group(1))))
+        except ValueError as e:
+            nrw_notes["no_grid_ref"].append("%s (%s)" % (d["slug"], e))
+            continue
+
+        # The Google Maps embed carries a coordinate. Never shipped, because that URL changes
+        # shape without notice, but compared so a bad parse or a bad grid reference shows up.
+        mp = re.search(r"!2d(-?[\d.]+)!3d(-?[\d.]+)", h)
+        if mp:
+            nrw_map_deltas.append((haversine_mi(lat, lng, float(mp.group(2)), float(mp.group(1))),
+                                   d["slug"]))
+
+        pc = RE_NRW_POSTCODE.search(tail)
+        if not pc:
+            nrw_notes["postcode_missing"] += 1
+
+        pb = nrw_section(h, r"Parking")
+        parking = (strip_tags(pb) or None) if pb else None
+        if not parking:
+            nrw_notes["parking_missing"] += 1
+
+        fac, seen = [], set()
+        for f in re.findall(r'<li class="featuredIcon" aria-label="([^"]+)"', h):
+            f = htmllib.unescape(f).strip()
+            if f and f.lower() not in seen:
+                seen.add(f.lower())
+                fac.append(f)
+        if not fac:
+            nrw_notes["facilities_missing"] += 1
+
+        sites.append({
+            "id": "nrw-" + d["slug"],
+            "source": "forest",
+            "country": "Wales",
+            "name": d["name"],
+            "name_is_derived": False,
+            "lat": round(lat, 7), "lng": round(lng, 7),
+            "postcode_satnav": ("%s %s" % (pc.group(1).upper(), pc.group(2).upper())) if pc else None,
+            "postcode_postal": None,
+            "address": None,
+            "url": d["url"],
+            "opening_times": None,
+            "opening_summary": None,
+            "parking": parking,
+            "facilities": fac or None,
+            "category": None, "surface": None, "status": None, "district": None,
+            "scraped_at": fetched_on(cached),
+        })
+    return sites
+
+
 def unusable_name(raw_name):
     """(is_derived, qualifier) for an upstream car park name that cannot stand on its own.
 
@@ -665,14 +868,14 @@ def validate(sites):
 
 
 def main():
-    log("[1/4] Parsing Forestry England forest pages ...")
+    log("[1/5] Parsing Forestry England forest pages ...")
     forests = build_forests()
     log("      %d forests parsed" % len(forests))
     # Snapshot before the Scottish pages add to the same access counters, so the English
     # coverage report keeps saying what it has always said.
     en_notes = dict(notes)
 
-    log("[2/4] Parsing car parks ...")
+    log("[2/5] Parsing car parks ...")
     carparks, pending = build_carparks()
     log("      %d car parks parsed, %d with no usable upstream name" % (len(carparks), len(pending)))
 
@@ -686,17 +889,30 @@ def main():
         log("      named after a forest within %.1f mi: %d; left as %r: %d"
             % (NEAR_FOREST_MI, len(named), GENERIC_NAME, n - len(named)))
 
-    log("[3/4] Parsing Forestry and Land Scotland destinations ...")
+    log("[3/5] Parsing Forestry and Land Scotland destinations ...")
     scots = build_fls()
     log("      %d destinations parsed, %d dropped as published closed"
         % (len(scots), fls_notes["closed"]))
 
-    all_forests = forests + scots
+    log("[4/5] Parsing Natural Resources Wales sites ...")
+    welsh = build_nrw()
+    log("      %d sites placed from their grid reference, %d left out"
+        % (len(welsh), len(nrw_notes["no_grid_ref"])))
+    # Leaving out a site with no grid reference is correct and is reported, not failed. A
+    # collapse in the count is not: that is the page shape changing under the parser. A
+    # share rather than a floor, because fetch.py already floors the index itself.
+    left_out = len(nrw_notes["no_grid_ref"])
+    if left_out > NRW_MAX_LEFT_OUT * (len(welsh) + left_out):
+        problems.append("%d of %d Welsh sites have no readable grid reference, more than %d%%; "
+                        "the NRW page shape has probably changed"
+                        % (left_out, len(welsh) + left_out, NRW_MAX_LEFT_OUT * 100))
+
+    all_forests = forests + scots + welsh
     all_forests.sort(key=lambda s: s["name"].lower())
     carparks.sort(key=lambda s: s["name"].lower())
     sites = all_forests + carparks
 
-    log("[4/4] Validating ...")
+    log("[5/5] Validating ...")
     validate(sites)
 
     log("")
@@ -729,6 +945,25 @@ def main():
         ds = [d for d, _ in fls_coord_deltas]
         log("  index vs page coordinate, miles: n=%d max=%.3f median=%.4f >0.5mi=%d"
             % (len(ds), ds[0], ds[len(ds) // 2], len([d for d in ds if d > 0.5])))
+
+    log("")
+    log("FIELD COVERAGE (Natural Resources Wales, n=%d)" % len(welsh))
+    for k, label in [("postcode_missing", "postcode"), ("parking_missing", "parking info"),
+                     ("facilities_missing", "facilities")]:
+        log("  %-18s %3d/%d present  (%d missing)"
+            % (label, len(welsh) - nrw_notes[k], len(welsh), nrw_notes[k]))
+    if nrw_map_deltas:
+        nrw_map_deltas.sort(reverse=True)
+        ds = [d for d, _ in nrw_map_deltas]
+        log("  grid reference vs Google Maps embed, miles: n=%d max=%.3f median=%.4f >0.25mi=%d"
+            % (len(ds), ds[0], ds[len(ds) // 2], len([d for d in ds if d > 0.25])))
+        for d, slug in nrw_map_deltas[:5]:
+            log("    %6.2f mi  %s" % (d, slug))
+    if nrw_notes["no_grid_ref"]:
+        log("  LEFT OUT, no usable grid reference, never placed at a guess (%d):"
+            % len(nrw_notes["no_grid_ref"]))
+        for s in nrw_notes["no_grid_ref"]:
+            log("    - %s" % s)
 
     if coord_deltas:
         coord_deltas.sort(reverse=True)

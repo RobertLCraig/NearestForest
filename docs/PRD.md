@@ -34,24 +34,26 @@ In priority order.
 - [ ] From a cold Home Screen launch in aeroplane mode, the sorted list renders in under 3 seconds.
 - [ ] The nearest site is correct when cross-checked by hand against 5 known locations.
 - [ ] Tapping a site opens Apple Maps, Google Maps or Waze at the correct coordinate, navigating.
-- [ ] Every one of the 550 named forests carries a name, coordinate, sat-nav postcode and opening times,
+- [ ] Every one of the 663 named forests carries a name, coordinate, sat-nav postcode and opening times,
       or is explicitly flagged as missing that field. No silent blanks. **Most Scottish sites publish
       no hours at all** (7 of 276 do), which is a real answer rather than a gap: the app says "not
-      known" and never guesses.
+      known" and never guesses. **The 113 Welsh sites carry no opening times** (card 0079 did not
+      parse them), so they show "not known" too.
 - [ ] The app makes zero network requests after first install (verifiable in Safari Web Inspector).
 - [ ] The iOS Shortcut returns the same nearest site as the PWA for the same location.
 
 ## Scope
 
-- Three tabs: **Forests** (550 named sites, the default: 274 from Forestry England and 276 from
-  Forestry and Land Scotland, in one ranked list) and **Car parks** (630 official car park features,
-  for when the named site is not the nearest usable parking, England only), both from `sites.json`;
-  plus **Campsites** (3,574 places across England, Scotland and Wales that explicitly take a caravan
-  or motorhome), from the separately licensed `campsites.json`.
-- **Two of the three tabs are Great Britain minus Wales; Car parks is still England only.** That is
-  not an oversight: no open dataset of Scottish forest car parks exists (the Forestry Commission hub
+- Three tabs: **Forests** (663 named sites, the default: 274 from Forestry England, 276 from
+  Forestry and Land Scotland and 113 from Natural Resources Wales, in one ranked list) and **Car
+  parks** (630 official car park features, for when the named site is not the nearest usable
+  parking, England only), both from `sites.json`; plus **Campsites** (3,574 places across England,
+  Scotland and Wales that explicitly take a caravan or motorhome), from the separately licensed
+  `campsites.json`.
+- **Forests and Campsites cover Great Britain; Car parks is still England only.** That is not an
+  oversight: no open dataset of Scottish forest car parks exists (the Forestry Commission hub
   publishes England only, and FLS's own ArcGIS org has boundaries and parking machines but no
-  recreation points). Wales is card 0017.
+  recreation points). Welsh car parks are option 2 of card 0017 and wait on NRW's licence answer.
 - Distance and compass bearing from current GPS position, sorted nearest first.
 - Per-site detail: name, sat-nav postcode, opening times, parking charges, facilities, and a link to
   the page of whichever agency published the site, labelled with that agency's name, which is read
@@ -79,10 +81,12 @@ In priority order.
   Forests tab, by his answer to card **0016**: the app takes on Forestry and Land Scotland as a
   second agency, with the maintenance cost of a second scraper accepted openly. See DECISIONS
   2026-08-29.
-  **Wales is still out**, and it is card **0017**: Natural Resources Wales's own metadata says the
-  recreation data is OGL with no access restrictions, while data.gov.uk says the same dataset needs
-  their prior approval before use in an internet application. That contradiction is the blocker, not
-  the principle.
+  **Wales is in the Forests tab since card 0079** (2026-10-05): Natural Resources Wales's 116 named
+  visitor sites, of which 113 publish a grid reference and ship, from their website under OGL. See
+  DECISIONS 2026-10-05. **Welsh car parks are still out**, on card **0017**: Natural Resources
+  Wales's own metadata says the recreation data is OGL with no access restrictions, while
+  data.gov.uk says the same dataset needs their prior approval before use in an internet
+  application. That contradiction is the blocker, not the principle.
   Northern Ireland and Ireland remain out of scope everywhere, not least because the bundled map
   outline does not include them, so a record there would rank in the list and vanish on the map.
   Europe and the United States are wanted eventually and nothing has been researched.
@@ -120,8 +124,9 @@ In priority order.
   now about 1.7 MB uncompressed**, since Cache Storage holds the decoded bytes. That is far below
   any iOS quota, but it is written down here because an over-quota Cache Storage on iOS is evicted
   wholesale, and this project has already lost its offline copy once that way.
-  **Wales would be the increment that stops being comfortable**: see card 0017, where the point data
-  is several times the size of everything shipped so far.
+  **Wales's named sites took `sites.json` to 818 KB on disk on 2026-10-05** (101 KB gzipped). Still
+  comfortable. **Welsh recreation points would be the increment that stops being comfortable**: see
+  card 0017, where the point data is several times the size of everything shipped so far.
 - NFR4 — Touch targets at least 44x44 pt, primary actions reachable one-handed.
 - NFR5 — Legible in direct sunlight and at night; respects the system dark mode.
 - NFR6 — Served over HTTPS. iOS grants geolocation only to secure origins.

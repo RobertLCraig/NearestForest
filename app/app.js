@@ -18,7 +18,8 @@ var LS_KEY = 'nf.lastpos';
    is what put "Forestry England page" over 276 Scottish links. */
 var AGENCY_BY_HOST = {
   'forestryengland.uk': 'Forestry England page',
-  'forestryandland.gov.scot': 'Forestry and Land Scotland page'
+  'forestryandland.gov.scot': 'Forestry and Land Scotland page',
+  'naturalresources.wales': 'Natural Resources Wales page'
 };
 
 var $ = function (s) { return document.querySelector(s); };

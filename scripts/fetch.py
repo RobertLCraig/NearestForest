@@ -38,6 +38,17 @@ FLS_UA = "NearestForest/1.0 (+https://forestlocator.enhanceify.co.uk; djinni.rc@
 FLS_HEADERS = {"User-Agent": FLS_UA}
 EXPECT_MIN_FLS = 250      # 278 published on 2026-08-29
 
+# ------------------------------------------------------------------ Wales (card 0079)
+# Natural Resources Wales lists its visitor sites on one page per region, and the regions
+# are linked from one top page. Neither carries a coordinate: each site page publishes an
+# OS grid reference in prose, which parse.py converts. Same contact address as FLS.
+NRW_BASE = "https://naturalresources.wales"
+NRW_INDEX = NRW_BASE + "/days-out/places-to-visit/?lang=en"
+NRW_DIR = os.path.join(RAW, "nrw")
+NRW_PAGES = os.path.join(NRW_DIR, "pages")
+EXPECT_MIN_NRW = 100      # 116 published on 2026-10-05, in five regions
+RE_NRW_REGION = re.compile(r'href="/days-out/places-to-visit/([a-z-]+-wales)/\?lang=en"')
+
 failures = []
 
 # ------------------------------------------------------------------ download dates (card 0026)
@@ -83,7 +94,7 @@ def get(url, **kw):
 
 def fetch_index():
     """Parse the 274 named forests out of the search page's geolocation markup."""
-    log("[1/5] Fetching Forestry England forest index ...")
+    log("[1/7] Fetching Forestry England forest index ...")
     path = os.path.join(RAW, "search-forests.html")
     if os.path.exists(path) and os.path.getsize(path) > 100_000:
         h = open(path, encoding="utf-8", errors="replace").read()
@@ -144,7 +155,7 @@ def fetch_page(f, i, total):
 
 
 def fetch_pages(forests):
-    log(f"[2/5] Fetching {len(forests)} Forestry England pages "
+    log(f"[2/7] Fetching {len(forests)} Forestry England pages "
         f"({WORKERS} workers, {DELAY}s delay) ...")
     t0, done, ok, cached = time.time(), 0, 0, 0
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
@@ -175,7 +186,7 @@ def fetch_fls_index():
     same 278 destination URLs, which is the cross-check that this is the whole set and
     not a filtered view of it.
     """
-    log("[4/5] Fetching Forestry and Land Scotland destination index ...")
+    log("[4/7] Fetching Forestry and Land Scotland destination index ...")
     path = os.path.join(FLS_DIR, "destinations.html")
     if os.path.exists(path) and os.path.getsize(path) > 100_000:
         h = open(path, encoding="utf-8").read()
@@ -238,7 +249,7 @@ def fetch_fls_page(d):
 
 
 def fetch_fls_pages(dests):
-    log(f"[5/5] Fetching {len(dests)} FLS destination pages "
+    log(f"[5/7] Fetching {len(dests)} FLS destination pages "
         f"({WORKERS} workers, {DELAY}s delay) ...")
     t0, done, ok, cached, failed = time.time(), 0, 0, 0, 0
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
@@ -262,8 +273,98 @@ def fetch_fls_pages(dests):
     log(f"      done: {ok} downloaded, {cached} already cached, {failed} failed")
 
 
+def nrw_get_cached(url, path, min_size):
+    """One NRW page through the cache. Returns its text."""
+    if os.path.exists(path) and os.path.getsize(path) > min_size:
+        return open(path, encoding="utf-8").read()
+    time.sleep(1.0)
+    r = requests.get(url, headers=FLS_HEADERS, timeout=60)
+    r.raise_for_status()
+    r.encoding = "utf-8"        # Welsh circumflexes; never let requests guess
+    open(path, "w", encoding="utf-8").write(r.text)
+    record_fetch(path)
+    return r.text
+
+
+def fetch_nrw_index():
+    """Every site on NRW's places-to-visit index: the top page names the regions, and each
+    region's page lists its sites, each a link wrapped around an <h2 class="name">."""
+    log("[6/7] Fetching Natural Resources Wales places-to-visit index ...")
+    top = nrw_get_cached(NRW_INDEX, os.path.join(NRW_DIR, "places-to-visit.html"), 20_000)
+    regions = sorted(set(RE_NRW_REGION.findall(top)))
+    log(f"      {len(regions)} regions: {', '.join(regions)}")
+    if len(regions) < 5:
+        log(f"FAIL: expected 5 NRW regions, found {len(regions)}. The index page has probably "
+            f"changed shape. Refusing to emit a short index.")
+        sys.exit(1)
+
+    sites, seen = [], set()
+    for reg in regions:
+        h = nrw_get_cached(f"{NRW_BASE}/days-out/places-to-visit/{reg}/?lang=en",
+                           os.path.join(NRW_DIR, "regions", reg + ".html"), 20_000)
+        n = 0
+        for slug, inner in re.findall(
+                r'<a href="/days-out/places-to-visit/' + re.escape(reg) +
+                r'/([a-z0-9-]+)/\?lang=en"[^>]*>(.*?)</a>', h, re.S):
+            name = re.search(r'<h2 class="name">(.*?)</h2>', inner, re.S)
+            if not name or slug in seen:
+                continue                    # a nav link, not a site card; or a repeat
+            seen.add(slug)
+            n += 1
+            sites.append({"slug": slug, "region": reg,
+                          "name": " ".join(html.unescape(name.group(1)).split()),
+                          "url": f"{NRW_BASE}/days-out/places-to-visit/{reg}/{slug}/?lang=en"})
+        log(f"      {reg}: {n} sites")
+
+    log(f"      parsed {len(sites)} sites")
+    if len(sites) < EXPECT_MIN_NRW:
+        log(f"FAIL: expected >= {EXPECT_MIN_NRW} NRW sites, got {len(sites)}. The region pages "
+            f"have probably changed shape. Refusing to emit a short index.")
+        sys.exit(1)
+    json.dump(sites, open(os.path.join(NRW_DIR, "index.json"), "w", encoding="utf-8"),
+              ensure_ascii=False, indent=1)
+    return sites
+
+
+def fetch_nrw_page(s):
+    path = os.path.join(NRW_PAGES, s["slug"] + ".html")
+    if os.path.exists(path) and os.path.getsize(path) > 20_000:
+        return ("cached", s["slug"], 0)
+    try:
+        time.sleep(DELAY)
+        r = requests.get(s["url"], headers=FLS_HEADERS, timeout=45)
+        r.raise_for_status()
+        r.encoding = "utf-8"
+        open(path, "w", encoding="utf-8").write(r.text)
+        record_fetch(path)
+        return ("ok", s["slug"], len(r.text))
+    except Exception as e:
+        return ("fail", s["slug"], f"{type(e).__name__}: {e}")
+
+
+def fetch_nrw_pages(nrw):
+    log(f"[7/7] Fetching {len(nrw)} NRW site pages ({WORKERS} workers, {DELAY}s delay) ...")
+    t0, done, ok, cached, failed = time.time(), 0, 0, 0, 0
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        for fut in as_completed([ex.submit(fetch_nrw_page, s) for s in nrw]):
+            status, slug, info = fut.result()
+            done += 1
+            if status == "ok":
+                ok += 1
+            elif status == "cached":
+                cached += 1
+            else:
+                failed += 1
+                failures.append((slug, info))
+                log(f"      FAIL {slug}: {info}")
+            if done % 20 == 0 or done == len(nrw):
+                log(f"      {done}/{len(nrw)}  new={ok} cached={cached} failed={failed}  "
+                    f"elapsed={time.time() - t0:0.0f}s")
+    log(f"      done: {ok} downloaded, {cached} already cached, {failed} failed")
+
+
 def fetch_carparks():
-    log("[3/5] Fetching car park features from ArcGIS (OGL v3) ...")
+    log("[3/7] Fetching car park features from ArcGIS (OGL v3) ...")
     params = {"where": "category='Car Parks'", "outFields": "*", "returnCentroid": "true",
               "returnGeometry": "false", "outSR": "4326", "f": "json",
               "resultRecordCount": "2000"}
@@ -286,14 +387,19 @@ def fetch_carparks():
 def main():
     os.makedirs(PAGES, exist_ok=True)
     os.makedirs(FLS_PAGES, exist_ok=True)
+    os.makedirs(NRW_PAGES, exist_ok=True)
+    os.makedirs(os.path.join(NRW_DIR, "regions"), exist_ok=True)
     forests = fetch_index()
     fetch_pages(forests)
     carparks = fetch_carparks()
     dests = fetch_fls_index()
     fetch_fls_pages(dests)
+    nrw = fetch_nrw_index()
+    fetch_nrw_pages(nrw)
     log("")
     log(f"SUMMARY: {len(forests)} English forests indexed, {len(carparks)} car parks, "
-        f"{len(dests)} Scottish destinations indexed, {len(failures)} page failures")
+        f"{len(dests)} Scottish destinations indexed, {len(nrw)} Welsh sites indexed, "
+        f"{len(failures)} page failures")
     if failures:
         log("FAILED PAGES:")
         for slug, err in failures:

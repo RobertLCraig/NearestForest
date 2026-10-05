@@ -13,7 +13,7 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v30-2026-10-04';
+  var BUILD = 'v31-2026-10-05';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -232,11 +232,12 @@
   /* The only route a dataset URL may take into an href. Returns the URL, or null
      if it is not something safe to hand a browser as a link.
 
-     Every one of the 550 records that carries a url is an https:// page today - 274
-     on forestryengland.uk and 276 on forestryandland.gov.scot - and parse.py refuses
-     to emit anything else, so this guards a door that is already shut. The other 630
-     records, the car parks, carry no url at all. Note this checks the scheme and never
-     the host, so a third upstream would pass it unchanged.
+     Every one of the 663 records that carries a url is an https:// page today - 274
+     on forestryengland.uk, 276 on forestryandland.gov.scot and 113 on
+     naturalresources.wales - and parse.py refuses to emit anything else, so this
+     guards a door that is already shut. The other 630 records, the car parks, carry
+     no url at all. Note this checks the scheme and never the host, so a fourth
+     upstream would pass it unchanged.
      It is here because the app SHIPS the dataset rather than deriving
      it: the scheme is checked where it is used, not trusted from where it came, and
      the upstream is a website nobody here controls. esc() already stops an attribute

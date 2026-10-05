@@ -6,9 +6,10 @@
 **Stage:** active
 **Category:** app, site
 **Status:** Deployed, installed to the Home Screen, and working on the device. **The app is Great
-Britain minus Wales in two of its three tabs.** Forests is one ranked list of 550 sites from two
-agencies; Campsites covers England, Scotland and Wales; Car parks is England only, because no open
-dataset of Scottish forest car parks exists. Map complete (bundled outline plus optional tiles).
+Britain in two of its three tabs.** Forests is one ranked list of 663 sites from three agencies
+(Wales added by card 0079, 2026-10-05, not yet deployed); Campsites covers England, Scotland and
+Wales; Car parks is England only, because no open dataset of Scottish forest car parks exists and
+Welsh car parks wait on NRW's licence answer (card 0017). Map complete (bundled outline plus optional tiles).
 **The pipeline runs clean**: `data/raw/` was re-fetched on 2026-09-10 and the dataset rebuilt.
 **Built cards are waiting to deploy**; see "Current state". **Checks that cannot fail are this
 project's recurring defect**, not a closed chapter: four were fixed on 2026-09-10 and a reviewer
@@ -59,10 +60,13 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
   `carpark` or `campsite` and drives which tab a record appears in, nothing else. `country` is
   `England`, `Scotland` or `Wales` and drives **nothing at all**. Do not branch logic on either, and
   do not add a country filter or a country tab: a Scottish forest is a forest.
-- **The Forests tab is two agencies in one ranked list.** `fe-` ids are Forestry England (274),
-  `fls-` ids are Forestry and Land Scotland (276). Both are scraped from a website, both fail the
-  build loudly on a shortfall, and the two sites have nothing in common structurally: one is Drupal
-  and is read through `field--name-field-*` divs, the other is Umbraco and is read by heading.
+- **The Forests tab is three agencies in one ranked list.** `fe-` ids are Forestry England (274),
+  `fls-` ids are Forestry and Land Scotland (276), `nrw-` ids are Natural Resources Wales (113).
+  All are scraped from a website, all fail the build loudly on a shortfall, and the sites have
+  nothing in common structurally: Drupal read through `field--name-field-*` divs, Umbraco read by
+  heading, and NRW pages read by heading. **NRW publish no coordinates**: `parse.py` converts each
+  page's OS grid reference to WGS84 itself, pinned to the Ordnance Survey's worked examples. See
+  DATA-MODEL "Wales".
 - **One record shape, but TWO files, and the split is a licence boundary rather than a modelling
   one.** `app/data/sites.json` is Open Government Licence (Forestry England). `app/data/campsites.json`
   is **ODbL** (OpenStreetMap, plus Forestry and Land Scotland's Stay the Night car parks). They are
@@ -70,13 +74,14 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
   Collective Database from share-alike; one merged file would invite the argument that the OGL data
   became a derivative of the ODbL one. **A self-test fails if a campsite record appears inside
   `sites.json`.** Do not "tidy" the two files into one.
-- **Both are generated, never hand-edited.** 1,180 records / 719 KB and 3,574 records / 944 KB,
+- **Both are generated, never hand-edited.** 1,293 records / 818 KB and 3,574 records / 944 KB,
   committed on purpose because they are what the app ships. Fix the generator and re-run; do not
   patch the JSON.
-- **Campsites and Forests cover England and Scotland (Campsites adds Wales); Car parks is England
-  only.** That asymmetry is deliberate and is written into the PRD: no open dataset of Scottish
-  forest car parks exists. **Wales is card 0017 and is still open**, blocked on a contradiction
-  between NRW's own metadata and data.gov.uk about internet applications.
+- **Campsites and Forests cover England, Scotland and Wales; Car parks is England only.** That
+  asymmetry is deliberate and is written into the PRD: no open dataset of Scottish forest car parks
+  exists. **Welsh car parks are card 0017 and are still open**, blocked on a contradiction between
+  NRW's own metadata and data.gov.uk about internet applications. The Welsh named sites are not:
+  they come from NRW's website, whose copyright page grants OGL re-use (DECISIONS 2026-10-05).
 - **A campsite never shows an open/closed badge.** 97 of 3,574 records publish any hours at all, so
   a badge would be a guess, and a self-test asserts `openState()` returns `unknown` for every one.
 - **Coordinates are WGS84 decimal degrees everywhere.** The car park source is EPSG:27700 and is
@@ -153,13 +158,15 @@ ArcGIS FeatureServer --------------+       FLS "Stay the Night" (2 requests) ---
                                    |                                                       |
 Forestry and Land Scotland --------+                                                       |
   (1 index request + 278 pages)    |                                                       |
+Natural Resources Wales -----------+                                                       |
+  (6 index requests + 116 pages)   |                                                       |
                           scripts/fetch.py                                 scripts/fetch_campsites.py
                                    |                                                       |
                                    v                                                       v
                           scripts/parse.py                                 scripts/parse_campsites.py
                                    |                                                       |
                                    v                                                       v
-                   app/data/sites.json (1,180)                       app/data/campsites.json (3,574)
+                   app/data/sites.json (1,293)                       app/data/campsites.json (3,574)
                                    |                                                       |
                                    +---------------------+---------------------------------+
                                                          |  merged in memory at load, NEVER on disk
@@ -173,7 +180,7 @@ Forestry and Land Scotland --------+                                            
 above. `api/nearest.php` and the iOS Shortcut cover the forest tabs only: unaffected rather than
 broken, but the two front ends no longer cover the same ground.
 
-The PWA never calls a server. The Shortcut must, because Shortcuts is far too slow to rank 1,180
+The PWA never calls a server. The Shortcut must, because Shortcuts is far too slow to rank 1,293
 sites on-device. That split is deliberate and is the thing the two-method comparison is meant to settle.
 
 ## Key files / structure
@@ -404,10 +411,11 @@ comment saying so. **Expect `todo/` to refill from that lane, not from a person.
 6. Everything else needs a person: see below.
 
 **Scotland is answered and built** (card 0016, answered Yes on 2026-08-18, built 2026-08-29). The
-forest tabs took on a second agency and a second scraper, knowingly. **Wales is still open**, card
-0017, and it is not blocked by 0016 any more: it is blocked on its own contradiction, where NRW's
-metadata says OGL with no restrictions while data.gov.uk says the same dataset needs prior approval
-before use in an internet application. The email is drafted on that card.
+forest tabs took on a second agency and a second scraper, knowingly. **Wales's named sites are
+built** (card 0079, 2026-10-05, option 1 of card 0017), and still owe a look on a screen and a
+deploy. **Welsh car parks are still open** on card 0017: NRW's metadata says OGL with no
+restrictions while data.gov.uk says the same dataset needs prior approval before use in an internet
+application. The email is drafted on that card.
 
 ## Blockers / open questions
 
@@ -425,8 +433,8 @@ are only the ones still open. Do not re-add a bullet for a card whose ask has be
   `waiting_on:` about sending mail from `enhanceify.co.uk` is dead. What is left is putting the new
   key in `tiles.key` above the web root at mode 600 and confirming the old one is revoked. It never
   belongs in this repo or in a chat.
-- **0017**, how much of Wales to ship, blocked on one email to Natural Resources Wales about a
-  licence contradiction the card sets out: their own metadata says OGL with no restrictions, while
+- **0017**, Welsh car parks (option 2; option 1, the named sites, is built as card 0079), blocked
+  on one email to Natural Resources Wales about a licence contradiction the card sets out: their own metadata says OGL with no restrictions, while
   data.gov.uk says the same dataset needs prior approval before use in an internet application. Rob
   sends it from `r@enhanceify.co.uk`; the text is on the card, ready to paste.
 - **0018**, whether to write to Forestry England and with which asks. Rob is working this through
@@ -498,7 +506,7 @@ pwsh ./scripts/deploy.ps1
 |-----|---------|
 | [PRD.md](PRD.md) | Goal, success criteria, scope, non-goals, constraints |
 | [DATA-MODEL.md](DATA-MODEL.md) | The canonical `Site` shape and known divergences |
-| [DECISIONS.md](DECISIONS.md) | Twenty-two decisions with rationale, append-only |
+| [DECISIONS.md](DECISIONS.md) | Twenty-three decisions with rationale, append-only |
 | [build/IOS-SHORTCUT.md](build/IOS-SHORTCUT.md) | Shortcut build recipe and its known limits |
 | [../HUMAN_ACTIONS.md](../HUMAN_ACTIONS.md) | Historical record of the initial build's human actions, plus the recurring refresh. **Anything still open lives on the board, not there.** |
 | [../CLAUDE.md](../CLAUDE.md) | Orient tripwire and project conventions |

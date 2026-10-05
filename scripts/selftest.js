@@ -267,7 +267,7 @@ ok('no British National Grid leakage',
    rebuilt, and the run is green while the file is wrong. */
 {
   const credit = DATA.attribution || '';
-  const short = ['Forestry England', 'Forestry and Land Scotland', 'Forestry Commission']
+  const short = ['Forestry England', 'Forestry and Land Scotland', 'Natural Resources Wales', 'Forestry Commission']
                   .filter(a => !credit.includes(a));
   ok('the shipped dataset credit names every agency in it',
      /Open Government Licence/.test(credit) && short.length === 0,
@@ -276,12 +276,14 @@ ok('no British National Grid leakage',
      '. Rebuild it: python scripts/fetch.py && python scripts/parse.py');
 }
 ok('every record names the country it is in',
-   sites.every(s => s.country === 'England' || s.country === 'Scotland'),
+   sites.every(s => ['England', 'Scotland', 'Wales'].includes(s.country)),
    JSON.stringify(DATA.counts_by_country));
 ok('every forest links to the agency that publishes it',
    forests.every(s => s.country === 'Scotland'
      ? /^https:\/\/forestryandland\.gov\.scot\//.test(s.url || '')
-     : /^https:\/\/www\.forestryengland\.uk\//.test(s.url || '')));
+     : s.country === 'Wales'
+       ? /^https:\/\/naturalresources\.wales\//.test(s.url || '')
+       : /^https:\/\/www\.forestryengland\.uk\//.test(s.url || '')));
 
 console.log('\n--- derived car park names ---');
 {
@@ -472,6 +474,128 @@ console.log('\n--- Scotland, from Forestry and Land Scotland (card 0016) ---');
      `${fromGlasgow[0].name} (${fromGlasgow[0].country})`);
   ok('the nearest forest to Brighton is still English',
      NF.rank(sites, 'forest', BRIGHTON, '')[0].country === 'England');
+}
+
+console.log('\n--- Wales, from Natural Resources Wales (card 0079) ---');
+{
+  const welsh = forests.filter(s => s.country === 'Wales');
+  // Wales, mainland plus Anglesey, the Pembrokeshire islands and the Wye at Chepstow. Must
+  // match COUNTRY_RANGE["Wales"] in scripts/parse.py, which is driven directly below.
+  const WALES = { lat: [51.3, 53.5], lng: [-5.7, -2.6] };
+  const inWales = s => s.lat >= WALES.lat[0] && s.lat <= WALES.lat[1] &&
+                       s.lng >= WALES.lng[0] && s.lng <= WALES.lng[1];
+
+  // #1. 116 sites published on 2026-10-05 across five regional pages. The floor catches a
+  // broken index, not a site or two coming and going. Every record is checked field by field,
+  // so a short list of good records cannot hide a long list of bad ones.
+  const NRW_URL = /^https:\/\/naturalresources\.wales\/days-out\/places-to-visit\/[a-z-]+\/[a-z0-9-]+\/\?lang=en$/;
+  const badW = welsh.filter(s => !(s.source === 'forest' && /^nrw-[a-z0-9-]+$/.test(s.id) &&
+    s.name && s.name.trim().length && Number.isFinite(s.lat) && Number.isFinite(s.lng) &&
+    NRW_URL.test(s.url || '')));
+  ok('Wales fills the Forests tab', welsh.length >= 100 && badW.length === 0,
+     `${welsh.length} Welsh forests; ${badW.length} malformed` +
+     (badW.length ? ` (e.g. ${JSON.stringify(badW[0]).slice(0, 160)})` : ''));
+  ok('no Welsh record is a car park or a campsite',
+     sites.filter(s => s.country === 'Wales').every(s => s.source === 'forest'));
+
+  // #2. The conversion is ours, so it is pinned against the Ordnance Survey's own figures in
+  // "A Guide to Coordinate Systems in Great Britain" v3.6: Annex C.2 for the inverse
+  // projection, Annex D for the datum shift. Both are run through the real parse.py.
+  //   C.2: E 651409.903, N 313177.270 is OSGB36 52 39 27.2531 N, 001 43 04.5177 E. The same
+  //        point as a grid reference is TG 51409 13177, which also proves the letters.
+  //   D:   OSGB36 422297.792 mE, 412878.741 mN at 249.950 m is, in WGS84 cartesian,
+  //        x 3790644.900, y -110149.210, z 5111482.970.
+  {
+    const { spawnSync } = require('child_process');
+    const PY = process.env.PYTHON || 'python';
+    const stub = [
+      'import importlib.util, json, os, sys',
+      'spec = importlib.util.spec_from_file_location("nf_parse", os.path.join("scripts", "parse.py"))',
+      'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+      'c2 = m.en_to_osgb36(651409.903, 313177.270)',
+      'tg = m.en_to_osgb36(*m.grid_ref_to_en("TG 51409 13177"))',
+      'd = m.osgb36_to_wgs84(*m.en_to_osgb36(422297.792, 412878.741), 249.950)',
+      'print(json.dumps({"c2": c2, "tg": tg, "d": d}))',
+    ].join('\n');
+    const r = spawnSync(PY, ['-c', stub], { cwd: ROOT, encoding: 'utf8',
+      env: Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' }) });
+    let got = null;
+    try { got = JSON.parse((r.stdout || '').trim().split('\n').pop()); } catch (e) { got = null; }
+    const dms = (d, m, s) => d + m / 60 + s / 3600;
+    const metres = (a, b) => { // flat-earth metres between two [lat, lng] pairs; fine at 10 m
+      const k = 111320;
+      return Math.hypot((a[0] - b[0]) * k, (a[1] - b[1]) * k * Math.cos(a[0] * Math.PI / 180));
+    };
+    const toXyz = ([lat, lng, h]) => { // GRS80, the WGS84 ellipsoid to well under a millimetre
+      const a = 6378137.0, b = 6356752.314140, e2 = 1 - (b * b) / (a * a);
+      const p = lat * Math.PI / 180, l = lng * Math.PI / 180;
+      const v = a / Math.sqrt(1 - e2 * Math.sin(p) ** 2);
+      return [(v + h) * Math.cos(p) * Math.cos(l), (v + h) * Math.cos(p) * Math.sin(l),
+              ((1 - e2) * v + h) * Math.sin(p)];
+    };
+    const C2 = [dms(52, 39, 27.2531), dms(1, 43, 4.5177)];
+    const DX = [3790644.900, -110149.210, 5111482.970];
+    const errs = !got ? null : {
+      c2: metres(got.c2, C2), tg: metres(got.tg, C2),
+      d: Math.hypot(...toXyz(got.d).map((v, i) => v - DX[i])),
+    };
+    ok("an OS grid reference converts to the Ordnance Survey's worked example",
+       !!errs && errs.c2 < 10 && errs.tg < 10 && errs.d < 10,
+       !errs ? `parse.py gave no readable answer: ${((r.stdout || '') + (r.stderr || '')).trim().split('\n').slice(-3).join(' / ')}`
+             : `Annex C.2 off by ${errs.c2.toFixed(2)} m, as a TG reference ${errs.tg.toFixed(2)} m, ` +
+               `Annex D off by ${errs.d.toFixed(2)} m`);
+  }
+
+  // #3. Two halves. The shipped records are in Wales, and the build itself refuses one that is
+  // not: validate() is driven directly with a Welsh record placed in London, which is inside
+  // Great Britain so only a Wales box can catch it, and with one placed at Bwlch Nant yr Arian,
+  // which must pass. Before the Wales box existed both came back "no known country", so the
+  // refusal has to name Wales, not merely exist.
+  {
+    const { spawnSync } = require('child_process');
+    const PY = process.env.PYTHON || 'python';
+    const rec = (id, lat, lng) => ({ id: id, source: 'forest', country: 'Wales', name: 'Test',
+      lat: lat, lng: lng, scraped_at: '2026-10-05',
+      url: 'https://naturalresources.wales/days-out/places-to-visit/mid-wales/test/?lang=en' });
+    const stub = [
+      'import importlib.util, json, os, sys',
+      'spec = importlib.util.spec_from_file_location("nf_parse", os.path.join("scripts", "parse.py"))',
+      'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+      'm.problems.clear()',
+      'm.validate(json.loads(sys.argv[1]))',
+      'print(json.dumps(m.problems))',
+    ].join('\n');
+    const r = spawnSync(PY, ['-c', stub, JSON.stringify([rec('nrw-in-london', 51.5072, -0.1276),
+                                                           rec('nrw-in-wales', 52.4153, -3.8858)])],
+                        { cwd: ROOT, encoding: 'utf8',
+                          env: Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' }) });
+    let probs = null;
+    try { probs = JSON.parse((r.stdout || '').trim().split('\n').pop()); } catch (e) { probs = null; }
+    const outside = welsh.filter(s => !inWales(s));
+    ok('Welsh coords are in Wales',
+       welsh.length > 0 && outside.length === 0 && !!probs &&
+       probs.some(p => /^nrw-in-london lng .* outside Wales$/.test(p)) &&
+       !probs.some(p => p.startsWith('nrw-in-wales')),
+       !probs ? `validate() gave no readable report: ${((r.stdout || '') + (r.stderr || '')).trim().split('\n').slice(-3).join(' / ')}`
+       : `${outside.length} of ${welsh.length} shipped Welsh records outside Wales` +
+         (outside.length ? ` (${outside.slice(0, 3).map(s => `${s.id} ${s.lat},${s.lng}`).join(' | ')})` : '') +
+         `; validate() said ${JSON.stringify(probs)}`);
+  }
+
+  // #5. The card's reason for existing: in mid Wales the app named an English site.
+  const RHAYADER = { lat: 52.3016, lng: -3.5106 };
+  const fromRhayader = NF.rank(sites, 'forest', RHAYADER, '')[0];
+  ok('a point in mid Wales gets a Welsh forest as nearest', fromRhayader.country === 'Wales',
+     `${fromRhayader.name} (${fromRhayader.country})`);
+
+  // #7. Welsh carries circumflexes (to bach), and one published name has one: Coed Tŷ Canol.
+  // NRW writes it as the entity &#x177; in the index, so it has to be unescaped as well as
+  // kept through fetch, parse, JSON and this read.
+  ok('Welsh diacritics survive the round trip',
+     welsh.some(s => s.name.startsWith('Coed Tŷ Canol')) &&
+     !welsh.some(s => /Ã.|Å.|�|&#?\w+;/.test(s.name)),
+     welsh.filter(s => /[^\x00-\x7f]|&/.test(s.name)).slice(0, 4).map(s => s.name).join(' | ') ||
+       'no Welsh name carries any character outside ASCII');
 }
 
 console.log('\n--- campsites (a second database, under a second licence) ---');
@@ -967,6 +1091,19 @@ const CAMP = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'data', 'campsite
        `${unsaid.length} of ${silentFls.length} shipped Scottish records with no facilities ` +
        `render no "not known" Facilities row; an empty list renders ${JSON.stringify(facRow({ facilities: [] }))}; ` +
        `a listed one renders ${JSON.stringify(listed)}`);
+
+    // Card 0079 #6. A Welsh forest links to naturalresources.wales, and with no entry in
+    // AGENCY_BY_HOST that read as the bare host. Checked on a fixture and on every shipped
+    // Welsh record, with a non-zero guard so an empty Wales cannot pass.
+    const nrwLink = link({ source: 'forest' },
+      'https://naturalresources.wales/days-out/places-to-visit/mid-wales/black-covert/?lang=en');
+    const welshSites = sites.filter(s => s.country === 'Wales');
+    const misW = welshSites.filter(s => link(s, s.url).text !== 'Natural Resources Wales page');
+    ok('the Welsh detail link names Natural Resources Wales',
+       nrwLink.text === 'Natural Resources Wales page' && welshSites.length > 0 && misW.length === 0,
+       `a Welsh fixture reads "${nrwLink.text}"; ${misW.length} of ${welshSites.length} shipped ` +
+       'Welsh records are not labelled Natural Resources Wales' +
+       (misW.length ? ` (e.g. ${misW[0].id} reads "${link(misW[0], misW[0].url).text}")` : ''));
   }
 
   // Acceptance #3, on the one screen a reader actually looks a place up on. Every other
@@ -1180,11 +1317,12 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // The generator refuses to emit anything else, so this should never trip; it is
   // here because the app ships the file rather than rebuilding it.
   const badUrls = DATA.sites.filter(s => s.url != null && NF.safeHref(s.url) === null);
-  // Two publishing agencies since card 0016, so two hosts. The set stays closed: an
+  // Three publishing agencies since card 0079, so three hosts. The set stays closed: an
   // href in the detail sheet may only reach the site the record was scraped from.
   const offSite = DATA.sites.filter(s => s.url != null &&
     !/^https:\/\/(www\.)?forestryengland\.uk\//.test(s.url) &&
-    !/^https:\/\/forestryandland\.gov\.scot\//.test(s.url));
+    !/^https:\/\/forestryandland\.gov\.scot\//.test(s.url) &&
+    !/^https:\/\/naturalresources\.wales\//.test(s.url));
   ok('every dataset url survives safeHref', badUrls.length === 0,
      badUrls.slice(0, 3).map(s => s.id).join(', '));
   ok('every dataset url is on a publishing agency host', offSite.length === 0,
@@ -1412,7 +1550,7 @@ console.log('--- hardening (adversarial review, 2026-08-10) ---');
   // allowed to read differently. Who is credited is not allowed to differ.
   const parsepy = fs.readFileSync(path.join(ROOT, 'scripts', 'parse.py'), 'utf8');
   const stamped = (parsepy.match(/^ATTRIBUTION = \(\r?\n([\s\S]*?)^\)/m) || [])[1] || '';
-  const AGENCIES = ['Forestry England', 'Forestry and Land Scotland', 'Forestry Commission'];
+  const AGENCIES = ['Forestry England', 'Forestry and Land Scotland', 'Natural Resources Wales', 'Forestry Commission'];
   const missing = AGENCIES.filter(a => !stamped.replace(/"\s*\r?\n\s*"/g, '').includes(a));
   ok('the footer and the dataset credit name the same agencies',
      !!stamped && missing.length === 0 &&
@@ -1723,13 +1861,20 @@ console.log('--- staleness: scraped_at is the fetch date, not the parse date (ca
       slug: 'test-glen', name: 'Test Glen',
       url: 'https://forestryandland.gov.scot/visit/destinations/test-glen', lat: 56.5, lng: -4.0 }]));
     write(path.join(rawf, 'fls', 'pages', 'test-glen.html'), '<html><body>Test Glen</body></html>');
+    write(path.join(rawf, 'nrw', 'index.json'), JSON.stringify([{ slug: 'test-coed',
+      region: 'mid-wales', name: 'Test Coed',
+      url: 'https://naturalresources.wales/days-out/places-to-visit/mid-wales/test-coed/?lang=en' }]));
+    write(path.join(rawf, 'nrw', 'pages', 'test-coed.html'),
+          '<html><body><h2>How to get here</h2><p>The grid reference is SN 718 812.</p></body></html>');
     write(path.join(rawf, 'carparks.json'), JSON.stringify({ features: [{
       attributes: { OBJECTID: 1, asset_name: 'Beacon Hill', category: 'Car Parks',
                     area_asset_type: 'Gravel', status: 'Permanent - Official', cots_district_id: 'X' },
       centroid: { x: -1.1, y: 51.1 } }] }));
+    const NRW_DATE = '2026-08-22';
     const dated = {
       'pages/test-forest.html': FE_DATE,
       'fls/pages/test-glen.html': FLS_DATE,
+      'nrw/pages/test-coed.html': NRW_DATE,
       'carparks.json': CP_DATE,
     };
     write(path.join(rawf, 'fetched.json'), JSON.stringify(dated));
@@ -1743,10 +1888,11 @@ console.log('--- staleness: scraped_at is the fetch date, not the parse date (ca
     const stamp = (id) => built && (built.sites.find(s => s.id === id) || {}).scraped_at;
     ok("scraped_at is the page's download date, not the parse date",
        !!built && stamp('fe-test-forest') === FE_DATE && stamp('fls-test-glen') === FLS_DATE &&
-       stamp('cp-1') === CP_DATE,
+       stamp('nrw-test-coed') === NRW_DATE && stamp('cp-1') === CP_DATE,
        !built ? `parse.py exited ${r2.status}: ${(r2.stdout || '').trim().split('\n').slice(-4).join(' / ')}`
        : `England ${stamp('fe-test-forest')} (wanted ${FE_DATE}), Scotland ${stamp('fls-test-glen')} ` +
-         `(wanted ${FLS_DATE}), car park ${stamp('cp-1')} (wanted ${CP_DATE}); today is ${days[0] || '?'}`);
+         `(wanted ${FLS_DATE}), Wales ${stamp('nrw-test-coed')} (wanted ${NRW_DATE}), ` +
+         `car park ${stamp('cp-1')} (wanted ${CP_DATE}); today is ${days[0] || '?'}`);
 
     // The migration case, and the one that must never be papered over: data/raw/ is
     // gitignored, so every page cached before this change carries no date and its age
@@ -1797,6 +1943,11 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
       slug: 'test-glen', name: 'Test Glen',
       url: 'https://forestryandland.gov.scot/visit/destinations/test-glen', lat: 56.5, lng: -4.0 }]));
     write(path.join(rawf, 'fls', 'pages', 'test-glen.html'), '<html><body>Test Glen</body></html>');
+    write(path.join(rawf, 'nrw', 'index.json'), JSON.stringify([{ slug: 'test-coed',
+      region: 'mid-wales', name: 'Test Coed',
+      url: 'https://naturalresources.wales/days-out/places-to-visit/mid-wales/test-coed/?lang=en' }]));
+    write(path.join(rawf, 'nrw', 'pages', 'test-coed.html'),
+          '<html><body><h2>How to get here</h2><p>The grid reference is SN 718 812.</p></body></html>');
     write(path.join(rawf, 'carparks.json'), JSON.stringify({ features: [{
       attributes: { OBJECTID: 1, asset_name: 'Beacon Hill', category: 'Car Parks',
                     area_asset_type: 'Gravel', status: 'Permanent - Official', cots_district_id: 'X' },
@@ -1804,6 +1955,7 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     const dated = {
       'pages/test-forest.html': '2026-08-08',
       'fls/pages/test-glen.html': '2026-08-20',
+      'nrw/pages/test-coed.html': '2026-08-22',
       'carparks.json': '2026-08-25',
     };
     write(path.join(rawf, 'fetched.json'), JSON.stringify(dated));
@@ -1840,8 +1992,9 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     let built = null;
     if (fs.existsSync(outPath)) { try { built = JSON.parse(fs.readFileSync(outPath, 'utf8')); } catch (e) { built = null; } }
     ok('a clean parse still writes the dataset',
-       clean.status === 0 && !!built && built.sites.length === 3 &&
-       ['fe-test-forest', 'fls-test-glen', 'cp-1'].every(id => built.sites.some(s => s.id === id)),
+       clean.status === 0 && !!built && built.sites.length === 4 &&
+       ['fe-test-forest', 'fls-test-glen', 'nrw-test-coed', 'cp-1']
+         .every(id => built.sites.some(s => s.id === id)),
        !built ? `parse.py exited ${clean.status} and wrote no dataset: ${tail(clean)}`
               : `exited ${clean.status}, wrote ${built.sites.length} sites: ` +
                 built.sites.map(s => s.id).join(', '));
@@ -1861,7 +2014,7 @@ console.log('--- a refused dataset does not overwrite the last good one (card 00
     // file holding English forests, Scottish forests and car parks. The licence is not the
     // credit. Name who the records belong to, the way campsites.json names OpenStreetMap.
     const wrote = (built && built.attribution) || '';
-    const short = ['Forestry England', 'Forestry and Land Scotland', 'Forestry Commission']
+    const short = ['Forestry England', 'Forestry and Land Scotland', 'Natural Resources Wales', 'Forestry Commission']
                     .filter(a => !wrote.includes(a));
     ok('the OGL file the parser writes names every agency in it',
        !!built && /Open Government Licence/.test(wrote) && short.length === 0,
@@ -3001,6 +3154,8 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
      withUrl.filter(s => /^https:\/\/(www\.)?forestryengland\.uk\//.test(s.url)).length],
     ['app/core.js', /([\d,]+) on forestryandland\.gov\.scot/,
      withUrl.filter(s => /^https:\/\/forestryandland\.gov\.scot\//.test(s.url)).length],
+    ['app/core.js', /([\d,]+) on\s+naturalresources\.wales/,
+     withUrl.filter(s => /^https:\/\/naturalresources\.wales\//.test(s.url)).length],
     ['app/core.js', /The other ([\d,]+)\s+records, the car parks/,
      sites.length - withUrl.length],
     // Card 0038: the Forestry England briefing is handed to a session with no repository
