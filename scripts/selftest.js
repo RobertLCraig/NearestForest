@@ -3146,10 +3146,35 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
   // Say so and check nothing: a check that fails on a fresh clone is noise, and one that
   // quietly passes is worse.
   const RAW_OSM = path.join(ROOT, 'data', 'raw', 'osm');
-  const card0020 = fs.readdirSync(path.join(ROOT, 'docs', 'board'))
-    .map(lane => path.join(ROOT, 'docs', 'board', lane))
-    .filter(d => fs.statSync(d).isDirectory())
-    .flatMap(d => fs.readdirSync(d).filter(f => f.startsWith('0020-')).map(f => path.join(d, f)))[0];
+  const find0020 = board => fs.readdirSync(board)
+    .map(lane => path.join(board, lane))
+    .filter(d => path.basename(d) !== 'attachments' && fs.statSync(d).isDirectory())
+    .flatMap(d => fs.readdirSync(d).filter(f => f.startsWith('0020-') && f.endsWith('.md'))
+      .map(f => path.join(d, f)))[0];
+  // Only the acceptance block: the append-only thread can quote the criterion forever.
+  const quotedRawCount = text =>
+    /only [\d,]+ of ([\d,]+) records carry any opening hours/
+      .exec((/<!-- AC:BEGIN -->([\s\S]*?)<!-- AC:END -->/.exec(text) || [])[1] || '');
+  // The two ways the 2026-09-11 and 2026-09-21 reviews got this check to grade the wrong
+  // text, built as a fixture because the real board holds neither state today.
+  {
+    const fx = fs.mkdtempSync(path.join(require('os').tmpdir(), 'nf-0054-'));
+    fs.mkdirSync(path.join(fx, 'attachments'));
+    fs.mkdirSync(path.join(fx, 'done'));
+    fs.writeFileSync(path.join(fx, 'attachments', '0020-2026-09-10-1.png'), 'PNG');
+    fs.writeFileSync(path.join(fx, 'done', '0020-campsites.md'), 'card');
+    const found = find0020(fx);
+    ok('card 0020 lookup ignores attachments and non-markdown files',
+       found === path.join(fx, 'done', '0020-campsites.md'), `picked ${found}`);
+    const decoy = '## Acceptance\n<!-- AC:BEGIN -->\n- [x] since almost no records carry any'
+      + ' opening hours\n<!-- AC:END -->\n## Comments\nCriterion #2 says "only 96 of 8,496'
+      + ' records carry any opening hours".\n';
+    const m = quotedRawCount(decoy);
+    ok('card 0020 count is read from the acceptance block, not a comment quoting it',
+       !m, m ? `matched the comment: ${m[0]}` : '');
+    fs.rmSync(fx, { recursive: true, force: true });
+  }
+  const card0020 = find0020(path.join(ROOT, 'docs', 'board'));
   if (!fs.existsSync(RAW_OSM)) {
     console.log('  SKIP  card 0020 quotes the raw OSM feature count correctly'
                 + ' — data/raw/osm is gitignored and absent, nothing to count');
@@ -3159,8 +3184,7 @@ console.log('\n--- dataset counts carried in prose (card 0036) ---');
   } else {
     const rawFeatures = fs.readdirSync(RAW_OSM).filter(f => f.endsWith('.json'))
       .reduce((n, f) => n + JSON.parse(fs.readFileSync(path.join(RAW_OSM, f), 'utf8')).elements.length, 0);
-    const m = /only [\d,]+ of ([\d,]+) records carry any opening hours/
-      .exec(fs.readFileSync(card0020, 'utf8'));
+    const m = quotedRawCount(fs.readFileSync(card0020, 'utf8'));
     ok('card 0020 quotes the raw OSM feature count correctly',
        !!m && Number(m[1].replace(/,/g, '')) === rawFeatures,
        m ? `card says ${m[1]}, data/raw/osm holds ${rawFeatures}` : 'criterion #2 carries no such count');
