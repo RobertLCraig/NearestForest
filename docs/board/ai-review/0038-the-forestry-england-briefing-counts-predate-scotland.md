@@ -73,7 +73,7 @@ what the email asks for, that is card 0018 and card 0027.
 - [x] WHEN a reader opens `docs/outreach/forestry-england-handover.md`, THE FILE SHALL state the
       record, forest and car park counts `app/data/sites.json` holds today.
       proves: `dataset counts in comments match sites.json`
-- [ ] WHEN the briefing describes what a car park row shows, THE FILE SHALL account for the 177
+- [x] WHEN the briefing describes what a car park row shows, THE FILE SHALL account for the 177
       derived names card 0004 added. proves: none - prose, not a number a test can read back;
       the check is reading the car park bullet against `docs/DATA-MODEL.md`.
       Unticked 2026-09-29 on this finding: `docs/outreach/forestry-england-handover.md`, the car
@@ -405,3 +405,16 @@ VERDICT: defect
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 3 times between todo and ai-review, all 2 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 2 of 2 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
 
 **2026-09-29** Checked by an attended agent under Rob's rule that human-review holds only what he must decide. **The finding is right, so the second criterion is unticked with the disproof written beside it.** `docs/outreach/forestry-england-handover.md`, the car park bullet, still reads "196 of the 630 car parks publish no usable name" and "card 0004 now names 177 of those 196". `docs/DATA-MODEL.md` (`name_is_derived`, and the card 0004 section) gives 177 derived names, 158 named after a forest within 5 miles and 19 left plain. The three 2026-09-21 reviewers all wrote `UNMET: #2`, and the script could not untick it because this card's criteria carry no `#N`. **Its proof tag is changed from `manual` to `none`**: the README reserves `manual` for what only a person at a screen can settle, and this is two numbers in a markdown file read against another, which a builder can check; left as `manual`, the loop would refuse the card the moment it reached `todo/`. Correcting a wrong figure in a briefing is not a preference, and card `0018`'s 2026-09-25 answer (an informational email) leaves the briefing in use. Moved to `todo/`; bounce count 3 against the loop's `-BounceLimit 5`.
+
+**2026-10-05** RESULT: done
+TESTS: +0 new, all green (node scripts/selftest.js: 336 passed, 0 failed)
+TOUCHED: docs/outreach/forestry-england-handover.md
+OUT-OF-SCOPE: none
+
+The car park bullet in the screenshots section now says 177 of the 630 car parks publish no usable name, and that card 0004 names 158 of those 177. The 19 was already right and stays. Measured from app/data/sites.json before the edit: 630 car parks, 177 with name_is_derived, 158 of them named 'near' a forest, 19 still 'Unnamed car park'. This agrees with docs/DATA-MODEL.md and the comment above GENERIC_NAME in scripts/parse.py.
+
+#2 is proves: none, so no test was written for it, per the card. The 2026-09-10 reviewer suggested a `carried` row for this bullet; I did not add one, because the criterion says none and the card's Tasks do not ask for it. If Rob wants this number guarded, it is one row in the card 0036 block of scripts/selftest.js.
+
+#1 still holds: the Verified row reads 1,180 / 550 / 630 and the `dataset counts in comments match sites.json` test is green.
+
+forestry-england-enquiry.md checked again: no 196, 177 or 158 in it, so nothing to edit there. Nothing under app/ changed, so no CACHE bump and no browser check applies. PHP suite (pest/pint) does not exist in this project; the suite is node scripts/selftest.js.
