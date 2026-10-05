@@ -73,7 +73,7 @@ board check that catches this class of fault, which is a different and larger pi
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a card asks a person to decide something and carries no `**Decided:**` entry, THE BOARD
+- [x] #1 WHEN a card asks a person to decide something and carries no `**Decided:**` entry, THE BOARD
       SHALL hold that card in `docs/board/human-review/`. proves: none - a card's lane is a folder,
       and this project's suite is one node script over the app; the check is
       `ls docs/board/human-review` showing `0025` there and `ls docs/board/todo` not showing it
@@ -307,3 +307,19 @@ hidden the history and defeated the backstop for real. The backstop still stands
 **2026-09-20** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, which is the limit, so it is waiting on a person. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 0 of 1 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
 
 **2026-09-29** Checked by an attended agent under Rob's rule that human-review holds only what he must decide. **Nothing here is Rob's: the only criterion is already unticked and the board state it asserts now holds.** Measured today over `todo/`, `in-progress/` and `ai-review/`: the only cards carrying `## Options` are `0017` and `0018`, both moved to `todo/` today with a `**Decided:**` entry in their threads (0017 on 2026-09-29, 0018 on 2026-09-25). `0003` and `0025` are in `done/`, both answered. So no unanswered decision sits in a work lane. What a builder owes is to re-run that sweep, tick #1 if it holds, and, per the 2026-09-20 scope finding, say on this thread in one line that the 2026-09-06 sweep's "all three are answered" was wrong. Moved to `todo/`; bounce count 2 against the loop's `-BounceLimit 5`.
+
+**2026-10-05** RESULT: done
+TESTS: +0 new, all green (node scripts/selftest.js: 336 passed, 0 failed)
+TOUCHED: none
+OUT-OF-SCOPE: none
+
+The 2026-09-06 sweep's "all three are answered" was wrong: `0003`, `0017` and `0018` carried only a bare `## Decided` heading and no `**Decided:**` entry, and `0018`'s thread said the opposite. Card `0037` moved them later.
+
+Re-ran the sweep on 2026-10-05 over every lane except `done/`. Criterion #1 holds, so it is met.
+- No card in `todo/`, `in-progress/`, `ai-review/` or `human-review/` carries `## Options`.
+- Four `todo/` cards still carry a `## What I need from you` block with no `**Decided:**` entry: `0038`, `0054`, `0058`, and `0037` (which has one). Each block's ask was "untick and send to `todo/`", and the attended pass on 2026-09-29 did exactly that on each (commits `bbd13b8`, `95d4387`, `0e14abc` and the 0038 thread entry). The blocks are spent asks, not open decisions, so these are builder cards and `todo/` is right for them.
+- `0043` is in `todo/` with a `**Decided:**` entry (2026-09-25) and a `not_for_the_loop:` line, so it is answered.
+
+proves: is none, so no test was written; the check is the folder listing above. Nothing in the tree changed, so this session has no commit. This card's own `## What I need from you` block is stale in the same way and is left unedited, per the brief.
+
+The brief names `pest` and `pint`; this project has neither (no vendor/, no PHP suite). The suite is `node scripts/selftest.js`.
