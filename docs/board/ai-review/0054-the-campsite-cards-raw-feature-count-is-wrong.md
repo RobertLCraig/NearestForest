@@ -61,7 +61,7 @@ this fault is worth.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] WHEN card `0020`'s criterion #2 is read, THE APP SHALL state the raw feature count that
+- [x] WHEN card `0020`'s criterion #2 is read, THE APP SHALL state the raw feature count that
       `data/raw/osm/` actually holds. proves: `card 0020 quotes the raw OSM feature count correctly`
       Unticked 2026-09-29 on this finding: the proving assertion in `scripts/selftest.js` picks
       card 0020 by `startsWith('0020-')` in every `docs/board` folder with no `.md` filter, so an
@@ -333,3 +333,16 @@ VERDICT: defect
 **2026-09-21** The reviewer returned this card and its finding is the last review entry at the bottom of ## Direction. The loop moved it from todo/ to human-review/ because it has bounced 2 times between todo and ai-review, all 1 criteria ticked. THE BUILDER COULD NOT ACT ON THAT FINDING. A reviewer never unticks a criterion - it is forbidden from editing acceptance at all - so the card came back with 1 of 1 criteria still ticked, every session found nothing open to do, and the loop promoted it again on the boxes. Untick what the reviewer disproved and move it back to todo/, or say here why the finding is wrong.
 
 **2026-09-29** Checked by an attended agent under Rob's rule that human-review holds only what he must decide. **Both findings reproduce in the code, so the criterion is unticked with the disproof written beside it.** In `scripts/selftest.js`, the card 0054 block finds card 0020 with `fs.readdirSync(d).filter(f => f.startsWith('0020-'))` over every folder under `docs/board`, `attachments/` included and with no `.md` filter, and takes the first hit; it then runs `/only [\d,]+ of ([\d,]+) records carry any opening hours/` over the whole file. The 2026-09-21 reviewer's `UNMET: #1` could not untick it because this card's criterion carries no `#N`. The fix is a builder's: filter to `.md`, skip `attachments/`, and cut the file to the `AC:BEGIN`/`AC:END` block before matching. Moved to `todo/`; bounce count 2 against the loop's `-BounceLimit 5`.
+
+**2026-10-05** RESULT: done
+TESTS: +2 new, all green (338 passed, 0 failed)
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+Fixed both faults the 2026-09-29 untick names, in the card 0054 block of `scripts/selftest.js`. The lookup now skips `attachments/` and takes only `0020-*.md`. The count regex now runs only over the `AC:BEGIN`/`AC:END` block, so a quotation in `## Comments` cannot stand in for the criterion.
+
+**Test-first.** The real board holds neither bad state today, so two fixture assertions build them in a temp dir: `card 0020 lookup ignores attachments and non-markdown files` (an `attachments/0020-2026-09-10-1.png` beside `done/0020-campsites.md`) and `card 0020 count is read from the acceptance block, not a comment quoting it` (criterion with no number, comment quoting `only 96 of 8,496`). Before the fix both went red for the stated reason: `picked ...\attachments\0020-2026-09-10-1.png` and `matched the comment: only 96 of 8,496 records carry any opening hours`. After it, green.
+
+**Red-proof of the named proof** `card 0020 quotes the raw OSM feature count correctly`, on the real card, restored with `git checkout` after: 8,496 put back -> `FAIL card says 8,496, data/raw/osm holds 8501`; number dropped from the criterion -> `FAIL criterion #2 carries no such count`, the arm the 2026-09-11 reviewer showed was unreachable. Unchanged card -> PASS.
+
+Suite: `node scripts/selftest.js`, with `data/raw/osm` present in this worktree. There is no `vendor/`, so Pest and Pint were not run; this project has no PHP suite. No UI change, so no browser check is owed.
