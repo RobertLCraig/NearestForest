@@ -305,3 +305,26 @@ OUT-OF-SCOPE: none
 **The `0024` path fault is already carried by `0083`**, which is in `todo/`. `0024` line 108 still says `wc -l docs/board/todo/0018-write-to-forestry-england.md`, and `0018` is not in `todo/`. No new card was raised, because `0083` covers it.
 
 **2026-10-05** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 1 of 2 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
+
+### 2026-10-05 manager (m20261005123508-92f8)
+
+**outcome: rob**
+
+The only work left is to rewrite a criterion, and only a person or an attended session is allowed to edit the card.
+
+**what the session said**
+
+The builder cannot finish this card. The fix it needs is a card edit, and the build brief forbids card edits.
+
+**What I checked:**
+- Criterion #1 holds.
+- Criterion #2 is open, but no session can meet it as written. It asks `docs/HANDOVER.md` to give a count of waiting cards. The file now says "This file names no card lists and no card counts" and points at `ls docs/board/human-review`.
+- On 2026-09-29 the decision was made to rewrite #2 to match that rule. Two unattended runs then hit the brief's "do not edit this card" rule.
+- The broken `wc -l` path in `0024` is already on its own card: `docs/board/todo/0083-card-0024-counts-a-file-that-moved-again.md`.
+
+**What you do:** in `docs/board/human-review/0037-three-decision-cards-are-still-in-todo.md`, change #2 to say that HANDOVER gives no count and points at `ls docs/board/human-review` (commit `a0d9ff7`). Then check whether it now holds. Sending it back to `todo/` would only bring it back here.
+
+WHY: The only work left is to rewrite a criterion, and only a person or an attended session is allowed to edit the card.
+
+OUTCOME: rob
+
