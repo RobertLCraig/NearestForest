@@ -810,3 +810,5 @@ WHY: Every open criterion needs an edit to this card, and only an attended sessi
 
 OUTCOME: rob
 
+**2026-10-07** Discarded: superseded. The board-wide rewrite this card asked for is done by the 2026-10-07 condense pass over every human-review card. Its three open criteria were only edits to this card itself, which cards `0081` and `0082` recorded the loop could not make. `board:convention --path=C:\Dev\NearestForest` on 2026-10-07 reported one failing card, `0027`'s stale `Blocked by 0018`, which the same pass removed. `0081` is moot with this card.
+

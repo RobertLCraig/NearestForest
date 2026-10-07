@@ -399,3 +399,5 @@ WHY: The work is done, but three shared board rules conflict, and only Rob can d
 
 OUTCOME: question
 
+**2026-10-07** Discarded: nothing left. All four criteria were met (2026-09-20 entry). Both cards it measured, `0018` and `0020`, are in `done/`. The question it asked, whether the 100-line budget counts the Comments thread, is settled upstream: `board-README.md` now says "The thread may be pruned, but only intentionally", and the 2026-10-07 condense pass is that pruning. Card `0083`, which fixes this card's stale `wc -l` path, is moot with it.
+

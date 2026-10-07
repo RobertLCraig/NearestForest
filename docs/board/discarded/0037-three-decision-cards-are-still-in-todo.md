@@ -328,3 +328,5 @@ WHY: The only work left is to rewrite a criterion, and only a person or an atten
 
 OUTCOME: rob
 
+**2026-10-07** Discarded: done, and the open criterion is dead. #1 holds: no card with `## Options` is outside `done/` (2026-10-05 entry). #2 asked HANDOVER to state a count of waiting cards; commit `a0d9ff7` made HANDOVER deliberately state none ("This file names no card lists and no card counts"), as the 2026-09-29 Decided entry recorded. The `0024` path fault went with `0024`, discarded the same day.
+
