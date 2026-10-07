@@ -47,3 +47,5 @@ the unattended brief itself, which lives in ProgressBoard and not in this reposi
 An attended session, or Rob, deletes the section on `0021` and appends one `## Comments` line for
 `#2`. Then `0021` can be sent back to `ai-review/`. The other route is `not_for_the_loop:` on `0021`
 itself, which stops the wasted dispatches and leaves the edit for later.
+
+**2026-10-07** Discarded: its subject card (0021) was discarded on 2026-10-07 in the human-review clean-up, so there is nothing left to fix.

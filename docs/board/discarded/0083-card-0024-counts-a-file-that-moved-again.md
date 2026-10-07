@@ -36,3 +36,5 @@ In `docs/board/human-review/0024-two-cards-are-over-the-line-budget.md`, `## Pla
 
 **2026-10-05** Raised by an unattended run of card `0037`, which found the path broken while
 checking the fault its own ask named.
+
+**2026-10-07** Discarded: its subject card (0024) was discarded on 2026-10-07 in the human-review clean-up, so there is nothing left to fix.
