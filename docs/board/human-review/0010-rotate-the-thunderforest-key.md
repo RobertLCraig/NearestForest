@@ -52,3 +52,5 @@ After Rob answers: search the repository for any key, old or new, and tick #2 on
 somewhere secure (rather than lazily telling you and repeating the problem!)"
 
 **2026-10-07** Condensed for reading. Git keeps the long version, including the 2026-09-10 mail-routing measurement.
+
+**2026-10-11** **2026-10-11** Reply to Thunderforest support asking to deactivate the old key is in Fastmail Drafts (r@enhanceify.co.uk). Send it only after the new key is on the server and tiles draw.
