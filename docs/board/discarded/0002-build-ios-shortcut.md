@@ -56,3 +56,5 @@ location variables."
 **2026-10-07** Condensed for reading. The step 2 diagnosis now lives in the recipe's "When step 2 will not build the URL" table. Git keeps the long version.
 
 **2026-10-11** **Decided:** **2026-10-11** **Decided:** A: drop the Shortcut, keep the web app.
+
+**2026-10-13** Discarded: Rob decided on 2026-10-11 to drop the Shortcut and keep the web app, so nothing here will be built. (agent, after Rob's 2026-10-13 clear-down)
