@@ -26,7 +26,7 @@ this in prose on that card's thread, and prose is not a card.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN a card with no frontmatter quotes a `needs:` line inside a fenced or indented block,
+- [x] #1 WHEN a card with no frontmatter quotes a `needs:` line inside a fenced or indented block,
       THE SUITE SHALL NOT report it, and a `needs:` at column zero in its prose SHALL still be
       reported. proves: `every needs: on this board can be read`
 <!-- AC:END -->
@@ -39,3 +39,16 @@ with a scratch card holding both shapes, one at a time.
 ## Comments
 
 **2026-09-28** Raised by an unattended run of card `0070`.
+
+**2026-10-14** RESULT: done
+TESTS: +3 new, all green
+TOUCHED: scripts/selftest.js
+OUT-OF-SCOPE: none
+
+The loose `needs:` scan for cards with no frontmatter now runs over `prose(raw)` (new helper `looseNeeds`). `prose()` now blanks fenced and indented samples instead of dropping them, so the reported line number stays the card's own; the `**Decided:**` scan reads the same result, and blank lines cannot match its marker.
+
+Three fixtures in block `blockers outlive their answers (card 0070)` feed `every needs: on this board can be read`: a fenced sample (want none), an indented sample (want none), and a `needs:` in prose below a fence (want line 7, index 6). Watched red before the fix: `fixture with a fenced sample reads a loose needs: at 3, want -1`. The indented fixture was green before the fix too, because `^needs` never matched an indented line; it guards against regression and does not prove the fix.
+
+Red-proof on the real board with scratch card `docs/board/todo/9999-scratch.md`, one shape at a time, and removed afterwards: a fenced `needs: 0025` under `## Comments` is red on the HEAD suite (`at line 6`) and green on the new one; a `needs: 0025` in prose is red on the new suite at `line 5`, which is its true line. The card file's contents were printed to confirm the fence was really there.
+
+Suite: `node scripts/selftest.js`, 345 passed, 0 failed. Pest and Pint were not run: this project has no `vendor/` and no PHP suite. No browser check is needed; nothing under `app/` changed.
