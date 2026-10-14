@@ -3635,10 +3635,11 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
     try { return fs.readFileSync(file, 'utf8'); }
     catch (e) { unreadableLane.push(`${path.relative(boardDir, file).replace(/\\/g, '/')}: ${e.code || e.message}`); return null; }
   };
-  // Everything inside ``` fences or indented four spaces is a sample, not an entry.
+  // Everything inside ``` fences or indented four spaces is a sample, not an entry. Samples are
+  // blanked rather than dropped, so a line number read off the result is the card's own.
   const prose = (text) => text
-    .replace(/^ {0,3}(`{3,}|~{3,})[\s\S]*?^ {0,3}\1[^\n]*$/gm, '')
-    .split('\n').filter(l => !/^(?: {4,}|\t)/.test(l)).join('\n');
+    .replace(/^ {0,3}(`{3,}|~{3,})[\s\S]*?^ {0,3}\1[^\n]*$/gm, m => m.replace(/[^\n]/g, ''))
+    .split('\n').map(l => (/^(?: {4,}|\t)/.test(l) ? '' : l)).join('\n');
   // Why a card is settled, said in the reader's words, or null. `where` is every copy of it.
   const settledWhere = (where, read) => {
     if (!where.length) return null;                       // names no card on this board: not ours
@@ -3708,6 +3709,19 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
     const got = needsOf(text);
     if (got.bad.length || got.deps.join() !== want.join()) malformed.push(`fixture "${text.replace(/\n/g, '\\n')}" reads as ${JSON.stringify(got)}`);
   });
+  // A `needs:` at column zero in the body of a card with no frontmatter, as a line index, or -1.
+  const looseNeeds = (raw) => prose(raw).split(/\r?\n/).findIndex(l => /^needs\s*:/i.test(l));
+  // Card 0078: quoting the README's frontmatter sample is house style, not a stray blocker, and a
+  // quote in `## Comments` cannot honestly be edited away. A line in prose must still be caught, at
+  // its own line number.
+  [
+    ['# Card\n\n```\nneeds: 0025\n```\n', -1, 'a fenced sample'],
+    ['# Card\n\n    needs: 0025\n', -1, 'an indented sample'],
+    ['# Card\n\n```\nx\n```\n\nneeds: 0025\n', 6, 'a needs: in prose below a fence'],
+  ].forEach(([text, want, shape]) => {
+    const got = looseNeeds(text);
+    if (got !== want) malformed.push(`fixture with ${shape} reads a loose needs: at ${got}, want ${want}`);
+  });
   // The frontmatter parse is hand-rolled, so every shape it cannot read reliably is REPORTED.
   // Silently reading a malformed block as "no blockers here" is the check-that-cannot-fail shape
   // this project keeps being caught by: one trailing space on a closing `---` hid a real blocker.
@@ -3719,7 +3733,7 @@ console.log('\n--- blockers outlive their answers (card 0070) ---');
       if (lines[0].trim() !== '---') {
         // No frontmatter at all is the common, correct case. A `needs:` at column zero in the body
         // is not: it is a blocker no view can show, which the README forbids in as many words.
-        const loose = lines.findIndex(l => /^needs\s*:/i.test(l));
+        const loose = looseNeeds(raw);
         if (loose >= 0) malformed.push(`${num} in ${w.lane} carries a needs: line outside frontmatter, at line ${loose + 1}`);
         return;
       }
