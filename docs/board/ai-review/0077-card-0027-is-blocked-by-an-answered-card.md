@@ -31,7 +31,7 @@ card's `needs:` when its blocker is answered, and the check that reports it is t
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 THE CARD `0027` SHALL carry no `needs:` naming `0018`, and its `## Links` SHALL record
+- [x] #1 THE CARD `0027` SHALL carry no `needs:` naming `0018`, and its `## Links` SHALL record
       `0018` under `Relates to` with the 2026-09-25 answer as its reason. proves: `no open card is
       blocked by a settled card`
 <!-- AC:END -->
@@ -47,3 +47,14 @@ and `0020`. Then `node scripts/selftest.js` must be green on that assertion.
 
 **2026-09-28** Raised by an unattended run of card `0070`. The red was already there at HEAD before
 that run changed anything.
+
+**2026-10-14** RESULT: done
+TESTS: +0 new, all green (345 passed, 0 failed on `node scripts/selftest.js`)
+TOUCHED: none
+OUT-OF-SCOPE: none
+
+Nothing to build: the edit this card plans was already made by hand before this run. Card `0027`'s 2026-09-30 entry removed `needs: 0018`, and its 2026-10-07 entry dropped the `Blocked by` link. Its `Relates to` list now names `0018` with 'chose the no-ask email on 2026-09-25'. So #1 holds at HEAD and `no open card is blocked by a settled card` passes.
+
+No new test: the criterion's `proves:` is an existing assertion. Red-proof instead, with the patch confirmed: I added `needs: 0018` back to `0027`'s frontmatter (printed the head to show it took), and the suite went 344 passed, 1 failed with `0027 in human-review needs 0018, which is in done`. `git checkout` restored the file and the suite was 345/0 again. No card was left edited and there is no commit, because nothing in the tree changed.
+
+The brief's `.\vendor\bin\pest.bat` and `pint.bat` do not apply: this project has no PHP suite and no vendor/. Its suite is `node scripts/selftest.js`.
