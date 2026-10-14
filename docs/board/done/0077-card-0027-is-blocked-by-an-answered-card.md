@@ -58,3 +58,66 @@ Nothing to build: the edit this card plans was already made by hand before this 
 No new test: the criterion's `proves:` is an existing assertion. Red-proof instead, with the patch confirmed: I added `needs: 0018` back to `0027`'s frontmatter (printed the head to show it took), and the suite went 344 passed, 1 failed with `0027 in human-review needs 0018, which is in done`. `git checkout` restored the file and the suite was 345/0 again. No card was left edited and there is no commit, because nothing in the tree changed.
 
 The brief's `.\vendor\bin\pest.bat` and `pint.bat` do not apply: this project has no PHP suite and no vendor/. Its suite is `node scripts/selftest.js`.
+
+### 2026-10-14 review (v20261014211249-9f4c)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break the one test (#1). I could not break it.
+
+- Card `0027` (`docs/board/human-review/0027-send-the-forestry-england-enquiry.md`) has no `needs:` line in its header. The word "needs" shows up only once, in the 2026-09-30 comment that says it was taken out.
+- Its `## Links` puts `0018` under `Relates to`. The reason given is "chose the no-ask email on 2026-09-25".
+- There is no `Blocked by` heading left.
+
+The suite check that proves this is `no open card is blocked by a settled card` in `scripts/selftest.js`. I did not run it myself, because I am only allowed to read files. The builder ran it and broke it on purpose. With `needs: 0018` put back, the check failed. With the file put back, it passed. That shows the check can fail and now passes.
+
+Earlier hand edits did this work, not this build. The card still gets what it asked for.
+
+VERDICT: sound
+
+**scope: sound**
+
+**What I checked**
+
+- I read the last commit (`7b6cedb`). It changes only one file: card `0077`'s own file. That file now holds the RESULT note.
+- The big diff in the brief is old work from other cards. This run did not make it.
+- Card `0027` has no `needs:` in its frontmatter.
+- In card `0027`, `## Links` names `0018` under `Relates to`, with the reason "chose the no-ask email on 2026-09-25".
+- There is no `Blocked by 0018` line. The card's own 2026-10-07 comment says that line was removed.
+
+**Scope**
+
+- The run did not change the draft email. It did not change the check. Both stay inside the "Not this card" fence.
+- Nothing is half done. Earlier hand edits on `0027` already did the work this card planned. The run made no other changes.
+- Criterion #1 holds.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this card and could not.
+
+**What I checked**
+- I read card `0027` at `docs/board/human-review/0027-send-the-forestry-england-enquiry.md`.
+- Its frontmatter has no `needs: 0018`.
+- `## Links` has no `Blocked by` heading.
+- Under `Relates to`, it says: "`0018` - chose the no-ask email on 2026-09-25. Done." This is the reason the card asks for.
+- Its comments show the two hand edits: `needs: 0018` was removed on 2026-09-30, and the `Blocked by` link was dropped on 2026-10-07.
+
+**Breakage lens**
+- The build changed no file, so it can break no caller.
+- The check `no open card is blocked by a settled card` stays as it was. The card said not to change it.
+- I found no text that this work made false. The card text agrees with the frontmatter.
+- The builder's red-proof is believable. They put the line back, saw the suite go red, and restored the file.
+
+**Limit**
+- I did not run `node scripts/selftest.js`. Plan mode lets me only read.
+
+**What you do now:** nothing. Criterion #1 holds.
+
+VERDICT: sound
+
