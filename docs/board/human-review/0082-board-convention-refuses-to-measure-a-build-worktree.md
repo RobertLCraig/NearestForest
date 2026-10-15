@@ -55,3 +55,5 @@ Second take, same finding as the 2026-10-15 entry already on the card. Re-measur
 Neither route in #1 is open here. Route one changes `C:\Dev\ProgressBoard`, outside this worktree (the card's `## Not this card` says the fix is ProgressBoard's). Route two edits `0021`'s `## Plan`, and this session may not edit cards; `0021` is in `discarded/` anyway.
 
 This needs Rob. The two options in the earlier entry still stand: (1) discard `0082` as moot with `0021`, or (2) raise the refusal as a card on ProgressBoard's board, then discard this one. Recommendation: option 2. Re-running this card unattended will keep returning blocked.
+
+**2026-10-15** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 1 of 1 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
