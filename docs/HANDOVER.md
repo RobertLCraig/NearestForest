@@ -9,7 +9,7 @@
 Britain in two of its three tabs.** Forests is one ranked list of 663 sites from three agencies
 (Wales added by card 0079, 2026-10-05, not yet deployed); Campsites covers England, Scotland and
 Wales; Car parks is England only, because no open dataset of Scottish forest car parks exists and
-Welsh car parks wait on NRW's licence answer (card 0017). Map complete (bundled outline plus optional tiles).
+Welsh car parks wait on NRW's licence answer (card 0086). Map complete (bundled outline plus optional tiles).
 **The pipeline runs clean**: `data/raw/` was re-fetched on 2026-09-10 and the dataset rebuilt.
 **Built cards are waiting to deploy**; see "Current state". **Checks that cannot fail are this
 project's recurring defect**, not a closed chapter: four were fixed on 2026-09-10 and a reviewer
@@ -79,7 +79,7 @@ Source of truth: [DATA-MODEL.md](DATA-MODEL.md). The essentials a fresh session 
   patch the JSON.
 - **Campsites and Forests cover England, Scotland and Wales; Car parks is England only.** That
   asymmetry is deliberate and is written into the PRD: no open dataset of Scottish forest car parks
-  exists. **Welsh car parks are card 0017 and are still open**, blocked on a contradiction between
+  exists. **Welsh car parks are card 0086 and are still open**, blocked on a contradiction between
   NRW's own metadata and data.gov.uk about internet applications. The Welsh named sites are not:
   they come from NRW's website, whose copyright page grants OGL re-use (DECISIONS 2026-10-05).
 - **A campsite never shows an open/closed badge.** 97 of 3,574 records publish any hours at all, so
@@ -413,9 +413,9 @@ comment saying so. **Expect `todo/` to refill from that lane, not from a person.
 **Scotland is answered and built** (card 0016, answered Yes on 2026-08-18, built 2026-08-29). The
 forest tabs took on a second agency and a second scraper, knowingly. **Wales's named sites are
 built** (card 0079, 2026-10-05, option 1 of card 0017), and still owe a look on a screen and a
-deploy. **Welsh car parks are still open** on card 0017: NRW's metadata says OGL with no
+deploy. **Welsh car parks are still open** on card 0086 (option 2 of `0017`, which is finished): NRW's metadata says OGL with no
 restrictions while data.gov.uk says the same dataset needs prior approval before use in an internet
-application. The email is drafted on that card.
+application. The email is drafted in `docs/outreach/nrw-licence-enquiry.md`.
 
 ## Blockers / open questions
 
@@ -433,10 +433,10 @@ are only the ones still open. Do not re-add a bullet for a card whose ask has be
   `waiting_on:` about sending mail from `enhanceify.co.uk` is dead. What is left is putting the new
   key in `tiles.key` above the web root at mode 600 and confirming the old one is revoked. It never
   belongs in this repo or in a chat.
-- **0017**, Welsh car parks (option 2; option 1, the named sites, is built as card 0079), blocked
+- **0086**, Welsh car parks (option 2 of the finished card `0017`; option 1, the named sites, is built as card 0079), blocked
   on one email to Natural Resources Wales about a licence contradiction the card sets out: their own metadata says OGL with no restrictions, while
   data.gov.uk says the same dataset needs prior approval before use in an internet application. Rob
-  sends it from `r@enhanceify.co.uk`; the text is on the card, ready to paste.
+  sends it from `r@enhanceify.co.uk`; the text is in `docs/outreach/nrw-licence-enquiry.md`, ready to paste.
 - **0027**, the send itself. 0018 is decided (2026-09-25): the email asks for nothing, so no trade
   mark question goes to Forestry England and the name is designed around (DECISIONS 2026-09-25).
 - **0043 (accounts and personal location tracking)**, **unbuilt.** All seven criteria say
