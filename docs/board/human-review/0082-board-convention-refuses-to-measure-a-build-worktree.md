@@ -57,3 +57,29 @@ Neither route in #1 is open here. Route one changes `C:\Dev\ProgressBoard`, outs
 This needs Rob. The two options in the earlier entry still stand: (1) discard `0082` as moot with `0021`, or (2) raise the refusal as a card on ProgressBoard's board, then discard this one. Recommendation: option 2. Re-running this card unattended will keep returning blocked.
 
 **2026-10-15** The loop moved this card from in-progress/ to human-review/. 2 takes in a row ended with it still in in-progress/, and the last one said: `made no progress: 1 of 1 still open, exactly as this take found it`. What this card is waiting for is not another session. bin/work-card.ps1 counts those takes out of storage/logs/work-card.log, and will start it again as soon as a person has moved it back to todo/.
+
+### 2026-10-15 manager (m20261015123154-7ee5)
+
+**outcome: question**
+
+The only fix left is in ProgressBoard, outside this repository, and only Rob can decide whether his tool should change.
+
+**The question:** Do you want `board:convention` to measure a worktree when `--path` names it directly (raise that as a ProgressBoard card and discard `0082`), or discard `0082` as moot now that `0021` is gone?
+
+**what the session said**
+
+I checked the card's two claims.
+
+- `0021` is now in `docs/board/discarded/`. Its Plan does not bind anyone now, so the second route in #1 does not help.
+- No card on ProgressBoard's board covers the worktree refusal. The only match is `0152-board-convention-prints-a-number-nobody-can-act-on.md`, in `done/`. It is about something else.
+
+That leaves one real fix: change `board:convention` in `C:\Dev\ProgressBoard`. This card cannot do that, because its `## Not this card` says the fix belongs to ProgressBoard. A builder sent back to `todo/` would only report "blocked" again.
+
+What is left is Rob's choice about his own tool. Should a `--path` that names a worktree get measured? He can say yes and raise that as a ProgressBoard card. Or he can drop this card along with `0021`. I'd go with raising it, because the memory note `board-convention-path-is-the-repo-root` shows that builders keep hitting this refusal.
+
+QUESTION: Do you want `board:convention` to measure a worktree when `--path` names it directly (raise that as a ProgressBoard card and discard `0082`), or discard `0082` as moot now that `0021` is gone?
+
+WHY: The only fix left is in ProgressBoard, outside this repository, and only Rob can decide whether his tool should change.
+
+OUTCOME: question
+
