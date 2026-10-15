@@ -28,3 +28,19 @@ here, where it bites; the fix is ProgressBoard's.
       SHALL print that worktree's path in its last column, or `0021`'s `## Plan` SHALL name the
       command a builder uses instead. proves: none - the command is in another repository
 <!-- AC:END -->
+
+## Comments
+
+**2026-10-15** RESULT: blocked
+TESTS: +0 new, none run (proves: none; no code changed)
+TOUCHED: none
+OUT-OF-SCOPE: none
+
+Re-measured on 2026-10-15 from this card's own build worktree: `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` still prints `'NearestForest' is under C:\Users\r\AppData\Local\ProgressBoard\worktrees and is skipped: a git worktree of another repository, whose board is already a row` and exits 1. The fault is still live.
+
+Neither route in #1 is open to an unattended session. Route one is a change to `C:\Dev\ProgressBoard`, which is outside this worktree; the card's own `## Not this card` says the fix is ProgressBoard's. Route two is an edit to `0021`'s `## Plan`, and this session may not edit cards. `0021` is also in `discarded/` since 2026-10-07 (superseded), so its Plan no longer binds any builder.
+
+That makes this a call for Rob, not a build. Two options:
+1. Discard `0082` as moot with `0021`, as `0021`'s discard note already did for `0081`. The worktree refusal would then be recorded nowhere, because `board:find` shows no ProgressBoard card for it (`0153` is the nearest and is about the message wording, not the refusal).
+2. Keep the fault alive: raise it as a card on ProgressBoard's own board (refuse a worktree only when scanning `C:\Dev`, not when `--path` names it directly), then discard this one.
+Recommendation: option 2, since the memory note `board-convention-path-is-the-repo-root` shows builders keep meeting this refusal.
