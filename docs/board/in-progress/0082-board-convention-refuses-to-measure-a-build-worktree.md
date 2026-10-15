@@ -44,3 +44,14 @@ That makes this a call for Rob, not a build. Two options:
 1. Discard `0082` as moot with `0021`, as `0021`'s discard note already did for `0081`. The worktree refusal would then be recorded nowhere, because `board:find` shows no ProgressBoard card for it (`0153` is the nearest and is about the message wording, not the refusal).
 2. Keep the fault alive: raise it as a card on ProgressBoard's own board (refuse a worktree only when scanning `C:\Dev`, not when `--path` names it directly), then discard this one.
 Recommendation: option 2, since the memory note `board-convention-path-is-the-repo-root` shows builders keep meeting this refusal.
+
+**2026-10-15** RESULT: blocked
+TESTS: +0 new, none run (proves: none; no code changed)
+TOUCHED: none
+OUT-OF-SCOPE: none
+
+Second take, same finding as the 2026-10-15 entry already on the card. Re-measured from this card's build worktree: `php C:\Dev\ProgressBoard\artisan board:convention --path=$PWD --cards` still prints `'NearestForest' is under C:\Users\r\AppData\Local\ProgressBoard\worktrees and is skipped: a git worktree of another repository, whose board is already a row` and exits 1.
+
+Neither route in #1 is open here. Route one changes `C:\Dev\ProgressBoard`, outside this worktree (the card's `## Not this card` says the fix is ProgressBoard's). Route two edits `0021`'s `## Plan`, and this session may not edit cards; `0021` is in `discarded/` anyway.
+
+This needs Rob. The two options in the earlier entry still stand: (1) discard `0082` as moot with `0021`, or (2) raise the refusal as a card on ProgressBoard's board, then discard this one. Recommendation: option 2. Re-running this card unattended will keep returning blocked.
