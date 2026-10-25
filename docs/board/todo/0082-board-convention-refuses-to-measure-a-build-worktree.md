@@ -1,4 +1,10 @@
+---
+waiting_on: a ProgressBoard fix so board:convention measures a worktree named by --path (calendar 0049 and PlanHawk 0303 record the same fault) - recheck 2026-11-08
+---
 # board:convention refuses to measure a build worktree
+
+## What I need from you
+Nothing. The question is settled because ProgressBoard's own design says `--path` exists to measure a build worktree, so the refusal is its bug; the card waits on that fix under `waiting_on:`.
 
 ## Why
 **The command card `0021` names as its finish line no longer runs where its builders work.** On
@@ -24,9 +30,10 @@ here, where it bites; the fix is ProgressBoard's.
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN `board:convention --path=<worktree>` is run from a NearestForest build worktree, IT
-      SHALL print that worktree's path in its last column, or `0021`'s `## Plan` SHALL name the
-      command a builder uses instead. proves: none - the command is in another repository
+- [ ] #1 WHEN `php C:\Dev\ProgressBoard\artisan board:convention --path=<worktree> --cards` is run
+      with `<worktree>` a NearestForest build worktree under `%LOCALAPPDATA%\ProgressBoard\worktrees`,
+      THE command SHALL exit 0 and print that worktree's path in its last column. proves:
+      `board:convention --path on a NearestForest build worktree exits 0 and names the worktree`
 <!-- AC:END -->
 
 ## Comments
@@ -82,4 +89,6 @@ QUESTION: Do you want `board:convention` to measure a worktree when `--path` nam
 WHY: The only fix left is in ProgressBoard, outside this repository, and only Rob can decide whether his tool should change.
 
 OUTCOME: question
+
+**2026-10-25** Attended session: Re-ran `board:convention --path=<build worktree> --cards` against `%LOCALAPPDATA%\ProgressBoard\worktrees\AIInfluencerTest`; it still refuses and exits 1, and `board:find` shows no ProgressBoard card for it, only the same fault on calendar `0049` and PlanHawk `0303`. The manager's question needs no ruling from Rob: the docblock on `BoardConvention` in `C:\Dev\ProgressBoard\app\Console\Commands\BoardConvention.php` says `--path` exists so a session in a build worktree can measure the tree it is editing, so the refusal breaks ProgressBoard's own design, and route two of #1 died with `0021`. I rewrote #1 as one checkable command, dropped the `0021` route, and added `waiting_on:` so the loop stays off the card until the ProgressBoard fix lands; the attended session should raise that fix as a ProgressBoard card.
 
