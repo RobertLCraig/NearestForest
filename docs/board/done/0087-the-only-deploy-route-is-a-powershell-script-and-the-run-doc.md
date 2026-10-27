@@ -73,3 +73,64 @@ OUT-OF-SCOPE: none
 Proof: selftest runs it with --dry-run in a throwaway repo (origin/main is a local ref): stale CACHE refused, --force ships, bumped CACHE prints the git push and ssh lines. Watched red with the guard short-circuited (exit 0 on a stale CACHE); a first patch that changed nothing was caught and redone.
 #2: the criterion grep over the four files now matches only lines that also give the Linux form. Mo~oM pack: HANDOVER says ~/dev/Mo~oM 2.2/Icons-SVG on Linux. That path is my assumption from the /home/rob/dev layout; nothing in the repo decides it. DECISIONS.md left alone (append-only; the grep does not match it).
 No Pest or Pint: this repo has no vendor/, the suite is node scripts/selftest.js. Not run on the VM itself, and no real deploy (dry run only, per the card).
+
+### 2026-10-27 review (v20261027101308-c100)
+
+**suite**
+
+No suite this job could find in NearestForest, so none ran. That is not a pass.
+
+**acceptance: sound**
+
+I tried to break both criteria. I could not break either one.
+
+**#1. A deploy trigger that does not need `pwsh`.**
+- The code is `scripts/deploy.py`. It is one script at module level, and it uses the functions `die`, `git` and `step`.
+- It has the same five steps as `scripts/deploy.ps1`, and it refuses in the same places. Every `throw` in `deploy.ps1` has a `die(...)` in `deploy.py` with the same text. The only change is the flag spelling: `--force` and `--branch`, not `-Force` and `-Branch`.
+- The cache check reads the same diff line in both scripts (`+var CACHE`).
+- The test is in the `card 0087` block of `scripts/selftest.js`. It runs `--dry-run` in a temporary copy of the repo. A stale `CACHE` is refused with the same message. A bumped `CACHE` prints both the `git push` line and the `ssh hostinger` line.
+
+**#2. Docs that work on the Linux VM.**
+- I ran the criterion `git grep` over `CLAUDE.md`, `HUMAN_ACTIONS.md`, `docs/HANDOVER.md` and `docs/DECISIONS.md`. It found 9 lines. Each line also gives the Linux form: `python3 scripts/deploy.py`, `php -S`, or `~/dev/NearestForest`.
+- Nothing in `docs/DECISIONS.md` matches.
+- `docs/HANDOVER.md` says where the Mo~oM pack should be on Linux.
+
+**One small note.** It is not a defect. The Linux path for the Mo~oM pack (`~/dev/Mo~oM 2.2`) is a guess by the builder. They say so on the card. The criterion only asks the docs to state a path, so this is enough.
+
+You do not need to do anything for this card.
+
+VERDICT: sound
+
+**scope: sound**
+
+I found no scope defect. The change stays inside the card.
+
+**What I checked:**
+- `scripts/deploy.sh`, the host and the deploy steps are not changed. That fence holds.
+- No real deploy was run. The proof is a dry run in a throwaway repo, inside the `selftest.js` block for card 0087.
+- Card `0082` and `docs/DECISIONS.md` are not touched. The Mo~oM pack is not copied.
+- The extra line in `.gitattributes` is not scope growth. The card's task asks for an LF file, and that line pins it.
+- `deploy.py` has the same five steps and the same throws as `deploy.ps1`: wrong branch, tests failed, stale CACHE, dirty tree, no origin, push failed. Only the flag spelling differs (`--force` for `-Force`), and that is correct for Linux.
+- I ran the criterion #2 grep over the four files. Every match also gives the Linux form or `php -S`.
+
+**Nothing is left half done.** One small point is not a defect: the Linux Mo~oM path `~/dev/Mo~oM 2.2/Icons-SVG` is the builder's guess. The card asks only where the pack is "expected", so a guess meets it.
+
+VERDICT: sound
+
+**breakage: sound**
+
+I tried to break this work and could not.
+
+**What I checked:**
+
+- **The grep from criterion #2.** I ran it over `CLAUDE.md`, `HUMAN_ACTIONS.md`, `docs/HANDOVER.md` and `docs/DECISIONS.md`. It finds 9 lines. Each of those lines also gives the Linux form: `python3 scripts/deploy.py`, `php -S`, or `~/dev/NearestForest`. `DECISIONS.md` gives no match.
+- **Criterion #1, the steps and refusals.** `scripts/deploy.ps1` has 6 `throw` lines: wrong branch, self-tests failed, stale cache key, dirty tree, no origin, and push failed. `scripts/deploy.py` has the same 6, as `die()` calls in the same order with the same text. The dirty-tree refusal is skipped in a dry run, which is also what `deploy.ps1` does. The one change in the text is the flag names (`--force` and `--branch`, not `-Force` and `-Branch`). That is correct on Linux.
+- **The new selftest block.** It finds Python with `process.env.PYTHON || 'python'`. Four older blocks in `scripts/selftest.js` already do this, so it adds no new failure on the VM. The test makes its own throwaway repository and pushes nothing.
+- **Comments and docstrings.** The docstring in `deploy.py` is still true. The text that the diff changed in the three docs agrees with the code.
+
+**One gap, not a defect:** the Mo~oM path `~/dev/Mo~oM 2.2/Icons-SVG` is a guess. The builder said so on the card. The card only asks the docs to say where the pack is expected, and they do.
+
+No criterion is unmet.
+
+VERDICT: sound
+
