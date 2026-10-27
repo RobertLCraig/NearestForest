@@ -22,4 +22,5 @@ project documentation standard.
   so re-runs of the parser cost zero requests. Never hammer their site to debug a regex.
 - Run the pipeline (there is no `build_data.py`; that name was aspirational and never existed):
   `python scripts/fetch.py && python scripts/parse.py && python scripts/build_boundary.py`,
-  then `node scripts/selftest.js`. Deploy with `pwsh ./scripts/deploy.ps1`.
+  then `node scripts/selftest.js`. Deploy with `python3 scripts/deploy.py`
+  (Linux, macOS or Windows; `--dry-run` changes nothing), or `pwsh ./scripts/deploy.ps1` on Windows.

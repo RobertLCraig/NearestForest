@@ -27,8 +27,8 @@ Tick them off as they are done; do not delete the history.
       *Hostinger auto-issued it on vhost creation. Verified: `ssl_verify_result=0`.*
 - [x] **Upload the contents of `app/`** to the document root.
       *Superseded by the git deploy: the server holds a checkout and `git pull` is the deploy.
-      Run `pwsh ./scripts/deploy.ps1`. Nothing is uploaded by hand, so the old warning about upload
-      tools silently skipping the `.htaccess` dotfile no longer applies.*
+      Run `python3 scripts/deploy.py` (or `pwsh ./scripts/deploy.ps1` on Windows). Nothing is
+      uploaded by hand, so the old warning about upload tools silently skipping the `.htaccess` dotfile no longer applies.*
 - [x] **Verify the manifest MIME type.** *Returns `application/manifest+json`.*
 - [x] **Confirm `mod_headers` is enabled.** *It is: the site returns 200 rather than 500, so the
       whole `.htaccess` parsed, including the two `<FilesMatch>` blocks.*
@@ -53,8 +53,8 @@ both places is how they drift, and the board is the one a fresh session reads.
 
       python scripts/fetch.py && python scripts/parse.py && node scripts/selftest.js
       # bump CACHE in app/sw.js, commit, then:
-      pwsh ./scripts/deploy.ps1
+      python3 scripts/deploy.py    # or on Windows: pwsh ./scripts/deploy.ps1
 
-      Without the cache bump, installed copies keep the old dataset forever. `deploy.ps1` now
+      Without the cache bump, installed copies keep the old dataset forever. Both triggers now
       refuses to push a change under `app/` that did not bump `CACHE`, so this is enforced rather
       than remembered, but the bump is still yours to make.

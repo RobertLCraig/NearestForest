@@ -3864,6 +3864,61 @@ console.log('\n--- the python dependency is written down (card 0071) ---');
   }
 }
 
+console.log('\n--- the deploy trigger runs without pwsh (card 0087) ---');
+{
+  // scripts/deploy.py is the trigger for a machine with no PowerShell. Its one guard that matters
+  // is the CACHE check: an app/ change shipped under an installed cache key strands every phone on
+  // the old files, silently. So drive it with --dry-run in a throwaway repository whose origin/main
+  // is a local ref, once with CACHE stale and once bumped. Nothing is pushed and nothing is SSH'd.
+  const osmod = require('os');
+  const { execFileSync, spawnSync } = require('child_process');
+  const PY = process.env.PYTHON || 'python';
+  const dir = fs.mkdtempSync(path.join(osmod.tmpdir(), 'nf-0087-'));
+  const env = { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(dir), PYTHONDONTWRITEBYTECODE: '1' };
+  const git = (...a) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...a],
+    { cwd: dir, env, stdio: ['ignore', 'pipe', 'pipe'] });
+  const write = (p, s) => { fs.mkdirSync(path.dirname(path.join(dir, p)), { recursive: true });
+    fs.writeFileSync(path.join(dir, p), s); };
+  const deploy = (...a) => {
+    const r = spawnSync(PY, ['scripts/deploy.py', '--dry-run', '--skip-test', ...a],
+      { cwd: dir, env, encoding: 'utf8' });
+    return { status: r.status, out: (r.stdout || '') + (r.stderr || '') };
+  };
+  const tail = (r) => `exit ${r.status}: ${r.out.trim().split('\n').slice(-2).join(' / ')}`;
+  try {
+    git('init', '-q', '-b', 'main');
+    write('scripts/deploy.py', fs.readFileSync(path.join(ROOT, 'scripts', 'deploy.py')));
+    write('app/sw.js', "var CACHE = 'v1';\n");
+    write('app/a.js', '1\n');
+    git('add', '-A');
+    git('commit', '-q', '-m', 'base');
+    git('remote', 'add', 'origin', dir);
+    git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+
+    write('app/a.js', '2\n');
+    git('commit', '-q', '-am', 'app change, CACHE not bumped');
+    const stale = deploy();
+    ok('deploy.py refuses an app/ change whose CACHE was not bumped',
+       stale.status !== 0 && stale.out.includes('Stale service-worker cache key. Bump CACHE in app/sw.js')
+       && !stale.out.includes('would run: git push'), tail(stale));
+    const forced = deploy('--force');
+    ok('deploy.py --force ships a stale CACHE anyway',
+       forced.status === 0 && forced.out.includes('would run: git push origin main'), tail(forced));
+
+    write('app/sw.js', "var CACHE = 'v2';\n");
+    git('commit', '-q', '-am', 'bump CACHE');
+    const bumped = deploy();
+    ok('deploy.py with CACHE bumped prints the push and SSH lines it would run',
+       bumped.status === 0 && bumped.out.includes('would run: git push origin main')
+       && bumped.out.includes('would run: ssh hostinger')
+       && bumped.out.includes('scripts/deploy.sh'), tail(bumped));
+  } catch (e) {
+    ok('deploy.py fixture builds', false, String(e.message).split('\n')[0]);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 console.log('\n--- ranking from Brighton ---');
 const rankedF = NF.rank(sites, 'forest', BRIGHTON, '');
 const rankedC = NF.rank(sites, 'carpark', BRIGHTON, '');

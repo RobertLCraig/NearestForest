@@ -7,6 +7,8 @@
 *.sh        text eol=lf
 *.php       text eol=lf
 .htaccess   text eol=lf
+# Run as ./scripts/deploy.py on Linux; a CRLF shebang dies the same way.
+scripts/deploy.py text eol=lf
 
 # Generated build output. Diffing 904 records helps nobody and it is never
 # hand-edited; regenerate with scripts/parse.py instead.
