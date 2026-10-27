@@ -30,12 +30,12 @@ built and proved with `--dry-run` only. Copying the Mo~oM pack to the VM. Editin
 
 ## Acceptance
 <!-- AC:BEGIN -->
-- [ ] #1 WHEN the deploy trigger is run on Linux with no `pwsh`, THE REPOSITORY SHALL offer a bash
+- [x] #1 WHEN the deploy trigger is run on Linux with no `pwsh`, THE REPOSITORY SHALL offer a bash
       (or Python) trigger with the same steps, flags (`--dry-run`, `--skip-test`, `--force`) and
       refusals as `scripts/deploy.ps1`, so `deploy.ps1` is no longer the only route. proves: the new
       trigger run with `--dry-run` on a branch whose `app/` change did not bump `CACHE` refuses
       with the same message, and with `CACHE` bumped prints the push and SSH lines it would run
-- [ ] #2 WHEN an agent reads `CLAUDE.md`, `HUMAN_ACTIONS.md` or `docs/HANDOVER.md` for how to run,
+- [x] #2 WHEN an agent reads `CLAUDE.md`, `HUMAN_ACTIONS.md` or `docs/HANDOVER.md` for how to run,
       serve or deploy, THE DOCS SHALL give a form that works on the VM (repo-relative paths,
       `php -S` instead of Herd, the new trigger) and say where the Mo~oM pack is expected on Linux.
       proves: `git grep -n -e "pwsh" -e "C:/Dev" -e "Herd only"` over those three files and
@@ -58,3 +58,18 @@ outward effect, so the builder proves #1 by dry run only.
 
 ## Comments
 <!-- The card's thread, appended by ProgressBoard. Append-only: entries are added, never edited or removed. An entry beginning **Decided:** is an answer, and that is what a decision card exits on. -->
+
+**2026-10-27** RESULT: done
+TESTS: +3 new, all green (node scripts/selftest.js 348 passed, 0 failed)
+TOUCHED: scripts/deploy.py
+TOUCHED: scripts/selftest.js
+TOUCHED: .gitattributes
+TOUCHED: CLAUDE.md
+TOUCHED: HUMAN_ACTIONS.md
+TOUCHED: docs/HANDOVER.md
+OUT-OF-SCOPE: none
+
+#1: the trigger is Python, not bash (the card allows either): scripts/deploy.py, stdlib only, LF-pinned in .gitattributes, mode 100755. Same five steps, flags and refusal texts as deploy.ps1, with --force/--branch spelt the Linux way. Python was picked because selftest already drives python on Windows; bash from node on Windows can resolve to WSL bash.
+Proof: selftest runs it with --dry-run in a throwaway repo (origin/main is a local ref): stale CACHE refused, --force ships, bumped CACHE prints the git push and ssh lines. Watched red with the guard short-circuited (exit 0 on a stale CACHE); a first patch that changed nothing was caught and redone.
+#2: the criterion grep over the four files now matches only lines that also give the Linux form. Mo~oM pack: HANDOVER says ~/dev/Mo~oM 2.2/Icons-SVG on Linux. That path is my assumption from the /home/rob/dev layout; nothing in the repo decides it. DECISIONS.md left alone (append-only; the grep does not match it).
+No Pest or Pint: this repo has no vendor/, the suite is node scripts/selftest.js. Not run on the VM itself, and no real deploy (dry run only, per the card).
