@@ -62,3 +62,5 @@ no-ask email. `forestry-england-handover.md` carries a superseded note at its he
 **2026-10-07** Condensed for reading. Dropped the stale `Blocked by 0018` link (`0018` is in `done/`). Git keeps the long version.
 
 **2026-11-02** Rob: method 4 of the Tilbury and Gadzhi AI video (website makeovers: name the problem, show the version you made, offer changes) "looks like something we could use" for this email. A second draft in that shape is in `docs/outreach/forestry-england-enquiry-sample-first.md`, still asking for nothing. It needs one before-and-after screenshot pair that only Rob can take. Rob picks which draft to send; the current one is unchanged.
+
+**2026-11-02** Both versions are now drafts in Fastmail, from r@enhanceify.co.uk to info@forestryengland.uk: "A free forest-finder app built on your open data" (current draft) and "Your forest finder, from a phone in a car park" (sample-first; its picture is not attached yet). Send one, delete the other.
