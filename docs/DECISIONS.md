@@ -3,6 +3,18 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-11-02: Android ships as a Trusted Web Activity wrapping the live site
+**Decision:** The Android app is a Bubblewrap-generated TWA (`android/`) that opens
+https://forestlocator.enhanceify.co.uk/, listed on Google Play. No native rewrite, no bundled copy.
+**Why:** Rob wants a store listing (PRD non-goals, 2026-08-15 note). A TWA reuses the PWA unchanged,
+so one deploy updates web and Android together and the offline service worker works as it does in
+Chrome. Location goes through Chrome's location delegation, so Android asks for permission natively.
+A wrapper with a bundled copy (Capacitor and similar) would fork the app and need a release for every
+data refresh. Play requires a 14-day closed test with 12 testers for a personal account made after
+13 November 2023; an organisation account (Enhanceify Ltd) is exempt
+([Google Play help](https://support.google.com/googleplay/android-developer/answer/14151465?hl=en-GB)).
+**Status:** active
+
 ## 2026-10-05: Wales joins the Forests tab, from NRW's own pages, under OGL
 **Decision:** Card 0079 carries out option 1 of card 0017, which Rob chose on 2026-09-29. The 116
 named sites on Natural Resources Wales's places-to-visit pages are scraped the way the English and

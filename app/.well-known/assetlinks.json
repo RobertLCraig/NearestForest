@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "uk.co.enhanceify.forestlocator",
+      "sha256_cert_fingerprints": [
+        "4F:A4:30:4F:9E:25:26:23:52:9E:A4:0B:4A:4C:4B:46:66:A3:28:13:06:62:70:13:FC:37:F7:CC:BD:3E:E8:E7"
+      ]
+    }
+  }
+]

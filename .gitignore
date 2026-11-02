@@ -44,3 +44,14 @@ docs/outreach/backups/
 docs/img/**/IMG_*.PNG
 docs/img/**/IMG_*.jpg
 !docs/img/**/web/*.jpg
+
+# Android (Trusted Web Activity) build outputs. Rebuild with `bubblewrap build` in android/;
+# the signing keystore lives outside the repo (see docs/HANDOVER.md "Android").
+android/.gradle/
+android/app/build/
+android/build/
+android/*.apk
+android/*.aab
+android/*.idsig
+*.jks
+*.keystore
