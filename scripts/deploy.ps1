@@ -132,6 +132,17 @@ if ($DryRun) {
 
 ssh $SshHost $remoteCmd
 $exit = $LASTEXITCODE
+# The server pulls from its own remote, which need not be the one pushed to above.
+# Same check as deploy.py; see the comment there.
+if ($exit -eq 0) {
+    $local = (git rev-parse HEAD).Trim()
+    $live = "$(ssh $SshHost "git -C `"`$HOME/$RemoteDir`" rev-parse HEAD")".Trim()
+    if ($live -ne $local) {
+        Write-Host "FAIL: server is at $live, local HEAD is $local. Nothing shipped." -ForegroundColor Red
+        Write-Host "      The server pulls from a remote that was not pushed to. Check: ssh $SshHost git -C $RemoteDir remote -v" -ForegroundColor Red
+        $exit = 1
+    }
+}
 
 Write-Host ""
 Write-Host "==================================================" -ForegroundColor Cyan

@@ -123,6 +123,19 @@ if a.dry_run:
     sys.exit(0)
 
 code = subprocess.run(['ssh', a.ssh_host, remote]).returncode
+# The server pulls from its own remote, which need not be the one pushed to above
+# (it pulled from GitHub while origin moved to Forgejo, and every deploy "finished
+# cleanly" with nothing shipped). Checked here, not in deploy.sh, because the copy
+# of deploy.sh that runs first is the server's old one.
+if code == 0:
+    local = git('rev-parse', 'HEAD')[1].strip()
+    live = subprocess.run(['ssh', a.ssh_host, f'git -C "$HOME/{a.remote_dir}" rev-parse HEAD'],
+                          capture_output=True, text=True).stdout.strip()
+    if live != local:
+        print(f'\nFAIL: server is at {live or "<unknown>"}, local HEAD is {local}. Nothing shipped.')
+        print('      The server pulls from a remote that was not pushed to. Check: '
+              f'ssh {a.ssh_host} git -C {a.remote_dir} remote -v')
+        code = 1
 print('\n==================================================')
 if code == 0:
     print(' Deploy finished cleanly.')
