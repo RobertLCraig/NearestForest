@@ -5,20 +5,28 @@ not_for_the_loop: needs a Google account, a payment, identity checks and an Andr
 # Put the Android app on Google Play
 
 ## What I need from you
-1. Open a Google Play developer account at https://play.google.com/console/signup. Choose
-   **Organisation** (Enhanceify Ltd) if you can get a D-U-N-S number; it skips the 14-day test.
-   Choose **Personal** if not.
+Decided 2026-11-02: an **Organisation** account for Enhanceify Ltd, owned by the Google account
+`r@enhanceify.co.uk` (made that day; password and authenticator code in 1Password vault `Claude`,
+item "Google account r@enhanceify.co.uk (Play Console owner)").
+1. Turn on 2-step verification for `r@enhanceify.co.uk` at
+   https://myaccount.google.com/signinoptions/twosv (add your phone number). Google refused the
+   agent with "We couldn't verify that it's you".
+   Pass: the page says 2-step verification is on.
+2. Get Enhanceify Ltd's D-U-N-S number, free, at https://service.dnb.co.uk/duns-enquiry
+   (look it up first; ask for a new one only if none exists). Google says a new one can take up to 30 days.
+   Pass: you have a nine-digit number.
+3. At https://play.google.com/console/signup, signed in as `r@enhanceify.co.uk`, choose
+   **An organisation > A company or business**, enter the D-U-N-S number and pay the US$25.
    Pass: you can see the Play Console dashboard. Fail: verification is refused, so tell me why.
-2. If you have an Android phone, copy `C:\Dev\NearestForest\android\app-release-signed.apk` to it and open it.
+4. If you have an Android phone, copy `C:\Dev\NearestForest\android\app-release-signed.apk` to it and open it.
    Pass: the app opens with **no browser address bar**, asks for location, and lists forests.
    Fail: a bar shows at the top (the server link file is wrong) or the list stays empty.
-3. In Play Console, create the app and upload `C:\Dev\NearestForest\android\app-release-bundle.aab`
+5. In Play Console, create the app and upload `C:\Dev\NearestForest\android\app-release-bundle.aab`
    to a test track. Leave **Play App Signing** on (the default).
    Pass: the upload is accepted. Then send me the **SHA-256** from *Test and release > App integrity > App signing key certificate*.
-4. Personal account only: get 12 people to join the closed test and stay in it for 14 days.
 
-**My recommendation:** step 1 as Organisation, then 3. Step 2 only if a phone is to hand.
-Paste to answer: `**2026-11-xx** **Decided:** account type <x>; aab uploaded; app signing SHA-256 is <AA:BB:...>.`
+**My recommendation:** steps 1 and 2 now, since step 2 is the slow one. An organisation account skips Google's 12-tester, 14-day test.
+Paste to answer: `**2026-11-xx** **Decided:** D-U-N-S <number>; Play account live; aab uploaded; app signing SHA-256 is <AA:BB:...>.`
 
 ## What you need to know
 - The app is the website in an Android shell. Every normal deploy updates it. No new upload is needed for data changes.
