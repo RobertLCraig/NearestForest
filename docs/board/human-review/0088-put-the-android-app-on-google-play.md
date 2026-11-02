@@ -14,6 +14,8 @@ item "Google account r@enhanceify.co.uk (Play Console owner)").
    Pass: the page says 2-step verification is on.
 2. ~~Get Enhanceify Ltd's D-U-N-S number.~~ Done 2026-11-02: it already existed, **232701224**
    (D&B email to r@enhanceify.co.uk). Google shows the D&B address publicly on the store page.
+   Rob, 2026-11-02: the current address is fine to show for now (the building has on-site
+   security). On a move, update it at D&B, in the Google payments profile and in Play Console.
 3. At https://play.google.com/console/signup, signed in as `r@enhanceify.co.uk`, choose
    **An organisation > A company or business**, enter the D-U-N-S number and pay the US$25.
    Pass: you can see the Play Console dashboard. Fail: verification is refused, so tell me why.
