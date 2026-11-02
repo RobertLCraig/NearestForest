@@ -8,16 +8,17 @@ not_for_the_loop: needs a Google account, a payment, identity checks and an Andr
 Decided 2026-11-02: an **Organisation** account for Enhanceify Ltd, owned by the Google account
 `r@enhanceify.co.uk` (made that day; password and authenticator code in 1Password vault `Claude`,
 item "Google account r@enhanceify.co.uk (Play Console owner)").
-1. Turn on 2-step verification for `r@enhanceify.co.uk` at
-   https://myaccount.google.com/signinoptions/twosv (add your phone number). Google refused the
-   agent with "We couldn't verify that it's you".
-   Pass: the page says 2-step verification is on.
+1. ~~Turn on 2-step verification for `r@enhanceify.co.uk`.~~ Done 2026-11-02 by Rob, from his phone.
 2. ~~Get Enhanceify Ltd's D-U-N-S number.~~ Done 2026-11-02: it already existed, **232701224**
    (D&B email to r@enhanceify.co.uk). Google shows the D&B address publicly on the store page.
    Rob, 2026-11-02: the current address is fine to show for now (the building has on-site
    security). On a move, update it at D&B, in the Google payments profile and in Play Console.
-3. At https://play.google.com/console/signup, signed in as `r@enhanceify.co.uk`, choose
-   **An organisation > A company or business**, enter the D-U-N-S number and pay the US$25.
+3. The agent filled every sign-up page on 2026-11-02 (payments profile linked to the D-U-N-S,
+   public phone +44 7946 160 204 by Rob's choice, public email r@enhanceify.co.uk, Google contact
+   email play@enhanceify.co.uk, verified). Only the **Terms** page is left. It is open in the
+   "Chrome (Claude)" window. If not, go to https://play.google.com/console/u/2/signup as
+   `r@enhanceify.co.uk`. Tick the two agreement boxes, click **Create account and pay** and pay
+   the US$25. Google may then ask for ID.
    Pass: you can see the Play Console dashboard. Fail: verification is refused, so tell me why.
 4. In Play Console, create the app and upload `C:\Dev\NearestForest\android\app-release-bundle.aab`
    to a test track. Leave **Play App Signing** on (the default).
