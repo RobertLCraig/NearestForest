@@ -12,7 +12,7 @@
   "navigationDividerColor": "#0F1A12",
   "navigationDividerColorDark": "#0F1A12",
   "backgroundColor": "#0F1A12",
-  "enableNotifications": false,
+  "enableNotifications": true,
   "startUrl": "/index.html",
   "iconUrl": "https://forestlocator.enhanceify.co.uk/icons/icon-512.png",
   "maskableIconUrl": "https://forestlocator.enhanceify.co.uk/icons/icon-512.png",

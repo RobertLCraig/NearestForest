@@ -305,7 +305,19 @@ function locate(manual) {
     setStatus('Sorted by distance from you (±' + Math.round(p.coords.accuracy) + ' m).', 'ok');
   }, function (err) {
     btn.classList.remove('is-spinning');
-    var msg = { 1: 'Location permission denied. Enable it in Settings > Safari > Location.',
+    // In the Android app (a TWA), Chrome hands location to the app over a service that is
+    // still connecting on first launch, so the first request is refused before the user is
+    // ever asked. Ask once more shortly after; a real "Deny" still lands here and stops.
+    if (err.code === 1 && !manual && !locate.retried &&
+        document.referrer.indexOf('android-app://') === 0) {
+      locate.retried = true;
+      setTimeout(function () { locate(false); }, 1500);
+      return;
+    }
+    // The Safari path is iPhone-only; the Android app is a Chrome TWA, where it is app settings.
+    var msg = { 1: /Android/.test(navigator.userAgent)
+                  ? 'Location permission denied. Allow it in Settings > Apps > Forest > Permissions.'
+                  : 'Location permission denied. Enable it in Settings > Safari > Location.',
                 2: 'Your position is unavailable right now. No GPS fix.',
                 3: 'Timed out waiting for a GPS fix.' }[err.code] ||
               ('Location failed: ' + err.message);
