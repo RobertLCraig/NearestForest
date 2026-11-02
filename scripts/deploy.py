@@ -79,7 +79,8 @@ if git('rev-parse', '--verify', '--quiet', f'origin/{a.branch}')[0] != 0:
     print(f'       origin/{a.branch} does not exist yet - first deploy, nothing to compare.')
 else:
     rng = f'origin/{a.branch}..HEAD'
-    changed = [f for f in git('diff', '--name-only', rng, '--', 'app/')[1].splitlines() if f]
+    # .well-known/ is read by Android and other servers, never by the service worker.
+    changed = [f for f in git('diff', '--name-only', rng, '--', 'app/', ':(exclude)app/.well-known')[1].splitlines() if f]
     if not changed:
         print('       No changes under app/ - nothing to invalidate.')
     elif not any(l.startswith('+var CACHE') for l in git('diff', rng, '--', 'app/sw.js')[1].splitlines()):

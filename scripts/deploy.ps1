@@ -77,7 +77,8 @@ git rev-parse --verify --quiet "origin/$Branch" *> $null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "       origin/$Branch does not exist yet - first deploy, nothing to compare."
 } else {
-    $changedApp = @(git diff --name-only "origin/$Branch..HEAD" -- app/ | Where-Object { $_ })
+    # .well-known/ is read by Android and other servers, never by the service worker.
+    $changedApp = @(git diff --name-only "origin/$Branch..HEAD" -- app/ ':(exclude)app/.well-known' | Where-Object { $_ })
     if ($changedApp.Count -eq 0) {
         Write-Host "       No changes under app/ - nothing to invalidate."
     } else {
