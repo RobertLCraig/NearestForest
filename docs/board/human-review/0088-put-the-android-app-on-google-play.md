@@ -12,9 +12,8 @@ item "Google account r@enhanceify.co.uk (Play Console owner)").
    https://myaccount.google.com/signinoptions/twosv (add your phone number). Google refused the
    agent with "We couldn't verify that it's you".
    Pass: the page says 2-step verification is on.
-2. Get Enhanceify Ltd's D-U-N-S number, free, at https://service.dnb.co.uk/duns-enquiry
-   (look it up first; ask for a new one only if none exists). Google says a new one can take up to 30 days.
-   Pass: you have a nine-digit number.
+2. ~~Get Enhanceify Ltd's D-U-N-S number.~~ Done 2026-11-02: it already existed, **232701224**
+   (D&B email to r@enhanceify.co.uk). Google shows the D&B address publicly on the store page.
 3. At https://play.google.com/console/signup, signed in as `r@enhanceify.co.uk`, choose
    **An organisation > A company or business**, enter the D-U-N-S number and pay the US$25.
    Pass: you can see the Play Console dashboard. Fail: verification is refused, so tell me why.
