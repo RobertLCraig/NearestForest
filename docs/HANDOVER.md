@@ -134,8 +134,8 @@ The pieces, so a fresh session does not re-derive them:
 - **The server pulls from GitHub, but `deploy.py` pushes to `origin`, which is Forgejo since
   2026-10-25.** So no deploy between 2026-10-25 and 2026-11-02 reached the live site, while each one
   reported success. Both deploy scripts now compare the server's HEAD to local HEAD and fail when
-  they differ. **Open, waiting on Rob (2026-11-02):** push to `github` as part of a deploy, or
-  something else. The live site is at `05b25c1` until then.
+  they differ. **Rob, 2026-11-02: a deploy pushes to both `origin` and `github`**, and the
+  service-worker cache check compares against `github/main`, because that is what is live.
 - **The vhost is pinned to PHP 8.4.** It came up on 8.3 while the account CLI is 8.4, and that split
   is invisible until it wastes an hour.
 - **Do not upload by hand.** `deploy.sh` fails if `public_html` is a real directory rather than the

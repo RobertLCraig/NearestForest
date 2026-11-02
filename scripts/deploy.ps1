@@ -73,16 +73,19 @@ if (-not $SkipTest) {
 # already installed leaves every installed copy on the old dataset forever, and
 # it fails silently, which is exactly the kind of bug worth a hard stop.
 Write-Step "[2/5]" "Checking the service-worker cache key..."
-git rev-parse --verify --quiet "origin/$Branch" *> $null
+# The server pulls from GitHub, so GitHub's branch is what is live (see deploy.py).
+$Live = "github"
+git fetch --quiet $Live
+git rev-parse --verify --quiet "$Live/$Branch" *> $null
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "       origin/$Branch does not exist yet - first deploy, nothing to compare."
+    Write-Host "       $Live/$Branch does not exist yet - first deploy, nothing to compare."
 } else {
     # .well-known/ is read by Android and other servers, never by the service worker.
-    $changedApp = @(git diff --name-only "origin/$Branch..HEAD" -- app/ ':(exclude)app/.well-known' | Where-Object { $_ })
+    $changedApp = @(git diff --name-only "$Live/$Branch..HEAD" -- app/ ':(exclude)app/.well-known' | Where-Object { $_ })
     if ($changedApp.Count -eq 0) {
         Write-Host "       No changes under app/ - nothing to invalidate."
     } else {
-        $swDiff = @(git diff "origin/$Branch..HEAD" -- app/sw.js | Select-String -Pattern '^\+var CACHE' )
+        $swDiff = @(git diff "$Live/$Branch..HEAD" -- app/sw.js | Select-String -Pattern '^\+var CACHE' )
         if ($swDiff.Count -eq 0) {
             Write-Host "       $($changedApp.Count) file(s) changed under app/ but CACHE in app/sw.js was not bumped:" -ForegroundColor Yellow
             $changedApp | ForEach-Object { Write-Host "         $_" }
@@ -110,14 +113,15 @@ if ($dirty) {
 }
 
 # ── 4. Push ──────────────────────────────────────────────────────────
-Write-Step "[4/5]" "Pushing to origin/$Branch..."
-$originUrl = (git config --get remote.origin.url 2>$null)
-if (-not $originUrl) { throw "No git remote 'origin'. The server deploys by pulling, so a remote is required." }
-if ($DryRun) {
-    Write-Host "       (dry run - would run: git push origin $Branch)"
-} else {
-    git push origin $Branch
-    if ($LASTEXITCODE -ne 0) { throw "git push failed." }
+Write-Step "[4/5]" "Pushing $Branch to origin and $Live..."
+foreach ($r in @('origin', $Live)) {
+    if (-not (git config --get "remote.$r.url" 2>$null)) { throw "No git remote '$r'. origin is Forgejo; $Live is what the server pulls from." }
+    if ($DryRun) {
+        Write-Host "       (dry run - would run: git push $r $Branch)"
+    } else {
+        git push $r $Branch
+        if ($LASTEXITCODE -ne 0) { throw "git push $r failed." }
+    }
 }
 
 # ── 5. Trigger the server-side deploy ────────────────────────────────
@@ -136,9 +140,9 @@ $exit = $LASTEXITCODE
 # Same check as deploy.py; see the comment there.
 if ($exit -eq 0) {
     $local = (git rev-parse HEAD).Trim()
-    $live = "$(ssh $SshHost "git -C `"`$HOME/$RemoteDir`" rev-parse HEAD")".Trim()
-    if ($live -ne $local) {
-        Write-Host "FAIL: server is at $live, local HEAD is $local. Nothing shipped." -ForegroundColor Red
+    $serverHead = "$(ssh $SshHost "git -C `"`$HOME/$RemoteDir`" rev-parse HEAD")".Trim()
+    if ($serverHead -ne $local) {
+        Write-Host "FAIL: server is at $serverHead, local HEAD is $local. Nothing shipped." -ForegroundColor Red
         Write-Host "      The server pulls from a remote that was not pushed to. Check: ssh $SshHost git -C $RemoteDir remote -v" -ForegroundColor Red
         $exit = 1
     }

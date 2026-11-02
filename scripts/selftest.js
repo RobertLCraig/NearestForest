@@ -3892,8 +3892,12 @@ console.log('\n--- the deploy trigger runs without pwsh (card 0087) ---');
     write('app/a.js', '1\n');
     git('add', '-A');
     git('commit', '-q', '-m', 'base');
-    git('remote', 'add', 'origin', dir);
-    git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+    // deploy.py fetches `github` (what the server pulls) and compares against it, so that
+    // remote must hold the base commit. A bare clone made now does; origin is never read.
+    const live = dir + '-live';
+    git('clone', '-q', '--bare', dir, live);
+    git('remote', 'add', 'origin', live);
+    git('remote', 'add', 'github', live);
 
     write('app/a.js', '2\n');
     git('commit', '-q', '-am', 'app change, CACHE not bumped');
@@ -3903,19 +3907,22 @@ console.log('\n--- the deploy trigger runs without pwsh (card 0087) ---');
        && !stale.out.includes('would run: git push'), tail(stale));
     const forced = deploy('--force');
     ok('deploy.py --force ships a stale CACHE anyway',
-       forced.status === 0 && forced.out.includes('would run: git push origin main'), tail(forced));
+       forced.status === 0 && forced.out.includes('would run: git push origin main')
+       && forced.out.includes('would run: git push github main'), tail(forced));
 
     write('app/sw.js', "var CACHE = 'v2';\n");
     git('commit', '-q', '-am', 'bump CACHE');
     const bumped = deploy();
     ok('deploy.py with CACHE bumped prints the push and SSH lines it would run',
        bumped.status === 0 && bumped.out.includes('would run: git push origin main')
+       && bumped.out.includes('would run: git push github main')
        && bumped.out.includes('would run: ssh hostinger')
        && bumped.out.includes('scripts/deploy.sh'), tail(bumped));
   } catch (e) {
     ok('deploy.py fixture builds', false, String(e.message).split('\n')[0]);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(dir + '-live', { recursive: true, force: true });
   }
 }
 

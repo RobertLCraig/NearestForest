@@ -75,10 +75,15 @@ else:
 # cache key that is already installed leaves every installed copy on the old dataset forever,
 # and it fails silently, which is exactly the kind of bug worth a hard stop.
 step('[2/5]', 'Checking the service-worker cache key...')
-if git('rev-parse', '--verify', '--quiet', f'origin/{a.branch}')[0] != 0:
-    print(f'       origin/{a.branch} does not exist yet - first deploy, nothing to compare.')
+# The server pulls from GitHub, so GitHub's branch is what is live. Origin (Forgejo) gets
+# ordinary pushes and can be ahead of the live site. Rob, 2026-11-02: a deploy pushes to both.
+LIVE = 'github'
+if git('fetch', '--quiet', LIVE)[0] != 0:
+    die(f"git fetch {LIVE} failed, so what is live cannot be compared. Is the remote '{LIVE}' set?")
+if git('rev-parse', '--verify', '--quiet', f'{LIVE}/{a.branch}')[0] != 0:
+    print(f'       {LIVE}/{a.branch} does not exist yet - first deploy, nothing to compare.')
 else:
-    rng = f'origin/{a.branch}..HEAD'
+    rng = f'{LIVE}/{a.branch}..HEAD'
     # .well-known/ is read by Android and other servers, never by the service worker.
     changed = [f for f in git('diff', '--name-only', rng, '--', 'app/', ':(exclude)app/.well-known')[1].splitlines() if f]
     if not changed:
@@ -105,13 +110,14 @@ else:
     print('       Clean.')
 
 # 4. Push
-step('[4/5]', f'Pushing to origin/{a.branch}...')
-if not git('config', '--get', 'remote.origin.url')[1].strip():
-    die("No git remote 'origin'. The server deploys by pulling, so a remote is required.")
-if a.dry_run:
-    print(f'       (dry run - would run: git push origin {a.branch})')
-elif subprocess.run(['git', 'push', 'origin', a.branch]).returncode != 0:
-    die('git push failed.')
+step('[4/5]', f'Pushing {a.branch} to origin and {LIVE}...')
+for r in ('origin', LIVE):
+    if not git('config', '--get', f'remote.{r}.url')[1].strip():
+        die(f"No git remote '{r}'. origin is Forgejo; {LIVE} is what the server pulls from.")
+    if a.dry_run:
+        print(f'       (dry run - would run: git push {r} {a.branch})')
+    elif subprocess.run(['git', 'push', r, a.branch]).returncode != 0:
+        die(f'git push {r} failed.')
 
 # 5. Trigger the server-side deploy
 step('[5/5]', f'Running deploy.sh on {a.ssh_host}...')
