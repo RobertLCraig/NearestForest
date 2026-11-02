@@ -18,10 +18,7 @@ item "Google account r@enhanceify.co.uk (Play Console owner)").
 3. At https://play.google.com/console/signup, signed in as `r@enhanceify.co.uk`, choose
    **An organisation > A company or business**, enter the D-U-N-S number and pay the US$25.
    Pass: you can see the Play Console dashboard. Fail: verification is refused, so tell me why.
-4. If you have an Android phone, copy `C:\Dev\NearestForest\android\app-release-signed.apk` to it and open it.
-   Pass: the app opens with **no browser address bar**, asks for location, and lists forests.
-   Fail: a bar shows at the top (the server link file is wrong) or the list stays empty.
-5. In Play Console, create the app and upload `C:\Dev\NearestForest\android\app-release-bundle.aab`
+4. In Play Console, create the app and upload `C:\Dev\NearestForest\android\app-release-bundle.aab`
    to a test track. Leave **Play App Signing** on (the default).
    Pass: the upload is accepted. Then send me the **SHA-256** from *Test and release > App integrity > App signing key certificate*.
 
