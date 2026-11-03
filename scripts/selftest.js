@@ -4195,8 +4195,9 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
 
     // Resolve the real binary: `php` on PATH here is a .cmd shim, and a server spawned
     // through a shell cannot be killed through it on Windows.
-    // One command string, no spaces in the -r code: the shell gets nothing to quote.
-    const which = spawnSync('php -r echo(PHP_BINARY);', { encoding: 'utf8', shell: true });
+    // One command string with the -r code in double quotes: cmd.exe and /bin/sh both take
+    // that as one argument, and sh refuses the bare parentheses an unquoted echo(...) needs.
+    const which = spawnSync('php -r "echo PHP_BINARY;"', { encoding: 'utf8', shell: true });
     const PHP = (which.stdout || '').trim();
     if (!PHP || which.status !== 0) {
       ok(NAME, false, 'php not runnable: ' + ((which.error && which.error.message) || (which.stderr || '').trim() || 'no output'));
@@ -4292,7 +4293,7 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
     const N2 = 'a salt that cannot be stored still counts one address in one file (card 0012)';
     const N3 = 'an address at the cap gets 429 on the environment-key layout (card 0012)';
 
-    const which = spawnSync('php -r echo(PHP_BINARY);', { encoding: 'utf8', shell: true });
+    const which = spawnSync('php -r "echo PHP_BINARY;"', { encoding: 'utf8', shell: true });
     const PHP = (which.stdout || '').trim();
     if (!PHP || which.status !== 0) {
       for (const n of [N1, N2, N3]) ok(n, false, 'php not runnable');
