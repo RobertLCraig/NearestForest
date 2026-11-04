@@ -1,11 +1,11 @@
-/* Nearest Forest service worker.
+/* Forest Locator service worker.
 
    Precaches the whole app including the dataset, so the app works with no signal.
    Bump CACHE when the app or the data changes: the old cache is then deleted on activate,
    which is the only reliable way to retire a stale dataset on iOS. */
 'use strict';
 
-var CACHE = 'nearest-forest-v32-2026-11-02';
+var CACHE = 'nearest-forest-v33-2026-11-04';
 var ASSETS = [
   './',
   './index.html',

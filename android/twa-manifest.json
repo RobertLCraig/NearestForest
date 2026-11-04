@@ -1,7 +1,7 @@
 {
   "packageId": "uk.co.enhanceify.forestlocator",
   "host": "forestlocator.enhanceify.co.uk",
-  "name": "Nearest Forest",
+  "name": "Forest Locator",
   "launcherName": "Forest",
   "display": "standalone",
   "orientation": "portrait",

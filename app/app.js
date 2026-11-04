@@ -1,4 +1,4 @@
-/* Nearest Forest — UI layer. All pure logic lives in core.js (window.NF) so it can be
+/* Forest Locator — UI layer. All pure logic lives in core.js (window.NF) so it can be
    tested in node by scripts/selftest.js against the real shipped code. */
 'use strict';
 

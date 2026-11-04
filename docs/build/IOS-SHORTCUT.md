@@ -24,7 +24,7 @@ and fix the deploy: every step below depends on this responding.
 
 ## The Shortcut
 
-Shortcuts app → **+** → rename to **Nearest Forest** (this is the Siri phrase, so keep it short and
+Shortcuts app → **+** → rename to **Forest Locator** (this is the Siri phrase, so keep it short and
 say it out loud once to check it dictates cleanly).
 
 | # | Action | Settings |
@@ -61,7 +61,7 @@ flexibility you never use, and that is part of what the two-method comparison is
 
 ## Running it hands-free
 
-"Hey Siri, Nearest Forest". Siri reads the list aloud and accepts a spoken choice.
+"Hey Siri, Forest Locator". Siri reads the list aloud and accepts a spoken choice.
 
 Add it to CarPlay: Shortcuts → the shortcut → **(i)** → **Add to Home Screen** puts it on the phone;
 CarPlay surfaces shortcuts through the Shortcuts CarPlay app, so pin it there too.

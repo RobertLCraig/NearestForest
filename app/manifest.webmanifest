@@ -1,5 +1,5 @@
 {
-  "name": "Nearest Forest",
+  "name": "Forest Locator",
   "short_name": "Forest",
   "description": "Closest Forestry England site, one tap to navigate.",
   "start_url": "./index.html",

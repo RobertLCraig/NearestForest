@@ -1,4 +1,4 @@
-/* Self-test for Nearest Forest.
+/* Self-test for Forest Locator.
 
    Exercises the real shipped app/core.js against the real generated dataset, so this
    cannot pass while the app is broken. Run: node scripts/selftest.js

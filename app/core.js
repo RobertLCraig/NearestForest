@@ -1,4 +1,4 @@
-/* Nearest Forest — pure logic, no DOM.
+/* Forest Locator — pure logic, no DOM.
 
    Kept separate from app.js so scripts/selftest.js can exercise the real shipped code in
    node rather than a copy that drifts. Loaded as a plain script in the browser (defines
@@ -13,7 +13,7 @@
   /* Shown in the footer so "which version is this phone actually running"
      is answerable by looking, not by guessing. A self-test asserts it matches
      the service worker CACHE name, so the two cannot drift. */
-  var BUILD = 'v32-2026-11-02';
+  var BUILD = 'v33-2026-11-04';
 
   var ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
   var POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];

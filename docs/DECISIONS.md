@@ -3,6 +3,16 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-11-04: The app is called "Forest Locator"
+**Decision:** The name people see is "Forest Locator": the page title and header, the web manifest,
+the Android app and the Play listing. The home-screen label stays "Forest". The repo, folder,
+Paperclip project, keystore and 1Password items keep the `NearestForest` identifier, and the
+service-worker cache keeps its `nearest-forest-` prefix, because renaming those changes nothing a
+user sees and breaks paths.
+**Why:** Rob, while creating the Play app: the name should match the address
+(forestlocator.enhanceify.co.uk) and the package (`uk.co.enhanceify.forestlocator`).
+**Status:** active
+
 ## 2026-11-02: Android ships as a Trusted Web Activity wrapping the live site
 **Decision:** The Android app is a Bubblewrap-generated TWA (`android/`) that opens
 https://forestlocator.enhanceify.co.uk/, listed on Google Play. No native rewrite, no bundled copy.

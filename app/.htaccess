@@ -1,4 +1,4 @@
-# Nearest Forest — static PWA on Apache/LiteSpeed shared hosting.
+# Forest Locator — static PWA on Apache/LiteSpeed shared hosting.
 
 # Apache does not know .webmanifest by default; without this iOS ignores the manifest.
 AddType application/manifest+json .webmanifest

@@ -24,7 +24,7 @@ def twaManifest = [
     applicationId: 'uk.co.enhanceify.forestlocator',
     hostName: 'forestlocator.enhanceify.co.uk', // The domain being opened in the TWA.
     launchUrl: '/index.html', // The start path for the TWA. Must be relative to the domain.
-    name: 'Nearest Forest', // The application name.
+    name: 'Forest Locator', // The application name.
     launcherName: 'Forest', // The name shown on the Android Launcher.
     themeColor: '#0F1A12', // The color used for the status bar.
     themeColorDark: '#0F1A12', // The color used for the dark status bar.
