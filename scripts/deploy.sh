@@ -14,7 +14,7 @@
 #  the 142MB scrape cache out of the web root.
 #
 #  Usage (on server): bash ~/domains/forestlocator.enhanceify.co.uk/repo/scripts/deploy.sh
-#  Usage (locally):   pwsh ./scripts/deploy.ps1   (companion wrapper)
+#  Usage (locally):   python3 scripts/deploy.py   (companion trigger; deploy.ps1 is its laptop-only twin)
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
