@@ -45,13 +45,12 @@
 </header>
 
 <main>
-  <ol id="list" class="list" aria-label="Sites sorted by distance"></ol>
+  <!-- Two copies, filled by app.js: campsites run to well over 100 pages, so the jump
+       list has to be reachable without scrolling past 25 rows first. -->
+  <nav class="pager" data-pager aria-label="Pages, top" hidden></nav>
+  <ol id="list"class="list" aria-label="Sites sorted by distance"></ol>
   <p id="empty" class="empty" hidden>No sites match that filter.</p>
-  <nav id="pager" class="pager" aria-label="Pages" hidden>
-    <button id="page-prev" class="btn btn--ghost">Previous</button>
-    <span id="page-info" class="pager__info" aria-live="polite"></span>
-    <button id="page-next" class="btn btn--ghost">Next</button>
-  </nav>
+  <nav class="pager" data-pager aria-label="Pages, bottom" hidden></nav>
   <footer class="foot">
     <p id="meta"></p>
     <!-- Said plainly because it is unusually true here: the app has no server to send

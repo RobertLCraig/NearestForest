@@ -57,11 +57,24 @@ function render() {
   var pages = Math.max(1, Math.ceil(sites.length / PER_PAGE));
   PAGE = Math.min(PAGE, pages - 1);
   var first = PAGE * PER_PAGE;
-  $('#pager').hidden = pages < 2;
-  $('#page-prev').disabled = PAGE === 0;
-  $('#page-next').disabled = PAGE === pages - 1;
-  $('#page-info').textContent = (first + 1) + '–' + Math.min(first + PER_PAGE, sites.length) +
-    ' of ' + sites.length;
+  var btn = function (to, glyph, label, off) {
+    return '<button class="btn btn--ghost pager__btn" data-page="' + to + '" aria-label="' + label +
+      '"' + (off ? ' disabled' : '') + '>' + glyph + '</button>';
+  };
+  var opts = '';
+  for (var p = 0; p < pages; p++) {
+    opts += '<option value="' + p + '"' + (p === PAGE ? ' selected' : '') + '>Page ' + (p + 1) +
+      ' of ' + pages + '</option>';
+  }
+  var pagerHtml = btn(0, '«', 'First page', PAGE === 0) +
+    btn(PAGE - 1, '‹', 'Previous page', PAGE === 0) +
+    '<select class="pager__jump" aria-label="Go to page">' + opts + '</select>' +
+    btn(PAGE + 1, '›', 'Next page', PAGE === pages - 1) +
+    btn(pages - 1, '»', 'Last page', PAGE === pages - 1);
+  document.querySelectorAll('[data-pager]').forEach(function (n) {
+    n.hidden = pages < 2;
+    n.innerHTML = pagerHtml;
+  });
 
   listEl.innerHTML = sites.slice(first, first + PER_PAGE).map(function (s, j) {
     var i = first + j;
@@ -362,6 +375,9 @@ document.addEventListener('click', function (e) {
 
   if (t.closest('[data-close]')) { closeSheets(); return; }
 
+  var pg = t.closest('[data-page]');
+  if (pg) { goPage(+pg.getAttribute('data-page')); return; }
+
   var tab = t.closest('.tab');
   if (tab) {
     TAB = tab.getAttribute('data-tab');
@@ -389,9 +405,10 @@ $('#sheet-nav').addEventListener('click', function () {
   if (TARGET) openChooser(TARGET);
 });
 $('#filter').addEventListener('input', function (e) { FILTER = e.target.value.trim(); PAGE = 0; render(); });
-function turnPage(by) { PAGE += by; render(); window.scrollTo(0, 0); }
-$('#page-prev').addEventListener('click', function () { turnPage(-1); });
-$('#page-next').addEventListener('click', function () { turnPage(1); });
+function goPage(p) { PAGE = p; render(); window.scrollTo(0, 0); }
+document.addEventListener('change', function (e) {
+  if (e.target.classList.contains('pager__jump')) goPage(+e.target.value);
+});
 
 /* ---------- map ---------- */
 /* The map reads the same ranked list the rows are built from, so the two can
