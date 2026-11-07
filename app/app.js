@@ -436,6 +436,18 @@ Promise.all([
   listEl.innerHTML = '';
 });
 
+/* The Android app (a TWA) opens this page with an android-app:// referrer. A later page
+   load (back from privacy.html) loses it, so the session remembers. Play bars payment
+   links other than Play billing inside the app, so the tip link shows everywhere else. */
+(function () {
+  var inApp = document.referrer.indexOf('android-app://') === 0;
+  try {
+    if (inApp) sessionStorage.setItem('nf-in-app', '1');
+    else inApp = sessionStorage.getItem('nf-in-app') === '1';
+  } catch (e) { /* no storage: only the first page load can tell */ }
+  $('#tip').hidden = inApp;
+})();
+
 if ('serviceWorker' in navigator) {
   /* A page loaded under the old worker keeps running the old code even after the new
      one has installed and taken over, so a deploy needed TWO online launches to appear
