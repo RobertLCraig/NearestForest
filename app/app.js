@@ -10,6 +10,8 @@ var TAB = 'forest';
 var FILTER = '';
 var TARGET = null;            // site queued for the map chooser
 var RENDERED = [];            // last ranked list; holds the _mi/_bear copies
+var PAGE = 0;                 // list page, 0-based; the map always shows every site
+var PER_PAGE = 25;
 var LS_KEY = 'nf.lastpos';
 
 /* Who published a page, keyed on the host of the page itself, with `www.` already
@@ -50,7 +52,19 @@ function render() {
     : 'No sites match that filter.';
   if (typeof NFMap !== 'undefined') NFMap.refresh();
 
-  listEl.innerHTML = sites.map(function (s, i) {
+  /* Clamped, not reset: a fresh GPS fix re-renders, and that must not throw the user
+     back to page 1. Tab and filter changes reset PAGE themselves. */
+  var pages = Math.max(1, Math.ceil(sites.length / PER_PAGE));
+  PAGE = Math.min(PAGE, pages - 1);
+  var first = PAGE * PER_PAGE;
+  $('#pager').hidden = pages < 2;
+  $('#page-prev').disabled = PAGE === 0;
+  $('#page-next').disabled = PAGE === pages - 1;
+  $('#page-info').textContent = (first + 1) + '–' + Math.min(first + PER_PAGE, sites.length) +
+    ' of ' + sites.length;
+
+  listEl.innerHTML = sites.slice(first, first + PER_PAGE).map(function (s, j) {
+    var i = first + j;
     var st = NF.openState(s);
     var nearest = (i === 0 && POS && !FILTER);
     var sub = [];
@@ -351,6 +365,7 @@ document.addEventListener('click', function (e) {
   var tab = t.closest('.tab');
   if (tab) {
     TAB = tab.getAttribute('data-tab');
+    PAGE = 0;
     document.querySelectorAll('.tab').forEach(function (b) {
       var on = (b === tab);
       b.classList.toggle('is-active', on);
@@ -373,7 +388,10 @@ $('#sheet-nav').addEventListener('click', function () {
   closeSheet($('#sheet'));
   if (TARGET) openChooser(TARGET);
 });
-$('#filter').addEventListener('input', function (e) { FILTER = e.target.value.trim(); render(); });
+$('#filter').addEventListener('input', function (e) { FILTER = e.target.value.trim(); PAGE = 0; render(); });
+function turnPage(by) { PAGE += by; render(); window.scrollTo(0, 0); }
+$('#page-prev').addEventListener('click', function () { turnPage(-1); });
+$('#page-next').addEventListener('click', function () { turnPage(1); });
 
 /* ---------- map ---------- */
 /* The map reads the same ranked list the rows are built from, so the two can

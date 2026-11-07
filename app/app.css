@@ -111,8 +111,13 @@ button { font:inherit; color:inherit; }
   background:var(--accent); color:var(--accent-ink); font-size:24px; font-weight:700; cursor:pointer;
 }
 .empty { padding:24px var(--pad); color:var(--dim); text-align:center; }
+.pager { display:flex; align-items:center; gap:10px; padding:12px var(--pad) 0; }
+.pager .btn { flex:1; font-size:16px; color:var(--fg); }
+.pager .btn:disabled { opacity:.35; cursor:default; }
+.pager__info { flex:0 0 auto; color:var(--dim); font-size:14px; }
 .foot { padding:18px var(--pad) calc(var(--safe-b) + 28px); color:var(--dim); font-size:12px; line-height:1.5; }
 .foot p { margin:0 0 6px; }
+.foot a { color:var(--accent); }
 
 /* ---------- sheets ---------- */
 /* ---------- map ----------
