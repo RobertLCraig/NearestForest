@@ -269,6 +269,11 @@ function openSheet(site) {
 function openChooser(site) {
   TARGET = site;
   $('#chooser-sub').textContent = site.name + (site.postcode_satnav ? ' · ' + site.postcode_satnav : '');
+  // Android has no Apple Maps, and Waze may not be there either; "Other maps app" lets
+  // Android list what is installed. iPhone and desktop have no geo: handler, so the reverse.
+  var android = /Android/.test(navigator.userAgent);
+  document.querySelectorAll('[data-android]').forEach(function (b) { b.hidden = !android; });
+  document.querySelectorAll('[data-not-android]').forEach(function (b) { b.hidden = android; });
   showSheet($('#chooser'));
 }
 

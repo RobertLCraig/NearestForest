@@ -58,7 +58,7 @@ In priority order.
 - Per-site detail: name, sat-nav postcode, opening times, parking charges, facilities, and a link to
   the page of whichever agency published the site, labelled with that agency's name, which is read
   off the link's own host rather than assumed.
-- Map app chooser on tap: Apple Maps / Google Maps / Waze, asked each time.
+- Map app chooser on tap, asked each time: Apple Maps / Google Maps / Waze on iPhone and desktop; on Android, Google Maps / "Other maps app" (a `geo:` link, so Android lists the maps apps that are installed).
 - Two front ends: an installable PWA and an iOS Shortcut, both reading the same generated dataset.
 - A re-runnable data pipeline, since both sources change under us.
 

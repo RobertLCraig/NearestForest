@@ -3,6 +3,17 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-11-07: On Android, the phone lists its own maps apps
+**Decision:** On Android the chooser shows "Google Maps" and "Other maps app". Apple Maps and Waze
+are hidden there. "Other maps app" opens a `geo:` link, and Android answers it with its own list of
+the maps apps that are installed (or opens the one set as default). iPhone and desktop keep
+Apple Maps / Google Maps / Waze.
+**Why:** On Rob's Android test phone the chooser offered Apple Maps and Waze, and neither was
+installed. A web page (the Android app is a TWA, so it is one) cannot see which apps are on the
+phone; Android can, so it does the listing. Google Maps stays as a direct button because nearly
+every Android phone has it, and it is the way out if no app answers `geo:`.
+**Status:** active
+
 ## 2026-11-04: The app is called "Forest Locator"
 **Decision:** The name people see is "Forest Locator": the page title and header, the web manifest,
 the Android app and the Play listing. The home-screen label stays "Forest". The repo, folder,

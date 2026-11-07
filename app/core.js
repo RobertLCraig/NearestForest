@@ -226,6 +226,12 @@
     if (app === 'waze') {
       return 'https://waze.com/ul?ll=' + encodeURIComponent(ll) + '&navigate=yes';
     }
+    // Android only. A web page cannot see which apps are installed, but Android can: it
+    // answers a geo: link with its own list of every installed maps app (or the default).
+    // https://developer.android.com/guide/components/intents-common#Maps
+    if (app === 'geo') {
+      return 'geo:0,0?q=' + encodeURIComponent(ll);
+    }
     return null;
   }
 

@@ -14,7 +14,7 @@ Nearest forests, car parks and campsites in Great Britain. Works with no signal.
 **Full description:**
 
 Forest Locator lists forests, forest car parks and campsites across England, Scotland and Wales,
-nearest first. Tap one and it opens in Google Maps or Waze to take you there.
+nearest first. Tap one and it opens in Google Maps, or any other maps app on your phone, to take you there.
 
 Made for the car and for places with no signal:
 - Works fully offline once opened. All sites are stored on your phone.

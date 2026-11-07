@@ -231,6 +231,9 @@ ok('google maps url',
 ok('waze url',
    NF.navUrl('waze', site) === 'https://waze.com/ul?ll=51.072249%2C0.447006&navigate=yes',
    NF.navUrl('waze', site));
+ok('android geo url',
+   NF.navUrl('geo', site) === 'geo:0,0?q=51.072249%2C0.447006',
+   NF.navUrl('geo', site));
 ok('unknown map app returns null', NF.navUrl('bing', site) === null);
 
 console.log('\n--- dataset integrity ---');
