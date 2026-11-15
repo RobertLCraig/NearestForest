@@ -1,0 +1,80 @@
+# CI for NearestForest. Runs the same checks scripts/deploy.py runs before it deploys.
+# It never deploys: deploy is scripts/deploy.py, run by Rob from his own machine over SSH
+# (README.md, "CI and deploy").
+#
+# Left out on purpose, because CI has neither the data nor the secrets for them:
+# - the scrape pipeline (fetch.py, fetch_campsites.py, build_boundary.py): it hits
+#   forestryengland.uk and other live sites, and parse.py reads the gitignored 142MB
+#   scrape cache in data/raw/. The committed app/data/*.json is what the self-test checks.
+# - deploy.py steps 3 to 5 (clean tree, push, ssh to the host): they need the SSH alias
+#   and key, which live on Rob's machine and not in this repository.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The cache-key guard diffs against the base commit, so it needs history.
+          fetch-depth: 0
+
+      # The project documents no Node or Python version. These match the laptop the
+      # suite was last verified on. PHP 8.4 is the version the live vhost is pinned to
+      # (docs/DECISIONS.md).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install Python requirements
+        run: python -m pip install -r requirements.txt
+
+      # deploy.py step 1. Covers app/core.js, the dataset, api/nearest.php under php-cli,
+      # the parse.py validators against fixtures, .htaccess headers and the secret guard.
+      - name: Self-test
+        run: node scripts/selftest.js
+
+      # deploy.py step 2, against the branch the change lands on instead of the live
+      # server. GitHub main is what the server pulls, so on a pull request the base is
+      # what is live. An app/ change shipped under an unchanged service-worker CACHE key
+      # leaves every installed copy on the old files, silently.
+      - name: Service-worker cache key was bumped
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+        run: |
+          if ! git rev-parse --verify --quiet "$BASE^{commit}" >/dev/null; then
+            # A new branch or a force-push leaves no reachable base. Say so, do not fail.
+            echo "::warning::No base commit to compare ($BASE), so the cache key was not checked."
+            exit 0
+          fi
+          changed=$(git diff --name-only "$BASE" HEAD -- app/ ':(exclude)app/.well-known')
+          if [ -z "$changed" ]; then
+            echo "No changes under app/, nothing to invalidate."
+          elif git diff "$BASE" HEAD -- app/sw.js | grep -q '^+var CACHE'; then
+            echo "OK: CACHE was bumped alongside the app/ changes."
+          else
+            echo "::error file=app/sw.js::Files changed under app/ but CACHE in app/sw.js was not bumped:"
+            echo "$changed"
+            exit 1
+          fi

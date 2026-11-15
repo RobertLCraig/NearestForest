@@ -119,6 +119,9 @@ python3 scripts/deploy.py        # test, guard the cache key, push, pull on the 
 python3 scripts/deploy.py --dry-run   # every step shown, nothing changed
 ```
 
+CI (`.github/workflows/ci.yml`, added 2026-11-15) runs the self-test and the cache-key guard on
+every pull request and push to `main` on GitHub. It never deploys; README.md, "CI and deploy".
+
 The pieces, so a fresh session does not re-derive them:
 
 - **DNS is at Cloudflare, not Hostinger.** `enhanceify.co.uk` runs on Cloudflare nameservers, so
