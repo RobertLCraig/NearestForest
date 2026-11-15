@@ -41,7 +41,7 @@ function htaccessDirectives() {
     fs.readFileSync(path.join(ROOT, 'app', '.htaccess'), 'utf8'));
 }
 
-const BRIGHTON = { lat: 50.8168, lng: -0.0894 };   // Marine Gate, Marine Drive, BN2 5TP
+const BRIGHTON = { lat: 50.8225, lng: -0.1426 };   // central Brighton (about the Clock Tower); any town point will do
 
 console.log('\n--- geometry ---');
 // Brighton -> London, great-circle, cross-checked against a manual haversine.
@@ -3941,7 +3941,7 @@ ok('filter narrows results', NF.rank(sites, 'forest', BRIGHTON, 'friston').lengt
 ok('no-position ranking falls back to alphabetical',
    (() => { const a = NF.rank(sites, 'forest', null, ''); return a[0].name.localeCompare(a[1].name) <= 0; })());
 
-console.log('\n  Nearest 6 forests to Marine Gate, Brighton:');
+console.log('\n  Nearest 6 forests to central Brighton:');
 rankedF.slice(0, 6).forEach(s => {
   const st = NF.openState(s);
   console.log(`    ${s._mi.toFixed(1).padStart(5)} mi ${NF.POINTS[NF.compassIdx(s._bear)].padEnd(3)} ` +
