@@ -3,6 +3,22 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-11-16: Wide-screen layout council, stopped at 9.3 after three rounds
+**Decision:** The wide-screen layout ships at the council's round-3 scores (two Opus reviewers,
+one Fable, one with an accessibility brief): round 1 8.0 / 7.4 / 7.0, round 2 9.0 / 8.8 / 8.8,
+round 3 9.3 / 9.3 / 9.3. The rule (Coding-Standard §9) stops at three rounds and goes to Rob.
+All three ranked the accessibility review most useful in rounds 1 and 2.
+Still open, with the reason each was not done:
+- Spare map on a tall foldable pane. Fitting more sites to fill the height zoomed out until every
+  label was lost, so it was reverted (comment in `map.js` `fitToInterest`).
+- A name on every dot. It crowds the map, and tapping a dot opens its card.
+- A one-device-pixel line of card text along the card's rounded bottom edge, under Navigate. It
+  is a compositing leak at the scroll container's clip; moving the sticky bar and painting past
+  it did not remove it.
+- With "you" in the fit, the open site can sit off-centre in the strip above the card.
+**Why:** The budget rule, and the remaining points are small or were tried and made worse.
+**Status:** active
+
 ## 2026-11-16: Wide screens show the list beside a map
 **Decision:** At 720px wide and up (an unfolded foldable, a tablet, most phones on their side),
 `app.js` sets `body.is-split`: the list (header included) is one scrolling column and the map is
