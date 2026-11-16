@@ -190,3 +190,22 @@ body.is-mapping { overflow:hidden; }
 .btn--ghost { flex:0 0 auto; color:var(--dim); }
 .btn--map { width:100%; margin-bottom:8px; font-size:18px; }
 .chooser { margin-top:6px; }
+
+/* ---------- phone on its side ----------
+   Stacked, the sticky header (title, status, tabs, filter) is taller than half of a
+   landscape phone's height, leaving the list a strip. So on a short, wide screen the
+   header becomes a left column that stays put and the list scrolls beside it. The
+   height test keeps tablets and desktops, which have room, on the normal layout. */
+@media (orientation:landscape) and (max-height:540px) {
+  body { display:grid; grid-template-columns:minmax(290px, 36%) minmax(0, 1fr); align-items:start; }
+  .bar {
+    height:100vh; height:100dvh; overflow-y:auto;
+    border-bottom:0; border-right:1px solid var(--line);
+    padding-left:calc(env(safe-area-inset-left, 0px) + var(--pad));
+    padding-bottom:var(--pad);
+  }
+  main { padding-right:env(safe-area-inset-right, 0px); }
+  /* Full width, a sheet would stretch its text and buttons across the whole phone. */
+  .sheet { justify-content:center; }
+  .sheet__panel { max-width:620px; max-height:94vh; }
+}

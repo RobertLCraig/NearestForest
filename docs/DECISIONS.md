@@ -3,6 +3,15 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-11-16: The app turns sideways
+**Decision:** Orientation is `any` in `app/manifest.webmanifest` and `android/twa-manifest.json`,
+replacing `portrait`. On a short, wide screen (landscape and at most 540px tall) the header becomes
+a left column and the list scrolls beside it; sheets are centred and capped at 620px wide.
+**Why:** Rob found it locked upright when Waze and Google Maps, which turn sideways, handed back to
+it. Stacked, the sticky header takes over half of a landscape phone's height, so a plain unlock
+would have left the list a strip.
+**Status:** active
+
 ## 2026-11-07: On Android, the phone lists its own maps apps
 **Decision:** On Android the chooser shows "Google Maps" and "Other maps app". Apple Maps and Waze
 are hidden there. "Other maps app" opens a `geo:` link, and Android answers it with its own list of
