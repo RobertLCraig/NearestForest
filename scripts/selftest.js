@@ -4063,7 +4063,7 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
         querySelector: sel => (sel === '.map__bar'
           ? { getBoundingClientRect: () => ({ top: 47, bottom: 81, left: 0, right: 390 }) }
           : null),
-        querySelectorAll: () => [],
+        querySelectorAll: () => [], addEventListener() {},
         documentElement: {}, body: { classList: { add() {}, remove() {} } } },
       { devicePixelRatio: 1, addEventListener() {} },
       () => ({ getPropertyValue: () => '' }),
