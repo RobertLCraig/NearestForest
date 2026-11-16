@@ -4023,7 +4023,8 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
       beginPath: paint('beginPath'), moveTo: paint('moveTo'), lineTo: paint('lineTo'),
       closePath: paint('closePath'), fill: paint('fill'), stroke: paint('stroke'),
       arc: paint('arc'), fillText: paint('fillText'), strokeText: paint('strokeText'),
-      setLineDash: paint('setLineDash'), drawImage: paint('drawImage')
+      setLineDash: paint('setLineDash'), drawImage: paint('drawImage'),
+      measureText: t => ({ width: String(t).length * 7 })
     };
     const node = () => {
       const n = {
@@ -4033,7 +4034,8 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
         setAttribute(k, v) { n.attrs[k] = v; },
         classList: { add() {}, remove() {}, toggle(c, v) { n.attrs[c] = v; } },
         getBoundingClientRect: () => ({ width: 390, height: 640, left: 0, top: 0 }),
-        getContext: () => ctx
+        getContext: () => ctx,
+        querySelectorAll: () => []           // map.js measures its buttons; none here
       };
       return n;
     };
@@ -4061,6 +4063,7 @@ NF.rank(CAMP.sites, 'campsite', BRIGHTON, '').slice(0, 5).forEach(s => {
         querySelector: sel => (sel === '.map__bar'
           ? { getBoundingClientRect: () => ({ top: 47, bottom: 81, left: 0, right: 390 }) }
           : null),
+        querySelectorAll: () => [],
         documentElement: {}, body: { classList: { add() {}, remove() {} } } },
       { devicePixelRatio: 1, addEventListener() {} },
       () => ({ getPropertyValue: () => '' }),

@@ -147,6 +147,26 @@ var NFMap = (function () {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
 
+  /* What covers the canvas, as [x0, y0, x1, y1] boxes in canvas px: the button bar and,
+     on a wide screen, an open card. Measured, because both move with the device. */
+  function canvasBox(el) {
+    var c = canvas.getBoundingClientRect(), b = el.getBoundingClientRect();
+    return [b.left - c.left, b.top - c.top, b.right - c.left, b.bottom - c.top];
+  }
+  function blockedBoxes() {
+    var out = [];
+    wrap.querySelectorAll('.map__btn').forEach(function (b) {
+      if (b.offsetParent) out.push(canvasBox(b));
+    });
+    if (docked) {
+      document.querySelectorAll('.sheet:not([hidden]) .sheet__panel').forEach(function (p) {
+        out.push(canvasBox(p));
+      });
+    }
+    return out;
+  }
+  function overlaps(a, b) { return a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]; }
+
   function sx(wx) { return (wx - view.cx) * view.scale + W / 2; }
   function sy(wy) { return (wy - view.cy) * view.scale + H / 2; }
 
@@ -342,10 +362,13 @@ var NFMap = (function () {
     var zoomed = view.scale > minScale * 5;
     var r = zoomed ? 5 : 3.5;
 
-    var visible = [];
+    /* The open site is never folded into a group: its ring and label must sit on its own
+       dot, not on a "14" bubble. Compared by id, because a re-render makes new copies. */
+    var visible = [], sel = null;
     sites.forEach(function (s) {
       var x = sx(NF.projX(s.lng)), y = sy(NF.projY(s.lat));
       if (x < -20 || y < -20 || x > W + 20 || y > H + 20) return;
+      if (selected && s.id === selected.id) { sel = { x: x, y: y, site: s }; return; }
       visible.push({ x: x, y: y, site: s });
     });
 
@@ -356,6 +379,7 @@ var NFMap = (function () {
        separately tappable. */
     var clusterPx = zoomed ? 15 : 24;
     markers = NF.clusterPoints(visible, clusterPx);
+    if (sel) markers.push({ x: sel.x, y: sel.y, site: sel.site, count: 1, items: [sel] });
 
     markers.forEach(function (m) {
       if (m.count === 1) {
@@ -407,34 +431,53 @@ var NFMap = (function () {
 
     /* The site whose card is open: a thick ring in the text colour, so it stands apart
        from the accent "nearest" ring. */
-    if (selected) {
+    if (sel) {
       ctx.beginPath();
-      ctx.arc(sx(NF.projX(selected.lng)), sy(NF.projY(selected.lat)), r + 8, 0, Math.PI * 2);
+      ctx.arc(sel.x, sel.y, r + 8, 0, Math.PI * 2);
       ctx.strokeStyle = c.ink;
       ctx.lineWidth = 3;
       ctx.stroke();
     }
 
-    /* Labels only once there is room for them to mean anything. */
-    if (zoomed) {
-      ctx.font = '600 12px -apple-system, system-ui, sans-serif';
+    /* Labels only once there is room for them to mean anything, and only where one can
+       be read whole: never over another label or dot, the button bar or an open card, and
+       never cut by the edge (a label near it slides inward). The open site's label goes
+       first and always shows, lifted clear of its ring. */
+    if (zoomed || sel) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
+      var taken = blockedBoxes(), blocked = taken.slice();
+      markers.forEach(function (m) {
+        if (m === sel || (sel && m.site === sel.site)) return;
+        var mr = m.count === 1 ? r : r + 3.5 + Math.min(5, Math.log(m.count) / Math.LN2);
+        taken.push([m.x - mr, m.y - mr, m.x + mr, m.y + mr]);
+      });
       /* markers is in ranked order, so slicing takes the nearest. Capped low
          on purpose: a stubbed-canvas run drew 32 labels at the default zoom,
          which is a wall of text rather than a legible map. */
-      var labelled = markers.filter(function (m) { return m.count === 1; }).slice(0, 12);
+      var labelled = zoomed ? markers.filter(function (m) { return m.count === 1 && m !== sel; }).slice(0, 12) : [];
+      if (sel) labelled.unshift(sel);
       labelled.forEach(function (m) {
+        var isSel = (m === sel);
+        /* A name whose dot is off the canvas, or under the card or a button, points at nothing. */
+        if (!isSel && (m.x < 0 || m.x > W || m.y < 0 || m.y > H ||
+            blocked.some(function (b) { return overlaps(b, [m.x, m.y, m.x + 1, m.y + 1]); }))) return;
         var t = m.site.name;
         if (t.length > 22) t = t.slice(0, 21) + '…';
         /* Italic marks a name we derived, the same way the list and the sheet do. */
-        ctx.font = (m.site.name_is_derived ? 'italic 500 ' : '600 ') +
-                   '12px -apple-system, system-ui, sans-serif';
+        ctx.font = (m.site.name_is_derived ? 'italic 500 ' : (isSel ? '700 ' : '600 ')) +
+                   (isSel ? '13px' : '12px') + ' -apple-system, system-ui, sans-serif';
+        var w = ctx.measureText(t).width + 6, hgt = isSel ? 16 : 15;
+        var by = m.y - (isSel ? r + 12 : r + 3);
+        var bx = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, m.x));
+        var box = [bx - w / 2, by - hgt, bx + w / 2, by];
+        if (!isSel && taken.some(function (b) { return overlaps(b, box); })) return;
+        taken.push(box);
         ctx.lineWidth = 3;
         ctx.strokeStyle = c.sea;
-        ctx.strokeText(t, m.x, m.y - r - 3);      /* halo, so it reads over land */
+        ctx.strokeText(t, bx, by);                /* halo, so it reads over land */
         ctx.fillStyle = c.ink;
-        ctx.fillText(t, m.x, m.y - r - 3);
+        ctx.fillText(t, bx, by);
       });
       ctx.textBaseline = 'alphabetic';
       ctx.textAlign = 'left';
@@ -618,6 +661,8 @@ var NFMap = (function () {
       if (!open) return;
       sizeCanvas(); computeScaleLimits(); clampView(); schedule();
     });
+    /* A card rises 14px as it opens; labels are placed against where it ends up. */
+    document.addEventListener('animationend', function () { if (open) schedule(); });
   }
 
   function show() {
@@ -648,14 +693,35 @@ var NFMap = (function () {
     else { selected = null; hide(); }
   }
 
-  /* Centre on a site, zoomed in, with it in the top third: on a wide screen its card
-     covers the lower part of the map. null clears the highlight and leaves the view. */
+  /* Show a site in the strip of map between the button bar and its card. If you are
+     near enough to share that view at a useful zoom, both you and the site go in it;
+     otherwise the site alone, zoomed in. null clears the highlight and leaves the view. */
   function focus(site) {
     selected = site;
     if (site && open && W > 1) {
-      view.scale = Math.min(maxScale, Math.max(view.scale, minScale * 32));
-      view.cx = NF.projX(site.lng);
-      view.cy = NF.projY(site.lat) + (H * 0.2) / view.scale;
+      var top = 0, bottom = H;
+      blockedBoxes().forEach(function (b) {
+        /* By centre, not top edge: a tall card starts above the middle but sits at the bottom. */
+        if (b[1] + b[3] < H) top = Math.max(top, b[3]); else bottom = Math.min(bottom, b[1]);
+      });
+      var stripH = Math.max(120, bottom - top);
+      var pos = hooks.getPos();
+      var lngs = [site.lng], lats = [site.lat];
+      if (pos) { lngs.push(pos.lng); lats.push(pos.lat); }
+      var d = 0.004;                           /* a single point still needs a box */
+      var f = NF.fitBounds([Math.min.apply(null, lngs) - d, Math.min.apply(null, lats) - d,
+                            Math.max.apply(null, lngs) + d, Math.max.apply(null, lats) + d],
+                           W, stripH, 36);
+      var both = pos && f.scale >= minScale * 4;
+      if (both) {
+        view.scale = Math.min(maxScale, minScale * 32, f.scale);
+        view.cx = f.cx; view.cy = f.cy;
+      } else {
+        view.scale = Math.min(maxScale, minScale * 32);
+        view.cx = NF.projX(site.lng); view.cy = NF.projY(site.lat);
+      }
+      /* Put that centre in the middle of the strip, not the middle of the canvas. */
+      view.cy -= ((top + bottom) / 2 - H / 2) / view.scale;
       clampView();
     }
     schedule();

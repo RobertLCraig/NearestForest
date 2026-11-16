@@ -126,22 +126,51 @@ function render() {
       '<button class="row__go" data-go="' + esc(s.id) + '" aria-label="Navigate to ' + esc(s.name) + '">▶</button>' +
     '</li>';
   }).join('');
+  markOpenRow();
 }
 
 /* ---------- sheets ---------- */
 /* Every close goes through here: a sheet dragged part-way down carries an inline
    transform, and reopening without clearing it would show an off-screen panel. */
+/* Focus goes into a sheet when it opens and back to what opened it when it closes, so a
+   keyboard, switch or screen-reader user lands on the card rather than staying in the list. */
 function closeSheet(el) {
   var panel = el.querySelector('.sheet__panel');
   if (panel) { panel.style.transform = ''; panel.style.transition = ''; panel.style.animation = ''; }
+  var wasOpen = !el.hidden;
   el.hidden = true;
-  if (el.id === 'sheet') NFMap.focus(null);
+  if (el.id === 'sheet') { OPEN_ID = null; markOpenRow(); NFMap.focus(null); }
+  if (el.id === 'menu') $('#btn-menu').setAttribute('aria-expanded', 'false');
+  sheetsChanged();
+  if (wasOpen && el._returnTo && document.contains(el._returnTo) &&
+      (el.contains(document.activeElement) || document.activeElement === document.body)) {
+    el._returnTo.focus({ preventScroll: true });
+  }
 }
 function closeSheets() { closeSheet($('#sheet')); closeSheet($('#chooser')); closeSheet($('#menu')); }
 function showSheet(el) {
   var panel = el.querySelector('.sheet__panel');
   if (panel) { panel.style.transform = ''; panel.style.transition = ''; panel.style.animation = ''; }
+  if (el.hidden) el._returnTo = el.contains(document.activeElement) ? null : document.activeElement;
   el.hidden = false;
+  if (el.id === 'menu') $('#btn-menu').setAttribute('aria-expanded', 'true');
+  sheetsChanged();
+  var h = el.querySelector('.sheet__name');
+  if (h) h.focus({ preventScroll: true });
+}
+/* On a wide screen the map hint sits where the card goes, so it hides while one is open. */
+function sheetsChanged() {
+  document.body.classList.toggle('has-card', !!document.querySelector('.sheet:not([hidden])'));
+}
+/* The row whose card is open is marked, so the list and the card visibly agree. */
+var OPEN_ID = null;
+function markOpenRow() {
+  listEl.querySelectorAll('.row').forEach(function (r) {
+    var b = r.querySelector('.row__main');
+    var on = !!OPEN_ID && b.getAttribute('data-id') === OPEN_ID;
+    r.classList.toggle('row--open', on);
+    if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+  });
 }
 
 /* Drag-to-dismiss from the grip. The grip is the only drag zone: the panel body
@@ -225,8 +254,10 @@ function openSheet(site) {
 
   var st = NF.openState(site);
   var h = '';
+  /* Some labels already say it ("Closed 20:00", "Open 24h"); "Closed · Closed 20:00" read twice. */
   if (st.state !== 'unknown') {
-    h += field('Right now', (st.state === 'open' ? 'Open · ' : 'Closed · ') + st.label);
+    h += field('Right now', /^(Open|Closed)\b/.test(st.label) ? st.label
+      : (st.state === 'open' ? 'Open · ' : 'Closed · ') + st.label);
   }
   h += field('Sat nav postcode', site.postcode_satnav, { missing: 'No sat nav postcode published' });
   h += field('Address', site.address);
@@ -293,6 +324,8 @@ function openSheet(site) {
   $('#sheet-body').innerHTML = h;
   showSheet($('#sheet'));
   $('#sheet .sheet__panel').scrollTop = 0;
+  OPEN_ID = site.id;
+  markOpenRow();
   if (NFMap.isDocked()) NFMap.focus(site);
 }
 
@@ -464,6 +497,11 @@ function setListSide(side) {
   var wide = window.matchMedia('(min-width: 720px)');
   function apply() {
     document.body.classList.toggle('is-split', wide.matches);
+    /* Beside the map a card is not modal: the list stays live, so screen readers must not
+       be told the rest of the page is out of reach. On a phone it covers everything. */
+    document.querySelectorAll('.sheet__panel').forEach(function (p) {
+      if (wide.matches) p.removeAttribute('aria-modal'); else p.setAttribute('aria-modal', 'true');
+    });
     if (!wide.matches) closeSheet($('#menu'));
     NFMap.dock(wide.matches);
   }

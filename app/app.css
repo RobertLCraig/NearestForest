@@ -216,11 +216,17 @@ body.is-mapping { overflow:hidden; }
    card sits over the lower part of the map instead of covering the whole screen, so
    the site and where it is are both in view. */
 .iconbtn--menu { display:none; }
+/* The row whose card is open: a text-coloured outline, apart from the accent "nearest" border. */
+.row--open { outline:3px solid var(--fg); outline-offset:2px; }
+/* Headings take focus when a sheet opens; the ring is for keyboard users only. */
+.sheet__name:focus:not(:focus-visible) { outline:none; }
 .seg { display:flex; gap:8px; }
 .seg__btn { flex:1; color:var(--dim); }
 .seg__btn[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
-.menu__links { margin:16px 0 0; }
-.menu__links a { color:var(--accent); }
+.menu__links { margin:12px 0 0; }
+.menu__links a { color:var(--accent); display:inline-flex; align-items:center; min-height:44px; }
+/* Close sits on the right, where it is on the site card. */
+#menu .sheet__actions { justify-content:flex-end; }
 
 body.is-split {
   display:grid; grid-template-columns:minmax(340px, 40%) minmax(0, 1fr);
@@ -250,6 +256,10 @@ body.is-split .sheet {
   padding:0 12px calc(var(--safe-b) + 12px);
 }
 body.is-split .sheet__scrim { display:none; }
+/* Pinned to the map, the card cannot be dragged away, so no grip suggests it can. */
+body.is-split .sheet__grip { display:none; }
+body.is-split .sheet__panel { padding-top:14px; }
+body.is-split.has-card .map__hint { display:none; }
 body.is-split .sheet__panel {
   pointer-events:auto; max-width:560px; max-height:62vh; max-height:62dvh;
   border:1px solid var(--line); border-radius:20px;
@@ -265,4 +275,12 @@ body.is-split .sheet__actions {
    rather than pin half the column. */
 @media (max-height:540px) {
   body.is-split .bar { position:static; }
+  /* A short card: label and value side by side, so whole fields fit above Navigate. */
+  body.is-split .sheet__panel { padding-top:10px; }
+  body.is-split .sheet__name { font-size:19px; }
+  body.is-split .sheet__sub { margin:2px 0 6px; }
+  body.is-split .kv { display:grid; grid-template-columns:max-content minmax(0, 1fr); column-gap:14px; align-items:baseline; }
+  body.is-split .kv dt { margin-top:8px; }
+  body.is-split .kv dd { margin-top:8px; }
+  body.is-split .sheet__actions { margin-top:8px; padding-top:8px; padding-bottom:10px; }
 }

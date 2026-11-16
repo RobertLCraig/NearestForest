@@ -37,7 +37,7 @@
       </svg>
     </button>
     <!-- Wide screens only (the map button is gone there, the map is always shown). -->
-    <button id="btn-menu" class="iconbtn iconbtn--menu" aria-label="Options" title="Options">
+    <button id="btn-menu" class="iconbtn iconbtn--menu" aria-label="Options" title="Options" aria-controls="menu" aria-expanded="false">
       <svg class="iconbtn__svg" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false">
         <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
@@ -112,7 +112,7 @@
 <!-- Map. Full-screen over the list on a phone; on a wide screen (body.is-split) it is
      the second column and always shown. The bundled outline means it works offline. -->
 <div id="map" class="map" hidden>
-  <canvas id="map-canvas" class="map__canvas"></canvas>
+  <canvas id="map-canvas" class="map__canvas" aria-hidden="true"></canvas>
   <div class="map__bar">
     <button id="map-close" class="btn btn--ghost map__btn">Close</button>
     <button id="map-fit" class="btn btn--ghost map__btn">Near me</button>
@@ -127,7 +127,7 @@
   <div class="sheet__scrim" data-close></div>
   <section class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="sheet-name">
     <div class="sheet__grip"></div>
-    <h2 id="sheet-name" class="sheet__name"></h2>
+    <h2 id="sheet-name" class="sheet__name" tabindex="-1"></h2>
     <p id="sheet-sub" class="sheet__sub"></p>
     <dl id="sheet-body" class="kv"></dl>
     <div class="sheet__actions">
@@ -142,7 +142,7 @@
   <div class="sheet__scrim" data-close></div>
   <section class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="chooser-title">
     <div class="sheet__grip"></div>
-    <h2 id="chooser-title" class="sheet__name">Open in</h2>
+    <h2 id="chooser-title" class="sheet__name" tabindex="-1">Open in</h2>
     <p id="chooser-sub" class="sheet__sub"></p>
     <div class="chooser">
       <button class="btn btn--map" data-app="apple" data-not-android>Apple Maps</button>
@@ -159,7 +159,7 @@
   <div class="sheet__scrim" data-close></div>
   <section class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="menu-title">
     <div class="sheet__grip"></div>
-    <h2 id="menu-title" class="sheet__name">Options</h2>
+    <h2 id="menu-title" class="sheet__name" tabindex="-1">Options</h2>
     <p class="sheet__sub">Which side the list goes on.</p>
     <div class="seg" role="group" aria-label="List side">
       <button class="btn seg__btn" data-side="left" aria-pressed="true">List on the left</button>
