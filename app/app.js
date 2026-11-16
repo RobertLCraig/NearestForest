@@ -151,7 +151,9 @@ function closeSheets() { closeSheet($('#sheet')); closeSheet($('#chooser')); clo
 function showSheet(el) {
   var panel = el.querySelector('.sheet__panel');
   if (panel) { panel.style.transform = ''; panel.style.transition = ''; panel.style.animation = ''; }
-  if (el.hidden) el._returnTo = el.contains(document.activeElement) ? null : document.activeElement;
+  /* Also when already open: a second row opened beside the card is where Close returns. */
+  if (!el.contains(document.activeElement)) el._returnTo = document.activeElement;
+  else if (el.hidden) el._returnTo = null;
   el.hidden = false;
   if (el.id === 'menu') $('#btn-menu').setAttribute('aria-expanded', 'true');
   sheetsChanged();

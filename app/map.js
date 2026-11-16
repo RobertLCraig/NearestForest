@@ -207,6 +207,9 @@ var NFMap = (function () {
     var pos = hooks.getPos();
     var sites = hooks.getSites();
     if (!pos || !sites.length) { fitAll(); return; }
+    /* Six sites, even on a tall pane where that leaves spare map above and below:
+       taking in more sites to fill the height zoomed out until every label was lost
+       (council round 2, 2026-11-16), which is worse than the spare map. */
     var near = sites.slice(0, 6);
     var lats = [pos.lat], lngs = [pos.lng];
     near.forEach(function (s) { lats.push(s.lat); lngs.push(s.lng); });
@@ -463,12 +466,12 @@ var NFMap = (function () {
         if (!isSel && (m.x < 0 || m.x > W || m.y < 0 || m.y > H ||
             blocked.some(function (b) { return overlaps(b, [m.x, m.y, m.x + 1, m.y + 1]); }))) return;
         var t = m.site.name;
-        if (t.length > 22) t = t.slice(0, 21) + '…';
+        if (t.length > 22 && !isSel) t = t.slice(0, 21) + '…';   /* the open site's name is never cut */
         /* Italic marks a name we derived, the same way the list and the sheet do. */
         ctx.font = (m.site.name_is_derived ? 'italic 500 ' : (isSel ? '700 ' : '600 ')) +
                    (isSel ? '13px' : '12px') + ' -apple-system, system-ui, sans-serif';
         var w = ctx.measureText(t).width + 6, hgt = isSel ? 16 : 15;
-        var by = m.y - (isSel ? r + 12 : r + 3);
+        var by = m.y - (isSel ? r + 12 : (m.site === nearest ? r + 7 : r + 3));   /* clear of its ring */
         var bx = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, m.x));
         var box = [bx - w / 2, by - hgt, bx + w / 2, by];
         if (!isSel && taken.some(function (b) { return overlaps(b, box); })) return;
@@ -711,7 +714,7 @@ var NFMap = (function () {
       var d = 0.004;                           /* a single point still needs a box */
       var f = NF.fitBounds([Math.min.apply(null, lngs) - d, Math.min.apply(null, lats) - d,
                             Math.max.apply(null, lngs) + d, Math.max.apply(null, lats) + d],
-                           W, stripH, 36);
+                           W, stripH, 64);  /* well clear of the edge, so its label and neighbours show */
       var both = pos && f.scale >= minScale * 4;
       if (both) {
         view.scale = Math.min(maxScale, minScale * 32, f.scale);

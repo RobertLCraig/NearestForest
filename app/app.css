@@ -265,11 +265,14 @@ body.is-split .sheet__panel {
   border:1px solid var(--line); border-radius:20px;
   box-shadow:0 10px 30px rgba(0,0,0,.45);
   padding-bottom:0;
+  /* A thin themed bar, not a bright native one with arrows, which glares at night. */
+  scrollbar-width:thin; scrollbar-color:var(--line) transparent;
 }
 /* The card is short, so the details scroll and Navigate stays pinned in view. */
 body.is-split .sheet__actions {
   position:sticky; bottom:0; margin:14px calc(-1 * var(--pad)) 0;
   padding:10px var(--pad) 12px; background:var(--bg2); border-top:1px solid var(--line);
+  box-shadow:0 -16px 14px -6px var(--bg2);   /* fades a half-cut line into the bar */
 }
 /* A phone on its side has little height: let the header scroll away with the list
    rather than pin half the column. */
