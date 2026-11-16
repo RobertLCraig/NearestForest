@@ -384,7 +384,12 @@ var NFMap = (function () {
     markers = NF.clusterPoints(visible, clusterPx);
     if (sel) markers.push({ x: sel.x, y: sel.y, site: sel.site, count: 1, items: [sel] });
 
+    /* A dot peeking between two map buttons reads as a glitch and cannot be tapped
+       there anyway, so a marker under a button (edge included) is not drawn. */
+    var btns = [];
+    wrap.querySelectorAll('.map__btn').forEach(function (b) { if (b.offsetParent) btns.push(canvasBox(b)); });
     markers.forEach(function (m) {
+      if (!(sel && m.site === sel.site) && btns.some(function (b) { return m.x > b[0] - r - 8 && m.x < b[2] + r + 8 && m.y < b[3] + r; })) return;
       if (m.count === 1) {
         ctx.fillStyle = c.accent;
         ctx.beginPath();
