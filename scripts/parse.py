@@ -72,14 +72,22 @@ URL_HOSTS = {"www.forestryengland.uk", "forestryengland.uk", "forestryandland.go
 GENERIC_NAME = "Unnamed car park"
 
 # Upstream values that are not a name at all.
-NO_NAME = {"unknown", "n/a", "na", "tbc"}
+NO_NAME = {"unknown", "n/a", "na", "tbc", "x", "agreements/permissions"}
+
+# An asset code in front of the name: "CFD-SHE-Goshawk car park", "AH-CP-Rowledge",
+# "QECP - Benham Bushes". Upper case only, so a real name with a hyphen in it is not cut.
+# What follows the code is judged on its own: a real name is kept, and one that is only
+# more code ("CFD-THH-NOMANSCP", "AH-CP-001", "HX - CP") counts as no name at all.
+RE_ASSET_CODE = re.compile(r"^[A-Z]{2,4}\s*-\s*(?:[A-Z]{2,3}\s*-\s*)?")
+RE_CODE_ONLY = re.compile(r"^(?:[A-Z0-9 ]+|CP\d*\b.*)$")
 
 # Names that are only the words "car park", optionally with a qualifier. They are a real
 # upstream value but they say nothing about WHICH forest, which is the one thing a row
 # read in a moving car needs. The qualifier is kept, so "Overflow Car Park" derives to
 # "Overflow car park near Dalby Forest" and stays distinct from the main one.
 RE_GENERIC_NAME = re.compile(
-    r"^(?:the\s+)?(?:(main|overflow|additional|upper|lower|new|old)\s+)?car\s*parks?$", re.I)
+    r"^(?:the\s+)?(?:(main|overflow|additional|upper|lower|new|old|small)\s*)?(?:car\s*parks?)?(?:\s*\d+)?$",
+    re.I)
 
 # How far a car park may be from a forest point before the join stops being a claim worth
 # making, in miles. Measured rather than guessed: over the 177 car parks with no usable
@@ -89,6 +97,10 @@ RE_GENERIC_NAME = re.compile(
 # they are probably not part of. A forest record is one published point, not a polygon, so
 # this measures proximity to that point and never membership of a wood. Hence "near" in
 # the name, and the derived flag the UI styles.
+# Re-measured 2026-11-16, once asset codes ("CFD-THH-NOMANSCP") also counted as no name:
+# n=231, q1 0.03, median 0.28, q3 1.58, max 23.66, so the fence is now 3.9 mi. Kept at 5:
+# the 54 added records sit close to their forests, which pulls q3 in, and lowering the
+# limit would strip names from records that have carried them since the first build.
 NEAR_FOREST_MI = 5.0
 
 problems = []
@@ -749,18 +761,24 @@ def build_nrw():
 
 
 def unusable_name(raw_name):
-    """(is_derived, qualifier) for an upstream car park name that cannot stand on its own.
+    """(name, is_derived, qualifier) for an upstream car park name.
 
-    Two kinds: the 170 records published as "Unknown", and the handful published as a
-    bare "Car Park" / "Main Carpark". Both leave a row that names no place.
+    `name` is the raw name with any asset code stripped. It is derived (renamed after the
+    nearest forest later) when nothing usable is left: "Unknown" and other placeholders, a
+    bare "Car Park" / "Main Carpark" / "Car Park 2", or a code with no name after it.
     """
     n = (raw_name or "").strip()
+    code = RE_ASSET_CODE.match(n)
+    if code:
+        n = n[code.end():].strip()
+        if not n or RE_CODE_ONLY.match(n):
+            return n, True, None
     if not n or n.lower() in NO_NAME:
-        return True, None
+        return n, True, None
     m = RE_GENERIC_NAME.match(n)
     if m:
-        return True, (m.group(1) or "").lower().capitalize() or None
-    return False, None
+        return n, True, (m.group(1) or "").lower().capitalize() or None
+    return n, False, None
 
 
 def name_after_nearest_forest(pending, forests):
@@ -802,8 +820,8 @@ def build_carparks():
             problems.append("car park OBJECTID %s has no centroid" % a.get("OBJECTID"))
             continue
         raw_name = (a.get("asset_name") or "").strip()
-        derived, qualifier = unusable_name(raw_name)
-        name = GENERIC_NAME if derived else raw_name
+        clean, derived, qualifier = unusable_name(raw_name)
+        name = GENERIC_NAME if derived else clean
         st = a.get("status")
         if st and st not in VALID_STATUS:
             problems.append("unexpected status %r on OBJECTID %s" % (st, a.get("OBJECTID")))

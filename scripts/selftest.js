@@ -549,6 +549,42 @@ console.log('\n--- Wales, from Natural Resources Wales (card 0079) ---');
                `Annex D off by ${errs.d.toFixed(2)} m`);
   }
 
+  // Car park names published as an asset code or an admin label ("agreements/permissions"
+  // was a row in the list, 2026-11-16). The code is stripped and a real name kept; a code
+  // or label with no name after it is renamed after the nearest forest.
+  {
+    const { spawnSync } = require('child_process');
+    const PY = process.env.PYTHON || 'python';
+    const cases = {
+      'agreements/permissions': [true, null], 'AGREEMENTS/PERMISSIONS': [true, null],
+      'CFD-THH-NOMANSCP': [true, null], 'AH-CP-001': [true, null], 'HX - CP': [true, null],
+      'CFD-POP-CP2 (Staff Car Park)': [true, null], 'CFD-SAL-Car Park 2': [true, null],
+      'CFD-DIM-Overflow Car Park': [true, 'Overflow'],
+      'CFD-SHE-Goshawk car park': [false, 'Goshawk car park'],
+      'QECP - Benham Bushes': [false, 'Benham Bushes'],
+      'Staff & Overflow Car Park': [false, 'Staff & Overflow Car Park'],
+      'Bolton\'s Cricket': [false, 'Bolton\'s Cricket'],
+    };
+    const stub = [
+      'import importlib.util, json, os, sys',
+      'spec = importlib.util.spec_from_file_location("nf_parse", os.path.join("scripts", "parse.py"))',
+      'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+      'print(json.dumps({n: m.unusable_name(n) for n in json.loads(sys.argv[1])}))',
+    ].join('\n');
+    const r = spawnSync(PY, ['-c', stub, JSON.stringify(Object.keys(cases))], { cwd: ROOT,
+      encoding: 'utf8', env: Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' }) });
+    let got = null;
+    try { got = JSON.parse((r.stdout || '').trim().split('\n').pop()); } catch (e) { got = null; }
+    const wrong = !got ? null : Object.keys(cases).filter(n => {
+      const [derived, want] = cases[n], g = got[n];
+      return g[1] !== derived || (derived ? g[2] !== want : g[0] !== want);
+    });
+    ok('a car park published as an asset code or admin label gets a real name',
+       !!wrong && wrong.length === 0,
+       !wrong ? `parse.py gave no readable answer: ${((r.stdout || '') + (r.stderr || '')).trim().split('\n').slice(-3).join(' / ')}`
+              : 'wrong for: ' + wrong.map(n => `${n} -> ${JSON.stringify(got[n])}`).join(' | '));
+  }
+
   // #3. Two halves. The shipped records are in Wales, and the build itself refuses one that is
   // not: validate() is driven directly with a Welsh record placed in London, which is inside
   // Great Britain so only a Wales box can catch it, and with one placed at Bwlch Nant yr Arian,
