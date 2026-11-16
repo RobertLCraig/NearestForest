@@ -22,6 +22,12 @@ var NFMap = (function () {
   var minScale = 1, maxScale = 1;
   var markers = [];             // { x, y, site } in screen px, rebuilt each draw
   var open = false;
+  /* Wide screens: the map is a column beside the list and never closes. Until the user
+     pans or zooms it follows the list (you plus the nearest sites); after that it stays
+     where they put it, until "Near me". `selected` is the site whose card is open. */
+  var docked = false;
+  var userMoved = false;
+  var selected = null;
 
   /* Pointer bookkeeping for pan and pinch. */
   var pointers = {};
@@ -399,6 +405,16 @@ var NFMap = (function () {
       ctx.stroke();
     }
 
+    /* The site whose card is open: a thick ring in the text colour, so it stands apart
+       from the accent "nearest" ring. */
+    if (selected) {
+      ctx.beginPath();
+      ctx.arc(sx(NF.projX(selected.lng)), sy(NF.projY(selected.lat)), r + 8, 0, Math.PI * 2);
+      ctx.strokeStyle = c.ink;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
     /* Labels only once there is room for them to mean anything. */
     if (zoomed) {
       ctx.font = '600 12px -apple-system, system-ui, sans-serif';
@@ -476,6 +492,7 @@ var NFMap = (function () {
 
   /* ---------- gestures ---------- */
   function zoomAbout(factor, px, py) {
+    userMoved = true;
     var before = view.scale;
     view.scale = Math.max(minScale, Math.min(maxScale, view.scale * factor));
     var k = view.scale / before;
@@ -512,6 +529,7 @@ var NFMap = (function () {
     if (nPointers === 1) {
       var dx = now.x - p.x, dy = now.y - p.y;
       dragged += Math.abs(dx) + Math.abs(dy);
+      if (dragged > 8) userMoved = true;     /* a tap's jitter is not a pan */
       view.cx -= dx / view.scale;
       view.cy -= dy / view.scale;
       clampView();
@@ -590,10 +608,10 @@ var NFMap = (function () {
     setTiles(tilesOn);
 
     document.getElementById('map-fit').addEventListener('click', function () {
-      fitToInterest(); schedule();
+      userMoved = false; fitToInterest(); schedule();
     });
     document.getElementById('map-all').addEventListener('click', function () {
-      fitAll(); schedule();
+      userMoved = true; fitAll(); schedule();
     });
 
     window.addEventListener('resize', function () {
@@ -605,27 +623,57 @@ var NFMap = (function () {
   function show() {
     open = true;
     wrap.hidden = false;
-    document.body.classList.add('is-mapping');
+    if (!docked) document.body.classList.add('is-mapping');
     updateHint();
     loadBoundary().then(function () {
       sizeCanvas();
       computeScaleLimits();
-      fitToInterest();
+      if (selected) focus(selected); else fitToInterest();
       draw();
     });
   }
 
   function hide() {
+    if (docked) return;                      /* a column has nothing to close */
     open = false;
     wrap.hidden = true;
     document.body.classList.remove('is-mapping');
+  }
+
+  /* Wide screen on or off. Called by app.js whenever the layout switches. */
+  function dock(on) {
+    if (on === docked) return;
+    docked = on;
+    if (on) { document.body.classList.remove('is-mapping'); show(); }
+    else { selected = null; hide(); }
+  }
+
+  /* Centre on a site, zoomed in, with it in the top third: on a wide screen its card
+     covers the lower part of the map. null clears the highlight and leaves the view. */
+  function focus(site) {
+    selected = site;
+    if (site && open && W > 1) {
+      view.scale = Math.min(maxScale, Math.max(view.scale, minScale * 32));
+      view.cx = NF.projX(site.lng);
+      view.cy = NF.projY(site.lat) + (H * 0.2) / view.scale;
+      clampView();
+    }
+    schedule();
   }
 
   return {
     init: init,
     show: show,
     hide: hide,
+    dock: dock,
+    focus: focus,
     isOpen: function () { return open; },
-    refresh: function () { if (open) { updateHint(); schedule(); } }
+    isDocked: function () { return docked; },
+    refresh: function () {
+      if (!open) return;
+      updateHint();
+      if (docked && !userMoved && !selected && W > 1) fitToInterest();
+      schedule();
+    }
   };
 }());

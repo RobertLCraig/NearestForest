@@ -114,7 +114,7 @@ button { font:inherit; color:inherit; }
 .pager { display:flex; align-items:center; gap:8px; padding:12px var(--pad) 0; }
 .pager .pager__btn { flex:0 0 52px; padding:0; font-size:24px; color:var(--fg); }
 .pager .pager__btn:disabled { opacity:.3; cursor:default; }
-.pager__jump { flex:1; min-width:0; min-height:52px; padding:0 12px; border-radius:var(--radius);
+.pager__jump { flex:1; min-width:0; min-height:52px; padding:0 8px; border-radius:var(--radius);
                border:1px solid var(--line); background:var(--bg2); color:var(--fg);
                font-family:inherit; font-size:16px; font-weight:600; text-align:center; }
 .foot { padding:18px var(--pad) calc(var(--safe-b) + 28px); color:var(--dim); font-size:12px; line-height:1.5; }
@@ -196,8 +196,8 @@ body.is-mapping { overflow:hidden; }
    landscape phone's height, leaving the list a strip. So on a short, wide screen the
    header becomes a left column that stays put and the list scrolls beside it. The
    height test keeps tablets and desktops, which have room, on the normal layout. */
-@media (orientation:landscape) and (max-height:540px) {
-  body { display:grid; grid-template-columns:minmax(290px, 36%) minmax(0, 1fr); align-items:start; }
+@media (orientation:landscape) and (max-height:540px) and (max-width:719.98px) {
+  .side { display:grid; grid-template-columns:minmax(290px, 36%) minmax(0, 1fr); align-items:start; }
   .bar {
     height:100vh; height:100dvh; overflow-y:auto;
     border-bottom:0; border-right:1px solid var(--line);
@@ -208,4 +208,61 @@ body.is-mapping { overflow:hidden; }
   /* Full width, a sheet would stretch its text and buttons across the whole phone. */
   .sheet { justify-content:center; }
   .sheet__panel { max-width:620px; max-height:94vh; }
+}
+
+/* ---------- wide screens: list beside a map ----------
+   body.is-split is set by app.js at 720px wide and up, the one place that width lives.
+   The list column scrolls on its own and the map fills the other column. The detail
+   card sits over the lower part of the map instead of covering the whole screen, so
+   the site and where it is are both in view. */
+.iconbtn--menu { display:none; }
+.seg { display:flex; gap:8px; }
+.seg__btn { flex:1; color:var(--dim); }
+.seg__btn[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+.menu__links { margin:16px 0 0; }
+.menu__links a { color:var(--accent); }
+
+body.is-split {
+  display:grid; grid-template-columns:minmax(340px, 40%) minmax(0, 1fr);
+  grid-template-areas:"side map"; height:100vh; height:100dvh; overflow:hidden;
+}
+body.is-split.list-right { grid-template-columns:minmax(0, 1fr) minmax(340px, 40%); grid-template-areas:"map side"; }
+body.is-split .side {
+  grid-area:side; height:100vh; height:100dvh; overflow-y:auto; overscroll-behavior:contain;
+  border-right:1px solid var(--line);
+  padding-left:env(safe-area-inset-left, 0px);
+}
+body.is-split.list-right .side {
+  border-right:0; border-left:1px solid var(--line);
+  padding-left:0; padding-right:env(safe-area-inset-right, 0px);
+}
+body.is-split #btn-map, body.is-split #map-close { display:none; }
+/* The list column is narrow; 44px is still a full touch target. */
+body.is-split .pager .pager__btn { flex-basis:44px; }
+body.is-split .pager { gap:6px; }
+body.is-split .iconbtn--menu { display:grid; }
+body.is-split .map { position:relative; inset:auto; z-index:auto; grid-area:map; height:100vh; height:100dvh; }
+/* Sheets share the map's grid cell and sit on top of it. The box covers the whole cell
+   but lets taps through to the map; only the card itself catches them. */
+body.is-split .sheet {
+  position:relative; inset:auto; grid-area:map; z-index:40;
+  align-items:flex-end; justify-content:center; pointer-events:none;
+  padding:0 12px calc(var(--safe-b) + 12px);
+}
+body.is-split .sheet__scrim { display:none; }
+body.is-split .sheet__panel {
+  pointer-events:auto; max-width:560px; max-height:62vh; max-height:62dvh;
+  border:1px solid var(--line); border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);
+  padding-bottom:0;
+}
+/* The card is short, so the details scroll and Navigate stays pinned in view. */
+body.is-split .sheet__actions {
+  position:sticky; bottom:0; margin:14px calc(-1 * var(--pad)) 0;
+  padding:10px var(--pad) 12px; background:var(--bg2); border-top:1px solid var(--line);
+}
+/* A phone on its side has little height: let the header scroll away with the list
+   rather than pin half the column. */
+@media (max-height:540px) {
+  body.is-split .bar { position:static; }
 }

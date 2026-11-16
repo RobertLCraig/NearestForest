@@ -16,6 +16,9 @@
 </head>
 <body>
 
+<!-- The list column. A plain block on a phone; the scrolling column beside the map
+     on a wide screen, which is why the header and the list share one box. -->
+<div class="side">
 <header class="bar">
   <div class="bar__row">
     <h1 class="bar__title">Forest Locator</h1>
@@ -33,6 +36,12 @@
               stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
+    <!-- Wide screens only (the map button is gone there, the map is always shown). -->
+    <button id="btn-menu" class="iconbtn iconbtn--menu" aria-label="Options" title="Options">
+      <svg class="iconbtn__svg" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false">
+        <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
   </div>
   <p id="status" class="status status--wait" role="status" aria-live="polite">Getting your location&hellip;</p>
   <nav class="tabs" role="tablist">
@@ -48,7 +57,7 @@
   <!-- Two copies, filled by app.js: campsites run to well over 100 pages, so the jump
        list has to be reachable without scrolling past 25 rows first. -->
   <nav class="pager" data-pager aria-label="Pages, top" hidden></nav>
-  <ol id="list"class="list" aria-label="Sites sorted by distance"></ol>
+  <ol id="list" class="list" aria-label="Sites sorted by distance"></ol>
   <p id="empty" class="empty" hidden>No sites match that filter.</p>
   <nav class="pager" data-pager aria-label="Pages, bottom" hidden></nav>
   <footer class="foot">
@@ -98,8 +107,10 @@
        target="_blank" rel="noopener noreferrer">Leave a tip on Ko-fi</a>.</p>
   </footer>
 </main>
+</div>
 
-<!-- Map. Full-screen over the list; the bundled outline means it works offline. -->
+<!-- Map. Full-screen over the list on a phone; on a wide screen (body.is-split) it is
+     the second column and always shown. The bundled outline means it works offline. -->
 <div id="map" class="map" hidden>
   <canvas id="map-canvas" class="map__canvas"></canvas>
   <div class="map__bar">
@@ -139,6 +150,24 @@
       <button class="btn btn--map" data-app="waze" data-not-android>Waze</button>
       <button class="btn btn--map" data-app="geo" data-android hidden>Other maps app</button>
       <button class="btn btn--ghost" data-close>Cancel</button>
+    </div>
+  </section>
+</div>
+
+<!-- Options (wide screens) -->
+<div id="menu" class="sheet" hidden>
+  <div class="sheet__scrim" data-close></div>
+  <section class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+    <div class="sheet__grip"></div>
+    <h2 id="menu-title" class="sheet__name">Options</h2>
+    <p class="sheet__sub">Which side the list goes on.</p>
+    <div class="seg" role="group" aria-label="List side">
+      <button class="btn seg__btn" data-side="left" aria-pressed="true">List on the left</button>
+      <button class="btn seg__btn" data-side="right" aria-pressed="false">List on the right</button>
+    </div>
+    <p class="menu__links"><a href="privacy.html">Privacy policy</a></p>
+    <div class="sheet__actions">
+      <button class="btn btn--ghost" data-close>Close</button>
     </div>
   </section>
 </div>

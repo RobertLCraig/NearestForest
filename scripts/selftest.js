@@ -1205,7 +1205,7 @@ console.log('--- tile layer (optional, must never be load-bearing) ---');
      !NF.mapHint(false, false).credit &&
      !/OpenStreetMap/.test(NF.mapHint(false, false).text));
   ok('the map recomputes the hint when the list it draws changes',
-     /refresh: function \(\) \{ if \(open\) \{ updateHint\(\);/.test(map));
+     /refresh: function \(\) \{\s*if \(!open\) return;\s*updateHint\(\);/.test(map));
   // The three assertions above prove NF.mapHint, which is a pure function the suite calls
   // itself, and `the map asks core.js what the hint should say` only greps `NF.mapHint(tilesOn,`
   // — so the SECOND argument is unwatched. Hardcode it to false and every one of them stays

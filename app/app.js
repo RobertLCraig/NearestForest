@@ -63,7 +63,7 @@ function render() {
   };
   var opts = '';
   for (var p = 0; p < pages; p++) {
-    opts += '<option value="' + p + '"' + (p === PAGE ? ' selected' : '') + '>Page ' + (p + 1) +
+    opts += '<option value="' + p + '"' + (p === PAGE ? ' selected' : '') + '>' + (p + 1) +
       ' of ' + pages + '</option>';
   }
   var pagerHtml = btn(0, '«', 'First page', PAGE === 0) +
@@ -135,8 +135,9 @@ function closeSheet(el) {
   var panel = el.querySelector('.sheet__panel');
   if (panel) { panel.style.transform = ''; panel.style.transition = ''; panel.style.animation = ''; }
   el.hidden = true;
+  if (el.id === 'sheet') NFMap.focus(null);
 }
-function closeSheets() { closeSheet($('#sheet')); closeSheet($('#chooser')); }
+function closeSheets() { closeSheet($('#sheet')); closeSheet($('#chooser')); closeSheet($('#menu')); }
 function showSheet(el) {
   var panel = el.querySelector('.sheet__panel');
   if (panel) { panel.style.transform = ''; panel.style.transition = ''; panel.style.animation = ''; }
@@ -291,6 +292,8 @@ function openSheet(site) {
   }
   $('#sheet-body').innerHTML = h;
   showSheet($('#sheet'));
+  $('#sheet .sheet__panel').scrollTop = 0;
+  if (NFMap.isDocked()) NFMap.focus(site);
 }
 
 function openChooser(site) {
@@ -388,9 +391,12 @@ document.addEventListener('click', function (e) {
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     render();
-    window.scrollTo(0, 0);
+    scrollListTop();
     return;
   }
+
+  var side = t.closest('[data-side]');
+  if (side) { setListSide(side.getAttribute('data-side')); return; }
 
   var map = t.closest('[data-app]');
   if (map && TARGET) {
@@ -405,7 +411,9 @@ $('#sheet-nav').addEventListener('click', function () {
   if (TARGET) openChooser(TARGET);
 });
 $('#filter').addEventListener('input', function (e) { FILTER = e.target.value.trim(); PAGE = 0; render(); });
-function goPage(p) { PAGE = p; render(); window.scrollTo(0, 0); }
+/* On a phone the page scrolls; on a wide screen the list column does. */
+function scrollListTop() { $('.side').scrollTop = 0; window.scrollTo(0, 0); }
+function goPage(p) { PAGE = p; render(); scrollListTop(); }
 document.addEventListener('change', function (e) {
   if (e.target.classList.contains('pager__jump')) goPage(+e.target.value);
 });
@@ -424,12 +432,44 @@ $('#btn-map').addEventListener('click', function () {
 $('#map-close').addEventListener('click', function () { NFMap.hide(); });
 document.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape') return;
+  if (!$('#menu').hidden) { closeSheet($('#menu')); return; }
   if (!$('#chooser').hidden) { closeSheet($('#chooser')); return; }
   if (!$('#sheet').hidden) { closeSheet($('#sheet')); return; }
   if (NFMap.isOpen()) NFMap.hide();
 });
 dragSheet($('#sheet'));
 dragSheet($('#chooser'));
+dragSheet($('#menu'));
+$('#btn-menu').addEventListener('click', function () { showSheet($('#menu')); });
+
+/* ---------- wide screens ----------
+   720px wide or more (an unfolded foldable, a tablet, most phones on their side): the
+   list is one column and the map the other, always shown. The width is decided here and
+   nowhere else; the CSS keys off body.is-split, so the layout and the map's docked state
+   cannot disagree. Narrower phones on their side keep the header-column layout in app.css. */
+var LS_SIDE = 'nf.listside';
+function setListSide(side) {
+  var right = side === 'right';
+  document.body.classList.toggle('list-right', right);
+  document.querySelectorAll('[data-side]').forEach(function (b) {
+    b.setAttribute('aria-pressed', b.getAttribute('data-side') === side ? 'true' : 'false');
+  });
+  try { localStorage.setItem(LS_SIDE, right ? 'right' : 'left'); } catch (e) { /* private mode: not remembered */ }
+  NFMap.refresh();
+}
+(function () {
+  var side = 'left';
+  try { side = localStorage.getItem(LS_SIDE) || 'left'; } catch (e) { /* private mode */ }
+  setListSide(side);
+  var wide = window.matchMedia('(min-width: 720px)');
+  function apply() {
+    document.body.classList.toggle('is-split', wide.matches);
+    if (!wide.matches) closeSheet($('#menu'));
+    NFMap.dock(wide.matches);
+  }
+  wide.addEventListener('change', apply);
+  apply();
+})();
 
 /* ---------- boot ---------- */
 function loadJson(url) {

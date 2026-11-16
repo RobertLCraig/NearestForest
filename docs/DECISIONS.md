@@ -3,6 +3,21 @@
 Append-only log of decisions and their rationale, newest first. Do not rewrite history;
 supersede an old entry with a new one that links back to it.
 
+## 2026-11-16: Wide screens show the list beside a map
+**Decision:** At 720px wide and up (an unfolded foldable, a tablet, most phones on their side),
+`app.js` sets `body.is-split`: the list (header included) is one scrolling column and the map is
+the other, always shown. Tapping a site zooms the map to it and opens its details as a card over
+the lower part of the map, with Navigate pinned in view. The list sits on the left by default; an
+Options menu (the ☰ button, wide screens only) moves it to the right, remembered in
+`localStorage` `nf.listside`. The map button is hidden there; the refresh button stays, because
+it is the action people need most. The map follows "you plus the nearest sites" until the user
+pans or zooms it, then stays put until "Near me". Narrower phones on their side keep the
+header-column layout of the entry below.
+**Why:** Rob, 2026-11-16: the sideways and foldable layouts wasted the screen. He picked the card
+over the map (so a site and where it is show together) and asked for the list side to be a
+setting, default left.
+**Status:** active
+
 ## 2026-11-16: The app turns sideways
 **Decision:** Orientation is `any` in `app/manifest.webmanifest` and `android/twa-manifest.json`,
 replacing `portrait`. On a short, wide screen (landscape and at most 540px tall) the header becomes
